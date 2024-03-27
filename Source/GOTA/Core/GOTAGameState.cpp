@@ -2,3 +2,16 @@
 
 
 #include "GOTAGameState.h"
+
+AGOTAGameState::AGOTAGameState()
+{
+	bReplicates = true;
+	GOTAGameState = this;
+}
+
+AGOTAGameState* AGOTAGameState::GOTAGameState = nullptr;
+
+AGOTAGameState* AGOTAGameState::GetGOTAGameState()
+{
+	return GOTAGameState;
+}

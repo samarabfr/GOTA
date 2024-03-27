@@ -14,4 +14,13 @@ class GOTA_API AGOTAGameState : public AGameState
 {
 	GENERATED_BODY()
 	
+public:
+	AGOTAGameState();
+
+private:
+	static AGOTAGameState* GOTAGameState;
+
+public:
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	static AGOTAGameState* GetGOTAGameState();
 };
