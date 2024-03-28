@@ -6,7 +6,7 @@
 #include "UObject/NoExportTypes.h"
 #include "AbilityEffect.generated.h"
 
-UCLASS()
+UCLASS(Abstract, Blueprintable)
 class GOTA_API UAbilityEffect : public UObject
 {
 	GENERATED_BODY()

@@ -7,7 +7,7 @@
 #include "GuardianAbilityManager.generated.h"
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS( Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class GOTA_API UGuardianAbilityManager : public UActorComponent
 {
 	GENERATED_BODY()
