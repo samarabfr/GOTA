@@ -4,10 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "Building.generated.h"
+#include "GameplayEffect.generated.h"
 
+/**
+ * 
+ */
 UCLASS(Blueprintable)
-class GOTA_API UBuilding : public UObject
+class GOTA_API UGameplayEffect : public UObject
 {
 	GENERATED_BODY()
+	
 };
