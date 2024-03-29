@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Unit.generated.h"
+#include "TileEntity.generated.h"
 
 UCLASS()
-class AUnit : public AActor
+class GOTA_API ATileEntity : public AActor
 {
 	GENERATED_BODY()
+
 };
