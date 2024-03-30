@@ -6,12 +6,8 @@
 #include "GameFramework/GameMode.h"
 #include "GOTAGameMode.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class GOTA_API AGOTAGameMode : public AGameMode
 {
 	GENERATED_BODY()
-	
 };
