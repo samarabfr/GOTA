@@ -2,3 +2,8 @@
 
 
 #include "Tile.h"
+
+ATile::ATile()
+{
+	IsWalkable = true;
+}
