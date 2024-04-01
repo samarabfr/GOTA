@@ -75,7 +75,7 @@ void ATileMap::AddTile(FHexCoords HexCoords, ATile* Tile)
 	Tile->HexCoords = HexCoords;
 }
 
-ATile* ATileMap::Cpp_GetRandomTile()
+ATile* ATileMap::GetRandomTile()
 {
 	// Try to get a Tile randomly
 	const int32 MaxTries = 100;
@@ -98,7 +98,7 @@ ATile* ATileMap::Cpp_GetRandomTile()
 	return nullptr;
 }
 
-TArray<ATile*> ATileMap::Cpp_GetNeighboringTiles(ATile* Origin)
+TArray<ATile*> ATileMap::GetNeighboringTiles(ATile* Origin)
 {
 	
 	TRACE_CPUPROFILER_EVENT_SCOPE_STR("GetNeighbors");
@@ -124,7 +124,7 @@ TArray<ATile*> ATileMap::Cpp_GetNeighboringTiles(ATile* Origin)
 	return Neighbors;
 }
 
-TArray<ATile*> ATileMap::Cpp_GetPath(ATile* Start, ATile* End)
+TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End)
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE_STR("GetPath");
 	//https://www.redblobgames.com/pathfinding/a-star/introduction.html
@@ -141,7 +141,7 @@ TArray<ATile*> ATileMap::Cpp_GetPath(ATile* Start, ATile* End)
 		{
 			break;
 		}
-		for (ATile* Next : Cpp_GetNeighboringTiles(Current))
+		for (ATile* Next : GetNeighboringTiles(Current))
 		{
 			if(Next->IsWalkable && !CameFrom.Contains(Next))
 			{
