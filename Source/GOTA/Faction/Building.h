@@ -34,10 +34,23 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
 	void OnTurn(const ATile* Tile);
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
+	int32 BuildPriority(const ASettlement* Builder);
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
+	bool CanBuilderAfford(const ASettlement* Builder);
 	
 	//====================================================================
-	//--------------------DataAsset
+	//--------------------Simple Variables
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	UBuildingDataAsset* DataAsset;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
+	FName Name;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
+	FText Description;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
+	UStaticMesh* Mesh;
 };

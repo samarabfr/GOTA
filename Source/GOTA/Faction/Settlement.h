@@ -45,28 +45,27 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void ClaimTile(const ATile* Tile);
-	
+
 	//====================================================================
-	//--------------------BorderingUnclaimedTiles
+	//--------------------Simple Variables
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 public:
 	UPROPERTY(BlueprintReadWrite, Category="Settlement")
 	TSet<ATile*> BorderingUnclaimedTiles;
 
-	//====================================================================
-	//--------------------ClaimedTiles
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-public:
 	UPROPERTY(BlueprintReadWrite, Category="Settlement")
 	TArray<ATile*> ClaimedTiles;
 
-	//====================================================================
-	//--------------------ClaimColor
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-public:
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
 	FLinearColor ClaimColor;
-
+	
+	//====================================================================
+	//-------------------- Expected Food Income
+	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	
+	UPROPERTY(BlueprintReadWrite, Category="Settlement")
+	float ExpectedFoodIncome;
+	
 	//====================================================================
 	//--------------------Population
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
