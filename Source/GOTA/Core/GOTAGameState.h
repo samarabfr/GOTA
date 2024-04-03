@@ -19,6 +19,9 @@ class GOTA_API AGOTAGameState : public AGameState
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	//Constructor
+	AGOTAGameState();
+	
 	//====================================================================
 	//--------------------Simple Variables
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -38,26 +41,31 @@ public:
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
 	bool IsCalculatingTurn;
 
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
+	bool ShouldTickTurnTime;
+	
 	//====================================================================
 	//--------------------ElapsedTurnTime
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 public:
 	UPROPERTY(BlueprintGetter=GetElapsedTurnTime, BlueprintSetter=SetElapsedTurnTime,
-	ReplicatedUsing=OnRep_ElapsedTurnTime, Category="GOTAGameState")
+	 Category="GOTAGameState")
 	float ElapsedTurnTime;
 
 	UFUNCTION(BlueprintGetter)
 	float GetElapsedTurnTime();
+	
+	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
+	void MulticastSetElapsedTurnTime(float NewValue);
 
+protected:
 	UFUNCTION(BlueprintSetter)
 	void SetElapsedTurnTime(float NewValue);
-
-	UFUNCTION()
-	void OnRep_ElapsedTurnTime(float NewValue);
 	
 	//====================================================================
 	//--------------------Delegates
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+public:
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FZeroParamSignature);
 

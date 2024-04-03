@@ -10,8 +10,13 @@ void AGOTAGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
 	DOREPLIFETIME(AGOTAGameState, MaxTurnTime);
-	DOREPLIFETIME(AGOTAGameState, ElapsedTurnTime);
 	DOREPLIFETIME(AGOTAGameState, IsCalculatingTurn);
+	DOREPLIFETIME(AGOTAGameState, ShouldTickTurnTime);
+}
+
+AGOTAGameState::AGOTAGameState()
+{
+	ShouldTickTurnTime = true;
 }
 
 void AGOTAGameState::AddFaction(AFaction* NewFaction)
@@ -35,9 +40,9 @@ void AGOTAGameState::SetElapsedTurnTime(float NewValue)
 	TurnTimerChanged.Broadcast(ElapsedTurnTime, MaxTurnTime);
 }
 
-void AGOTAGameState::OnRep_ElapsedTurnTime(float NewValue)
+void AGOTAGameState::MulticastSetElapsedTurnTime_Implementation(float NewValue)
 {
-	TurnTimerChanged.Broadcast(ElapsedTurnTime, MaxTurnTime);
+	SetElapsedTurnTime(NewValue);
 }
 
 void AGOTAGameState::CallCalculationStart()
