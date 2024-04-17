@@ -12,18 +12,7 @@ UCLASS()
 class GOTA_API ATileMap : public AActor
 {
 	GENERATED_BODY()
-
-private:
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FVector2D HexCoordsToWorldPos(FHexCoords HexCoords);
-
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FHexCoords WorldPosToHexCoords(FVector2D Vector);
-
-public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TileMap")
-	float GridSize;
-
+	
 private:
 	UPROPERTY()
 	TArray<ATile*> TileMap;
@@ -32,24 +21,49 @@ private:
 	int32 MapSize;
 	
 protected:
-	UFUNCTION(BlueprintCallable)
-	void Init(int32 Init_MapSize);
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "TileMap")
+	FVector2D HexCoordsToWorldPos(FHexCoords HexCoords);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "TileMap")
+	FHexCoords WorldPosToHexCoords(FVector2D Vector);
+
+public:
+	UPROPERTY(EditAnywhere, Category = "TileMap")
+	float GridSize;
+
+
 	
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	bool DoesTileExist(FHexCoords HexCoords);
+	//====================================================================
+	//--------------------Overrideable Functions
+	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+public:
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="TileMap")
+	void GenerateCircle(const int32 Radius);
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	ATile* GetTile(FHexCoords HexCoords);
+	//====================================================================
+	//--------------------Functions
+	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+protected:
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
+	void Init(int32 Init_MapSize);
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	void AddTile(FHexCoords HexCoords, ATile* Tile);
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	ATile* Cpp_GetRandomTile();
+public:
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
+	bool DoesTileExist(FHexCoords HexCoords);
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	TArray<ATile*> Cpp_GetNeighboringTiles(ATile* Origin);
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
+	ATile* GetTile(FHexCoords HexCoords);
+	
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
+	ATile* GetRandomTile();
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	TArray<ATile*> Cpp_GetPath(ATile* Start, ATile* End);
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
+	TArray<ATile*> GetNeighboringTiles(ATile* Origin);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
+	TArray<ATile*> GetPath(ATile* Start, ATile* End);
 };
