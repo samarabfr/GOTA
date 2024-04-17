@@ -7,7 +7,8 @@
 void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
+
+	DOREPLIFETIME(ASettlement, ExpectedFoodIncome);
 	DOREPLIFETIME(ASettlement, Population);
 	DOREPLIFETIME(ASettlement, MaxPopulation);
 	DOREPLIFETIME(ASettlement, Food);
@@ -18,6 +19,42 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 
 //====================================================================
+//--------------------ExpectedFoodIncome
+//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+void ASettlement::AddExpectedFoodIncome(const float Addend, float& Effective_Change)
+{
+	float Before = ExpectedFoodIncome;
+	SetExpectedFoodIncome(ExpectedFoodIncome + Addend);
+	Effective_Change = ExpectedFoodIncome - Before;
+}
+
+void ASettlement::SubtractExpectedFoodIncome(const float Subtrahend, float& Effective_Change)
+{
+	float Before = ExpectedFoodIncome;
+	SetExpectedFoodIncome(ExpectedFoodIncome - Subtrahend);
+	Effective_Change = ExpectedFoodIncome - Before;
+}
+
+void ASettlement::OnRep_ExpectedFoodIncome(float NewExpectedFoodIncome)
+{
+	OnExpectedFoodIncomeChanged.Broadcast(NewExpectedFoodIncome);
+	OnAnyAttributeChanged.Broadcast();
+}
+
+void ASettlement::SetExpectedFoodIncome(float NewExpectedFoodIncome)
+{
+	ExpectedFoodIncome = NewExpectedFoodIncome;
+	OnExpectedFoodIncomeChanged.Broadcast(ExpectedFoodIncome);
+	OnAnyAttributeChanged.Broadcast();
+}
+
+float ASettlement::GetExpectedFoodIncome()
+{
+	return ExpectedFoodIncome - Population;
+}
+
+//====================================================================
 //--------------------Population
 //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
@@ -25,6 +62,13 @@ void ASettlement::AddPopulation(const float Addend, float& Effective_Change)
 {
 	float Before = Population;
 	SetPopulation(Population + Addend);
+	Effective_Change = Population - Before;
+}
+
+void ASettlement::SubtractPopulation(const float Subtrahend, float& Effective_Change)
+{
+	float Before = Population;
+	SetPopulation(Population - Subtrahend);
 	Effective_Change = Population - Before;
 }
 
@@ -39,6 +83,7 @@ void ASettlement::OnRep_Population(float NewPopulation)
 {
 	OnPopulationChanged.Broadcast(NewPopulation);
 	OnAnyAttributeChanged.Broadcast();
+	OnExpectedFoodIncomeChanged.Broadcast(ExpectedFoodIncome);
 }
 
 void ASettlement::SetPopulation(float NewPopulation)
@@ -46,6 +91,7 @@ void ASettlement::SetPopulation(float NewPopulation)
 	Population = FMath::Min(FMath::Max(NewPopulation, 0.0f), MaxPopulation);
 	OnPopulationChanged.Broadcast(Population);
 	OnAnyAttributeChanged.Broadcast();
+	OnExpectedFoodIncomeChanged.Broadcast(ExpectedFoodIncome);
 }
 
 float ASettlement::GetPopulation()
@@ -61,6 +107,13 @@ void ASettlement::AddMaxPopulation(const float Addend, float& Effective_Change)
 {
 	float Before = MaxPopulation;
 	SetMaxPopulation(MaxPopulation + Addend);
+	Effective_Change = MaxPopulation - Before;
+}
+
+void ASettlement::SubtractMaxPopulation(const float Subtrahend, float& Effective_Change)
+{
+	float Before = MaxPopulation;
+	SetMaxPopulation(MaxPopulation - Subtrahend);
 	Effective_Change = MaxPopulation - Before;
 }
 
@@ -100,6 +153,13 @@ void ASettlement::AddFood(const float Addend, float& Effective_Change)
 	Effective_Change = Food - Before;
 }
 
+void ASettlement::SubtractFood(const float Subtrahend, float& Effective_Change)
+{
+	float Before = Food;
+	SetFood(Food - Subtrahend);
+	Effective_Change = Food - Before;
+}
+
 void ASettlement::MultiplyFood(const float Factor, float& Effective_Change)
 {
 	float Before = Food;
@@ -133,6 +193,13 @@ void ASettlement::AddColonistReligion(const float Addend, float& Effective_Chang
 {
 	float Before = ColonistReligion;
 	SetColonistReligion(ColonistReligion + Addend);
+	Effective_Change = ColonistReligion - Before;
+}
+
+void ASettlement::SubtractColonistReligion(const float Subtrahend, float& Effective_Change)
+{
+	float Before = ColonistReligion;
+	SetColonistReligion(ColonistReligion - Subtrahend);
 	Effective_Change = ColonistReligion - Before;
 }
 
@@ -171,6 +238,13 @@ void ASettlement::AddNativeReligion(const float Addend, float& Effective_Change)
 {
 	float Before = NativeReligion;
 	SetNativeReligion(NativeReligion + Addend);
+	Effective_Change = NativeReligion - Before;
+}
+
+void ASettlement::SubtractNativeReligion(const float Subtrahend, float& Effective_Change)
+{
+	float Before = NativeReligion;
+	SetNativeReligion(NativeReligion - Subtrahend);
 	Effective_Change = NativeReligion - Before;
 }
 

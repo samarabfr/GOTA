@@ -35,32 +35,57 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
+	void Init();
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
+	void CalculateTurn();
+	
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void LostClaim(const ATile* Tile);
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void ClaimTile(const ATile* Tile);
-	
+
 	//====================================================================
-	//--------------------BorderingUnclaimedTiles
+	//--------------------Simple Variables
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 public:
 	UPROPERTY(BlueprintReadWrite, Category="Settlement")
 	TSet<ATile*> BorderingUnclaimedTiles;
 
-	//====================================================================
-	//--------------------ClaimedTiles
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-public:
 	UPROPERTY(BlueprintReadWrite, Category="Settlement")
 	TArray<ATile*> ClaimedTiles;
 
-	//====================================================================
-	//--------------------ClaimColor
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-public:
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
 	FLinearColor ClaimColor;
+	
+	//====================================================================
+	//--------------------ExpectedFoodIncome
+	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+private:
+	UPROPERTY(BlueprintGetter=GetExpectedFoodIncome, BlueprintSetter=SetExpectedFoodIncome, ReplicatedUsing=OnRep_ExpectedFoodIncome)
+	float ExpectedFoodIncome;
 
+	UFUNCTION()
+	void OnRep_ExpectedFoodIncome(float NewExpectedFoodIncome);
+
+public:
+	UFUNCTION(BlueprintCallable, Category="Attributes")
+	void AddExpectedFoodIncome(const float Addend, float& Effective_Change);
+
+	UFUNCTION(BlueprintCallable, Category="Attributes")
+	void SubtractExpectedFoodIncome(const float Subtrahend, float& Effective_Change);
+
+	UFUNCTION(BlueprintSetter, Category="Attributes",
+		meta = (ToolTip = "Consider using AddExpectedFoodIncome or MultiplyExpectedFoodIncome instead"))
+	void SetExpectedFoodIncome(float NewExpectedFoodIncome);
+
+	UFUNCTION(BlueprintGetter, Category="Attributes")
+	float GetExpectedFoodIncome();
+	
+	UPROPERTY(BlueprintAssignable, Category="Attributes")
+	FOnAttributeChangedSignature OnExpectedFoodIncomeChanged;
+	
 	//====================================================================
 	//--------------------Population
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -75,6 +100,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	void AddPopulation(const float Addend, float& Effective_Change);
 
+	UFUNCTION(BlueprintCallable, Category="Attributes")
+	void SubtractPopulation(const float Subtrahend, float& Effective_Change);
+	
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	void MultiplyPopulation(const float Factor, float& Effective_Change);
 
@@ -104,6 +132,9 @@ public:
 	void AddMaxPopulation(const float Addend, float& Effective_Change);
 
 	UFUNCTION(BlueprintCallable, Category="Attributes")
+	void SubtractMaxPopulation(const float Subtrahend, float& Effective_Change);
+	
+	UFUNCTION(BlueprintCallable, Category="Attributes")
 	void MultiplyMaxPopulation(const float Factor, float& Effective_Change);
 
 	UFUNCTION(BlueprintSetter, Category="Attributes",
@@ -131,6 +162,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	void AddFood(const float Addend, float& Effective_Change);
 
+	UFUNCTION(BlueprintCallable, Category="Attributes")
+	void SubtractFood(const float Subtrahend, float& Effective_Change);
+	
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	void MultiplyFood(const float Factor, float& Effective_Change);
 
@@ -161,6 +195,9 @@ public:
 	void AddColonistReligion(const float Addend, float& Effective_Change);
 
 	UFUNCTION(BlueprintCallable, Category="Attributes")
+	void SubtractColonistReligion(const float Subtrahend, float& Effective_Change);
+	
+	UFUNCTION(BlueprintCallable, Category="Attributes")
 	void MultiplyColonistReligion(const float Factor, float& Effective_Change);
 
 	UFUNCTION(BlueprintSetter, Category="Attributes",
@@ -189,6 +226,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	void AddNativeReligion(const float Addend, float& Effective_Change);
 
+	UFUNCTION(BlueprintCallable, Category="Attributes")
+	void SubtractNativeReligion(const float Subtrahend, float& Effective_Change);
+	
 	UFUNCTION(BlueprintCallable, Category="Attributes")
 	void MultiplyNativeReligion(const float Factor, float& Effective_Change);
 
