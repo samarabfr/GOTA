@@ -10,4 +10,4 @@ UCLASS(Blueprintable)
 class GOTA_API UBuilding : public UObject
 {
 	GENERATED_BODY()
-};
+}; 
