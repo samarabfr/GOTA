@@ -10,8 +10,12 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
 	DOREPLIFETIME(ATile, Claimant);
-	DOREPLIFETIME(ATile, Nature);
-	DOREPLIFETIME(ATile, MaxNature);
+	DOREPLIFETIME(ATile, Trees);
+	DOREPLIFETIME(ATile, MaxTrees);
+	DOREPLIFETIME(ATile, Forage);
+	DOREPLIFETIME(ATile, MaxForage);
+	DOREPLIFETIME(ATile, Wildlife);
+	DOREPLIFETIME(ATile, MaxWildlife);
 }
 
 // Constructor
@@ -42,70 +46,208 @@ void ATile::SetClaimant(ASettlement* NewClaimant)
 }
 
 //====================================================================
-//--------------------Nature
+//--------------------Trees
 //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
-void ATile::AddNature(const float Addend, float& Effective_Change)
+void ATile::AddTrees(const float Addend, float& Effective_Change)
 {
-	float Before = Nature;
-	SetNature(Nature + Addend);
-	Effective_Change = Nature - Before;
+	float Before = Trees;
+	SetTrees(Trees + Addend);
+	Effective_Change = Trees - Before;
 }
 
-void ATile::MultiplyNature(const float Factor, float& Effective_Change)
+void ATile::MultiplyTrees(const float Factor, float& Effective_Change)
 {
-	float Before = Nature;
-	SetNature(Nature * Factor);
-	Effective_Change = Nature - Before;
+	float Before = Trees;
+	SetTrees(Trees * Factor);
+	Effective_Change = Trees - Before;
 }
 
-void ATile::OnRep_Nature(float NewNature)
+void ATile::OnRep_Trees(float NewTrees)
 {
-	OnNatureChanged.Broadcast(NewNature);
+	OnTreesChanged.Broadcast(NewTrees);
 }
 
-void ATile::SetNature(float NewNature)
+void ATile::SetTrees(float NewTrees)
 {
-	Nature = FMath::Min(FMath::Max(NewNature, 0.0f), MaxNature);
-	OnNatureChanged.Broadcast(Nature);
+	Trees = FMath::Min(FMath::Max(NewTrees, 0.0f), MaxTrees);
+	OnTreesChanged.Broadcast(Trees);
 }
 
-float ATile::GetNature()
+float ATile::GetTrees()
 {
-	return Nature;
+	return Trees;
 }
 
 
 //====================================================================
-//--------------------MaxNature
+//--------------------MaxTrees
 //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
-void ATile::AddMaxNature(const float Addend, float& Effective_Change)
+void ATile::AddMaxTrees(const float Addend, float& Effective_Change)
 {
-	float Before = MaxNature;
-	SetMaxNature(MaxNature + Addend);
-	Effective_Change = MaxNature - Before;
+	float Before = MaxTrees;
+	SetMaxTrees(MaxTrees + Addend);
+	Effective_Change = MaxTrees - Before;
 }
 
-void ATile::MultiplyMaxNature(const float Factor, float& Effective_Change)
+void ATile::MultiplyMaxTrees(const float Factor, float& Effective_Change)
 {
-	float Before = MaxNature;
-	SetMaxNature(MaxNature * Factor);
-	Effective_Change = MaxNature - Before;
+	float Before = MaxTrees;
+	SetMaxTrees(MaxTrees * Factor);
+	Effective_Change = MaxTrees - Before;
 }
 
-void ATile::OnRep_MaxNature(float NewMaxNature)
+void ATile::OnRep_MaxTrees(float NewMaxTrees)
 {
-	OnMaxNatureChanged.Broadcast(NewMaxNature);
+	OnMaxTreesChanged.Broadcast(NewMaxTrees);
 }
 
-void ATile::SetMaxNature(float NewMaxNature)
+void ATile::SetMaxTrees(float NewMaxTrees)
 {
-	MaxNature = FMath::Max(NewMaxNature, 0.0f);
-	OnMaxNatureChanged.Broadcast(MaxNature);
+	MaxTrees = FMath::Max(NewMaxTrees, 0.0f);
+	OnMaxTreesChanged.Broadcast(MaxTrees);
 }
 
-float ATile::GetMaxNature()
+float ATile::GetMaxTrees()
 {
-	return MaxNature;
+	return MaxTrees;
+}
+
+//====================================================================
+//--------------------Forage
+//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+void ATile::AddForage(const float Addend, float& Effective_Change)
+{
+	float Before = Forage;
+	SetForage(Forage + Addend);
+	Effective_Change = Forage - Before;
+}
+
+void ATile::MultiplyForage(const float Factor, float& Effective_Change)
+{
+	float Before = Forage;
+	SetForage(Forage * Factor);
+	Effective_Change = Forage - Before;
+}
+
+void ATile::OnRep_Forage(float NewForage)
+{
+	OnForageChanged.Broadcast(NewForage);
+}
+
+void ATile::SetForage(float NewForage)
+{
+	Forage = FMath::Min(FMath::Max(NewForage, 0.0f), MaxForage);
+	OnForageChanged.Broadcast(Forage);
+}
+
+float ATile::GetForage()
+{
+	return Forage;
+}
+
+
+//====================================================================
+//--------------------MaxForage
+//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+void ATile::AddMaxForage(const float Addend, float& Effective_Change)
+{
+	float Before = MaxForage;
+	SetMaxForage(MaxForage + Addend);
+	Effective_Change = MaxForage - Before;
+}
+
+void ATile::MultiplyMaxForage(const float Factor, float& Effective_Change)
+{
+	float Before = MaxForage;
+	SetMaxForage(MaxForage * Factor);
+	Effective_Change = MaxForage - Before;
+}
+
+void ATile::OnRep_MaxForage(float NewMaxForage)
+{
+	OnMaxForageChanged.Broadcast(NewMaxForage);
+}
+
+void ATile::SetMaxForage(float NewMaxForage)
+{
+	MaxForage = FMath::Max(NewMaxForage, 0.0f);
+	OnMaxForageChanged.Broadcast(MaxForage);
+}
+
+float ATile::GetMaxForage()
+{
+	return MaxForage;
+}
+
+//====================================================================
+//--------------------Wildlife
+//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+void ATile::AddWildlife(const float Addend, float& Effective_Change)
+{
+	float Before = Wildlife;
+	SetWildlife(Wildlife + Addend);
+	Effective_Change = Wildlife - Before;
+}
+
+void ATile::MultiplyWildlife(const float Factor, float& Effective_Change)
+{
+	float Before = Wildlife;
+	SetWildlife(Wildlife * Factor);
+	Effective_Change = Wildlife - Before;
+}
+
+void ATile::OnRep_Wildlife(float NewWildlife)
+{
+	OnWildlifeChanged.Broadcast(NewWildlife);
+}
+
+void ATile::SetWildlife(float NewWildlife)
+{
+	Wildlife = FMath::Min(FMath::Max(NewWildlife, 0.0f), MaxWildlife);
+	OnWildlifeChanged.Broadcast(Wildlife);
+}
+
+float ATile::GetWildlife()
+{
+	return Wildlife;
+}
+
+
+//====================================================================
+//--------------------MaxWildlife
+//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+void ATile::AddMaxWildlife(const float Addend, float& Effective_Change)
+{
+	float Before = MaxWildlife;
+	SetMaxWildlife(MaxWildlife + Addend);
+	Effective_Change = MaxWildlife - Before;
+}
+
+void ATile::MultiplyMaxWildlife(const float Factor, float& Effective_Change)
+{
+	float Before = MaxWildlife;
+	SetMaxWildlife(MaxWildlife * Factor);
+	Effective_Change = MaxWildlife - Before;
+}
+
+void ATile::OnRep_MaxWildlife(float NewMaxWildlife)
+{
+	OnMaxWildlifeChanged.Broadcast(NewMaxWildlife);
+}
+
+void ATile::SetMaxWildlife(float NewMaxWildlife)
+{
+	MaxWildlife = FMath::Max(NewMaxWildlife, 0.0f);
+	OnMaxWildlifeChanged.Broadcast(MaxWildlife);
+}
+
+float ATile::GetMaxWildlife()
+{
+	return MaxWildlife;
 }
