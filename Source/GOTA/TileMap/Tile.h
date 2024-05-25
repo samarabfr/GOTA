@@ -82,56 +82,165 @@ public:
 	void SetClaimant(ASettlement* NewClaimant);
 
 	//====================================================================
-	//--------------------Nature
+	//--------------------Trees
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 private:
-	UPROPERTY(BlueprintGetter=GetNature, BlueprintSetter=SetNature, ReplicatedUsing=OnRep_Nature)
-	float Nature;
+	UPROPERTY(BlueprintGetter=GetTrees, BlueprintSetter=SetTrees, ReplicatedUsing=OnRep_Trees)
+	float Trees;
 
 	UFUNCTION()
-	void OnRep_Nature(float NewNature);
+	void OnRep_Trees(float NewTrees);
 
 public:
 	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void AddNature(const float Addend, float& Effective_Change);
+	void AddTrees(const float Addend, float& Effective_Change);
 
 	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void MultiplyNature(const float Factor, float& Effective_Change);
+	void MultiplyTrees(const float Factor, float& Effective_Change);
 
 	UFUNCTION(BlueprintSetter, Category="Attributes",
-		meta = (ToolTip = "Consider using AddNature or MultiplyNature instead"))
-	void SetNature(float NewNature);
+		meta = (ToolTip = "Consider using AddTrees or MultiplyTrees instead"))
+	void SetTrees(float NewTrees);
 
 	UFUNCTION(BlueprintGetter, Category="Attributes")
-	float GetNature();
+	float GetTrees();
 
 	UPROPERTY(BlueprintAssignable, Category="Attributes")
-	FOnAttributeChangedSignature OnNatureChanged;
+	FOnAttributeChangedSignature OnTreesChanged;
 
 	//====================================================================
-	//--------------------MaxNature
+	//--------------------MaxTrees
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 private:
-	UPROPERTY(BlueprintGetter=GetMaxNature, BlueprintSetter=SetMaxNature, ReplicatedUsing=OnRep_MaxNature)
-	float MaxNature;
+	UPROPERTY(BlueprintGetter=GetMaxTrees, BlueprintSetter=SetMaxTrees, ReplicatedUsing=OnRep_MaxTrees)
+	float MaxTrees;
 
 	UFUNCTION()
-	void OnRep_MaxNature(float NewMaxNature);
+	void OnRep_MaxTrees(float NewMaxTrees);
 
 public:
 	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void AddMaxNature(const float Addend, float& Effective_Change);
+	void AddMaxTrees(const float Addend, float& Effective_Change);
 
 	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void MultiplyMaxNature(const float Factor, float& Effective_Change);
+	void MultiplyMaxTrees(const float Factor, float& Effective_Change);
 
 	UFUNCTION(BlueprintSetter, Category="Attributes",
-		meta = (ToolTip = "Consider using AddMaxNature or MultiplyMaxNature instead"))
-	void SetMaxNature(float NewMaxNature);
+		meta = (ToolTip = "Consider using AddMaxTrees or MultiplyMaxTrees instead"))
+	void SetMaxTrees(float NewMaxTrees);
 
 	UFUNCTION(BlueprintGetter, Category="Attributes")
-	float GetMaxNature();
+	float GetMaxTrees();
 
 	UPROPERTY(BlueprintAssignable, Category="Attributes")
-	FOnAttributeChangedSignature OnMaxNatureChanged;
+	FOnAttributeChangedSignature OnMaxTreesChanged;
+
+
+//====================================================================
+//--------------------Forage
+//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+private:
+UPROPERTY(BlueprintGetter=GetForage, BlueprintSetter=SetForage, ReplicatedUsing=OnRep_Forage)
+float Forage;
+
+UFUNCTION()
+void OnRep_Forage(float NewForage);
+
+public:
+UFUNCTION(BlueprintCallable, Category="Attributes")
+void AddForage(const float Addend, float& Effective_Change);
+
+UFUNCTION(BlueprintCallable, Category="Attributes")
+void MultiplyForage(const float Factor, float& Effective_Change);
+
+UFUNCTION(BlueprintSetter, Category="Attributes",
+	meta = (ToolTip = "Consider using AddForage or MultiplyForage instead"))
+void SetForage(float NewForage);
+
+UFUNCTION(BlueprintGetter, Category="Attributes")
+float GetForage();
+
+UPROPERTY(BlueprintAssignable, Category="Attributes")
+FOnAttributeChangedSignature OnForageChanged;
+
+//====================================================================
+//--------------------MaxForage
+//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+private:
+UPROPERTY(BlueprintGetter=GetMaxForage, BlueprintSetter=SetMaxForage, ReplicatedUsing=OnRep_MaxForage)
+float MaxForage;
+
+UFUNCTION()
+void OnRep_MaxForage(float NewMaxForage);
+
+public:
+UFUNCTION(BlueprintCallable, Category="Attributes")
+void AddMaxForage(const float Addend, float& Effective_Change);
+
+UFUNCTION(BlueprintCallable, Category="Attributes")
+void MultiplyMaxForage(const float Factor, float& Effective_Change);
+
+UFUNCTION(BlueprintSetter, Category="Attributes",
+	meta = (ToolTip = "Consider using AddMaxForage or MultiplyMaxForage instead"))
+void SetMaxForage(float NewMaxForage);
+
+UFUNCTION(BlueprintGetter, Category="Attributes")
+float GetMaxForage();
+
+UPROPERTY(BlueprintAssignable, Category="Attributes")
+FOnAttributeChangedSignature OnMaxForageChanged;
+
+//====================================================================
+//--------------------Wildlife
+//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+private:
+UPROPERTY(BlueprintGetter=GetWildlife, BlueprintSetter=SetWildlife, ReplicatedUsing=OnRep_Wildlife)
+float Wildlife;
+
+UFUNCTION()
+void OnRep_Wildlife(float NewWildlife);
+
+public:
+UFUNCTION(BlueprintCallable, Category="Attributes")
+void AddWildlife(const float Addend, float& Effective_Change);
+
+UFUNCTION(BlueprintCallable, Category="Attributes")
+void MultiplyWildlife(const float Factor, float& Effective_Change);
+
+UFUNCTION(BlueprintSetter, Category="Attributes",
+	meta = (ToolTip = "Consider using AddWildlife or MultiplyWildlife instead"))
+void SetWildlife(float NewWildlife);
+
+UFUNCTION(BlueprintGetter, Category="Attributes")
+float GetWildlife();
+
+UPROPERTY(BlueprintAssignable, Category="Attributes")
+FOnAttributeChangedSignature OnWildlifeChanged;
+
+//====================================================================
+//--------------------MaxWildlife
+//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+private:
+UPROPERTY(BlueprintGetter=GetMaxWildlife, BlueprintSetter=SetMaxWildlife, ReplicatedUsing=OnRep_MaxWildlife)
+float MaxWildlife;
+
+UFUNCTION()
+void OnRep_MaxWildlife(float NewMaxWildlife);
+
+public:
+UFUNCTION(BlueprintCallable, Category="Attributes")
+void AddMaxWildlife(const float Addend, float& Effective_Change);
+
+UFUNCTION(BlueprintCallable, Category="Attributes")
+void MultiplyMaxWildlife(const float Factor, float& Effective_Change);
+
+UFUNCTION(BlueprintSetter, Category="Attributes",
+	meta = (ToolTip = "Consider using AddMaxWildlife or MultiplyMaxWildlife instead"))
+void SetMaxWildlife(float NewMaxWildlife);
+
+UFUNCTION(BlueprintGetter, Category="Attributes")
+float GetMaxWildlife();
+
+UPROPERTY(BlueprintAssignable, Category="Attributes")
+FOnAttributeChangedSignature OnMaxWildlifeChanged;
 };
