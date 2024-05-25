@@ -3,9 +3,13 @@
 
 #include "GOTAGameMode.h"
 
+
 void AGOTAGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 
-	NewPlayer->ClientTravel("/Game/Content/Core/Island", TRAVEL_Absolute);
+	if(!NewPlayer->IsLocalPlayerController())
+	{
+		NewPlayer->ClientTravel("/Game/Core/Island", TRAVEL_Absolute);
+	}
 }
