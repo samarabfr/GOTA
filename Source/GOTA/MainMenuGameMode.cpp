@@ -3,7 +3,14 @@
 
 #include "MainMenuGameMode.h"
 
+#include "EditorDirectories.h"
+
 void AMainMenuGameMode::Travel(FString LevelPath)
 {
-	GetWorld()->ServerTravel(LevelPath, ETravelType::TRAVEL_Absolute);
+	GetWorld()->ServerTravel(LevelPath + "?listen", TRAVEL_Absolute);
+}
+
+void AMainMenuGameMode::TravelClient(APlayerController* PlayerController, FString LevelPath)
+{
+	PlayerController->ClientTravel(LevelPath, TRAVEL_Absolute);
 }

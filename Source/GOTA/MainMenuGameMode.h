@@ -17,4 +17,7 @@ class GOTA_API AMainMenuGameMode : public AGameModeBase
 public:
 	UFUNCTION(BlueprintCallable)
 	void Travel(FString LevelPath);
+
+	UFUNCTION(BlueprintCallable)
+	void TravelClient(APlayerController* PlayerController, FString LevelPath);
 };
