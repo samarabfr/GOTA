@@ -11,6 +11,7 @@ class GOTA_API AGOTAGameMode : public AGameMode
 {
 	GENERATED_BODY()
 
-	
+	/*
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+	*/
 };
