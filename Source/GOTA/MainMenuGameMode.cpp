@@ -3,8 +3,6 @@
 
 #include "MainMenuGameMode.h"
 
-#include "EditorDirectories.h"
-
 void AMainMenuGameMode::Travel(FString LevelPath)
 {
 	GetWorld()->ServerTravel(LevelPath + "?listen", TRAVEL_Absolute);
