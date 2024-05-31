@@ -4,11 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "TileEntity.generated.h"
+#include "BuildingEffects.generated.h"
 
-UCLASS()
-class GOTA_API ATileEntity : public AActor
+USTRUCT(BlueprintType)
+struct FBuildingEffects
 {
 	GENERATED_BODY()
-
 };

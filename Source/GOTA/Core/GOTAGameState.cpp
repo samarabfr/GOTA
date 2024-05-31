@@ -2,3 +2,55 @@
 
 
 #include "GOTAGameState.h"
+#include "Net/UnrealNetwork.h"
+
+//Unreal Engine Mystery Code
+void AGOTAGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(AGOTAGameState, MaxTurnTime);
+	DOREPLIFETIME(AGOTAGameState, IsCalculatingTurn);
+	DOREPLIFETIME(AGOTAGameState, ShouldTickTurnTime);
+}
+
+AGOTAGameState::AGOTAGameState()
+{
+	ShouldTickTurnTime = true;
+}
+
+void AGOTAGameState::AddFaction(AFaction* NewFaction)
+{
+	Factions.Add(NewFaction);
+}
+
+void AGOTAGameState::AddTileEntity(ATileEntity* NewTileEntity)
+{
+	TileEntities.Add(NewTileEntity);
+}
+
+float AGOTAGameState::GetElapsedTurnTime()
+{
+	return ElapsedTurnTime;
+}
+
+void AGOTAGameState::SetElapsedTurnTime(float NewValue)
+{
+	ElapsedTurnTime = NewValue;
+	TurnTimerChanged.Broadcast(ElapsedTurnTime, MaxTurnTime);
+}
+
+void AGOTAGameState::MulticastSetElapsedTurnTime_Implementation(float NewValue)
+{
+	SetElapsedTurnTime(NewValue);
+}
+
+void AGOTAGameState::CallCalculationStart()
+{
+	TurnCalculationStart.Broadcast();
+}
+
+void AGOTAGameState::CallCalculationEnd()
+{
+	TurnCalculationEnd.Broadcast();
+}
