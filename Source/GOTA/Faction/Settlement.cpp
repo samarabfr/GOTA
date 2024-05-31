@@ -17,6 +17,11 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(ASettlement, ClaimColor);
 }
 
+ASettlement::ASettlement()
+{
+	Food = CreateDefaultSubobject<UGOTAAttribute>(TEXT("FoodAttribute"));
+}
+
 
 //====================================================================
 //--------------------ExpectedFoodIncome
@@ -140,49 +145,6 @@ void ASettlement::SetMaxPopulation(float NewMaxPopulation)
 float ASettlement::GetMaxPopulation()
 {
 	return MaxPopulation;
-}
-
-//====================================================================
-//--------------------Food
-//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-
-void ASettlement::AddFood(const float Addend, float& Effective_Change)
-{
-	float Before = Food;
-	SetFood(Food + Addend);
-	Effective_Change = Food - Before;
-}
-
-void ASettlement::SubtractFood(const float Subtrahend, float& Effective_Change)
-{
-	float Before = Food;
-	SetFood(Food - Subtrahend);
-	Effective_Change = Food - Before;
-}
-
-void ASettlement::MultiplyFood(const float Factor, float& Effective_Change)
-{
-	float Before = Food;
-	SetFood(Food * Factor);
-	Effective_Change = Food - Before;
-}
-
-void ASettlement::OnRep_Food(float NewFood)
-{
-	OnFoodChanged.Broadcast(NewFood);
-	OnAnyAttributeChanged.Broadcast();
-}
-
-void ASettlement::SetFood(float NewFood)
-{
-	Food = FMath::Max(NewFood, 0.0f);
-	OnFoodChanged.Broadcast(Food);
-	OnAnyAttributeChanged.Broadcast();
-}
-
-float ASettlement::GetFood()
-{
-	return Food;
 }
 
 //====================================================================

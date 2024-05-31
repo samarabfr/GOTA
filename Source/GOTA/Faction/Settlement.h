@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GOTAAttributeLimited.h"
 #include "GOTA/TileMap/Tile.h"
 #include "GameFramework/Actor.h"
 #include "Settlement.generated.h"
@@ -14,6 +15,9 @@ class  ASettlement : public AActor
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	// Constructor
+	ASettlement();
+	
 	//====================================================================
 	//--------------------Delegates
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -47,7 +51,7 @@ public:
 	void ClaimTile(const ATile* Tile);
 
 	//====================================================================
-	//--------------------Simple Variables
+	//--------------------Variables
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 public:
 	UPROPERTY(BlueprintReadWrite, Category="Settlement")
@@ -58,6 +62,13 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
 	FLinearColor ClaimColor;
+
+	//====================================================================
+	//--------------------Attributes
+	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Attribute")
+	UGOTAAttribute* Food;
 	
 	//====================================================================
 	//--------------------ExpectedFoodIncome
@@ -146,39 +157,7 @@ public:
 	
 	UPROPERTY(BlueprintAssignable, Category="Attributes")
 	FOnAttributeChangedSignature OnMaxPopulationChanged;
-
-
-	//====================================================================
-	//--------------------Food
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-private:
-	UPROPERTY(BlueprintGetter=GetFood, BlueprintSetter=SetFood, ReplicatedUsing=OnRep_Food)
-	float Food;
-
-	UFUNCTION()
-	void OnRep_Food(float NewFood);
-
-public:
-	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void AddFood(const float Addend, float& Effective_Change);
-
-	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void SubtractFood(const float Subtrahend, float& Effective_Change);
 	
-	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void MultiplyFood(const float Factor, float& Effective_Change);
-
-	UFUNCTION(BlueprintSetter, Category="Attributes",
-		meta = (ToolTip = "Consider using AddFood or MultiplyFood instead"))
-	void SetFood(float NewFood);
-
-	UFUNCTION(BlueprintGetter, Category="Attributes")
-	float GetFood();
-	
-	UPROPERTY(BlueprintAssignable, Category="Attributes")
-	FOnAttributeChangedSignature OnFoodChanged;
-
-
 	//====================================================================
 	//--------------------ColonistReligion
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
