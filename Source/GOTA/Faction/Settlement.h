@@ -69,94 +69,12 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Attribute")
 	UGOTAAttribute* Food;
-	
-	//====================================================================
-	//--------------------ExpectedFoodIncome
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-private:
-	UPROPERTY(BlueprintGetter=GetExpectedFoodIncome, BlueprintSetter=SetExpectedFoodIncome, ReplicatedUsing=OnRep_ExpectedFoodIncome)
-	float ExpectedFoodIncome;
 
-	UFUNCTION()
-	void OnRep_ExpectedFoodIncome(float NewExpectedFoodIncome);
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Attribute")
+	UGOTAAttribute* Wood;
 
-public:
-	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void AddExpectedFoodIncome(const float Addend, float& Effective_Change);
-
-	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void SubtractExpectedFoodIncome(const float Subtrahend, float& Effective_Change);
-
-	UFUNCTION(BlueprintSetter, Category="Attributes",
-		meta = (ToolTip = "Consider using AddExpectedFoodIncome or MultiplyExpectedFoodIncome instead"))
-	void SetExpectedFoodIncome(float NewExpectedFoodIncome);
-
-	UFUNCTION(BlueprintGetter, Category="Attributes")
-	float GetExpectedFoodIncome();
-	
-	UPROPERTY(BlueprintAssignable, Category="Attributes")
-	FOnAttributeChangedSignature OnExpectedFoodIncomeChanged;
-	
-	//====================================================================
-	//--------------------Population
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-private:
-	UPROPERTY(BlueprintGetter=GetPopulation, BlueprintSetter=SetPopulation, ReplicatedUsing=OnRep_Population)
-	float Population;
-
-	UFUNCTION()
-	void OnRep_Population(float NewPopulation);
-
-public:
-	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void AddPopulation(const float Addend, float& Effective_Change);
-
-	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void SubtractPopulation(const float Subtrahend, float& Effective_Change);
-	
-	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void MultiplyPopulation(const float Factor, float& Effective_Change);
-
-	UFUNCTION(BlueprintSetter, Category="Attributes",
-		meta = (ToolTip = "Consider using AddPopulation or MultiplyPopulation instead"))
-	void SetPopulation(float NewPopulation);
-
-	UFUNCTION(BlueprintGetter, Category="Attributes")
-	float GetPopulation();
-	
-	UPROPERTY(BlueprintAssignable, Category="Attributes")
-	FOnAttributeChangedSignature OnPopulationChanged;
-
-	
-	//====================================================================
-	//--------------------MaxPopulation
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-private:
-	UPROPERTY(BlueprintGetter=GetMaxPopulation, BlueprintSetter=SetMaxPopulation, ReplicatedUsing=OnRep_MaxPopulation)
-	float MaxPopulation;
-
-	UFUNCTION()
-	void OnRep_MaxPopulation(float NewMaxPopulation);
-
-public:
-	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void AddMaxPopulation(const float Addend, float& Effective_Change);
-
-	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void SubtractMaxPopulation(const float Subtrahend, float& Effective_Change);
-	
-	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void MultiplyMaxPopulation(const float Factor, float& Effective_Change);
-
-	UFUNCTION(BlueprintSetter, Category="Attributes",
-		meta = (ToolTip = "Consider using AddMaxPopulation or MultiplyMaxPopulation instead"))
-	void SetMaxPopulation(float NewMaxPopulation);
-
-	UFUNCTION(BlueprintGetter, Category="Attributes")
-	float GetMaxPopulation();
-	
-	UPROPERTY(BlueprintAssignable, Category="Attributes")
-	FOnAttributeChangedSignature OnMaxPopulationChanged;
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Attribute")
+	UGOTAAttributeLimited* Population;
 	
 	//====================================================================
 	//--------------------ColonistReligion

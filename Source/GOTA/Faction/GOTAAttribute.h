@@ -16,8 +16,7 @@ protected:
 	// Delegate 
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, ChangedBy);
-
-private:
+	
 	float OldValue;
 	void OnChange();
 	

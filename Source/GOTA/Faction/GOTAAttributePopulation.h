@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GOTAAttribute.h"
+#include "GOTAAttributeLimited.h"
 #include "GOTAAttributePopulation.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class GOTA_API UGOTAAttributePopulation : public UGOTAAttribute
+class GOTA_API UGOTAAttributePopulation : public UGOTAAttributeLimited
 {
 	GENERATED_BODY()
 	

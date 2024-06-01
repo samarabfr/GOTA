@@ -13,8 +13,31 @@ void UGOTAAttributeLimited::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 
 void UGOTAAttributeLimited::SetCurrent(float NewValue)
 {
-	Current = FMath::Max(0, FMath::Min(NewValue, Maximum));
-	OnChanged.Broadcast(0);
+	if (NewValue < 0) // New Value is negative, NOT ALLOWED
+	{
+		if ((Current == 0))
+		{
+			// Current Value is already 0, nothing happens
+			return;
+		}
+		// Current Value has to be set to 0;
+		Current = 0;
+	}
+	else if (NewValue > Maximum) // New Value is too big, NOT ALLOWED
+	{
+		if (Current == Maximum)
+		{
+			// Current Value is already on Maximum, nothing happens
+			return;
+		}
+		// Current Value has to be set to Maximum
+		Current = Maximum;
+	}
+	else // New Value is a valid value for Current
+	{
+		Current = NewValue;
+	}
+	OnChange();
 }
 
 float UGOTAAttributeLimited::GetMaximum() const
@@ -30,7 +53,7 @@ void UGOTAAttributeLimited::SetMaximum(float NewValue)
 
 void UGOTAAttributeLimited::OnRep_Maximum()
 {
-	OnChanged.Broadcast(0);
+	OnChange();
 }
 
 void UGOTAAttributeLimited::AddMaximum(const float Addend, float& Effective_Change)
