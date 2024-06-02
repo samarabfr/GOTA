@@ -11,7 +11,7 @@ void UGOTAAttributeLimited::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	DOREPLIFETIME(UGOTAAttributeLimited, Maximum);
 }
 
-void UGOTAAttributeLimited::SetCurrent(float NewValue)
+void UGOTAAttributeLimited::SetCurrent(int32 NewValue)
 {
 	if (NewValue < 0) // New Value is negative, NOT ALLOWED
 	{
@@ -40,15 +40,15 @@ void UGOTAAttributeLimited::SetCurrent(float NewValue)
 	OnChange();
 }
 
-float UGOTAAttributeLimited::GetMaximum() const
+int32 UGOTAAttributeLimited::GetMaximum() const
 {
 	return Maximum;
 }
 
-void UGOTAAttributeLimited::SetMaximum(float NewValue)
+void UGOTAAttributeLimited::SetMaximum(int32 NewValue)
 {
 	Maximum = FMath::Max(0, NewValue);
-	OnChanged.Broadcast(0);
+	OnChange();
 }
 
 void UGOTAAttributeLimited::OnRep_Maximum()
@@ -56,23 +56,16 @@ void UGOTAAttributeLimited::OnRep_Maximum()
 	OnChange();
 }
 
-void UGOTAAttributeLimited::AddMaximum(const float Addend, float& Effective_Change)
+void UGOTAAttributeLimited::AddMaximum(const int32 Addend, int32& Effective_Change)
 {
 	float const Before = Maximum;
 	SetMaximum(Maximum + Addend);
 	Effective_Change = Maximum - Before;
 }
 
-void UGOTAAttributeLimited::SubtractMaximum(const float Subtrahend, float& Effective_Change)
+void UGOTAAttributeLimited::SubtractMaximum(const int32 Subtrahend, int32& Effective_Change)
 {
 	float const Before = Maximum;
 	SetMaximum(Maximum - Subtrahend);
-	Effective_Change = Maximum - Before;
-}
-
-void UGOTAAttributeLimited::MultiplyMaximum(const float Factor, float& Effective_Change)
-{
-	float const Before = Maximum;
-	SetMaximum(Maximum * Factor);
 	Effective_Change = Maximum - Before;
 }

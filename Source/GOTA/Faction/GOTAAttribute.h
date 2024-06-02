@@ -15,10 +15,10 @@ protected:
 	
 	// Delegate 
 	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, ChangedBy);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, int32, ChangedBy);
 	
-	float OldValue;
-	void OnChange();
+	int32 OldValue;
+	virtual void OnChange();
 	
 public:
 	UPROPERTY(BlueprintAssignable, Category="Attribute")
@@ -26,23 +26,23 @@ public:
 	
 	// Current Value of this Attribute
 	UPROPERTY(BlueprintGetter=GetCurrent, BlueprintSetter=SetCurrent, ReplicatedUsing=OnRep_Current, Category = "Attribute")
-	float Current;
+	int32 Current;
 	
 	UFUNCTION(BlueprintGetter, BlueprintPure, Category = "Attribute")
-	virtual float GetCurrent() const;
+	virtual int32 GetCurrent() const;
 	
 	UFUNCTION(BlueprintSetter, Category = "Attribute")
-	virtual void SetCurrent(float NewValue);
+	virtual void SetCurrent(int32 NewValue);
 	
 	UFUNCTION()
 	virtual void OnRep_Current();
 
 	UFUNCTION(BlueprintCallable, Category="Attribute")
-	virtual void Add(const float Addend, float& Effective_Change);
+	virtual void Add(const int32 Addend, int32& Effective_Change);
 
 	UFUNCTION(BlueprintCallable, Category="Attribute")
-	virtual void Subtract(const float Subtrahend, float& Effective_Change);
+	virtual void Subtract(const int32 Subtrahend, int32& Effective_Change);
 	
 	UFUNCTION(BlueprintCallable, Category="Attribute")
-	virtual void Multiply(const float Factor, float& Effective_Change);
+	virtual void Multiply(const float Factor, int32& Effective_Change);
 };

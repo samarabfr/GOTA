@@ -12,29 +12,31 @@
 UCLASS()
 class GOTA_API UGOTAAttributeLimited : public UGOTAAttribute
 {
+	// Unreal Engine Mystery Code
 	GENERATED_BODY()
+public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
-	virtual void SetCurrent(float NewValue) override;
-	
-	UPROPERTY(BlueprintGetter=GetMaximum, BlueprintSetter=SetMaximum, ReplicatedUsing=OnRep_Maximum, Category = "Attribute")
-	float Maximum;
 
+	
+protected:
+	UPROPERTY(BlueprintGetter=GetMaximum, BlueprintSetter=SetMaximum, ReplicatedUsing=OnRep_Maximum, Category = "Attribute")
+	int32 Maximum;
+	
+public:
+	virtual void SetCurrent(int32 NewValue) override;
+	
 	UFUNCTION(BlueprintGetter, BlueprintPure, Category = "Attribute")
-	virtual float GetMaximum() const;
+	virtual int32 GetMaximum() const;
 	
 	UFUNCTION(BlueprintSetter, Category = "Attribute")
-	virtual void SetMaximum(float NewValue);
+	virtual void SetMaximum(int32 NewValue);
 	
 	UFUNCTION()
 	virtual void OnRep_Maximum();
 
 	UFUNCTION(BlueprintCallable, Category="Attribute")
-	virtual void AddMaximum(const float Addend, float& Effective_Change);
+	virtual void AddMaximum(const int32 Addend, int32& Effective_Change);
 
 	UFUNCTION(BlueprintCallable, Category="Attribute")
-	virtual void SubtractMaximum(const float Subtrahend, float& Effective_Change);
-
-	UFUNCTION(BlueprintCallable, Category="Attribute")
-	virtual void MultiplyMaximum(const float Factor, float& Effective_Change);
+	virtual void SubtractMaximum(const int32 Subtrahend, int32& Effective_Change);
 };

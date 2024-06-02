@@ -10,16 +10,16 @@ void UGOTAAttribute::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 
 void UGOTAAttribute::OnChange()
 {
-	OnChanged.Broadcast(OldValue - Current);
+	OnChanged.Broadcast(Current - OldValue);
 	OldValue = Current;
 }
 
-float UGOTAAttribute::GetCurrent() const
+int32 UGOTAAttribute::GetCurrent() const
 {
 	return Current;
 }
 
-void UGOTAAttribute::SetCurrent(float NewValue)
+void UGOTAAttribute::SetCurrent(int32 NewValue)
 {
 	if(NewValue < 0) // New Value is negative, NOT ALLOWED
 	{
@@ -44,23 +44,23 @@ void UGOTAAttribute::OnRep_Current()
 }
 
 
-void UGOTAAttribute::Add(const float Addend, float& Effective_Change)
+void UGOTAAttribute::Add(const int32 Addend, int32& Effective_Change)
 {
-	float const Before = Current;
+	int32 const Before = Current;
 	SetCurrent(Current + Addend);
 	Effective_Change = Current - Before;
 }
 
-void UGOTAAttribute::Subtract(const float Subtrahend, float& Effective_Change)
+void UGOTAAttribute::Subtract(const int32 Subtrahend, int32& Effective_Change)
 {
-	float const Before = Current;
+	int32 const Before = Current;
 	SetCurrent(Current - Subtrahend);
 	Effective_Change = Current - Before;
 }
 
-void UGOTAAttribute::Multiply(const float Factor, float& Effective_Change)
+void UGOTAAttribute::Multiply(const float Factor, int32& Effective_Change)
 {
-	float const Before = Current;
+	int32 const Before = Current;
 	SetCurrent(Current * Factor);
 	Effective_Change = Current - Before;
 }

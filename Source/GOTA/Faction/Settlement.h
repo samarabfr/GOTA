@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GOTAAttributeLimited.h"
+#include "GOTAAttributePopulation.h"
 #include "GOTA/TileMap/Tile.h"
 #include "GameFramework/Actor.h"
 #include "Settlement.generated.h"
@@ -74,68 +74,5 @@ public:
 	UGOTAAttribute* Wood;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Attribute")
-	UGOTAAttributeLimited* Population;
-	
-	//====================================================================
-	//--------------------ColonistReligion
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-private:
-	UPROPERTY(BlueprintGetter=GetColonistReligion, BlueprintSetter=SetColonistReligion,
-		ReplicatedUsing=OnRep_ColonistReligion)
-	float ColonistReligion;
-
-	UFUNCTION()
-	void OnRep_ColonistReligion(float NewColonistReligion);
-
-public:
-	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void AddColonistReligion(const float Addend, float& Effective_Change);
-
-	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void SubtractColonistReligion(const float Subtrahend, float& Effective_Change);
-	
-	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void MultiplyColonistReligion(const float Factor, float& Effective_Change);
-
-	UFUNCTION(BlueprintSetter, Category="Attributes",
-		meta = (ToolTip = "Consider using AddColonistReligion or MultiplyColonistReligion instead"))
-	void SetColonistReligion(float NewColonistReligion);
-
-	UFUNCTION(BlueprintGetter, Category="Attributes")
-	float GetColonistReligion();
-	
-	UPROPERTY(BlueprintAssignable, Category="Attributes")
-	FOnAttributeChangedSignature OnColonistReligionChanged;
-
-
-	//====================================================================
-	//--------------------NativeReligion
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-private:
-	UPROPERTY(BlueprintGetter=GetNativeReligion, BlueprintSetter=SetNativeReligion,
-		ReplicatedUsing=OnRep_NativeReligion)
-	float NativeReligion;
-
-	UFUNCTION()
-	void OnRep_NativeReligion(float NewNativeReligion);
-
-public:
-	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void AddNativeReligion(const float Addend, float& Effective_Change);
-
-	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void SubtractNativeReligion(const float Subtrahend, float& Effective_Change);
-	
-	UFUNCTION(BlueprintCallable, Category="Attributes")
-	void MultiplyNativeReligion(const float Factor, float& Effective_Change);
-
-	UFUNCTION(BlueprintSetter, Category="Attributes",
-		meta = (ToolTip = "Consider using AddNativeReligion or MultiplyNativeReligion instead"))
-	void SetNativeReligion(float NewNativeReligion);
-
-	UFUNCTION(BlueprintGetter, Category="Attributes")
-	float GetNativeReligion();
-	
-	UPROPERTY(BlueprintAssignable, Category="Attributes")
-	FOnAttributeChangedSignature OnNativeReligionChanged;
+	UGOTAAttributePopulation* Population;
 };
