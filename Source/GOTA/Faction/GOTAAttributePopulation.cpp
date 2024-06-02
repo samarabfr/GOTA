@@ -95,7 +95,7 @@ void UGOTAAttributePopulation::OnChange()
 			SubtractOneFollowerWeightedRandom();
 		}
 	}
-	else if (Change > 0)
+	else if (Change > 0) // Pop got increased
 	{
 		for(int i = 0; i < Change; i++)
 		{
@@ -172,6 +172,10 @@ void UGOTAAttributePopulation::ChangeFollower(EReligion Religion, int32 Change, 
 		{
 			Follower[static_cast<int32>(EReligion::Colonists)] += Effective_Change;
 		}
+	}
+	if(Effective_Change != 0)
+	{
+		OnChange();
 	}
 }
 
