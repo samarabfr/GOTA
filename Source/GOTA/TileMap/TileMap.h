@@ -30,8 +30,6 @@ protected:
 public:
 	UPROPERTY(EditAnywhere, Category = "TileMap")
 	float GridSize;
-
-
 	
 	//====================================================================
 	//--------------------Overrideable Functions
@@ -43,6 +41,7 @@ public:
 	//====================================================================
 	//--------------------Functions
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	
 protected:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	void Init(int32 Init_MapSize);

@@ -97,4 +97,23 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void CallCalculationEnd();
+
+	//====================================================================
+	//--------------------Overrideable Functions
+	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
+	void RegisterTileForTotalsUpdates(ATile* Tile);
+
+	//====================================================================
+	//-------------------- Attributes
+	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UGOTAAttribute* TotalTrees;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UGOTAAttribute* TotalForage;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UGOTAAttribute* TotalWildlife;
 };

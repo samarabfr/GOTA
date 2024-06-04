@@ -37,7 +37,7 @@ void ATileMap::Init(int32 Init_MapSize)
 {
 	MapSize = FMath::Max(Init_MapSize, 0);
 	const int32 MapDiameter = MapSize * 2 + 1;
-	TileMap.SetNum(MapDiameter * MapDiameter);
+	TileMap.SetNum(MapDiameter * MapDiameter, false);
 }
 
 bool ATileMap::DoesTileExist(FHexCoords HexCoords)
@@ -68,10 +68,8 @@ void ATileMap::AddTile(FHexCoords HexCoords, ATile* Tile)
 	{
 		return;
 	}
-
 	const int32 Index = (HexCoords.Q + MapSize) * (MapSize * 2 + 1) + HexCoords.R + MapSize;
-	TileMap.RemoveAt(Index);
-	TileMap.Insert(Tile, Index);
+	TileMap[Index] = Tile;
 	Tile->HexCoords = HexCoords;
 }
 
@@ -100,8 +98,6 @@ ATile* ATileMap::GetRandomTile()
 
 TArray<ATile*> ATileMap::GetNeighboringTiles(ATile* Origin)
 {
-	
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("GetNeighbors");
 	TArray<ATile*> Neighbors;
 	if(!Origin)
 	{
@@ -126,7 +122,6 @@ TArray<ATile*> ATileMap::GetNeighboringTiles(ATile* Origin)
 
 TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End)
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("GetPath");
 	//https://www.redblobgames.com/pathfinding/a-star/introduction.html
 	TArray<ATile*> Frontier;
 	Frontier.Add(Start);
