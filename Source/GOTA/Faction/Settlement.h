@@ -75,4 +75,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Attribute")
 	UGOTAAttributePopulation* Population;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Attribute")
+	UGOTAAttributeLimited* Expansion;
 };

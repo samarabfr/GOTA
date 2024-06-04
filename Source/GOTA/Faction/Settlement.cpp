@@ -12,6 +12,7 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(ASettlement, Population);
 	DOREPLIFETIME(ASettlement, Food);
 	DOREPLIFETIME(ASettlement, Wood);
+	DOREPLIFETIME(ASettlement, Expansion);
 }
 
 ASettlement::ASettlement()
@@ -19,4 +20,5 @@ ASettlement::ASettlement()
 	Food = CreateDefaultSubobject<UGOTAAttribute>(TEXT("FoodAttribute"));
 	Wood = CreateDefaultSubobject<UGOTAAttribute>(TEXT("WoodAttribute"));
 	Population = CreateDefaultSubobject<UGOTAAttributePopulation>(TEXT("PopulationAttribute"));
+	Expansion = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("ExpansionAttribute"));
 }

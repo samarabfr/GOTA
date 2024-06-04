@@ -14,9 +14,37 @@ void UGOTAAttributePopulation::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 UGOTAAttributePopulation::UGOTAAttributePopulation()
 {
 	Follower.Init(0, static_cast<int32>(EReligion::MAX));
+	Moods.Init(0, static_cast<int32>(EMood::MAX));
 }
 
-void UGOTAAttributePopulation::AddOneFollowerWeightedRandom(EReligion Exclude = EReligion::MAX)
+void UGOTAAttributePopulation::OnChange()
+{
+	int32 Change = Current - OldValue;
+	if (Change < 0) // Pop got reduced
+	{
+		for (int i = 0; i > Change; i--)
+		{
+			SubtractOneFollowerWeightedRandom();
+			SubtractOneMoodWeightedRandom();
+		}
+	}
+	else if (Change > 0) // Pop got increased
+	{
+		for (int i = 0; i < Change; i++)
+		{
+			AddOneFollowerWeightedRandom();
+			Moods[0]++;
+		}
+	}
+	OldValue = Current;
+	OnChanged.Broadcast(Change);
+}
+
+//====================================================================
+//-------------------- Followers
+//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+void UGOTAAttributePopulation::AddOneFollowerWeightedRandom(EReligion Exclude)
 {
 	int32 ExcludeIndex = static_cast<int32>(Exclude);
 	int32 TotalBelievers = 0;
@@ -28,8 +56,8 @@ void UGOTAAttributePopulation::AddOneFollowerWeightedRandom(EReligion Exclude = 
 			TotalBelievers += Follower[i];
 		}
 	}
-	if(TotalBelievers == 0) return; // No Weights so this doesn't make sense
-	
+	if (TotalBelievers == 0) return; // No Weights so this doesn't make sense
+
 	// Select a random Believer
 	int32 cursor = FMath::RandRange(0, TotalBelievers);
 	// Find Selected Religion
@@ -48,7 +76,7 @@ void UGOTAAttributePopulation::AddOneFollowerWeightedRandom(EReligion Exclude = 
 	}
 }
 
-void UGOTAAttributePopulation::SubtractOneFollowerWeightedRandom(EReligion Exclude = EReligion::MAX)
+void UGOTAAttributePopulation::SubtractOneFollowerWeightedRandom(EReligion Exclude)
 {
 	int32 ExcludeIndex = static_cast<int32>(Exclude);
 	int32 TotalBelievers = 0;
@@ -85,27 +113,6 @@ void UGOTAAttributePopulation::AddOneFollowerToGuardiansFullRandom()
 }
 
 
-void UGOTAAttributePopulation::OnChange()
-{
-	int32 Change = Current - OldValue;
-	if (Change < 0) // Pop got reduced
-	{
-		for(int i = 0; i > Change; i--)
-		{
-			SubtractOneFollowerWeightedRandom();
-		}
-	}
-	else if (Change > 0) // Pop got increased
-	{
-		for(int i = 0; i < Change; i++)
-		{
-			AddOneFollowerWeightedRandom();
-		}
-	}
-	OldValue = Current;
-	OnChanged.Broadcast(Change);
-}
-
 void UGOTAAttributePopulation::ChangeFollower(EReligion Religion, int32 Change, int32& Effective_Change)
 {
 	if (Change == 0) return; // nothing happens...
@@ -114,13 +121,14 @@ void UGOTAAttributePopulation::ChangeFollower(EReligion Religion, int32 Change, 
 	int32 OldFollower = Follower[SelectedIndex];
 	Follower[SelectedIndex] = Follower[SelectedIndex] + Change;
 
-	if (Follower[SelectedIndex] >= Current) // can't have more follower than pop
+	// Everyone follow Target religion now
+	if (Follower[SelectedIndex] >= Current)
 	{
 		Follower[SelectedIndex] = Current;
 		// all other Religions have 0 follower now
 		for (int i = 0; i < static_cast<int32>(EReligion::MAX); i++)
 		{
-			if(i != SelectedIndex)
+			if (i != SelectedIndex)
 			{
 				Follower[i] = 0;
 			}
@@ -128,52 +136,62 @@ void UGOTAAttributePopulation::ChangeFollower(EReligion Religion, int32 Change, 
 		Effective_Change = Follower[SelectedIndex] - OldFollower;
 		return;
 	}
+
+	// Target Religion has no followers now
 	if (Follower[SelectedIndex] < 0)
 	{
 		Follower[SelectedIndex] = 0;
 	}
-	
+
+	// Calculate how much Target Religion really changed
 	Effective_Change = Follower[SelectedIndex] - OldFollower;
-	if (Effective_Change > 0) // Increase
+
+	// Target Religion Followers Increased
+	if (Effective_Change > 0)
 	{
-		for(int i = 0; i < Effective_Change; i++)
+		for (int i = 0; i < Effective_Change; i++)
 		{
 			SubtractOneFollowerWeightedRandom(Religion);
 		}
 	}
-	else // Decrease
+	// Target Religion Followers Decreased
+	else
 	{
-		if(Religion == EReligion::Colonists) // Colonist get reduced
+		// We need to distinguish if Target Religion is Colonist or not
+		if (Religion == EReligion::Colonists)
 		{
 			// Calculate how many Followers all other religion have
 			int32 OtherReligionTotal = 0;
 			for (int i = 0; i < static_cast<int32>(EReligion::MAX); i++)
 			{
-				if(SelectedIndex != i)
+				if (SelectedIndex != i)
 				{
 					OtherReligionTotal += Follower[i];
 				}
 			}
-			if(OtherReligionTotal == 0)
+			// If Nobody follows Guardians, Weighted Random doesn't work, so we use Full Random
+			int32 AbsoluteChange = FMath::Abs(Effective_Change);
+			if (OtherReligionTotal == 0)
 			{
-				// Gibt noch keine Guardian follower, also muss full random genutzt werden
-				for(int i = 0; i < Effective_Change; i++)
+				for (int i = 0; i < AbsoluteChange; i++)
 				{
 					AddOneFollowerToGuardiansFullRandom();
 				}
-			} else
+			}
+			else // Otherwise Weighted Random works
 			{
-				for(int i = 0; i < Effective_Change; i++)
+				for (int i = 0; i < AbsoluteChange; i++)
 				{
 					AddOneFollowerWeightedRandom(Religion);
 				}
 			}
-		} else // Guardian gets reduced, so colonist gets increased
+		}
+		else // Guardian gets reduced, so colonist gets increased
 		{
 			Follower[static_cast<int32>(EReligion::Colonists)] += Effective_Change;
 		}
 	}
-	if(Effective_Change != 0)
+	if (Effective_Change != 0)
 	{
 		OnChange();
 	}
@@ -187,19 +205,144 @@ int32 UGOTAAttributePopulation::GetFollower(EReligion Religion) const
 int32 UGOTAAttributePopulation::GetFollowerNatives()
 {
 	int32 sum = 0;
-	for(int i = 0; i <= 3; i++)
+	for (int i = 0; i <= 3; i++)
 	{
 		sum += Follower[i];
 	}
 	return sum;
 }
 
-void UGOTAAttributePopulation::GetAllFollowers(int32& Guardian1, int32& Guardian2, int32& Guardian3, int32& Guardian4,
-	int32& Colonists)
+void UGOTAAttributePopulation::GetAllFollower(int32& Guardian1, int32& Guardian2, int32& Guardian3, int32& Guardian4,
+                                              int32& Colonists)
 {
 	Guardian1 = Follower[0];
 	Guardian2 = Follower[1];
 	Guardian3 = Follower[2];
 	Guardian4 = Follower[3];
 	Colonists = Follower[4];
+}
+
+void UGOTAAttributePopulation::SubtractOneMoodWeightedRandom(EMood Exclude)
+{
+	int32 ExcludeIndex = static_cast<int32>(Exclude);
+	int32 TotalMood = 0;
+	// Calculate TotalMood in the selection pool
+	for (int i = 0; i < static_cast<int32>(EMood::MAX); i++)
+	{
+		if (i != ExcludeIndex)
+		{
+			TotalMood += Moods[i];
+		}
+	}
+	// Select a random dude with mood
+	int32 cursor = FMath::RandRange(0, TotalMood);
+	// Find Selected mood
+	for (int i = 0; i < static_cast<int32>(EMood::MAX); i++)
+	{
+		// Exclude and don't use 0 Weight mood
+		if (i != ExcludeIndex && Moods[i] > 0)
+		{
+			cursor -= Moods[i];
+			if (cursor <= 0)
+			{
+				// This mood is selected
+				Moods[i]--;
+				return;
+			}
+		}
+	}
+}
+
+void UGOTAAttributePopulation::ChangeMood(EMood Mood, int32 Change, int32& Effective_Change)
+{
+	int32 MoodIndex = static_cast<int32>(Mood);
+	int32 OldMood = Moods[MoodIndex];
+	Moods[MoodIndex] += Change;
+	// Mood can't be changed below 0
+	if (Moods[MoodIndex] < 0)
+	{
+		Moods[MoodIndex] = 0;
+	}
+	// Mood can't be changed above current Population
+	if (Moods[MoodIndex] > Current)
+	{
+		Moods[MoodIndex] = Current;
+	}
+	Effective_Change = Moods[MoodIndex] - OldMood;
+	int32 AbsoluteChange = FMath::Abs(Effective_Change);
+
+
+	if (Mood == EMood::Aggressive && Effective_Change > 0)
+	{
+		// If Aggressive gets Increased, first use Neutral, then Fearful pops
+		if (Moods[0] >= AbsoluteChange)
+		{
+			Moods[0] -= AbsoluteChange;
+		}
+		else
+		{
+			AbsoluteChange -= Moods[0];
+			Moods[0] = 0;
+			Moods[1] -= AbsoluteChange;
+		}
+	}
+	else if (Mood == EMood::Aggressive && Effective_Change < 0)
+	{
+		// If Aggressive gets reduced, increase Neutral
+		Moods[0] += AbsoluteChange;
+	}
+	else if (Mood == EMood::Fearful && Effective_Change > 0)
+	{
+		// If Fearful gets Increased, first use Neutral, then Aggressive pops
+		if (Moods[0] >= AbsoluteChange)
+		{
+			Moods[0] -= AbsoluteChange;
+		}
+		else
+		{
+			AbsoluteChange -= Moods[0];
+			Moods[0] = 0;
+			Moods[2] -= AbsoluteChange;
+		}
+	}
+	else if (Mood == EMood::Fearful && Effective_Change < 0)
+	{
+		// If Fearful gets reduced, increase Neutral
+		Moods[0] += AbsoluteChange;
+	}
+	else if (Mood == EMood::Neutral && Effective_Change > 0)
+	{
+		// If Neutral gets increased, use Random to reduce Fearful and Aggressive pops
+		int32 Random = FMath::RandRange(0, AbsoluteChange);
+		if (Random > Moods[1])
+		{
+			Random = Moods[1];
+		}
+		AbsoluteChange -= Random;
+		Moods[1] -= Random;
+		Moods[2] -= AbsoluteChange;
+	}
+	else if (Mood == EMood::Neutral && Effective_Change > 0)
+	{
+		// If Neutral gets reduced, use Random to increase Fearful and Aggressive pops
+		int32 Random = FMath::RandRange(0, AbsoluteChange);
+		AbsoluteChange -= Random;
+		Moods[1] += Random;
+		Moods[2] += AbsoluteChange;
+	}
+	OnChange();
+}
+
+
+
+int32 UGOTAAttributePopulation::GetMood(EMood Mood)
+{
+	return Moods[static_cast<int32>(Mood)];
+}
+
+void UGOTAAttributePopulation::GetAllMood(int32& Neutral, int32& Fearful, int32& Aggressive)
+{
+	Neutral = Moods[0];
+	Fearful = Moods[1];
+	Aggressive = Moods[2];
 }
