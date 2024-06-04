@@ -12,11 +12,17 @@ void AGOTAGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(AGOTAGameState, MaxTurnTime);
 	DOREPLIFETIME(AGOTAGameState, IsCalculatingTurn);
 	DOREPLIFETIME(AGOTAGameState, ShouldTickTurnTime);
+	DOREPLIFETIME(AGOTAGameState, TotalTrees);
+	DOREPLIFETIME(AGOTAGameState, TotalForage);
+	DOREPLIFETIME(AGOTAGameState, TotalWildlife);
 }
 
 AGOTAGameState::AGOTAGameState()
 {
 	ShouldTickTurnTime = true;
+	TotalTrees = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Trees"));
+	TotalForage = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Forage"));
+	TotalWildlife = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Wildlife"));
 }
 
 void AGOTAGameState::AddFaction(AFaction* NewFaction)
