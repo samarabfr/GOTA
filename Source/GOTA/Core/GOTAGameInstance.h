@@ -13,6 +13,9 @@ UCLASS()
 class GOTA_API UGOTAGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	
+public:
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameInstance")
+	int32 IslandRadius;
 };
