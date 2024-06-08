@@ -40,7 +40,7 @@ protected:
 	virtual void OnChange() override;
 	
 //====================================================================
-//-------------------- Followers
+//                           Followers
 //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 private:
 	UPROPERTY(Replicated)
@@ -63,7 +63,7 @@ public:
 	void GetAllFollower(int32& Guardian1, int32& Guardian2, int32& Guardian3, int32& Guardian4, int32& Colonists);
 
 	//====================================================================
-	//-------------------- Mood
+	//                            Mood
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 private:
 	UPROPERTY(Replicated)
@@ -79,4 +79,21 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void GetAllMood(int32& Neutral, int32& Fearful, int32& Aggressive);
+
+	//====================================================================
+	//                          Workforce
+	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+private:
+public:
+	UPROPERTY(BlueprintReadWrite, Replicated)
+	int32 PopToWorkforceRatio = 4;
+
+	UPROPERTY(BlueprintGetter=GetWorkforce, Replicated)
+	int32 Workforce;
+
+	UFUNCTION(BlueprintGetter, BlueprintPure, Category = "Attribute")
+	virtual int32 GetWorkforce() const;
+	
+	UPROPERTY(BlueprintAssignable, Category="Attribute")
+	FOnAttributeChangedSignature OnWorkforceChanged;
 };
