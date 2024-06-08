@@ -13,7 +13,10 @@ UCLASS()
 class GOTA_API AGOTALobbyGameState : public AGameStateBase
 {
 	GENERATED_BODY()
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+public:
+	// Players
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPlayersChangedSignature);
 	
@@ -22,4 +25,17 @@ class GOTA_API AGOTALobbyGameState : public AGameStateBase
 
 	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
 	void PlayersChanged();
+
+	// Island Radius
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=IslandRadiusOnRep , Category="GOTAGameInstance")
+	int32 IslandRadius;
+
+	UFUNCTION(BlueprintCallable)
+	void IslandRadiusOnRep(int32 NewIslandRadius);
+
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIslandRadiusChangedSignature, int32, NewIslandRadius);
+
+	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
+	FOnIslandRadiusChangedSignature OnIslandRadiusChanged;
 };
