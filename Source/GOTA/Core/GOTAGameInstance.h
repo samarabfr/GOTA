@@ -13,5 +13,8 @@ UCLASS()
 class GOTA_API UGOTAGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
-	
+
+public:
+	UPROPERTY(BlueprintReadWrite, Category="GOTAGameInstance")
+	int32 IslandRadius;
 };
