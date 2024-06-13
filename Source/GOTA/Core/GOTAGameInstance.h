@@ -17,4 +17,7 @@ class GOTA_API UGOTAGameInstance : public UGameInstance
 public:
 	UPROPERTY(BlueprintReadWrite, Category="GOTAGameInstance")
 	int32 IslandRadius;
+
+	UPROPERTY(BlueprintReadWrite, Category="GOTAGameInstance")
+	int32 PlayerCount;
 };

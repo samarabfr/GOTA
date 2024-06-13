@@ -3,6 +3,7 @@
 
 #include "LoadingManager.h"
 
+#include "GOTAGameInstance.h"
 #include "GOTAPlayerController.h"
 #include "GOTAPlayerState.h"
 #include "Net/UnrealNetwork.h"
@@ -10,16 +11,10 @@
 void ALoadingManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
+
 	DOREPLIFETIME(ALoadingManager, CurrentStatus);
 	DOREPLIFETIME(ALoadingManager, ReplicationCounts);
 }
-
-ALoadingManager::ALoadingManager()
-{
-	PrimaryActorTick.bCanEverTick = true;
-}
-
 
 void ALoadingManager::IncreaseReplicationCount()
 {
@@ -28,22 +23,19 @@ void ALoadingManager::IncreaseReplicationCount()
 
 void ALoadingManager::Init()
 {
-	if(HasAuthority())
-	{
-		ReplicationCounts.SetNum(GameState->PlayerArray.Num());
-		CurrentStatus.Init(ELoadingStatus::InitializingGameState,GameState->PlayerArray.Num());
-		AGOTAPlayerController* PlayerController = GetWorld()->GetFirstPlayerController<AGOTAPlayerController>();
-		AGOTAPlayerState* PlayerState = PlayerController->GetPlayerState<AGOTAPlayerState>();
-		GOTAPlayerID = PlayerState->GOTAPlayerID;
-	}
+	const UGOTAGameInstance* GI = Cast<UGOTAGameInstance>(GetGameInstance());
+	ReplicationCounts.SetNum(GI->PlayerCount);
+	CurrentStatus.SetNum(GI->PlayerCount);
+	const AGOTAPlayerController* PlayerController = GetWorld()->GetFirstPlayerController<AGOTAPlayerController>();
+	const AGOTAPlayerState* PlayerState = PlayerController->GetPlayerState<AGOTAPlayerState>();
 }
 
-void ALoadingManager::SetLoadingStatus_Implementation(int32 Index, ELoadingStatus Status)
+void ALoadingManager::SetLoadingStatus_Implementation(const int32 Index, const ELoadingStatus Status)
 {
 	CurrentStatus[Index] = Status;
 }
 
-void ALoadingManager::SetReplicationCountRPC_Implementation(int32 Index, int32 Count)
+void ALoadingManager::SetReplicationCountRPC_Implementation(const int32 Index, const int32 Count)
 {
-	ReplicationCounts[GOTAPlayerID] = Count;
+	ReplicationCounts[Index] = Count;
 }

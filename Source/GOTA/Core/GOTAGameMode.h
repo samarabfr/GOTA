@@ -30,6 +30,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="GameMode")
 	void InitialPlayerControllerPossession();
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="GameMode")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, BlueprintImplementableEvent, Category="GameMode")
 	void StartGame();
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, BlueprintImplementableEvent, Category="GameMode")
+	void Init();
 };

@@ -28,9 +28,7 @@ class GOTA_API ALoadingManager : public AActor
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-public:
-	ALoadingManager();
-		
+public:		
 	// index 0 = Server, other indexes the clients with their unique PlayerID
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="LoadingManager")
 	TArray<int32> ReplicationCounts;
@@ -47,10 +45,6 @@ public:
 	
 	UPROPERTY(BlueprintReadWrite, Category="LoadingManager")
 	AGOTAGameState* GameState;
-
-	UPROPERTY(BlueprintReadWrite, Category="LoadingManager")
-	int32 GOTAPlayerID;
-
 
 	//====================================================================
 	//                     Overrideable Functions
@@ -72,7 +66,7 @@ public:
 	UFUNCTION(BlueprintCallable, Server, Reliable, Category="LoadingManager")
 	void SetReplicationCountRPC(int32 Index, int32 Count);
 
-	UFUNCTION(BlueprintCallable, Category="LoadingManager")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="LoadingManager")
 	void Init();
 
 	UFUNCTION(BlueprintCallable, Server, Reliable, Category="LoadingManager")
