@@ -2,17 +2,13 @@
 
 
 #include "GOTAGameMode.h"
+#include "GOTAPlayerState.h"
+#include "GameFramework/GameStateBase.h"
 
-/*
 void AGOTAGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
-
-	UE_LOG(LogTemp, Warning, TEXT("Player logged in"));
-	
-	if(!NewPlayer->IsLocalPlayerController())
-	{
-		NewPlayer->ClientTravel("/Game/Core/Island", TRAVEL_Absolute);
-	}
+	AGOTAPlayerState* GOTAPlayerState = NewPlayer->GetPlayerState<AGOTAPlayerState>();
+	int32 PlayerID = GameState->PlayerArray.Num() - 1; //0-based index
+	GOTAPlayerState->SetPlayerID(PlayerID);
 }
-*/
