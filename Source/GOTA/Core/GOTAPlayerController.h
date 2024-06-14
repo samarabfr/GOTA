@@ -21,4 +21,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, BlueprintImplementableEvent, Category="PlayerController")
 	void Init();
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="PlayerController")
+	void InitInput();
 };

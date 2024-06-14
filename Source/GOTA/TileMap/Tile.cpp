@@ -2,6 +2,9 @@
 
 
 #include "Tile.h"
+
+#include "GOTA/Core/GOTAGameState.h"
+#include "GOTA/Core/LoadingManager.h"
 #include "Net/UnrealNetwork.h"
 
 //Unreal Engine Mystery Code
@@ -24,6 +27,15 @@ ATile::ATile()
 	Trees = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Trees"));
 	Forage = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Forage"));
 	Wildlife = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Wildlife"));
+}
+
+void ATile::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	// Get the GameState
+	AGOTAGameState* GameState = GetWorld()->GetGameState<AGOTAGameState>();
+	GameState->LoadingManager->IncrementReplicationCount();
 }
 
 //====================================================================

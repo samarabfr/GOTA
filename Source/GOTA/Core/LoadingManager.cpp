@@ -12,30 +12,16 @@ void ALoadingManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ALoadingManager, CurrentStatus);
-	DOREPLIFETIME(ALoadingManager, ReplicationCounts);
-}
-
-void ALoadingManager::IncreaseReplicationCount()
-{
-	LocalReplicationCount++;
+	DOREPLIFETIME(ALoadingManager, LoadingStatuses);
 }
 
 void ALoadingManager::Init()
 {
 	const UGOTAGameInstance* GI = Cast<UGOTAGameInstance>(GetGameInstance());
-	ReplicationCounts.SetNum(GI->PlayerCount);
-	CurrentStatus.SetNum(GI->PlayerCount);
-	const AGOTAPlayerController* PlayerController = GetWorld()->GetFirstPlayerController<AGOTAPlayerController>();
-	const AGOTAPlayerState* PlayerState = PlayerController->GetPlayerState<AGOTAPlayerState>();
+	LoadingStatuses.SetNum(GI->PlayerCount);
 }
 
-void ALoadingManager::SetLoadingStatus_Implementation(const int32 Index, const ELoadingStatus Status)
+void ALoadingManager::IncrementReplicationCount()
 {
-	CurrentStatus[Index] = Status;
-}
-
-void ALoadingManager::SetReplicationCountRPC_Implementation(const int32 Index, const int32 Count)
-{
-	ReplicationCounts[Index] = Count;
+	LoadingStatuses[GOTAPlayerID]->IncreaseReplicationCount();
 }

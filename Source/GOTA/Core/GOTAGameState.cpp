@@ -8,7 +8,7 @@
 void AGOTAGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
+
 	DOREPLIFETIME(AGOTAGameState, MaxTurnTime);
 	DOREPLIFETIME(AGOTAGameState, IsCalculatingTurn);
 	DOREPLIFETIME(AGOTAGameState, ShouldTickTurnTime);
