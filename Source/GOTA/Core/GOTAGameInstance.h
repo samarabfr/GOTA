@@ -22,4 +22,12 @@ public:
 	// Default 1 because of singleplayer. Lobby overrides the 1 with the correct playercount if multiplayer
 	UPROPERTY(BlueprintReadWrite, Category="GOTAGameInstance")
 	int32 PlayerCount = 1;
+	
+	// Default 4 for of singleplayer.
+	UPROPERTY(BlueprintReadWrite, Category="GOTAGameInstance")
+	int32 NativesSettlementCount = 4;
+
+	// Default 8 for of singleplayer.
+	UPROPERTY(BlueprintReadWrite, Category="GOTAGameInstance")
+	int32 ColonistsSettlementCount = 8;
 };

@@ -15,9 +15,21 @@ void AGOTALobbyGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
 	DOREPLIFETIME(AGOTALobbyGameState, IslandRadius);
+	DOREPLIFETIME(AGOTALobbyGameState, NativesCount);
+	DOREPLIFETIME(AGOTALobbyGameState, ColonistsCount);
 }
 
 void AGOTALobbyGameState::IslandRadiusOnRep(int32 NewIslandRadius)
 {
 	OnIslandRadiusChanged.Broadcast(NewIslandRadius);
+}
+
+void AGOTALobbyGameState::NativesCountOnRep(int32 NewNativesCount)
+{
+	OnNativesCountChanged.Broadcast(NewNativesCount);
+}
+
+void AGOTALobbyGameState::ColonistsCountOnRep(int32 NewColonistsCount)
+{
+	OnColonistsCountChanged.Broadcast(NewColonistsCount);
 }
