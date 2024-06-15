@@ -19,7 +19,9 @@ class GOTA_API ATile : public AActor
 
 	//Constructor
 	ATile();
-
+	
+	virtual void BeginPlay() override;
+	
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
 
