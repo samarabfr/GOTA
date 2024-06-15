@@ -12,9 +12,6 @@
 
 class ALoadingManager;
 
-/**
- * 
- */
 UCLASS()
 class GOTA_API AGOTAGameState : public AGameState
 {
@@ -24,6 +21,8 @@ class GOTA_API AGOTAGameState : public AGameState
 
 	//Constructor
 	AGOTAGameState();
+
+	virtual void PostInitializeComponents() override;
 
 	//====================================================================
 	//--------------------Simple Variables
@@ -110,16 +109,15 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void CallCalculationEnd();
 
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
+	void Init();
+	
 	//====================================================================
 	//--------------------Overrideable Functions
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void RegisterTileForTotalsUpdates(ATile* Tile);
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void Init();
-
 	//====================================================================
 	//-------------------- Attributes
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv

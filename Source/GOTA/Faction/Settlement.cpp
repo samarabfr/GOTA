@@ -18,6 +18,9 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 ASettlement::ASettlement()
 {
+	// Replication stuff
+	bReplicates = true;
+	bReplicateUsingRegisteredSubObjectList = true;
 	Food = CreateDefaultSubobject<UGOTAAttribute>(TEXT("FoodAttribute"));
 	Wood = CreateDefaultSubobject<UGOTAAttribute>(TEXT("WoodAttribute"));
 	Population = CreateDefaultSubobject<UGOTAAttributePopulation>(TEXT("PopulationAttribute"));
@@ -31,4 +34,12 @@ void ASettlement::BeginPlay()
 	// Get the GameState
 	AGOTAGameState* GameState = GetWorld()->GetGameState<AGOTAGameState>();
 	GameState->LoadingManager->IncrementReplicationCount();
+
+	if(HasAuthority())
+	{
+		AddReplicatedSubObject(Food);
+		AddReplicatedSubObject(Wood);
+		AddReplicatedSubObject(Population);
+		AddReplicatedSubObject(Expansion);
+	}
 }
