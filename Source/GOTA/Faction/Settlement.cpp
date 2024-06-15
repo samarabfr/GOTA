@@ -1,7 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Settlement.h"
+#include "GOTA/Core/GOTAGameState.h"
+#include "GOTA/Core/LoadingManager.h"
 #include "Net/UnrealNetwork.h"
 
 void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -21,4 +22,13 @@ ASettlement::ASettlement()
 	Wood = CreateDefaultSubobject<UGOTAAttribute>(TEXT("WoodAttribute"));
 	Population = CreateDefaultSubobject<UGOTAAttributePopulation>(TEXT("PopulationAttribute"));
 	Expansion = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("ExpansionAttribute"));
+}
+
+void ASettlement::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	// Get the GameState
+	AGOTAGameState* GameState = GetWorld()->GetGameState<AGOTAGameState>();
+	GameState->LoadingManager->IncrementReplicationCount();
 }

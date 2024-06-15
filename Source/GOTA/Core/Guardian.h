@@ -10,4 +10,6 @@ UCLASS()
 class GOTA_API AGuardian : public ACharacter
 {
 	GENERATED_BODY()
+
+	virtual void BeginPlay() override;
 };
