@@ -3,15 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Guardian.h"
 #include "GOTA/TileMap/TileMap.h"
 #include "GameFramework/GameState.h"
 #include "GOTA/Faction/TileEntity.h"
 #include "GOTA/Faction/Faction.h"
 #include "GOTAGameState.generated.h"
 
-/**
- * 
- */
+class ALoadingManager;
+
 UCLASS()
 class GOTA_API AGOTAGameState : public AGameState
 {
@@ -21,47 +21,56 @@ class GOTA_API AGOTAGameState : public AGameState
 
 	//Constructor
 	AGOTAGameState();
-	
+
 	//====================================================================
 	//--------------------Simple Variables
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 public:
 	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
+	ALoadingManager* LoadingManager;
+	
+	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
 	ATileMap* TileMap;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Category="GOTAGameState")
 	float MaxTurnTime;
-	
-	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	TArray<AFaction*> Factions;
 
-	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
+	TArray<ASettlement*> Settlements;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
+	TArray<AGuardian*> Guardians;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	TArray<ATileEntity*> TileEntities;
 
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
 	bool IsCalculatingTurn;
 
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
-	bool ShouldTickTurnTime;
-	
+	bool ShouldTickTurnTime = false;
+
 	//====================================================================
 	//--------------------ElapsedTurnTime
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 public:
 	UPROPERTY(BlueprintGetter=GetElapsedTurnTime, BlueprintSetter=SetElapsedTurnTime,
-	 Category="GOTAGameState")
+		Category="GOTAGameState")
 	float ElapsedTurnTime;
 
 	UFUNCTION(BlueprintGetter)
 	float GetElapsedTurnTime();
-	
+
 	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
 	void MulticastSetElapsedTurnTime(float NewValue);
 
 protected:
 	UFUNCTION(BlueprintSetter)
 	void SetElapsedTurnTime(float NewValue);
-	
+
 	//====================================================================
 	//--------------------Delegates
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -98,13 +107,15 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void CallCalculationEnd();
 
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
+	void Init();
+	
 	//====================================================================
 	//--------------------Overrideable Functions
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void RegisterTileForTotalsUpdates(ATile* Tile);
-
 	//====================================================================
 	//-------------------- Attributes
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv

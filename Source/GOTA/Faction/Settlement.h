@@ -18,6 +18,8 @@ class  ASettlement : public AActor
 	// Constructor
 	ASettlement();
 	
+	virtual void BeginPlay() override;
+	
 	//====================================================================
 	//--------------------Delegates
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv

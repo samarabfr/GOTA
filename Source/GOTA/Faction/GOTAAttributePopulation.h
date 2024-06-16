@@ -34,6 +34,7 @@ class GOTA_API UGOTAAttributePopulation : public UGOTAAttributeLimited
 
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual bool IsSupportedForNetworking() const override;
 	UGOTAAttributePopulation();
 
 protected:

@@ -8,6 +8,11 @@ void UGOTAAttribute::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(UGOTAAttribute, Current);
 }
 
+bool UGOTAAttribute::IsSupportedForNetworking() const
+{
+	return true;
+}
+
 void UGOTAAttribute::OnChange()
 {
 	OnChanged.Broadcast(Current - OldValue);

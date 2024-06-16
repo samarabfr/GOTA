@@ -13,5 +13,13 @@ UCLASS()
 class GOTA_API UGOTAGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
-	
+
+public:
+	// Default 15 for singleplayer, kinda wierd right now but it is what it is
+	UPROPERTY(BlueprintReadWrite, Category="GOTAGameInstance")
+	int32 IslandRadius = 15;
+
+	// Default 1 because of singleplayer. Lobby overrides the 1 with the correct playercount if multiplayer
+	UPROPERTY(BlueprintReadWrite, Category="GOTAGameInstance")
+	int32 PlayerCount = 1;
 };

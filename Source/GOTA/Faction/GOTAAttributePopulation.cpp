@@ -9,7 +9,12 @@ void UGOTAAttributePopulation::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UGOTAAttributePopulation, Follower);
-	DOREPLIFETIME(UGOTAAttributePopulation, PopToWorkforceRatio);
+	DOREPLIFETIME(UGOTAAttributePopulation, Moods);
+}
+
+bool UGOTAAttributePopulation::IsSupportedForNetworking() const
+{
+	return true;
 }
 
 UGOTAAttributePopulation::UGOTAAttributePopulation()
