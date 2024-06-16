@@ -22,8 +22,6 @@ class GOTA_API AGOTAGameState : public AGameState
 	//Constructor
 	AGOTAGameState();
 
-	virtual void PostInitializeComponents() override;
-
 	//====================================================================
 	//--------------------Simple Variables
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv

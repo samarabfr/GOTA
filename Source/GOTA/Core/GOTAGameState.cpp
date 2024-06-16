@@ -32,22 +32,6 @@ AGOTAGameState::AGOTAGameState()
 	TotalWildlife = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Wildlife"));
 }
 
-void AGOTAGameState::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-	/*
-	if(HasAuthority())
-	{
-		TotalTrees = NewObject<UGOTAAttribute>(this, UGOTAAttribute::StaticClass());
-		AddReplicatedSubObject(TotalTrees);
-		TotalForage = NewObject<UGOTAAttribute>(this, UGOTAAttribute::StaticClass());
-		AddReplicatedSubObject(TotalForage);
-		TotalWildlife = NewObject<UGOTAAttribute>(this, UGOTAAttribute::StaticClass());
-		AddReplicatedSubObject(TotalWildlife);
-	}
-	*/
-}
-
 void AGOTAGameState::AddFaction(AFaction* NewFaction)
 {
 	Factions.Add(NewFaction);
