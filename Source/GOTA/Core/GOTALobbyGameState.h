@@ -27,41 +27,41 @@ public:
 	void PlayersChanged();
 
 	// Island Radius
-	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=IslandRadiusOnRep , Category="GOTAGameInstance")
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=OnRep_IslandRadius , Category="GOTALobbyGameState")
 	int32 IslandRadius;
 
 	UFUNCTION(BlueprintCallable)
-	void IslandRadiusOnRep(int32 NewIslandRadius);
+	void OnRep_IslandRadius();
 
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIslandRadiusChangedSignature, int32, NewIslandRadius);
 
-	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
+	UPROPERTY(BlueprintAssignable, Category="GOTALobbyGameState")
 	FOnIslandRadiusChangedSignature OnIslandRadiusChanged;
 
 	// Natives Count
-	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=NativesCountOnRep , Category="GOTAGameState")
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=OnRep_NativesCount , Category="GOTALobbyGameState")
 	int32 NativesCount;
 
 	UFUNCTION(BlueprintCallable)
-	void NativesCountOnRep(int32 NewNativesCount);
+	void OnRep_NativesCount();
 
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnNativesCountChangedSignature, int32, NewNativesCount);
 
-	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
+	UPROPERTY(BlueprintAssignable, Category="GOTALobbyGameState")
 	FOnNativesCountChangedSignature OnNativesCountChanged;
 
-	// Island Radius
-	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=ColonistsCountOnRep , Category="GOTAGameState")
+	// Colonists Count
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=OnRep_ColonistsCount , Category="GOTALobbyGameState")
 	int32 ColonistsCount;
 
 	UFUNCTION(BlueprintCallable)
-	void ColonistsCountOnRep(int32 NewColonistsCount);
+	void OnRep_ColonistsCount();
 
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnColonistsCountChangedSignature, int32, NewColonistsCount);
 
-	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
+	UPROPERTY(BlueprintAssignable, Category="GOTALobbyGameState")
 	FOnColonistsCountChangedSignature OnColonistsCountChanged;
 };
