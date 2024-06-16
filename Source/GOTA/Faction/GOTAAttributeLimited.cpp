@@ -11,6 +11,11 @@ void UGOTAAttributeLimited::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	DOREPLIFETIME(UGOTAAttributeLimited, Maximum);
 }
 
+bool UGOTAAttributeLimited::IsSupportedForNetworking() const
+{
+	return true;
+}
+
 void UGOTAAttributeLimited::SetCurrent(int32 NewValue)
 {
 	if (NewValue < 0) // New Value is negative, NOT ALLOWED

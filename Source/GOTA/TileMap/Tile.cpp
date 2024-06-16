@@ -23,7 +23,10 @@ ATile::ATile()
 {
 	IsWalkable = true;
 	IsClaimable = true;
-
+	
+	// Replication stuff
+	bReplicates = true;
+	bReplicateUsingRegisteredSubObjectList = true;
 	Trees = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Trees"));
 	Forage = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Forage"));
 	Wildlife = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Wildlife"));
@@ -36,6 +39,13 @@ void ATile::BeginPlay()
 	// Get the GameState
 	AGOTAGameState* GameState = GetWorld()->GetGameState<AGOTAGameState>();
 	GameState->LoadingManager->IncrementReplicationCount();
+
+	if(HasAuthority())
+	{
+		AddReplicatedSubObject(Trees);
+		AddReplicatedSubObject(Forage);
+		AddReplicatedSubObject(Wildlife);
+	}
 }
 
 //====================================================================
