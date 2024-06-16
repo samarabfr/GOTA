@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "LoadingStatus.generated.h"
+#include "LoadingStatusActor.generated.h"
 
 UENUM(BlueprintType)
 enum class ELoadingStatus : uint8
@@ -26,12 +26,14 @@ enum class ELoadingStatus : uint8
 
 
 UCLASS()
-class GOTA_API ALoadingStatus : public AActor
+class GOTA_API ALoadingStatusActor : public AActor
 {
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnChangedSignature);
+
+	ALoadingStatusActor();
 	
 public:
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="LoadingManager")
