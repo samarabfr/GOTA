@@ -19,13 +19,6 @@ private:
 
 	UPROPERTY()
 	int32 MapSize;
-	
-protected:
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "TileMap")
-	FVector2D HexCoordsToWorldPos(FHexCoords HexCoords);
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "TileMap")
-	FHexCoords WorldPosToHexCoords(FVector2D Vector);
 
 public:
 	UPROPERTY(EditAnywhere, Category = "TileMap")
