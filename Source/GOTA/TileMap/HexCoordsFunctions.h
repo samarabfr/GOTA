@@ -14,7 +14,8 @@ UCLASS()
 class GOTA_API UHexCoordsFunctions : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
-
+	
+public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HexCoords")
 	static FVector2D HexCoordsToVector2D(FHexCoords HexCoords);
 
