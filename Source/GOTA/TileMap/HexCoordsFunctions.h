@@ -16,8 +16,11 @@ class GOTA_API UHexCoordsFunctions : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HexCoords")
-	static FVector2D HexCoordsToWorldPos(FHexCoords HexCoords);
+	static FVector2D HexCoordsToVector2D(FHexCoords HexCoords);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HexCoords")
-	static FHexCoords WorldPosToHexCoords(FVector2D Vector);
+	static FHexCoords Vector2DToHexCoords(FVector2D Vector);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HexCoords")
+	static FHexCoords VectorToHexCoords(FVector Vector);
 };

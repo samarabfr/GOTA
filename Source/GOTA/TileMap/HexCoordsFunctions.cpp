@@ -3,16 +3,16 @@
 
 #include "HexCoordsFunctions.h"
 
-FVector2D UHexCoordsFunctions::HexCoordsToWorldPos(FHexCoords HexCoords)
+FVector2D UHexCoordsFunctions::HexCoordsToVector2D(FHexCoords HexCoords)
 {
 	const double X = HexCoords.Q * 1.5;
 	const double Y = HexCoords.Q * 0.866 + HexCoords.R * 1.732;
 	return FVector2D(X*FHexCoords::Gridsize,Y*FHexCoords::Gridsize);
 }
 
-FHexCoords UHexCoordsFunctions::WorldPosToHexCoords(FVector2D Vector)
+FHexCoords UHexCoordsFunctions::Vector2DToHexCoords(FVector2D Vector)
 {
-	Vector = Vector/FHexCoords::FHexCoords::Gridsize;
+	Vector = Vector/FHexCoords::Gridsize;
 	const double FracQ =  0.667 * Vector.X;
 	const double FracR = -0.333 * Vector.X + 0.577 * Vector.Y;
 	const double FracS = -FracQ - FracR;
@@ -31,4 +31,9 @@ FHexCoords UHexCoordsFunctions::WorldPosToHexCoords(FVector2D Vector)
 		return FHexCoords(RoundQ, -RoundQ-RoundS);
 	}
 	return FHexCoords(RoundQ,RoundR);
+}
+
+FHexCoords UHexCoordsFunctions::VectorToHexCoords(FVector Vector)
+{
+	return Vector2DToHexCoords(FVector2D(Vector.X, Vector.Y));
 }
