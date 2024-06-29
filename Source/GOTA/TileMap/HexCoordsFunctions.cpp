@@ -37,3 +37,20 @@ FHexCoords UHexCoordsFunctions::VectorToHexCoords(FVector Vector)
 {
 	return Vector2DToHexCoords(FVector2D(Vector.X, Vector.Y));
 }
+
+TArray<FHexCoords> UHexCoordsFunctions::GetAllCoordsInRange(FHexCoords Origin, int32 Range)
+{
+	TArray<FHexCoords> Coords;
+
+	for (int32 Q = -Range; Q <= Range; ++Q)
+	{
+		for (int32 R = FMath::Max(-Range, -Q - Range); R <= FMath::Min(Range, -Q + Range); ++R)
+		{
+			int32 S = -Q-R;
+			int32 newQ = Origin.Q + Q;
+			int32 newR = Origin.R + R;
+			Coords.Add(FHexCoords(newQ, newR));
+		}
+	}
+	return Coords;
+}

@@ -24,4 +24,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HexCoords")
 	static FHexCoords VectorToHexCoords(FVector Vector);
+
+	UFUNCTION(BlueprintCallable, Category = "HexCoords")
+	static TArray<FHexCoords> GetAllCoordsInRange(FHexCoords Origin, int32 Range);
 };

@@ -2,6 +2,15 @@
 
 #include "TileMap.h"
 #include "HexCoords.h"
+#include "Net/UnrealNetwork.h"
+
+void ATileMap::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ATileMap, TileMap);
+	DOREPLIFETIME(ATileMap, MapSize);
+}
 
 void ATileMap::Init(int32 Init_MapSize)
 {
