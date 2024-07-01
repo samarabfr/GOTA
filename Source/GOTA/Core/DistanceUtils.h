@@ -12,10 +12,11 @@ UCLASS()
 class GOTA_API ADistanceUtils : public AActor
 {
 	GENERATED_BODY()
+	ADistanceUtils();
 
+virtual void BeginPlay() override;
+	
 	static const float ActiveTileRange;
-
-	virtual void BeginPlay() override;
 	
 	virtual void Tick(float DeltaSeconds) override;
 
