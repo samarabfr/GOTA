@@ -1,5 +1,7 @@
 #include "HexCoords.h"
 
+const float FHexCoords::Gridsize = 500.0f;
+
 FHexCoords::FHexCoords()
 {
 	Q = 0;

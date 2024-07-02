@@ -11,6 +11,9 @@ struct FHexCoords
 {
 	GENERATED_BODY()
 
+public:
+	static const float Gridsize;
+
 	UPROPERTY(BlueprintReadWrite)
 	int32 Q;
 

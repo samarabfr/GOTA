@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GOTAGameState.h"
 #include "GameFramework/Actor.h"
-#include "LoadingStatus.h"
+#include "LoadingStatusActor.h"
 #include "LoadingManager.generated.h"
 
 
@@ -18,7 +18,7 @@ class GOTA_API ALoadingManager : public AActor
 public:		
 	// index 0 = Server, other indexes the clients with their unique PlayerID
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="LoadingManager")
-	TArray<ALoadingStatus*> LoadingStatuses;
+	TArray<ALoadingStatusActor*> LoadingStatuses;
 
 	UPROPERTY(BlueprintReadWrite, Category="LoadingManager")
 	int32 GOTAPlayerID;
