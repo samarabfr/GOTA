@@ -13,6 +13,7 @@ void AGOTAGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(AGOTAGameState, IsCalculatingTurn);
 	DOREPLIFETIME(AGOTAGameState, ShouldTickTurnTime);
 
+	DOREPLIFETIME(AGOTAGameState, TileMap);
 	DOREPLIFETIME(AGOTAGameState, Factions);
 	DOREPLIFETIME(AGOTAGameState, Settlements);
 	DOREPLIFETIME(AGOTAGameState, Guardians);

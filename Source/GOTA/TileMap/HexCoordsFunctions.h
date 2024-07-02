@@ -14,10 +14,17 @@ UCLASS()
 class GOTA_API UHexCoordsFunctions : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
+	
+public:
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HexCoords")
+	static FVector2D HexCoordsToVector2D(FHexCoords HexCoords);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HexCoords")
-	static FVector2D HexCoordsToWorldPos(FHexCoords HexCoords);
+	static FHexCoords Vector2DToHexCoords(FVector2D Vector);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HexCoords")
-	static FHexCoords WorldPosToHexCoords(FVector2D Vector);
+	static FHexCoords VectorToHexCoords(FVector Vector);
+
+	UFUNCTION(BlueprintCallable, Category = "HexCoords")
+	static TArray<FHexCoords> GetAllCoordsInRange(FHexCoords Origin, int32 Range);
 };

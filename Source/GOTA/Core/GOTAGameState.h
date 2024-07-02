@@ -29,7 +29,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
 	ALoadingManager* LoadingManager;
 	
-	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
 	ATileMap* TileMap;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Category="GOTAGameState")
