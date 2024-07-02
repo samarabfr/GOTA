@@ -12,14 +12,15 @@ UCLASS()
 class GOTA_API ADistanceUtils : public AActor
 {
 	GENERATED_BODY()
-	ADistanceUtils();
 
-virtual void BeginPlay() override;
-	
+	virtual void BeginPlay() override;
+
 	static const float ActiveTileRange;
-	
-	virtual void Tick(float DeltaSeconds) override;
 
+protected:
+	UFUNCTION(BlueprintCallable)
+	void UpdateDistanceToTiles();
+	
 private:
 	FHexCoords LastCoords;
 	TArray<FHexCoords> LastCoordsInRange;

@@ -12,6 +12,12 @@ void ATileMap::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 	DOREPLIFETIME(ATileMap, MapSize);
 }
 
+ATileMap::ATileMap()
+{
+	bReplicates = true;
+	bAlwaysRelevant = true;
+}
+
 void ATileMap::Init(int32 Init_MapSize)
 {
 	MapSize = FMath::Max(Init_MapSize, 0);

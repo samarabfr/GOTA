@@ -14,6 +14,7 @@ class GOTA_API ATileMap : public AActor
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	ATileMap();
 private:
 	UPROPERTY(Replicated)
 	TArray<ATile*> TileMap;

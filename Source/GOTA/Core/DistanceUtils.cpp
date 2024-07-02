@@ -8,44 +8,14 @@
 
 const float ADistanceUtils::ActiveTileRange = 4;
 
-ADistanceUtils::ADistanceUtils()
-{
-	// Create a root scene component and set it as the root component
-	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("RootSceneComponent")));
-
-	// Enable ticking for this actor
-	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.bStartWithTickEnabled = true;
-	PrimaryActorTick.bTickEvenWhenPaused = true;
-	PrimaryActorTick.SetTickFunctionEnable(true);
-	
-	// Ensure this actor can be loaded on clients
-	bNetLoadOnClient = true;
-}
-
 void ADistanceUtils::BeginPlay()
 {
 	Super::BeginPlay();
 	CachedGameState = GetWorld()->GetGameState<AGOTAGameState>();
 	LastCoords = FHexCoords(-100,-100);
-	
-	// Check if actor is hidden
-	if (IsHidden())
-	{
-		UE_LOG(LogTemp, Error, TEXT("Actor is hidden"));
-	}
-
-	// Check if ticking is enabled
-	if (!PrimaryActorTick.IsTickFunctionEnabled())
-	{
-		UE_LOG(LogTemp, Error, TEXT("Tick function is not enabled"));
-	}
-
-	UE_LOG(LogTemp, Warning, TEXT("Role: %d"), GetLocalRole());
-	UE_LOG(LogTemp, Warning, TEXT("NetMode: %d"), GetNetMode());
 }
 
-void ADistanceUtils::Tick(float DeltaSeconds)
+void ADistanceUtils::UpdateDistanceToTiles()
 {
 	if(!CachedGameState->TileMap) return;
 	
