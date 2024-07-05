@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Building.h"
-#include "GOTAAttributePopulation.h"
+#include "Population.h"
 #include "JobManager.h"
 #include "GOTA/TileMap/Tile.h"
 #include "GameFramework/Actor.h"
@@ -91,7 +91,7 @@ public:
 	UGOTAAttribute* Wood;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Attribute")
-	UGOTAAttributePopulation* Population;
+	UPopulation* Population;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Attribute")
 	UGOTAAttributeLimited* Expansion;

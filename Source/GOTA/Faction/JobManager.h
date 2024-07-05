@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Building.h"
-#include "GOTAAttributePopulation.h"
+#include "Population.h"
 #include "Job.h"
 #include "JobManager.generated.h"
 
@@ -34,7 +34,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="JobManager")
 	FJobIncome CurrentJobIncome;
 	
-	void BindToPopulationAttribute(UGOTAAttributePopulation* PopulationAttribute);
+	void BindToPopulationAttribute(UPopulation* PopulationAttribute);
 	void BindToBuilding(UBuilding* Building);
 	void UnbindToBuilding(UBuilding* Building);
 

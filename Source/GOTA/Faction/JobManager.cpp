@@ -27,7 +27,7 @@ UJobManager::UJobManager()
 	
 }
 
-void UJobManager::BindToPopulationAttribute(UGOTAAttributePopulation* PopulationAttribute)
+void UJobManager::BindToPopulationAttribute(UPopulation* PopulationAttribute)
 {
 	PopulationAttribute->OnWorkforceChanged.AddDynamic(this, &UJobManager::WorkForceChanged);
 }

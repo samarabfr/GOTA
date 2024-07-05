@@ -25,7 +25,7 @@ ASettlement::ASettlement()
 	bReplicateUsingRegisteredSubObjectList = true;
 	Food = CreateDefaultSubobject<UGOTAAttribute>(TEXT("FoodAttribute"));
 	Wood = CreateDefaultSubobject<UGOTAAttribute>(TEXT("WoodAttribute"));
-	Population = CreateDefaultSubobject<UGOTAAttributePopulation>(TEXT("PopulationAttribute"));
+	Population = CreateDefaultSubobject<UPopulation>(TEXT("PopulationAttribute"));
 	Expansion = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("ExpansionAttribute"));
 	JobManager = CreateDefaultSubobject<UJobManager>(TEXT("JobManager"));
 
