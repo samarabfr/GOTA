@@ -10,6 +10,8 @@ void UGOTAAttributePopulation::GetLifetimeReplicatedProps(TArray<FLifetimeProper
 
 	DOREPLIFETIME(UGOTAAttributePopulation, Follower);
 	DOREPLIFETIME(UGOTAAttributePopulation, Moods);
+	DOREPLIFETIME(UGOTAAttributePopulation, PopToWorkforceRatio);
+	DOREPLIFETIME(UGOTAAttributePopulation, Workforce);
 }
 
 bool UGOTAAttributePopulation::IsSupportedForNetworking() const
@@ -42,6 +44,7 @@ void UGOTAAttributePopulation::OnChange()
 			Moods[0]++;
 		}
 	}
+	CalculateWorkforce();
 	OldValue = Current;
 	OnChanged.Broadcast(Change);
 }
@@ -340,7 +343,6 @@ void UGOTAAttributePopulation::ChangeMood(EMood Mood, int32 Change, int32& Effec
 }
 
 
-
 int32 UGOTAAttributePopulation::GetMood(EMood Mood)
 {
 	return Moods[static_cast<int32>(Mood)];
@@ -351,4 +353,23 @@ void UGOTAAttributePopulation::GetAllMood(int32& Neutral, int32& Fearful, int32&
 	Neutral = Moods[0];
 	Fearful = Moods[1];
 	Aggressive = Moods[2];
+}
+
+//====================================================================
+//                          Workforce
+//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+int32 UGOTAAttributePopulation::GetWorkforce()
+{
+	return Workforce;
+}
+
+void UGOTAAttributePopulation::CalculateWorkforce()
+{
+	int32 OldWorkforce = Workforce;
+	Workforce = Current / PopToWorkforceRatio;
+	if (OldWorkforce != Workforce)
+	{
+		OnWorkforceChanged.Broadcast(Workforce - OldWorkforce);
+	}
 }

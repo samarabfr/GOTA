@@ -93,8 +93,10 @@ public:
 	int32 Workforce;
 
 	UFUNCTION(BlueprintGetter, BlueprintPure, Category = "Attribute")
-	virtual int32 GetWorkforce() const;
+	int32 GetWorkforce();
 	
 	UPROPERTY(BlueprintAssignable, Category="Attribute")
 	FOnAttributeChangedSignature OnWorkforceChanged;
+
+	void CalculateWorkforce();
 };

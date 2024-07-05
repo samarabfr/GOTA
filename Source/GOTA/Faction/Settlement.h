@@ -3,13 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Building.h"
 #include "GOTAAttributePopulation.h"
+#include "JobManager.h"
 #include "GOTA/TileMap/Tile.h"
 #include "GameFramework/Actor.h"
 #include "Settlement.generated.h"
 
 UCLASS(Abstract, Blueprintable)
-class  ASettlement : public AActor
+class ASettlement : public AActor
 {
 	//Unreal Engine Mystery Code
 	GENERATED_BODY()
@@ -17,9 +19,9 @@ class  ASettlement : public AActor
 
 	// Constructor
 	ASettlement();
-	
+
 	virtual void BeginPlay() override;
-	
+
 	//====================================================================
 	//--------------------Delegates
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -45,12 +47,22 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void CalculateTurn();
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void LostClaim(const ATile* Tile);
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void ClaimTile(const ATile* Tile);
+	
+	//====================================================================
+	//-------------------- Functions
+	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
+	void OnBuildingAdded(UBuilding* Building);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
+	void OnBuildingRemoved(UBuilding* Building);
 
 	//====================================================================
 	//--------------------Variables
@@ -64,6 +76,9 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
 	FLinearColor ClaimColor;
+
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
+	UJobManager* JobManager;
 
 	//====================================================================
 	//--------------------Attributes

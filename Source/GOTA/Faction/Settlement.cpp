@@ -10,6 +10,8 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
 	DOREPLIFETIME(ASettlement, ClaimColor);
+	DOREPLIFETIME(ASettlement, JobManager);
+	
 	DOREPLIFETIME(ASettlement, Population);
 	DOREPLIFETIME(ASettlement, Food);
 	DOREPLIFETIME(ASettlement, Wood);
@@ -25,6 +27,9 @@ ASettlement::ASettlement()
 	Wood = CreateDefaultSubobject<UGOTAAttribute>(TEXT("WoodAttribute"));
 	Population = CreateDefaultSubobject<UGOTAAttributePopulation>(TEXT("PopulationAttribute"));
 	Expansion = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("ExpansionAttribute"));
+	JobManager = CreateDefaultSubobject<UJobManager>(TEXT("JobManager"));
+
+
 }
 
 void ASettlement::BeginPlay()
@@ -41,5 +46,18 @@ void ASettlement::BeginPlay()
 		AddReplicatedSubObject(Wood);
 		AddReplicatedSubObject(Population);
 		AddReplicatedSubObject(Expansion);
+		AddReplicatedSubObject(JobManager);
+
+		JobManager->BindToPopulationAttribute(Population);
 	}
+}
+
+void ASettlement::OnBuildingAdded(UBuilding* Building)
+{
+	JobManager->BindToBuilding(Building);
+}
+
+void ASettlement::OnBuildingRemoved(UBuilding* Building)
+{
+	JobManager->UnbindToBuilding(Building);
 }

@@ -11,18 +11,22 @@ struct GOTA_API FJobIncome
 	GENERATED_BODY()
 
 public:
-	UPROPERTY(EditAnywhere, Category="Job")
-	int32 Foraging;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Job")
+	int32 Foraging = 0;
 
-	UPROPERTY(EditAnywhere, Category="Job")
-	int32 Woodcutting;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Job")
+	int32 Woodcutting = 0;
 
-	UPROPERTY(EditAnywhere, Category="Job")
-	int32 Hunting;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Job")
+	int32 Hunting = 0;
 
-	UPROPERTY(EditAnywhere, Category="Job")
-	int32 Converting;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Job")
+	int32 Converting = 0;
 
-	UPROPERTY(EditAnywhere, Category="Job")
-	int32 Expanding;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Job")
+	int32 Expanding = 0;
+
+	void SetEverythingToZero();
+
+	FJobIncome& operator+=(const FJobIncome& Other);
 };

@@ -5,6 +5,7 @@
 
 #include "Gota/TileMap/Tile.h"
 #include "CoreMinimal.h"
+#include "Job.h"
 #include "Building.generated.h"
 
 class UBuildingDataAsset;
@@ -13,8 +14,9 @@ UCLASS(Blueprintable)
 class GOTA_API UBuilding : public UObject
 {
 	GENERATED_BODY()
-
-
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual bool IsSupportedForNetworking() const override;
+	
 	//====================================================================
 	//--------------------Overrideable Events
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -25,7 +27,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
 	void OnUnbuild(const ATile* Tile);
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
 	void OnClaim(const ASettlement* Claimant);
 
@@ -40,17 +42,43 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
 	bool CanBuilderAfford(const ASettlement* Builder);
-	
+
 	//====================================================================
 	//--------------------Simple Variables
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
 	FName Name;
-	
+
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
 	FText Description;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
 	UStaticMesh* Mesh;
+
+	//====================================================================
+	//-------------------- Job stuff
+	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnJobChangedSignature, UJob*, Job);
+	
+private:
+	TArray<UJob*> Jobs;
+
+public:
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Settlement")
+	const TArray<UJob*>& GetJobs() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Settlement")
+	void AddJob(UJob* Job);
+	
+	UPROPERTY(BlueprintAssignable, Category="Settlement")
+	FOnJobChangedSignature OnJobAdded;
+	
+	UFUNCTION(BlueprintCallable, Category = "Settlement")
+	void RemoveJob(UJob* Job);
+
+	UPROPERTY(BlueprintAssignable, Category="Settlement")
+	FOnJobChangedSignature OnJobRemoved;
 };

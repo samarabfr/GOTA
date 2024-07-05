@@ -16,6 +16,7 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME(ATile, Trees);
 	DOREPLIFETIME(ATile, Forage);
 	DOREPLIFETIME(ATile, Wildlife);
+	DOREPLIFETIME(ATile, Building);
 }
 
 // Constructor
