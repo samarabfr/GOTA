@@ -37,23 +37,17 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
 	void OnTurn(const ATile* Tile);
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
-	int32 BuildPriority(const ASettlement* Builder);
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
-	bool CanBuilderAfford(const ASettlement* Builder);
-
 	//====================================================================
 	//--------------------Simple Variables
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	FName Name;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	FText Description;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	UStaticMesh* Mesh;
 
 	//====================================================================

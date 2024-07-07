@@ -3,8 +3,27 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PopulationValues.h"
 #include "Population.generated.h"
+
+UENUM(BlueprintType)
+enum class EReligion : uint8
+{
+	Colonists UMETA(DisplayName = "Colonists"),
+	Guardian1 UMETA(DisplayName = "Guardian1"),
+	Guardian2 UMETA(DisplayName = "Guardian2"),
+	Guardian3 UMETA(DisplayName = "Guardian3"),
+	Guardian4 UMETA(DisplayName = "Guardian4"),
+	MAX UMETA(Hidden) // Sentinel value for enum size
+};
+
+UENUM(BlueprintType)
+enum class EMood : uint8
+{
+	Neutral UMETA(DisplayName = "Neutral"),
+	Fearful UMETA(DisplayName = "Fearful"),
+	Aggressive UMETA(DisplayName = "Aggressive"),
+	MAX UMETA(Hidden) // Sentinel value for enum size
+};
 
 UCLASS()
 class GOTA_API UPopulation : public UObject
@@ -48,7 +67,7 @@ public:
 	FOnMoodChangedSignature OnMoodChanged;
 	UPROPERTY(BlueprintAssignable, Category="Population")
 	FOnChangedSignature OnWorkforceChanged;
-
+	
 public:
 	UPROPERTY(BlueprintGetter=GetCurrent, Category = "Population")
 	int32 Current = 0;
@@ -56,10 +75,9 @@ public:
 	UFUNCTION(BlueprintGetter, BlueprintPure, Category = "Population")
 	int32 GetCurrent() const;
 
-	UPROPERTY(BlueprintGetter=GetCurrent, Category = "Population")
+	UPROPERTY(BlueprintReadOnly, Category = "Population")
 	int32 Maximum = 0;
 
-public:
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void ChangePopulation(int32 Change, int32& Effective_Change);
 
@@ -77,6 +95,9 @@ private:
 	void AddOneFollowerToGuardiansFullRandom();
 
 public:
+	UPROPERTY(BlueprintReadWrite, Replicated)
+	EReligion PrimaryReligion = EReligion::Colonists;
+	
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void ChangeFollower(EReligion Religion, int32 Change, int32& Effective_Change);
 
@@ -115,6 +136,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Replicated)
 	int32 PopToWorkforceRatio = 4;
 
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void ChangePopToWorkforceRatio(int32 Change);
+	
 	UPROPERTY(BlueprintGetter=GetWorkforce, Replicated)
 	int32 Workforce = 0;
 
@@ -122,4 +146,24 @@ public:
 	int32 GetWorkforce();
 
 	void CalculateWorkforce();
+
+	//====================================================================
+	//                          Force Change Functions
+	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	// We need this functions to be able to track the global population
+	
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void ForceChangePopulation(int32 Change);
+
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void ForceChangeMaximum(int32 Change);
+
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void ForceChangeFollower(EReligion Religion, int32 Change);
+
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void ForceChangeMood(EMood Mood, int32 Change);
+
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void ForceChangeWorkforce(int32 Change);
 };

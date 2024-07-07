@@ -80,6 +80,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
 	UJobManager* JobManager;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Settlement")
+	TArray<TSubclassOf<UBuilding>> PossibleBuildings;
+	
 	//====================================================================
 	//--------------------Attributes
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
