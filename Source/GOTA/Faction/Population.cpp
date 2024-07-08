@@ -46,7 +46,8 @@ void UPopulation::ChangePopulation(int32 Change, int32& Effective_Change)
 	// save current state of variables to be able to trigger the change delegates
 	TArray<int32> FollowerBefore = Follower;
 	TArray<int32> MoodsBefore = Moods;
-
+	int32 AbsoluteChange = FMath::Abs(Effective_Change);
+	
 	if(OldValue == 0) // Initial Pop increase
 	{
 		Follower[static_cast<int32>(PrimaryReligion)] += Effective_Change;
@@ -54,7 +55,7 @@ void UPopulation::ChangePopulation(int32 Change, int32& Effective_Change)
 	}
 	else if (Effective_Change < 0) // Pop got reduced
 	{
-		for (int i = 0; i > Change; i--)
+		for (int i = 0; i > AbsoluteChange; i--)
 		{
 			SubtractOneFollowerWeightedRandom();
 			SubtractOneMoodWeightedRandom();
@@ -62,7 +63,7 @@ void UPopulation::ChangePopulation(int32 Change, int32& Effective_Change)
 	}
 	else if (Effective_Change > 0) // Pop got increased
 	{
-		for (int i = 0; i < Change; i++)
+		for (int i = 0; i < AbsoluteChange; i++)
 		{
 			AddOneFollowerWeightedRandom();
 			Moods[0]++;
@@ -95,7 +96,7 @@ void UPopulation::ChangeMaximum(int32 Change, int32& Effective_Change)
 	if (Maximum > Current) // Maximum is smaller than pop so we have to reduce Pop
 	{
 		int32 E_C;
-		ChangePopulation(Current - Maximum, E_C);
+		ChangePopulation(Maximum - Change, E_C);
 	}
 	OnMaximumChanged.Broadcast(Effective_Change);
 }
