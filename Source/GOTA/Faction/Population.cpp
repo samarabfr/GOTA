@@ -31,8 +31,6 @@ int32 UPopulation::GetCurrent() const
 	return Current;
 }
 
-
-
 void UPopulation::ChangePopulation(int32 Change, int32& Effective_Change)
 {
 	int32 OldValue = Current;
