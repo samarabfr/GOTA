@@ -28,7 +28,7 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Faction")
-	void CreateSettlement();
+	void CreateSettlement(ASettlement*& Settlement);
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Faction")
 	void Init(int32 StartingSettlementCount);

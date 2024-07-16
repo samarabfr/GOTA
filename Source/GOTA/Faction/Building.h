@@ -5,7 +5,7 @@
 
 #include "Gota/TileMap/Tile.h"
 #include "CoreMinimal.h"
-#include "Job.h"
+#include "Population.h"
 #include "Building.generated.h"
 
 class UBuildingDataAsset;
@@ -50,29 +50,6 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	UStaticMesh* Mesh;
 
-	//====================================================================
-	//-------------------- Job stuff
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnJobChangedSignature, UJob*, Job);
-	
-private:
-	TArray<UJob*> Jobs;
-
-public:
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Settlement")
-	const TArray<UJob*>& GetJobs() const;
-
-	UFUNCTION(BlueprintCallable, Category = "Settlement")
-	void AddJob(UJob* Job);
-	
-	UPROPERTY(BlueprintAssignable, Category="Settlement")
-	FOnJobChangedSignature OnJobAdded;
-	
-	UFUNCTION(BlueprintCallable, Category = "Settlement")
-	void RemoveJob(UJob* Job);
-
-	UPROPERTY(BlueprintAssignable, Category="Settlement")
-	FOnJobChangedSignature OnJobRemoved;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	UPopulation* Population;
 };

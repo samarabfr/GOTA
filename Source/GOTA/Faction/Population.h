@@ -25,7 +25,7 @@ enum class EMood : uint8
 	MAX UMETA(Hidden) // Sentinel value for enum size
 };
 
-UCLASS()
+UCLASS(Blueprintable)
 class GOTA_API UPopulation : public UObject
 {
 	GENERATED_BODY()
@@ -67,7 +67,7 @@ public:
 	FOnMoodChangedSignature OnMoodChanged;
 	UPROPERTY(BlueprintAssignable, Category="Population")
 	FOnChangedSignature OnWorkforceChanged;
-	
+
 public:
 	UPROPERTY(BlueprintGetter=GetCurrent, Category = "Population")
 	int32 Current = 0;
@@ -97,7 +97,7 @@ private:
 public:
 	UPROPERTY(BlueprintReadWrite, Replicated)
 	EReligion PrimaryReligion = EReligion::Colonists;
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void ChangeFollower(EReligion Religion, int32 Change, int32& Effective_Change);
 
@@ -138,7 +138,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void ChangePopToWorkforceRatio(int32 Change);
-	
+
 	UPROPERTY(BlueprintGetter=GetWorkforce, Replicated)
 	int32 Workforce = 0;
 
@@ -151,7 +151,7 @@ public:
 	//                          Force Change Functions
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 	// We need this functions to be able to track the global population
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void ForceChangePopulation(int32 Change);
 
@@ -159,10 +159,10 @@ public:
 	void ForceChangeMaximum(int32 Change);
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ForceChangeFollower(EReligion Religion, int32 Change);
+	void ForceChangeFollower(int32 ChangeC, int32 ChangeG1, int32 ChangeG2, int32 ChangeG3, int32 ChangeG4);
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ForceChangeMood(EMood Mood, int32 Change);
+	void ForceChangeMood(int32 ChangeNeutral, int32 ChangeAggressive, int32 ChangeFearful);
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void ForceChangeWorkforce(int32 Change);

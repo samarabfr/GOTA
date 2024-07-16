@@ -45,8 +45,8 @@ void UPopulation::ChangePopulation(int32 Change, int32& Effective_Change)
 	TArray<int32> FollowerBefore = Follower;
 	TArray<int32> MoodsBefore = Moods;
 	int32 AbsoluteChange = FMath::Abs(Effective_Change);
-	
-	if(OldValue == 0) // Initial Pop increase
+
+	if (OldValue == 0) // Initial Pop increase
 	{
 		Follower[static_cast<int32>(PrimaryReligion)] += Effective_Change;
 		Moods[0] += Effective_Change;
@@ -405,7 +405,7 @@ void UPopulation::GetAllMood(int32& Neutral, int32& Fearful, int32& Aggressive)
 void UPopulation::ChangePopToWorkforceRatio(int32 Change)
 {
 	PopToWorkforceRatio += Change;
-	if(PopToWorkforceRatio < 1) PopToWorkforceRatio = 1;
+	if (PopToWorkforceRatio < 1) PopToWorkforceRatio = 1;
 	CalculateWorkforce();
 }
 
@@ -435,24 +435,35 @@ void UPopulation::CalculateWorkforce()
 void UPopulation::ForceChangePopulation(int32 Change)
 {
 	Current += Change;
+	OnChanged.Broadcast();
 }
 
 void UPopulation::ForceChangeMaximum(int32 Change)
 {
 	Maximum += Change;
+	OnChanged.Broadcast();
 }
 
-void UPopulation::ForceChangeFollower(EReligion Religion, int32 Change)
+void UPopulation::ForceChangeFollower(int32 ChangeC, int32 ChangeG1, int32 ChangeG2, int32 ChangeG3, int32 ChangeG4)
 {
-	Follower[static_cast<int32>(Religion)] += Change;
+	Follower[static_cast<int32>(EReligion::Colonists)] += ChangeC;
+	Follower[static_cast<int32>(EReligion::Guardian1)] += ChangeG1;
+	Follower[static_cast<int32>(EReligion::Guardian2)] += ChangeG2;
+	Follower[static_cast<int32>(EReligion::Guardian3)] += ChangeG3;
+	Follower[static_cast<int32>(EReligion::Guardian4)] += ChangeG4;
+	OnChanged.Broadcast();
 }
 
-void UPopulation::ForceChangeMood(EMood Mood, int32 Change)
+void UPopulation::ForceChangeMood(int32 ChangeNeutral, int32 ChangeAggressive, int32 ChangeFearful)
 {
-	Moods[static_cast<int32>(Mood)] += Change;
+	Moods[static_cast<int32>(EMood::Neutral)] += ChangeNeutral;
+	Moods[static_cast<int32>(EMood::Aggressive)] += ChangeAggressive;
+	Moods[static_cast<int32>(EMood::Fearful)] += ChangeFearful;
+	OnChanged.Broadcast();
 }
 
 void UPopulation::ForceChangeWorkforce(int32 Change)
 {
 	Workforce += Change;
+	OnChanged.Broadcast();
 }
