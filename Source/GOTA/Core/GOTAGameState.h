@@ -118,10 +118,10 @@ public:
 	void RegisterTileForTotalsUpdates(ATile* Tile);
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void RegisterColonialSettlementForTotalsUpdates(UPopulation* Population);
+	void RegisterColonialSettlementForTotalsUpdates(UPopulationSummary* Population);
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void RegisterNativeSettlementForTotalsUpdates(UPopulation* Population);
+	void RegisterNativeSettlementForTotalsUpdates(UPopulationSummary* Population);
 
 	//====================================================================
 	//-------------------- Attributes
@@ -136,11 +136,11 @@ public:
 	UGOTAAttribute* TotalWildlife;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
-	UPopulation* TotalColonialPopulation;
+	UPopulationSummary* TotalColonialPopulation;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
-	UPopulation* TotalNativePopulation;
+	UPopulationSummary* TotalNativePopulation;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
-	UPopulation* TotalPopulation;
+	UPopulationSummary* TotalPopulation;
 };

@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Settlement.h"
+
+#include "AI/NavigationSystemBase.h"
 #include "GOTA/Core/GOTAGameState.h"
 #include "GOTA/Core/LoadingManager.h"
 #include "Net/UnrealNetwork.h"
@@ -10,9 +12,8 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
 	DOREPLIFETIME(ASettlement, ClaimColor);
-	DOREPLIFETIME(ASettlement, JobManager);
-	
-	DOREPLIFETIME(ASettlement, Population);
+	DOREPLIFETIME(ASettlement, PopulationSummary);
+	DOREPLIFETIME(ASettlement, PrimaryReligion);
 	DOREPLIFETIME(ASettlement, Food);
 	DOREPLIFETIME(ASettlement, Wood);
 	DOREPLIFETIME(ASettlement, Expansion);
@@ -25,9 +26,8 @@ ASettlement::ASettlement()
 	bReplicateUsingRegisteredSubObjectList = true;
 	Food = CreateDefaultSubobject<UGOTAAttribute>(TEXT("FoodAttribute"));
 	Wood = CreateDefaultSubobject<UGOTAAttribute>(TEXT("WoodAttribute"));
-	Population = CreateDefaultSubobject<UPopulation>(TEXT("PopulationAttribute"));
+	PopulationSummary = CreateDefaultSubobject<UPopulationSummary>(TEXT("PopulationAttribute"));
 	Expansion = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("ExpansionAttribute"));
-	JobManager = CreateDefaultSubobject<UJobManager>(TEXT("JobManager"));
 
 
 }
@@ -44,20 +44,27 @@ void ASettlement::BeginPlay()
 	{
 		AddReplicatedSubObject(Food);
 		AddReplicatedSubObject(Wood);
-		AddReplicatedSubObject(Population);
+		AddReplicatedSubObject(PopulationSummary);
 		AddReplicatedSubObject(Expansion);
-		AddReplicatedSubObject(JobManager);
-
-		JobManager->BindToPopulationAttribute(Population);
 	}
 }
 
 void ASettlement::OnBuildingAdded(UBuilding* Building)
 {
-	JobManager->BindToBuilding(Building);
+	if(Building)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Building exist"));
+	} else
+	{
+		UE_LOG(LogTemp, Log, TEXT("Building doesn't exist wtf"));
+	}
+	if(Building->Population)
+	{
+		UE_LOG(LogTemp, Log, TEXT("Building Population exist"));
+	}
+	PopulationSummary->RegisterPopulation(Building->Population);
 }
 
 void ASettlement::OnBuildingRemoved(UBuilding* Building)
 {
-	JobManager->UnbindToBuilding(Building);
 }

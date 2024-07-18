@@ -65,18 +65,22 @@ public:
 	FOnFollowerChangedSignature OnFollowerChanged;
 	UPROPERTY(BlueprintAssignable, Category="Population")
 	FOnMoodChangedSignature OnMoodChanged;
-	UPROPERTY(BlueprintAssignable, Category="Population")
-	FOnChangedSignature OnWorkforceChanged;
 
 public:
-	UPROPERTY(BlueprintGetter=GetCurrent, Category = "Population")
+	UPROPERTY(ReplicatedUsing=OnRep_Current, BlueprintGetter=GetCurrent, Category = "Population")
 	int32 Current = 0;
 
+	UFUNCTION()
+	void OnRep_Current(int32 Change);
+	
 	UFUNCTION(BlueprintGetter, BlueprintPure, Category = "Population")
 	int32 GetCurrent() const;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Population")
+	UPROPERTY(ReplicatedUsing=OnRep_Maximum, BlueprintReadOnly, Category = "Population")
 	int32 Maximum = 0;
+
+	UFUNCTION()
+	void OnRep_Maximum(int32 Change);
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void ChangePopulation(int32 Change, int32& Effective_Change);
@@ -88,16 +92,16 @@ public:
 	//                           Followers
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 private:
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=OnRep_Follower)
 	TArray<int32> Follower;
 	void AddOneFollowerWeightedRandom(EReligion Exclude = EReligion::MAX);
 	void SubtractOneFollowerWeightedRandom(EReligion Exclude = EReligion::MAX);
 	void AddOneFollowerToGuardiansFullRandom();
 
 public:
-	UPROPERTY(BlueprintReadWrite, Replicated)
-	EReligion PrimaryReligion = EReligion::Colonists;
-
+	UFUNCTION()
+	void OnRep_Follower();
+	
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void ChangeFollower(EReligion Religion, int32 Change, int32& Effective_Change);
 
@@ -114,11 +118,14 @@ public:
 	//                            Mood
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 private:
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=OnRep_Moods)
 	TArray<int32> Moods;
 	void SubtractOneMoodWeightedRandom(EMood Exclude = EMood::MAX);
 
 public:
+	UFUNCTION()
+	void OnRep_Moods();
+	
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void ChangeMood(EMood Mood, int32 Change, int32& Effective_Change);
 
@@ -127,43 +134,4 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void GetAllMood(int32& Neutral, int32& Fearful, int32& Aggressive);
-
-	//====================================================================
-	//                          Workforce
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-private:
-public:
-	UPROPERTY(BlueprintReadWrite, Replicated)
-	int32 PopToWorkforceRatio = 4;
-
-	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ChangePopToWorkforceRatio(int32 Change);
-
-	UPROPERTY(BlueprintGetter=GetWorkforce, Replicated)
-	int32 Workforce = 0;
-
-	UFUNCTION(BlueprintGetter, BlueprintPure, Category = "Population")
-	int32 GetWorkforce();
-
-	void CalculateWorkforce();
-
-	//====================================================================
-	//                          Force Change Functions
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-	// We need this functions to be able to track the global population
-
-	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ForceChangePopulation(int32 Change);
-
-	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ForceChangeMaximum(int32 Change);
-
-	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ForceChangeFollower(int32 ChangeC, int32 ChangeG1, int32 ChangeG2, int32 ChangeG3, int32 ChangeG4);
-
-	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ForceChangeMood(int32 ChangeNeutral, int32 ChangeAggressive, int32 ChangeFearful);
-
-	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ForceChangeWorkforce(int32 Change);
 };

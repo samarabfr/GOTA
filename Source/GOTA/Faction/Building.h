@@ -6,6 +6,7 @@
 #include "Gota/TileMap/Tile.h"
 #include "CoreMinimal.h"
 #include "Population.h"
+#include "BuildingProduction.h"
 #include "Building.generated.h"
 
 class UBuildingDataAsset;
@@ -16,6 +17,7 @@ class GOTA_API UBuilding : public UObject
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
+	UBuilding();
 	
 	//====================================================================
 	//--------------------Overrideable Events
@@ -42,14 +44,11 @@ public:
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	FName Name;
+	UBuildingDataAsset* DataAsset;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	FText Description;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	UStaticMesh* Mesh;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
 	UPopulation* Population;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
+	UBuildingProduction* Production;
 };

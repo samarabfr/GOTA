@@ -35,9 +35,9 @@ AGOTAGameState::AGOTAGameState()
 	TotalTrees = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Trees"));
 	TotalForage = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Forage"));
 	TotalWildlife = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Wildlife"));
-	TotalColonialPopulation = CreateDefaultSubobject<UPopulation>(TEXT("Total Colonial Population"));
-	TotalNativePopulation = CreateDefaultSubobject<UPopulation>(TEXT("Total Native Population"));
-	TotalPopulation = CreateDefaultSubobject<UPopulation>(TEXT("Total Population"));
+	TotalColonialPopulation = CreateDefaultSubobject<UPopulationSummary>(TEXT("Total Colonial Population"));
+	TotalNativePopulation = CreateDefaultSubobject<UPopulationSummary>(TEXT("Total Native Population"));
+	TotalPopulation = CreateDefaultSubobject<UPopulationSummary>(TEXT("Total Population"));
 }
 
 void AGOTAGameState::AddFaction(AFaction* NewFaction)

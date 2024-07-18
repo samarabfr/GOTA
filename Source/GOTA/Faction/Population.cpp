@@ -7,12 +7,11 @@
 void UPopulation::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
+	
+	DOREPLIFETIME(UPopulation, Current);
+	DOREPLIFETIME(UPopulation, Maximum);
 	DOREPLIFETIME(UPopulation, Follower);
-	DOREPLIFETIME(UPopulation, PrimaryReligion);
 	DOREPLIFETIME(UPopulation, Moods);
-	DOREPLIFETIME(UPopulation, PopToWorkforceRatio);
-	DOREPLIFETIME(UPopulation, Workforce);
 }
 
 bool UPopulation::IsSupportedForNetworking() const
@@ -26,9 +25,21 @@ UPopulation::UPopulation()
 	Moods.Init(0, static_cast<int32>(EMood::MAX));
 }
 
+void UPopulation::OnRep_Current(int32 Change)
+{
+	OnPopulationChanged.Broadcast(Change);
+	OnChanged.Broadcast();
+}
+
 int32 UPopulation::GetCurrent() const
 {
 	return Current;
+}
+
+void UPopulation::OnRep_Maximum(int32 Change)
+{
+	OnMaximumChanged.Broadcast(Change);
+	OnChanged.Broadcast();
 }
 
 void UPopulation::ChangePopulation(int32 Change, int32& Effective_Change)
@@ -48,7 +59,7 @@ void UPopulation::ChangePopulation(int32 Change, int32& Effective_Change)
 
 	if (OldValue == 0) // Initial Pop increase
 	{
-		Follower[static_cast<int32>(PrimaryReligion)] += Effective_Change;
+		Follower[0] += Effective_Change;
 		Moods[0] += Effective_Change;
 	}
 	else if (Effective_Change < 0) // Pop got reduced
@@ -67,7 +78,6 @@ void UPopulation::ChangePopulation(int32 Change, int32& Effective_Change)
 			Moods[0]++;
 		}
 	}
-	CalculateWorkforce();
 	OnChanged.Broadcast();
 	OnPopulationChanged.Broadcast(Effective_Change);
 	OnFollowerChanged.Broadcast(
@@ -169,6 +179,12 @@ void UPopulation::SubtractOneFollowerWeightedRandom(EReligion Exclude)
 void UPopulation::AddOneFollowerToGuardiansFullRandom()
 {
 	Follower[FMath::RandRange(0, 3)]++;
+}
+
+void UPopulation::OnRep_Follower()
+{
+	OnFollowerChanged.Broadcast(0,0,0,0,0);
+	OnChanged.Broadcast();
 }
 
 void UPopulation::ChangeFollower(EReligion Religion, int32 Change, int32& Effective_Change)
@@ -312,6 +328,12 @@ void UPopulation::SubtractOneMoodWeightedRandom(EMood Exclude)
 	}
 }
 
+void UPopulation::OnRep_Moods()
+{
+	OnMoodChanged.Broadcast(0,0,0);
+	OnChanged.Broadcast();
+}
+
 void UPopulation::ChangeMood(EMood Mood, int32 Change, int32& Effective_Change)
 {
 	int32 MoodIndex = static_cast<int32>(Mood);
@@ -400,70 +422,4 @@ void UPopulation::GetAllMood(int32& Neutral, int32& Fearful, int32& Aggressive)
 	Neutral = Moods[0];
 	Fearful = Moods[1];
 	Aggressive = Moods[2];
-}
-
-void UPopulation::ChangePopToWorkforceRatio(int32 Change)
-{
-	PopToWorkforceRatio += Change;
-	if (PopToWorkforceRatio < 1) PopToWorkforceRatio = 1;
-	CalculateWorkforce();
-}
-
-//====================================================================
-//                          Workforce
-//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-
-int32 UPopulation::GetWorkforce()
-{
-	return Workforce;
-}
-
-void UPopulation::CalculateWorkforce()
-{
-	int32 OldWorkforce = Workforce;
-	Workforce = Current / PopToWorkforceRatio;
-	if (OldWorkforce != Workforce)
-	{
-		OnWorkforceChanged.Broadcast(Workforce - OldWorkforce);
-	}
-}
-
-//====================================================================
-//                          Force Change Functions
-//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-
-void UPopulation::ForceChangePopulation(int32 Change)
-{
-	Current += Change;
-	OnChanged.Broadcast();
-}
-
-void UPopulation::ForceChangeMaximum(int32 Change)
-{
-	Maximum += Change;
-	OnChanged.Broadcast();
-}
-
-void UPopulation::ForceChangeFollower(int32 ChangeC, int32 ChangeG1, int32 ChangeG2, int32 ChangeG3, int32 ChangeG4)
-{
-	Follower[static_cast<int32>(EReligion::Colonists)] += ChangeC;
-	Follower[static_cast<int32>(EReligion::Guardian1)] += ChangeG1;
-	Follower[static_cast<int32>(EReligion::Guardian2)] += ChangeG2;
-	Follower[static_cast<int32>(EReligion::Guardian3)] += ChangeG3;
-	Follower[static_cast<int32>(EReligion::Guardian4)] += ChangeG4;
-	OnChanged.Broadcast();
-}
-
-void UPopulation::ForceChangeMood(int32 ChangeNeutral, int32 ChangeAggressive, int32 ChangeFearful)
-{
-	Moods[static_cast<int32>(EMood::Neutral)] += ChangeNeutral;
-	Moods[static_cast<int32>(EMood::Aggressive)] += ChangeAggressive;
-	Moods[static_cast<int32>(EMood::Fearful)] += ChangeFearful;
-	OnChanged.Broadcast();
-}
-
-void UPopulation::ForceChangeWorkforce(int32 Change)
-{
-	Workforce += Change;
-	OnChanged.Broadcast();
 }

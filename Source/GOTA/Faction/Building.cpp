@@ -9,9 +9,16 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UBuilding, Population);
+	DOREPLIFETIME(UBuilding, Production);
 }
 
 bool UBuilding::IsSupportedForNetworking() const
 {
 	return true;
+}
+
+UBuilding::UBuilding()
+{
+	Population = CreateDefaultSubobject<UPopulation>(TEXT("Population"));
+	Production = CreateDefaultSubobject<UBuildingProduction>(TEXT("Production"));
 }
