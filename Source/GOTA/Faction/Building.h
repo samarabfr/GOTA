@@ -5,6 +5,8 @@
 
 #include "Gota/TileMap/Tile.h"
 #include "CoreMinimal.h"
+#include "Population.h"
+#include "BuildingProduction.h"
 #include "Building.generated.h"
 
 class UBuildingDataAsset;
@@ -13,8 +15,10 @@ UCLASS(Blueprintable)
 class GOTA_API UBuilding : public UObject
 {
 	GENERATED_BODY()
-
-
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual bool IsSupportedForNetworking() const override;
+	UBuilding();
+	
 	//====================================================================
 	//--------------------Overrideable Events
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -25,7 +29,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
 	void OnUnbuild(const ATile* Tile);
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
 	void OnClaim(const ASettlement* Claimant);
 
@@ -35,22 +39,19 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
 	void OnTurn(const ATile* Tile);
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
-	int32 BuildPriority(const ASettlement* Builder);
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
-	bool CanBuilderAfford(const ASettlement* Builder);
-	
 	//====================================================================
 	//--------------------Simple Variables
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
-	FName Name;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
-	FText Description;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	UBuildingDataAsset* DataAsset;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
-	UStaticMesh* Mesh;
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
+	UPopulation* Population;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
+	UBuildingProduction* Production;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
+	int32 Tier = 1;
 };

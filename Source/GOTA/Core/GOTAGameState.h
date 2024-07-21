@@ -28,7 +28,7 @@ class GOTA_API AGOTAGameState : public AGameState
 public:
 	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
 	ALoadingManager* LoadingManager;
-	
+
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
 	ATileMap* TileMap;
 
@@ -109,13 +109,20 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void Init();
-	
+
 	//====================================================================
 	//--------------------Overrideable Functions
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void RegisterTileForTotalsUpdates(ATile* Tile);
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
+	void RegisterColonialSettlementForTotalsUpdates(UPopulationSummary* Population);
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
+	void RegisterNativeSettlementForTotalsUpdates(UPopulationSummary* Population);
+
 	//====================================================================
 	//-------------------- Attributes
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -127,4 +134,13 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
 	UGOTAAttribute* TotalWildlife;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UPopulationSummary* TotalColonialPopulation;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UPopulationSummary* TotalNativePopulation;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UPopulationSummary* TotalPopulation;
 };
