@@ -21,4 +21,5 @@ UBuilding::UBuilding()
 {
 	Population = CreateDefaultSubobject<UPopulation>(TEXT("Population"));
 	Production = CreateDefaultSubobject<UBuildingProduction>(TEXT("Production"));
+	Production->BindToPopulation(Population);
 }

@@ -68,6 +68,9 @@ public:
 protected:
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Tile")
 	UBuilding* Building;
+	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
+	void AddBuildingToReplication();
 
 	//====================================================================
 	//--------------------Claimant

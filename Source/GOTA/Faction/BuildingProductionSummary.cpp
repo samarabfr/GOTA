@@ -3,6 +3,16 @@
 
 #include "BuildingProductionSummary.h"
 
+void UBuildingProductionSummary::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	UObject::GetLifetimeReplicatedProps(OutLifetimeProps);
+}
+
+bool UBuildingProductionSummary::IsSupportedForNetworking() const
+{
+	return true;
+}
+
 UBuildingProductionSummary::UBuildingProductionSummary()
 {
 	for (int i = 0; i < static_cast<int32>(EProductionType::MAX); i++)
@@ -17,7 +27,7 @@ void UBuildingProductionSummary::RegisterBuildingProduction(UBuildingProduction*
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Couldn't register Building Production, nullptr"));
 	}
-	BuildingProduction->OnProductionChanged.AddDynamic(this, &UBuildingProductionSummary:: UpdateBuildingProduction);
+	BuildingProduction->OnProductionChanged.AddDynamic(this, &UBuildingProductionSummary::UpdateBuildingProduction);
 	if(BuildingProduction->Production != 0)
 	{
 		ProductionMap[BuildingProduction->ProductionType] += BuildingProduction->Production;

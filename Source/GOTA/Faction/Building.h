@@ -51,4 +51,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
 	UBuildingProduction* Production;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
+	int32 Tier = 1;
 };

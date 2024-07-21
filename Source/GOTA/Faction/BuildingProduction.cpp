@@ -21,6 +21,11 @@ bool UBuildingProduction::IsSupportedForNetworking() const
 
 void UBuildingProduction::RecalculateProduction()
 {
+	if (PopulationThreshold <= 0)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("PopulationThreshold is zero or negative, cannot recalculate production."));
+		return;
+	}
 	int32 OldProduction = Production;
 	int32 HowOften = CurrentPopulation / PopulationThreshold;
 	Production = HowOften * ProductionPerThreshold;
@@ -41,5 +46,14 @@ void UBuildingProduction::UpdatePopulation(int32 Change)
 {
 	if (Change == 0) return;
 	CurrentPopulation += Change;
+	RecalculateProduction();
 	OnChanged.Broadcast();
+}
+
+void UBuildingProduction::Setup(int32 NewPopulationThreshold, int32 NewProductionPerThreshold,
+                                EProductionType NewProductionType)
+{
+	PopulationThreshold = NewPopulationThreshold;
+	ProductionPerThreshold = NewProductionPerThreshold;
+	ProductionType = NewProductionType;
 }

@@ -13,12 +13,15 @@ UCLASS()
 class GOTA_API UBuildingProductionSummary : public UObject
 {
 	GENERATED_BODY()
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual bool IsSupportedForNetworking() const override;
 	UBuildingProductionSummary();
 
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAnythingChangedSignature);
 	
 public:
+	UPROPERTY(BlueprintAssignable, Category="Building")
 	FOnAnythingChangedSignature OnChanged;
 	
 	UPROPERTY(BlueprintReadOnly)

@@ -3,34 +3,30 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BuildingTierData.h"
-#include "Engine/DataAsset.h"
-#include "BuildingDataAsset.generated.h"
+#include "BuildingProduction.h"
+#include "BuildingTierData.generated.h"
 
-UCLASS()
-class GOTA_API UBuildingDataAsset : public UPrimaryDataAsset
+USTRUCT(BlueprintType)
+struct GOTA_API FBuildingTierData
 {
 	GENERATED_BODY()
-	
+
 public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	FName Name;
+	int32 WoodCost = -1;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	FText Description;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	UStaticMesh* Mesh;
+	int32 StoneCost = -1;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	TSubclassOf<class UBuilding> BuildingClass;
+	int32 Housing = -1;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	FBuildingTierData TierOne;
+	EProductionType ProductionType = EProductionType::MAX;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	FBuildingTierData TierTwo;
+	int32 PopulationThreshold = -1;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	FBuildingTierData TierThree;
+	int32 ProductionPerThreshold = -1;
 };

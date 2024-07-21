@@ -13,9 +13,11 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	
 	DOREPLIFETIME(ASettlement, ClaimColor);
 	DOREPLIFETIME(ASettlement, PopulationSummary);
+	DOREPLIFETIME(ASettlement, ProductionSummary);
 	DOREPLIFETIME(ASettlement, PrimaryReligion);
 	DOREPLIFETIME(ASettlement, Food);
 	DOREPLIFETIME(ASettlement, Wood);
+	DOREPLIFETIME(ASettlement, Stone);
 	DOREPLIFETIME(ASettlement, Expansion);
 }
 
@@ -24,12 +26,12 @@ ASettlement::ASettlement()
 	// Replication stuff
 	bReplicates = true;
 	bReplicateUsingRegisteredSubObjectList = true;
-	Food = CreateDefaultSubobject<UGOTAAttribute>(TEXT("FoodAttribute"));
-	Wood = CreateDefaultSubobject<UGOTAAttribute>(TEXT("WoodAttribute"));
-	PopulationSummary = CreateDefaultSubobject<UPopulationSummary>(TEXT("PopulationAttribute"));
-	Expansion = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("ExpansionAttribute"));
-
-
+	Food = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Food"));
+	Wood = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Wood"));
+	Stone = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Stone"));
+	PopulationSummary = CreateDefaultSubobject<UPopulationSummary>(TEXT("Population"));
+	ProductionSummary = CreateDefaultSubobject<UBuildingProductionSummary>(TEXT("Production"));
+	Expansion = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Expansion"));
 }
 
 void ASettlement::BeginPlay()
@@ -44,7 +46,9 @@ void ASettlement::BeginPlay()
 	{
 		AddReplicatedSubObject(Food);
 		AddReplicatedSubObject(Wood);
+		AddReplicatedSubObject(Stone);
 		AddReplicatedSubObject(PopulationSummary);
+		AddReplicatedSubObject(ProductionSummary);
 		AddReplicatedSubObject(Expansion);
 	}
 }
@@ -63,6 +67,7 @@ void ASettlement::OnBuildingAdded(UBuilding* Building)
 		UE_LOG(LogTemp, Log, TEXT("Building Population exist"));
 	}
 	PopulationSummary->RegisterPopulation(Building->Population);
+	ProductionSummary->RegisterBuildingProduction(Building->Production);
 }
 
 void ASettlement::OnBuildingRemoved(UBuilding* Building)

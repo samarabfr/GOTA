@@ -31,13 +31,15 @@ class GOTA_API UBuildingProduction : public UObject
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnProductionChangedSignature,
 	                                             int32, Changed,
 	                                             EProductionType, Type);
-
+	
 	int32 CurrentPopulation = 0;
-
 	void RecalculateProduction();
 
 public:
+	UPROPERTY(BlueprintAssignable, Category="Building")
 	FOnAnythingChangedSignature OnChanged;
+
+	UPROPERTY(BlueprintAssignable, Category="Building")
 	FOnProductionChangedSignature OnProductionChanged;
 
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Building")
@@ -57,4 +59,7 @@ public:
 
 	UFUNCTION()
 	void UpdatePopulation(int32 Change);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Building")
+	void Setup(int32 NewPopulationThreshold, int32 NewProductionPerThreshold, EProductionType NewProductionType);
 };

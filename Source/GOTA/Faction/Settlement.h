@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Building.h"
+#include "BuildingProductionSummary.h"
 #include "PopulationSummary.h"
 #include "GOTA/TileMap/Tile.h"
 #include "GameFramework/Actor.h"
@@ -57,7 +58,7 @@ public:
 	void GenerateBaseIncome();
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
-	void GenerateJobIncome();
+	void GenerateBuildingIncome();
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void FigureOutBuilding();
@@ -87,7 +88,7 @@ public:
 	FLinearColor ClaimColor;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Settlement")
-	TArray<TSubclassOf<UBuilding>> PossibleBuildings;
+	TArray<UBuildingDataAsset*> PossibleBuildings;
 
 	UPROPERTY(BlueprintReadWrite, Replicated)
 	EReligion PrimaryReligion = EReligion::Colonists;
@@ -103,7 +104,13 @@ public:
 	UGOTAAttribute* Wood;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Attribute")
+	UGOTAAttribute* Stone;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Attribute")
 	UPopulationSummary* PopulationSummary;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Attribute")
+	UBuildingProductionSummary* ProductionSummary;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Attribute")
 	UGOTAAttributeLimited* Expansion;

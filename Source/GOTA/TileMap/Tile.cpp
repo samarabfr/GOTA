@@ -53,6 +53,13 @@ void ATile::BeginPlay()
 //--------------------Claimant
 //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
+void ATile::AddBuildingToReplication()
+{
+	AddReplicatedSubObject(Building);
+	AddReplicatedSubObject(Building->Population);
+	AddReplicatedSubObject(Building->Production);
+}
+
 void ATile::OnRep_Claimant(ASettlement* NewClaimant)
 {
 	ClaimantChanged();
