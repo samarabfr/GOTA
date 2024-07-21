@@ -12,6 +12,7 @@ class GOTA_API UGOTAAttribute : public UObject
 	GENERATED_BODY()
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual bool IsSupportedForNetworking() const override;
 	
 	// Delegate 
 	UDELEGATE()

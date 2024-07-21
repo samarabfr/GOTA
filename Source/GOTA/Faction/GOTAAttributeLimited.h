@@ -16,7 +16,7 @@ class GOTA_API UGOTAAttributeLimited : public UGOTAAttribute
 	GENERATED_BODY()
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	virtual bool IsSupportedForNetworking() const override;
 	
 protected:
 	UPROPERTY(BlueprintGetter=GetMaximum, BlueprintSetter=SetMaximum, ReplicatedUsing=OnRep_Maximum, Category = "Attribute")

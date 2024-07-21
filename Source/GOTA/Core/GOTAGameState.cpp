@@ -13,6 +13,7 @@ void AGOTAGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(AGOTAGameState, IsCalculatingTurn);
 	DOREPLIFETIME(AGOTAGameState, ShouldTickTurnTime);
 
+	DOREPLIFETIME(AGOTAGameState, TileMap);
 	DOREPLIFETIME(AGOTAGameState, Factions);
 	DOREPLIFETIME(AGOTAGameState, Settlements);
 	DOREPLIFETIME(AGOTAGameState, Guardians);
@@ -25,6 +26,8 @@ void AGOTAGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 
 AGOTAGameState::AGOTAGameState()
 {
+	bReplicates = true;
+	bReplicateUsingRegisteredSubObjectList = true;
 	TotalTrees = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Trees"));
 	TotalForage = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Forage"));
 	TotalWildlife = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Wildlife"));
@@ -64,4 +67,11 @@ void AGOTAGameState::CallCalculationStart()
 void AGOTAGameState::CallCalculationEnd()
 {
 	TurnCalculationEnd.Broadcast();
+}
+
+void AGOTAGameState::Init()
+{
+	AddReplicatedSubObject(TotalTrees);
+	AddReplicatedSubObject(TotalForage);
+	AddReplicatedSubObject(TotalWildlife);
 }

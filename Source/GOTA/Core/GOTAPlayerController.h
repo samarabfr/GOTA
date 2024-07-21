@@ -10,18 +10,18 @@ UCLASS()
 class GOTA_API AGOTAPlayerController : public APlayerController
 {
 	GENERATED_BODY()
-	
+
 	//====================================================================
 	//--------------------Overrideable Functions
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-	
+
 public:
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="PlayerController")
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintCosmetic, Category="PlayerController")
 	void InitUI();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, BlueprintImplementableEvent, Category="PlayerController")
 	void Init();
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="PlayerController")
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintCosmetic, Category="PlayerController")
 	void InitInput();
 };

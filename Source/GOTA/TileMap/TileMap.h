@@ -12,20 +12,15 @@ UCLASS()
 class GOTA_API ATileMap : public AActor
 {
 	GENERATED_BODY()
-	
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	ATileMap();
 private:
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	TArray<ATile*> TileMap;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	int32 MapSize;
-	
-protected:
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "TileMap")
-	FVector2D HexCoordsToWorldPos(FHexCoords HexCoords);
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "TileMap")
-	FHexCoords WorldPosToHexCoords(FVector2D Vector);
 
 public:
 	UPROPERTY(EditAnywhere, Category = "TileMap")

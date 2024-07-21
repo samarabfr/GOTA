@@ -12,9 +12,6 @@
 
 class ALoadingManager;
 
-/**
- * 
- */
 UCLASS()
 class GOTA_API AGOTAGameState : public AGameState
 {
@@ -32,7 +29,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
 	ALoadingManager* LoadingManager;
 	
-	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
 	ATileMap* TileMap;
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Category="GOTAGameState")
@@ -110,16 +107,15 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void CallCalculationEnd();
 
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
+	void Init();
+	
 	//====================================================================
 	//--------------------Overrideable Functions
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void RegisterTileForTotalsUpdates(ATile* Tile);
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void Init();
-
 	//====================================================================
 	//-------------------- Attributes
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
