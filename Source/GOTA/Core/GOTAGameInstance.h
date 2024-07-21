@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Guardian.h"
 #include "Engine/GameInstance.h"
 #include "GOTAGameInstance.generated.h"
 
@@ -30,4 +31,8 @@ public:
 	// Default 8 for of singleplayer.
 	UPROPERTY(BlueprintReadWrite, Category="GOTAGameInstance")
 	int32 ColonistsSettlementCount = 8;
+
+	// 
+	UPROPERTY(BlueprintReadWrite, Category="GOTAGameInstance")
+	TArray<FString> SelectedGuardians;
 };

@@ -5,11 +5,6 @@
 
 #include "Net/UnrealNetwork.h"
 
-void AGOTALobbyGameState::PlayersChanged_Implementation()
-{
-	OnPlayersChanged.Broadcast();
-}
-
 void AGOTALobbyGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -17,6 +12,7 @@ void AGOTALobbyGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(AGOTALobbyGameState, IslandRadius);
 	DOREPLIFETIME(AGOTALobbyGameState, NativesCount);
 	DOREPLIFETIME(AGOTALobbyGameState, ColonistsCount);
+	DOREPLIFETIME(AGOTALobbyGameState, LobbyPlayers);
 }
 
 void AGOTALobbyGameState::OnRep_IslandRadius()
@@ -32,4 +28,17 @@ void AGOTALobbyGameState::OnRep_NativesCount()
 void AGOTALobbyGameState::OnRep_ColonistsCount()
 {
 	OnColonistsCountChanged.Broadcast(ColonistsCount);
+}
+
+void AGOTALobbyGameState::OnRep_LobbyPlayers()
+{
+	OnLobbyPlayersChanged.Broadcast();
+}
+
+ULobbyPlayer* AGOTALobbyGameState::CreateLobbyPlayer()
+{
+	ULobbyPlayer* LobbyPlayer = NewObject<ULobbyPlayer>(this);
+	AddReplicatedSubObject(LobbyPlayer);
+	LobbyPlayers.Add(LobbyPlayer);
+	return LobbyPlayer;
 }

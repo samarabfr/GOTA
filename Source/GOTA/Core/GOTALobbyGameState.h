@@ -3,6 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GOTAPlayerState.h"
+#include "LobbyPlayer.h"
 #include "GameFramework/GameStateBase.h"
 #include "GOTALobbyGameState.generated.h"
 
@@ -16,16 +18,6 @@ class GOTA_API AGOTALobbyGameState : public AGameStateBase
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
-	// Players
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPlayersChangedSignature);
-	
-	UPROPERTY(BlueprintAssignable, Category="GOTALobbyGameState")
-	FPlayersChangedSignature OnPlayersChanged;
-
-	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
-	void PlayersChanged();
-
 	// Island Radius
 	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=OnRep_IslandRadius , Category="GOTALobbyGameState")
 	int32 IslandRadius;
@@ -64,4 +56,20 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category="GOTALobbyGameState")
 	FOnColonistsCountChangedSignature OnColonistsCountChanged;
+
+	// Lobby players
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=OnRep_LobbyPlayers , Category="GOTALobbyGameState")
+	TArray<ULobbyPlayer*> LobbyPlayers;
+
+	UFUNCTION(BlueprintCallable)
+	void OnRep_LobbyPlayers();
+
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLobbyPlayersChangedSignature);
+
+	UPROPERTY(BlueprintAssignable, Category="GOTALobbyGameState")
+	FOnLobbyPlayersChangedSignature OnLobbyPlayersChanged;
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
+	ULobbyPlayer* CreateLobbyPlayer();
 };
