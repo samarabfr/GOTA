@@ -35,14 +35,14 @@ public:
 	
 	// Lobby players
 	UPROPERTY(BlueprintReadWrite, Category="GOTALobbyGameState")
-	ULobbyPlayer* LobbyPlayer1;
+	TSubclassOf<class AGuardian> SelectedGuardian1;
 
 	UPROPERTY(BlueprintReadWrite, Category="GOTALobbyGameState")
-	ULobbyPlayer* LobbyPlayer2;
+	TSubclassOf<class AGuardian> SelectedGuardian2;
 
 	UPROPERTY(BlueprintReadWrite, Category="GOTALobbyGameState")
-	ULobbyPlayer* LobbyPlayer3;
+	TSubclassOf<class AGuardian> SelectedGuardian3;
 
 	UPROPERTY(BlueprintReadWrite, Category="GOTALobbyGameState")
-	ULobbyPlayer* LobbyPlayer4;
+	TSubclassOf<class AGuardian> SelectedGuardian4;
 };
