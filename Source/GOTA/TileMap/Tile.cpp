@@ -16,6 +16,7 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME(ATile, Trees);
 	DOREPLIFETIME(ATile, Forage);
 	DOREPLIFETIME(ATile, Wildlife);
+	DOREPLIFETIME(ATile, Building);
 }
 
 // Constructor
@@ -51,6 +52,13 @@ void ATile::BeginPlay()
 //====================================================================
 //--------------------Claimant
 //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+void ATile::AddBuildingToReplication()
+{
+	AddReplicatedSubObject(Building);
+	AddReplicatedSubObject(Building->Population);
+	AddReplicatedSubObject(Building->Production);
+}
 
 void ATile::OnRep_Claimant(ASettlement* NewClaimant)
 {

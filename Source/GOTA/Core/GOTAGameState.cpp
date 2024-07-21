@@ -22,6 +22,10 @@ void AGOTAGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(AGOTAGameState, TotalTrees);
 	DOREPLIFETIME(AGOTAGameState, TotalForage);
 	DOREPLIFETIME(AGOTAGameState, TotalWildlife);
+
+	DOREPLIFETIME(AGOTAGameState, TotalColonialPopulation);
+	DOREPLIFETIME(AGOTAGameState, TotalNativePopulation);
+	DOREPLIFETIME(AGOTAGameState, TotalPopulation);
 }
 
 AGOTAGameState::AGOTAGameState()
@@ -31,6 +35,9 @@ AGOTAGameState::AGOTAGameState()
 	TotalTrees = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Trees"));
 	TotalForage = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Forage"));
 	TotalWildlife = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Wildlife"));
+	TotalColonialPopulation = CreateDefaultSubobject<UPopulationSummary>(TEXT("Total Colonial Population"));
+	TotalNativePopulation = CreateDefaultSubobject<UPopulationSummary>(TEXT("Total Native Population"));
+	TotalPopulation = CreateDefaultSubobject<UPopulationSummary>(TEXT("Total Population"));
 }
 
 void AGOTAGameState::AddFaction(AFaction* NewFaction)
@@ -74,4 +81,7 @@ void AGOTAGameState::Init()
 	AddReplicatedSubObject(TotalTrees);
 	AddReplicatedSubObject(TotalForage);
 	AddReplicatedSubObject(TotalWildlife);
+	AddReplicatedSubObject(TotalColonialPopulation);
+	AddReplicatedSubObject(TotalNativePopulation);
+	AddReplicatedSubObject(TotalPopulation);
 }

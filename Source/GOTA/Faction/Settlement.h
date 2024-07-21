@@ -3,13 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GOTAAttributePopulation.h"
+#include "Building.h"
+#include "BuildingProductionSummary.h"
+#include "PopulationSummary.h"
 #include "GOTA/TileMap/Tile.h"
 #include "GameFramework/Actor.h"
 #include "Settlement.generated.h"
 
 UCLASS(Abstract, Blueprintable)
-class  ASettlement : public AActor
+class ASettlement : public AActor
 {
 	//Unreal Engine Mystery Code
 	GENERATED_BODY()
@@ -17,9 +19,9 @@ class  ASettlement : public AActor
 
 	// Constructor
 	ASettlement();
-	
+
 	virtual void BeginPlay() override;
-	
+
 	//====================================================================
 	//--------------------Delegates
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -45,12 +47,32 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void CalculateTurn();
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void LostClaim(const ATile* Tile);
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void ClaimTile(const ATile* Tile);
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
+	void GenerateBaseIncome();
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
+	void GenerateBuildingIncome();
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
+	void FigureOutBuilding();
+
+	
+	//====================================================================
+	//-------------------- Functions
+	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
+	void OnBuildingAdded(UBuilding* Building);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
+	void OnBuildingRemoved(UBuilding* Building);
 
 	//====================================================================
 	//--------------------Variables
@@ -65,6 +87,12 @@ public:
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
 	FLinearColor ClaimColor;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Settlement")
+	TArray<UBuildingDataAsset*> PossibleBuildings;
+
+	UPROPERTY(BlueprintReadWrite, Replicated)
+	EReligion PrimaryReligion = EReligion::Colonists;
+	
 	//====================================================================
 	//--------------------Attributes
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -76,7 +104,13 @@ public:
 	UGOTAAttribute* Wood;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Attribute")
-	UGOTAAttributePopulation* Population;
+	UGOTAAttribute* Stone;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Attribute")
+	UPopulationSummary* PopulationSummary;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Attribute")
+	UBuildingProductionSummary* ProductionSummary;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Attribute")
 	UGOTAAttributeLimited* Expansion;

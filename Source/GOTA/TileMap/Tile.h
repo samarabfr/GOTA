@@ -19,9 +19,9 @@ class GOTA_API ATile : public AActor
 
 	//Constructor
 	ATile();
-	
+
 	virtual void BeginPlay() override;
-	
+
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
 
@@ -51,29 +51,32 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintCosmetic, Category="Tile")
 	void OnLeavingActiveRangeOfGuardian();
-	
+
 	//====================================================================
 	//--------------------Bool Flags
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 public:
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, Category="Tile")
 	bool IsWalkable;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, Category="Tile")
 	bool IsClaimable;
 
 	//====================================================================
 	//--------------------Building
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 protected:
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="Tile")
 	UBuilding* Building;
 	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
+	void AddBuildingToReplication();
+
 	//====================================================================
 	//--------------------Claimant
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 private:
-	UPROPERTY(BlueprintSetter=SetClaimant, BlueprintGetter=GetClaimant, ReplicatedUsing=OnRep_Claimant)
+	UPROPERTY(BlueprintSetter=SetClaimant, BlueprintGetter=GetClaimant, ReplicatedUsing=OnRep_Claimant, Category="Tile")
 	ASettlement* Claimant;
 
 	UFUNCTION()
