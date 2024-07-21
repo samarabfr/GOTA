@@ -18,8 +18,11 @@ class ULobbyPlayer : public UObject
 
 public:
 	// selected guardian
-	UPROPERTY(BlueprintReadWrite, Category="LobbyPlayer", ReplicatedUsing=OnRep_SelectedGuardian)
+	UPROPERTY(BlueprintReadWrite, Category="LobbyPlayer", ReplicatedUsing=OnRep_SelectedGuardian, BlueprintSetter=SetSelectedGuardian)
 	TSubclassOf<class AGuardian> SelectedGuardian;
+
+	UFUNCTION(BlueprintSetter)
+	void SetSelectedGuardian(TSubclassOf<class AGuardian> NewSelectedGuardian);
 
 	UFUNCTION(BlueprintCallable)
 	void OnRep_SelectedGuardian();
@@ -31,8 +34,11 @@ public:
 	FOnSelectedGuardianChangedSignature OnSelectedGuardianChanged;
 
 	// Player state
-	UPROPERTY(BlueprintReadWrite, Category="LobbyPlayer", ReplicatedUsing=OnRep_PlayerState)
+	UPROPERTY(BlueprintReadWrite, Category="LobbyPlayer", ReplicatedUsing=OnRep_PlayerState, BlueprintSetter=SetPlayerState)
 	APlayerState* PlayerState;
+
+	UFUNCTION(BlueprintSetter)
+	void SetPlayerState(APlayerState* NewPlayerState);
 
 	UFUNCTION(BlueprintCallable)
 	void OnRep_PlayerState();

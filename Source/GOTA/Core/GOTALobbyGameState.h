@@ -17,10 +17,16 @@ class GOTA_API AGOTALobbyGameState : public AGameStateBase
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	virtual void BeginPlay() override;
+	AGOTALobbyGameState();
+
 public:
 	// Island Radius
-	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=OnRep_IslandRadius , Category="GOTALobbyGameState")
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=OnRep_IslandRadius , Category="GOTALobbyGameState", BlueprintSetter=SetIslandRadius)
 	int32 IslandRadius;
+
+	UFUNCTION(BlueprintSetter)
+	void SetIslandRadius(int32 NewIslandRadius);
 
 	UFUNCTION(BlueprintCallable)
 	void OnRep_IslandRadius();
@@ -32,8 +38,11 @@ public:
 	FOnIslandRadiusChangedSignature OnIslandRadiusChanged;
 
 	// Natives Count
-	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=OnRep_NativesCount , Category="GOTALobbyGameState")
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=OnRep_NativesCount , Category="GOTALobbyGameState", BlueprintSetter=SetNativesCount)
 	int32 NativesCount;
+
+	UFUNCTION(BlueprintSetter)
+	void SetNativesCount(int32 NewNativesCount);
 
 	UFUNCTION(BlueprintCallable)
 	void OnRep_NativesCount();
@@ -45,8 +54,11 @@ public:
 	FOnNativesCountChangedSignature OnNativesCountChanged;
 
 	// Colonists Count
-	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=OnRep_ColonistsCount , Category="GOTALobbyGameState")
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=OnRep_ColonistsCount , Category="GOTALobbyGameState", BlueprintSetter=SetColonistsCount)
 	int32 ColonistsCount;
+
+	UFUNCTION(BlueprintSetter)
+	void SetColonistsCount(int32 NewColonistsCount);
 
 	UFUNCTION(BlueprintCallable)
 	void OnRep_ColonistsCount();
@@ -57,19 +69,19 @@ public:
 	UPROPERTY(BlueprintAssignable, Category="GOTALobbyGameState")
 	FOnColonistsCountChangedSignature OnColonistsCountChanged;
 
-	// Lobby players
-	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=OnRep_LobbyPlayers , Category="GOTALobbyGameState")
-	TArray<ULobbyPlayer*> LobbyPlayers;
+	// Lobby player 1
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTALobbyGameState")
+	ULobbyPlayer* LobbyPlayer1;
 
-	UFUNCTION(BlueprintCallable)
-	void OnRep_LobbyPlayers();
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTALobbyGameState")
+	ULobbyPlayer* LobbyPlayer2;
 
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnLobbyPlayersChangedSignature);
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTALobbyGameState")
+	ULobbyPlayer* LobbyPlayer3;
 
-	UPROPERTY(BlueprintAssignable, Category="GOTALobbyGameState")
-	FOnLobbyPlayersChangedSignature OnLobbyPlayersChanged;
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTALobbyGameState")
+	ULobbyPlayer* LobbyPlayer4;
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly)
-	ULobbyPlayer* CreateLobbyPlayer();
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void SetSelectedGuardian(TSubclassOf<class AGuardian> Guardian, ULobbyPlayer* LobbyPlayer);
 };
