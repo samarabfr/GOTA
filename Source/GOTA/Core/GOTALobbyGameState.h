@@ -69,7 +69,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category="GOTALobbyGameState")
 	FOnColonistsCountChangedSignature OnColonistsCountChanged;
 
-	// Lobby player 1
+	// Lobby players
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTALobbyGameState")
 	ULobbyPlayer* LobbyPlayer1;
 

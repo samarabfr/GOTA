@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Guardian.h"
+#include "LobbyPlayer.h"
 #include "Engine/GameInstance.h"
 #include "GOTAGameInstance.generated.h"
 
@@ -31,8 +32,17 @@ public:
 	// Default 8 for of singleplayer.
 	UPROPERTY(BlueprintReadWrite, Category="GOTAGameInstance")
 	int32 ColonistsSettlementCount = 8;
+	
+	// Lobby players
+	UPROPERTY(BlueprintReadWrite, Category="GOTALobbyGameState")
+	ULobbyPlayer* LobbyPlayer1;
 
-	// 
-	UPROPERTY(BlueprintReadWrite, Category="GOTAGameInstance")
-	TArray<FString> SelectedGuardians;
+	UPROPERTY(BlueprintReadWrite, Category="GOTALobbyGameState")
+	ULobbyPlayer* LobbyPlayer2;
+
+	UPROPERTY(BlueprintReadWrite, Category="GOTALobbyGameState")
+	ULobbyPlayer* LobbyPlayer3;
+
+	UPROPERTY(BlueprintReadWrite, Category="GOTALobbyGameState")
+	ULobbyPlayer* LobbyPlayer4;
 };
