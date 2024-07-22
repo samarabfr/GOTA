@@ -32,6 +32,9 @@ class ASettlement : public AActor
 	UPROPERTY(BlueprintAssignable, Category="Attributes")
 	FOnAnyAttributeChangedSignature OnAnyAttributeChanged;
 
+	UPROPERTY(BlueprintAssignable, Category="Attributes")
+	FOnAnyAttributeChangedSignature OnCurrentBuildingProjectChanged;
+
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
 
@@ -66,7 +69,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void FigureOutSendingArmy();
-	
+
 	//====================================================================
 	//-------------------- Functions
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -96,9 +99,12 @@ public:
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
 	EReligion PrimaryReligion = EReligion::Colonists;
 
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
+	UPROPERTY(BlueprintReadWrite, BlueprintSetter=SetCurrentBuildingProject, Replicated, Category="Settlement")
 	UBuildingProject* CurrentBuildingProject;
-	
+
+	UFUNCTION(BlueprintSetter)
+	void SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject);
+
 	//====================================================================
 	//--------------------Attributes
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv

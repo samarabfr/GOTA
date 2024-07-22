@@ -18,16 +18,16 @@ class GOTA_API UBuildingProject : public UObject
 	virtual bool IsSupportedForNetworking() const override;
 
 public:
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="Building")
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
 	ASettlement* Builder;
-	
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="Building")
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
 	UBuildingDataAsset* Data;
-	
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="Building")
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
 	int32 Tier = -1;
 
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="Building")
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
 	ATile* Tile;
 
 	UFUNCTION(BlueprintCallable, Category="Building")
@@ -38,7 +38,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Building")
 	bool TryBuilding();
-	
+
 	UFUNCTION(BlueprintCallable, Category="Building")
 	void Init(ASettlement* Builder_, UBuildingDataAsset* Data_, int32 Tier_, ATile* Tile_);
 };

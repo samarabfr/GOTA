@@ -76,3 +76,9 @@ void ASettlement::OnBuildingAdded(UBuilding* Building)
 void ASettlement::OnBuildingRemoved(UBuilding* Building)
 {
 }
+
+void ASettlement::SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject)
+{
+	CurrentBuildingProject = NewCurrentBuildingProject;
+	OnCurrentBuildingProjectChanged.Broadcast();
+}
