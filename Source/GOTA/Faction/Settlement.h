@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Building.h"
 #include "BuildingProductionSummary.h"
+#include "BuildingProject.h"
 #include "PopulationSummary.h"
 #include "GOTA/TileMap/Tile.h"
 #include "GameFramework/Actor.h"
@@ -90,8 +91,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Settlement")
 	TArray<UBuildingDataAsset*> PossibleBuildings;
 
-	UPROPERTY(BlueprintReadWrite, Replicated)
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
 	EReligion PrimaryReligion = EReligion::Colonists;
+
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
+	UBuildingProject* CurrentBuildingProject;
 	
 	//====================================================================
 	//--------------------Attributes

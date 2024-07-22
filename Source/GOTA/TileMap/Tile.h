@@ -65,7 +65,7 @@ public:
 	//====================================================================
 	//--------------------Building
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-protected:
+public:
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Tile")
 	UBuilding* Building;
 	

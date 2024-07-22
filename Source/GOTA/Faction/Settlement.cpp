@@ -15,6 +15,7 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(ASettlement, PopulationSummary);
 	DOREPLIFETIME(ASettlement, ProductionSummary);
 	DOREPLIFETIME(ASettlement, PrimaryReligion);
+	DOREPLIFETIME(ASettlement, CurrentBuildingProject);
 	DOREPLIFETIME(ASettlement, Food);
 	DOREPLIFETIME(ASettlement, Wood);
 	DOREPLIFETIME(ASettlement, Stone);
@@ -32,6 +33,7 @@ ASettlement::ASettlement()
 	PopulationSummary = CreateDefaultSubobject<UPopulationSummary>(TEXT("Population"));
 	ProductionSummary = CreateDefaultSubobject<UBuildingProductionSummary>(TEXT("Production"));
 	Expansion = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Expansion"));
+	CurrentBuildingProject = CreateDefaultSubobject<UBuildingProject>(TEXT("Current Building Project"));
 }
 
 void ASettlement::BeginPlay()
@@ -50,6 +52,7 @@ void ASettlement::BeginPlay()
 		AddReplicatedSubObject(PopulationSummary);
 		AddReplicatedSubObject(ProductionSummary);
 		AddReplicatedSubObject(Expansion);
+		AddReplicatedSubObject(CurrentBuildingProject);
 	}
 }
 
