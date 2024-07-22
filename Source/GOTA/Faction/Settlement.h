@@ -64,6 +64,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void FigureOutBuilding();
 
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
+	void FigureOutSendingArmy();
 	
 	//====================================================================
 	//-------------------- Functions

@@ -37,7 +37,7 @@ public:
 	bool CanAfford() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Building")
-	bool TryBuilding() const;
+	bool TryBuilding();
 	
 	UFUNCTION(BlueprintCallable, Category="Building")
 	void Init(ASettlement* Builder_, UBuildingDataAsset* Data_, int32 Tier_, ATile* Tile_);

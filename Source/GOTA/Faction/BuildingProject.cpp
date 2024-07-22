@@ -49,7 +49,7 @@ bool UBuildingProject::CanAfford() const
 	return true;
 }
 
-bool UBuildingProject::TryBuilding() const
+bool UBuildingProject::TryBuilding()
 {
 	// Trying to build a new building
 	if (Tier == 1)
