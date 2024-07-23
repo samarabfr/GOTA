@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "Guardian.h"
+#include "GOTA/Faction/PopulationSummary.h"
 #include "GOTA/TileMap/TileMap.h"
 #include "GameFramework/GameState.h"
 #include "GOTA/Faction/TileEntity.h"
-#include "GOTA/Faction/Faction.h"
 #include "GOTAGameState.generated.h"
 
 class ALoadingManager;
@@ -34,9 +34,6 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Category="GOTAGameState")
 	float MaxTurnTime;
-
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
-	TArray<AFaction*> Factions;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	TArray<ASettlement*> Settlements;
@@ -95,9 +92,6 @@ public:
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 public:
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void AddFaction(AFaction* NewFaction);
-
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void AddTileEntity(ATileEntity* NewTileEntity);
 
