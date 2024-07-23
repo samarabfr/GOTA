@@ -93,7 +93,7 @@ public:
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
 	FLinearColor ClaimColor;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Settlement")
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Settlement")
 	TArray<UBuildingDataAsset*> PossibleBuildings;
 
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
@@ -104,6 +104,9 @@ public:
 
 	UFUNCTION(BlueprintSetter)
 	void SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject);
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Replicated, Category="Settlement")
+	EReligion PrimaryCulture;
 
 	//====================================================================
 	//--------------------Attributes

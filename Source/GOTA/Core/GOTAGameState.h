@@ -126,21 +126,27 @@ public:
 	//====================================================================
 	//-------------------- Attributes
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UGOTAAttribute* TotalTrees;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UGOTAAttribute* TotalForage;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UGOTAAttribute* TotalWildlife;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UPopulationSummary* TotalColonialPopulation;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UPopulationSummary* TotalNativePopulation;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UPopulationSummary* TotalPopulation;
+
+	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+	TArray<ASettlement*> ColonistsSettlements;
+
+	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+	TArray<ASettlement*> NativeSettlements;
 };
