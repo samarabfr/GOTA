@@ -2,6 +2,7 @@
 
 #include "Settlement.h"
 
+#include "Army.h"
 #include "AI/NavigationSystemBase.h"
 #include "GOTA/Core/GOTAGameState.h"
 #include "GOTA/Core/LoadingManager.h"
@@ -15,10 +16,12 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(ASettlement, PopulationSummary);
 	DOREPLIFETIME(ASettlement, ProductionSummary);
 	DOREPLIFETIME(ASettlement, PrimaryReligion);
+	DOREPLIFETIME(ASettlement, CurrentBuildingProject);
 	DOREPLIFETIME(ASettlement, Food);
 	DOREPLIFETIME(ASettlement, Wood);
 	DOREPLIFETIME(ASettlement, Stone);
 	DOREPLIFETIME(ASettlement, Expansion);
+	DOREPLIFETIME(ASettlement, PrimaryCulture);
 }
 
 ASettlement::ASettlement()
@@ -32,6 +35,7 @@ ASettlement::ASettlement()
 	PopulationSummary = CreateDefaultSubobject<UPopulationSummary>(TEXT("Population"));
 	ProductionSummary = CreateDefaultSubobject<UBuildingProductionSummary>(TEXT("Production"));
 	Expansion = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Expansion"));
+	CurrentBuildingProject = CreateDefaultSubobject<UBuildingProject>(TEXT("Current Building Project"));
 }
 
 void ASettlement::BeginPlay()
@@ -50,6 +54,7 @@ void ASettlement::BeginPlay()
 		AddReplicatedSubObject(PopulationSummary);
 		AddReplicatedSubObject(ProductionSummary);
 		AddReplicatedSubObject(Expansion);
+		AddReplicatedSubObject(CurrentBuildingProject);
 	}
 }
 
@@ -72,4 +77,33 @@ void ASettlement::OnBuildingAdded(UBuilding* Building)
 
 void ASettlement::OnBuildingRemoved(UBuilding* Building)
 {
+}
+
+bool ASettlement::SpawnArmy()
+{
+	// nowhere to spawn
+	if(ClaimedTiles.IsEmpty()) return false;
+	// random Tile that has no TileEntity
+	ATile* SpawnLocation = ClaimedTiles[FMath::RandRange(0, ClaimedTiles.Num() - 1)];
+	
+	// spawn the army
+
+	// evaluate how many pops to send
+	// figure out which pops to send, remove them from the buildlings and add them to the army
+	
+	return true;
+}
+
+void ASettlement::SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject)
+{
+	if(CurrentBuildingProject)
+	{
+		RemoveReplicatedSubObject(CurrentBuildingProject);
+	}
+	CurrentBuildingProject = NewCurrentBuildingProject;
+	OnCurrentBuildingProjectChanged.Broadcast();
+	if(CurrentBuildingProject)
+	{
+		AddReplicatedSubObject(CurrentBuildingProject);
+	}
 }

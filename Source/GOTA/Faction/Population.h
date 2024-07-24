@@ -3,27 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Enums.h"
 #include "Population.generated.h"
-
-UENUM(BlueprintType)
-enum class EReligion : uint8
-{
-	Colonists UMETA(DisplayName = "Colonists"),
-	Guardian1 UMETA(DisplayName = "Guardian1"),
-	Guardian2 UMETA(DisplayName = "Guardian2"),
-	Guardian3 UMETA(DisplayName = "Guardian3"),
-	Guardian4 UMETA(DisplayName = "Guardian4"),
-	MAX UMETA(Hidden) // Sentinel value for enum size
-};
-
-UENUM(BlueprintType)
-enum class EMood : uint8
-{
-	Neutral UMETA(DisplayName = "Neutral"),
-	Fearful UMETA(DisplayName = "Fearful"),
-	Aggressive UMETA(DisplayName = "Aggressive"),
-	MAX UMETA(Hidden) // Sentinel value for enum size
-};
 
 UCLASS(Blueprintable)
 class GOTA_API UPopulation : public UObject
@@ -94,8 +75,8 @@ public:
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_Follower)
 	TArray<int32> Follower;
-	void AddOneFollowerWeightedRandom(EReligion Exclude = EReligion::MAX);
-	void SubtractOneFollowerWeightedRandom(EReligion Exclude = EReligion::MAX);
+	void AddOneFollowerWeightedRandom(ECultureLoyalty Exclude = ECultureLoyalty::MAX);
+	void SubtractOneFollowerWeightedRandom(ECultureLoyalty Exclude = ECultureLoyalty::MAX);
 	void AddOneFollowerToGuardiansFullRandom();
 
 public:
@@ -103,10 +84,10 @@ public:
 	void OnRep_Follower();
 	
 	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ChangeFollower(EReligion Religion, int32 Change, int32& Effective_Change);
+	void ChangeFollower(ECultureLoyalty Religion, int32 Change, int32& Effective_Change);
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Population")
-	int32 GetFollower(EReligion Religion) const;
+	int32 GetFollower(ECultureLoyalty Religion) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Population")
 	int32 GetFollowerNatives();

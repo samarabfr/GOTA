@@ -33,4 +33,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	FBuildingTierData TierThree;
+
+	UFUNCTION(BlueprintCallable)
+	FBuildingTierData GetTierData(int32 Tier);
 };

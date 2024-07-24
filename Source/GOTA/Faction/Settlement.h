@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Building.h"
 #include "BuildingProductionSummary.h"
+#include "BuildingProject.h"
+#include "SettlementBalance.h"
 #include "PopulationSummary.h"
 #include "GOTA/TileMap/Tile.h"
 #include "GameFramework/Actor.h"
@@ -30,6 +32,9 @@ class ASettlement : public AActor
 
 	UPROPERTY(BlueprintAssignable, Category="Attributes")
 	FOnAnyAttributeChangedSignature OnAnyAttributeChanged;
+
+	UPROPERTY(BlueprintAssignable, Category="Attributes")
+	FOnAnyAttributeChangedSignature OnCurrentBuildingProjectChanged;
 
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
@@ -63,7 +68,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void FigureOutBuilding();
 
-	
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
+	void FigureOutSendingArmy();
+
 	//====================================================================
 	//-------------------- Functions
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -74,6 +81,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
 	void OnBuildingRemoved(UBuilding* Building);
 
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
+	bool SpawnArmy();
+	
 	//====================================================================
 	//--------------------Variables
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -87,11 +97,23 @@ public:
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
 	FLinearColor ClaimColor;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Settlement")
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Settlement")
 	TArray<UBuildingDataAsset*> PossibleBuildings;
 
-	UPROPERTY(BlueprintReadWrite, Replicated)
-	EReligion PrimaryReligion = EReligion::Colonists;
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
+	ECultureLoyalty PrimaryReligion = ECultureLoyalty::Colonists;
+
+	UPROPERTY(BlueprintReadWrite, BlueprintSetter=SetCurrentBuildingProject, Replicated, Category="Settlement")
+	UBuildingProject* CurrentBuildingProject;
+
+	UFUNCTION(BlueprintSetter)
+	void SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject);
+
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
+	ECultureLoyalty PrimaryCulture;
+	
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Settlement")
+	USettlementBalance* SettlementBalance;
 	
 	//====================================================================
 	//--------------------Attributes

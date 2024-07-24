@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BuildingProduction.h"
+#include "Enums.h"
 #include "BuildingTierData.generated.h"
 
 USTRUCT(BlueprintType)

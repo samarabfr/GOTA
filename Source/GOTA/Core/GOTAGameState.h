@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Guardian.h"
+#include "GOTA/Faction/SettlementBalance.h"
+#include "GOTA/Faction/PopulationSummary.h"
 #include "GOTA/TileMap/TileMap.h"
 #include "GameFramework/GameState.h"
 #include "GOTA/Faction/TileEntity.h"
-#include "GOTA/Faction/Faction.h"
 #include "GOTAGameState.generated.h"
 
 class ALoadingManager;
@@ -34,9 +35,6 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Category="GOTAGameState")
 	float MaxTurnTime;
-
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
-	TArray<AFaction*> Factions;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	TArray<ASettlement*> Settlements;
@@ -96,9 +94,6 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void AddFaction(AFaction* NewFaction);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void AddTileEntity(ATileEntity* NewTileEntity);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
@@ -126,21 +121,33 @@ public:
 	//====================================================================
 	//-------------------- Attributes
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UGOTAAttribute* TotalTrees;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UGOTAAttribute* TotalForage;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UGOTAAttribute* TotalWildlife;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UPopulationSummary* TotalColonialPopulation;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UPopulationSummary* TotalNativePopulation;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="TileMap")
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UPopulationSummary* TotalPopulation;
+
+	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+	TArray<ASettlement*> ColonistsSettlements;
+
+	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+	TArray<ASettlement*> NativeSettlements;
+
+	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
+	USettlementBalance* NativeCulture;
+
+	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
+	USettlementBalance* ColonistCulture;
 };

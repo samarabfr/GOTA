@@ -2,6 +2,8 @@
 
 
 #include "BuildingProduction.h"
+#include "Enums.h"
+#include "BuildingTierData.h"
 #include "Net/UnrealNetwork.h"
 
 void UBuildingProduction::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -56,4 +58,13 @@ void UBuildingProduction::Setup(int32 NewPopulationThreshold, int32 NewProductio
 	PopulationThreshold = NewPopulationThreshold;
 	ProductionPerThreshold = NewProductionPerThreshold;
 	ProductionType = NewProductionType;
+	RecalculateProduction();
+}
+
+void UBuildingProduction::SetupWithTierData(FBuildingTierData TierData)
+{
+	PopulationThreshold = TierData.PopulationThreshold;
+	ProductionPerThreshold = TierData.ProductionPerThreshold;
+	ProductionType = TierData.ProductionType;
+	RecalculateProduction();
 }
