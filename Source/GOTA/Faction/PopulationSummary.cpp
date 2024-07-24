@@ -41,13 +41,13 @@ void UPopulationSummary::OnRep_Maximum()
 
 void UPopulationSummary::OnRep_Follower()
 {
-	OnFollowerChanged.Broadcast(0,0,0,0,0);
+	OnFollowerChanged.Broadcast(0, 0, 0, 0, 0);
 	OnChanged.Broadcast();
 }
 
 void UPopulationSummary::OnRep_Moods()
 {
-	OnMoodChanged.Broadcast(0,0,0);
+	OnMoodChanged.Broadcast(0, 0, 0);
 	OnChanged.Broadcast();
 }
 
@@ -91,17 +91,37 @@ void UPopulationSummary::GetAllMood(int32& Neutral, int32& Fearful, int32& Aggre
 void UPopulationSummary::RegisterPopulation(UPopulation* Population)
 {
 	Population->OnPopulationChanged.AddDynamic(this, &UPopulationSummary::UpdatePopulation);
+	Current += Population->Current;
 	Population->OnMaximumChanged.AddDynamic(this, &UPopulationSummary::UpdateMaximum);
+	Maximum += Population->Maximum;
 	Population->OnFollowerChanged.AddDynamic(this, &UPopulationSummary::UpdateFollower);
+	Follower[0] += Population->GetFollower(ECultureLoyalty::Colonists);
+	Follower[1] += Population->GetFollower(ECultureLoyalty::Guardian1);
+	Follower[2] += Population->GetFollower(ECultureLoyalty::Guardian2);
+	Follower[3] += Population->GetFollower(ECultureLoyalty::Guardian3);
+	Follower[4] += Population->GetFollower(ECultureLoyalty::Guardian4);
 	Population->OnMoodChanged.AddDynamic(this, &UPopulationSummary::UpdateMood);
+	Moods[0] += Population->GetMood(EMood::Neutral);
+	Moods[1] += Population->GetMood(EMood::Fearful);
+	Moods[2] += Population->GetMood(EMood::Aggressive);
 }
 
 void UPopulationSummary::RegisterPopulationSummary(UPopulationSummary* PopulationSummary)
 {
 	PopulationSummary->OnPopulationChanged.AddDynamic(this, &UPopulationSummary::UpdatePopulation);
+	Current += PopulationSummary->Current;
 	PopulationSummary->OnMaximumChanged.AddDynamic(this, &UPopulationSummary::UpdateMaximum);
+	Maximum += PopulationSummary->Maximum;
 	PopulationSummary->OnFollowerChanged.AddDynamic(this, &UPopulationSummary::UpdateFollower);
+	Follower[0] += PopulationSummary->GetFollower(ECultureLoyalty::Colonists);
+	Follower[1] += PopulationSummary->GetFollower(ECultureLoyalty::Guardian1);
+	Follower[2] += PopulationSummary->GetFollower(ECultureLoyalty::Guardian2);
+	Follower[3] += PopulationSummary->GetFollower(ECultureLoyalty::Guardian3);
+	Follower[4] += PopulationSummary->GetFollower(ECultureLoyalty::Guardian4);
 	PopulationSummary->OnMoodChanged.AddDynamic(this, &UPopulationSummary::UpdateMood);
+	Moods[0] += PopulationSummary->GetMood(EMood::Neutral);
+	Moods[1] += PopulationSummary->GetMood(EMood::Fearful);
+	Moods[2] += PopulationSummary->GetMood(EMood::Aggressive);
 }
 
 void UPopulationSummary::UpdatePopulation(int32 Change)

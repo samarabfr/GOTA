@@ -67,13 +67,13 @@ void ATile::BeginPlay()
 
 void ATile::Init()
 {
+	Trees->OnChanged.AddDynamic(this, &ATile::CalculateTreeGrowthChangeWithNeighbors);
 	Trees->SetMaximum(BalanceData->MaxTrees);
 	Trees->SetCurrent(BalanceData->StartingTrees);
 	Forage->SetMaximum(BalanceData->MaxForage);
 	Forage->SetCurrent(BalanceData->StartingForage);
 	Wildlife->SetMaximum(BalanceData->MaxWildlife);
 	Wildlife->SetCurrent(BalanceData->StartingWildlife);
-	Trees->OnChanged.AddDynamic(this, &ATile::CalculateTreeGrowthChangeWithNeighbors);
 }
 
 //====================================================================
@@ -106,7 +106,6 @@ void ATile::CalculateTreeGrowthChange()
 		}
 	}
 	TreeGrowthChange->Add(Trees->Current, _);
-	TreeGrowth->Add(TreeGrowthChange->Current, _);
 }
 
 void ATile::CalculateTreeGrowthChangeWithNeighbors(int32 Change)
