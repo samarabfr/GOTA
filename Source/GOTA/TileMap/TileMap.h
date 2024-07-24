@@ -55,8 +55,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	ATile* GetRandomTile();
 
+	/*
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	TArray<ATile*> GetNeighboringTiles(ATile* Origin);
+	*/
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	TArray<ATile*> GetPath(ATile* Start, ATile* End);

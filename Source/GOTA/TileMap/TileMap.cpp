@@ -22,12 +22,15 @@ void ATileMap::Init(int32 Init_MapSize)
 {
 	MapSize = FMath::Max(Init_MapSize, 0);
 	const int32 MapDiameter = MapSize * 2 + 1;
-	TileMap.SetNum(MapDiameter * MapDiameter, false);
+	for (int i = 0; i < MapDiameter * MapDiameter; ++i)
+	{
+		TileMap.Add(nullptr);
+	}
 }
 
 bool ATileMap::DoesTileExist(FHexCoords HexCoords)
 {
-	if(GetTile(HexCoords))
+	if (GetTile(HexCoords))
 	{
 		return true;
 	}
@@ -37,8 +40,8 @@ bool ATileMap::DoesTileExist(FHexCoords HexCoords)
 ATile* ATileMap::GetTile(FHexCoords HexCoords)
 {
 	// Check for out of bounds
-	if(	HexCoords.Q > MapSize	|| HexCoords.R > MapSize ||
-		HexCoords.Q < -MapSize	|| HexCoords.R < -MapSize)
+	if (HexCoords.Q > MapSize || HexCoords.R > MapSize ||
+		HexCoords.Q < -MapSize || HexCoords.R < -MapSize)
 	{
 		return nullptr;
 	}
@@ -49,13 +52,27 @@ ATile* ATileMap::GetTile(FHexCoords HexCoords)
 
 void ATileMap::AddTile(FHexCoords HexCoords, ATile* Tile)
 {
-	if(DoesTileExist(HexCoords) || !Tile)
+	if (DoesTileExist(HexCoords) || !Tile)
 	{
 		return;
 	}
 	const int32 Index = (HexCoords.Q + MapSize) * (MapSize * 2 + 1) + HexCoords.R + MapSize;
 	TileMap[Index] = Tile;
 	Tile->HexCoords = HexCoords;
+	// set neigbors on new tile
+	Tile->Neighbors[0] = GetTile(FHexCoords(HexCoords.Q, HexCoords.R - 1));
+	Tile->Neighbors[1] = GetTile(FHexCoords(HexCoords.Q + 1, HexCoords.R - 1));
+	Tile->Neighbors[2] = GetTile(FHexCoords(HexCoords.Q + 1, HexCoords.R));
+	Tile->Neighbors[3] = GetTile(FHexCoords(HexCoords.Q, HexCoords.R + 1));
+	Tile->Neighbors[4] = GetTile(FHexCoords(HexCoords.Q - 1, HexCoords.R + 1));
+	Tile->Neighbors[5] = GetTile(FHexCoords(HexCoords.Q - 1, HexCoords.R));
+	// set new tile on neighbors
+	if(Tile->Neighbors[0]) Tile->Neighbors[3] = Tile;
+	if(Tile->Neighbors[1]) Tile->Neighbors[4] = Tile;
+	if(Tile->Neighbors[2]) Tile->Neighbors[5] = Tile;
+	if(Tile->Neighbors[3]) Tile->Neighbors[0] = Tile;
+	if(Tile->Neighbors[4]) Tile->Neighbors[1] = Tile;
+	if(Tile->Neighbors[5]) Tile->Neighbors[2] = Tile;
 }
 
 ATile* ATileMap::GetRandomTile()
@@ -64,8 +81,8 @@ ATile* ATileMap::GetRandomTile()
 	const int32 MaxTries = 100;
 	for (int i = 0; i < MaxTries; ++i)
 	{
-		const int32 RandomIndex = FMath::RandRange(0,(MapSize * 2 + 1) * (MapSize * 2 + 1) - 1);
-		if(ATile* RandomTile = TileMap[RandomIndex])
+		const int32 RandomIndex = FMath::RandRange(0, (MapSize * 2 + 1) * (MapSize * 2 + 1) - 1);
+		if (ATile* RandomTile = TileMap[RandomIndex])
 		{
 			return RandomTile;
 		}
@@ -73,7 +90,7 @@ ATile* ATileMap::GetRandomTile()
 	// Get the first Tile you can find in the TileMap 
 	for (ATile* Tile : TileMap)
 	{
-		if(Tile)
+		if (Tile)
 		{
 			return Tile;
 		}
@@ -81,10 +98,11 @@ ATile* ATileMap::GetRandomTile()
 	return nullptr;
 }
 
+/*
 TArray<ATile*> ATileMap::GetNeighboringTiles(ATile* Origin)
 {
 	TArray<ATile*> Neighbors;
-	if(!Origin)
+	if (!Origin)
 	{
 		return Neighbors;
 	}
@@ -92,10 +110,10 @@ TArray<ATile*> ATileMap::GetNeighboringTiles(ATile* Origin)
 	{
 		for (int R = -1; R <= 1; ++R)
 		{
-			FHexCoords NeighborCoords = Origin->HexCoords + FHexCoords(Q,R);
-			if(Q!=R)
+			FHexCoords NeighborCoords = Origin->HexCoords + FHexCoords(Q, R);
+			if (Q != R)
 			{
-				if(ATile* Neighbor = GetTile(NeighborCoords))
+				if (ATile* Neighbor = GetTile(NeighborCoords))
 				{
 					Neighbors.Add(Neighbor);
 				}
@@ -104,12 +122,13 @@ TArray<ATile*> ATileMap::GetNeighboringTiles(ATile* Origin)
 	}
 	return Neighbors;
 }
+*/
 
 TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End)
 {
 	//https://www.redblobgames.com/pathfinding/a-star/introduction.html
 	TArray<ATile*> Frontier;
-	Frontier.Add(Start);
+	Frontier.Add(Start); 
 	TMap<ATile*, ATile*> CameFrom;
 	CameFrom.Add(Start, nullptr);
 	// from flow field
@@ -117,13 +136,13 @@ TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End)
 	{
 		ATile* Current = Frontier[0];
 		Frontier.Remove(Current);
-		if(Current == End)
+		if (Current == End)
 		{
 			break;
 		}
-		for (ATile* Next : GetNeighboringTiles(Current))
+		for (ATile* Next : Current->Neighbors)
 		{
-			if(Next->IsWalkable && !CameFrom.Contains(Next))
+			if (Next && Next->IsWalkable && !CameFrom.Contains(Next))
 			{
 				Frontier.Add(Next);
 				CameFrom.Add(Next, Current);
@@ -131,7 +150,7 @@ TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End)
 		}
 	}
 	// reconstruct Path
-	if(!CameFrom.Contains(End))
+	if (!CameFrom.Contains(End))
 	{
 		return TArray<ATile*>();
 	}

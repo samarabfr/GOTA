@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "HexCoords.h"
 #include "GameFramework/Actor.h"
+#include "GOTA/EcoSystemDataAsset.h"
 #include "GOTA/Faction/GOTAAttributeLimited.h"
 #include "Tile.generated.h"
 
@@ -52,6 +53,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintCosmetic, Category="Tile")
 	void OnLeavingActiveRangeOfGuardian();
 
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
+	void CalculateTurn();
+
 	//====================================================================
 	//--------------------Bool Flags
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -66,6 +70,9 @@ public:
 	//--------------------Building
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 protected:
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	UEcoSystemDataAsset* DataAsset;
+	
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Tile")
 	UBuilding* Building;
 	
@@ -104,4 +111,10 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttributeLimited* Wildlife;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UGOTAAttribute* TreeGrowth;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	TArray<ATile*> Neighbors; // 0 = North, 1 = NorthEast, 2 = SouthEast, 3 = South, 4 = SouthWest, 5 = NorthWest
 };
