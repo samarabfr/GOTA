@@ -28,7 +28,11 @@ void ATileMap::CalculateTurn()
 	ATile::bFreezeGrowthChanges = true;
 	for (ATile* Tile : TileMap)
 	{
-		if(Tile) Tile->CalculateTreeGrowthChange();
+		if(Tile)
+		{
+			Tile->CalculateTreeGrowthChange();
+			Tile->CalculateWildlifeGrowthChange();
+		}
 	}
 }
 
