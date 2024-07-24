@@ -5,9 +5,11 @@
 #include "CoreMinimal.h"
 #include "HexCoords.h"
 #include "GameFramework/Actor.h"
+#include "GOTA/EcoSystemDataAsset.h"
 #include "GOTA/Faction/GOTAAttributeLimited.h"
 #include "Tile.generated.h"
 
+class UBuilding;
 class ASettlement;
 
 UCLASS()
@@ -34,6 +36,9 @@ public:
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 public:
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
+	void Init();
+	
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Tile")
 	void Claim(const ASettlement* PotentialClaimant, bool& Success);
 
@@ -51,6 +56,28 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintCosmetic, Category="Tile")
 	void OnLeavingActiveRangeOfGuardian();
+	
+	void CalculateTurn();
+	
+	void CalculateTreeGrowthChange();
+
+	UFUNCTION()
+	void CalculateTreeGrowthChangeWithNeighbors(int32 Change);
+	
+	void CalculateForageChange();
+
+	UFUNCTION()
+	void CalculateForageChangeWithNeighbors(int32 Change);
+	
+	void CalculateWildlifeGrowthChange();
+
+	UFUNCTION()
+	void CalculateWildlifeGrowthChangeWithNeighbors(int32 Change);
+	
+	void CalculatePopulationGrowthChange();
+
+	UFUNCTION()
+	void CalculatePopulationGrowthChangeWithNeighbors();
 
 	//====================================================================
 	//--------------------Bool Flags
@@ -65,6 +92,10 @@ public:
 	//====================================================================
 	//--------------------Building
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+protected:
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	UEcoSystemDataAsset* BalanceData;
+	
 public:
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Tile")
 	UBuilding* Building;
@@ -100,8 +131,28 @@ public:
 	UGOTAAttributeLimited* Trees;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UGOTAAttribute* TreeGrowth;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UGOTAAttribute* TreeGrowthChange;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttributeLimited* Forage;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UGOTAAttribute* ForageChange;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttributeLimited* Wildlife;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UGOTAAttribute* WildlifeGrowth;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UGOTAAttribute* WildlifeGrowthChange;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	TArray<ATile*> Neighbors; // 0 = North, 1 = NorthEast, 2 = SouthEast, 3 = South, 4 = SouthWest, 5 = NorthWest
+
+	static bool bFreezeGrowthChanges;
 };
