@@ -73,6 +73,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
 	UEcoSystemDataAsset* DataAsset;
 	
+public:
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Tile")
 	UBuilding* Building;
 	

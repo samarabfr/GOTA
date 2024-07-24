@@ -14,7 +14,6 @@ void AGOTAGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 	DOREPLIFETIME(AGOTAGameState, ShouldTickTurnTime);
 
 	DOREPLIFETIME(AGOTAGameState, TileMap);
-	DOREPLIFETIME(AGOTAGameState, Factions);
 	DOREPLIFETIME(AGOTAGameState, Settlements);
 	DOREPLIFETIME(AGOTAGameState, Guardians);
 	DOREPLIFETIME(AGOTAGameState, TileEntities);
@@ -38,11 +37,6 @@ AGOTAGameState::AGOTAGameState()
 	TotalColonialPopulation = CreateDefaultSubobject<UPopulationSummary>(TEXT("Total Colonial Population"));
 	TotalNativePopulation = CreateDefaultSubobject<UPopulationSummary>(TEXT("Total Native Population"));
 	TotalPopulation = CreateDefaultSubobject<UPopulationSummary>(TEXT("Total Population"));
-}
-
-void AGOTAGameState::AddFaction(AFaction* NewFaction)
-{
-	Factions.Add(NewFaction);
 }
 
 void AGOTAGameState::AddTileEntity(ATileEntity* NewTileEntity)

@@ -1,0 +1,32 @@
+﻿#pragma once
+
+UENUM(BlueprintType)
+enum class EProductionType : uint8
+{
+	Foraging UMETA(DisplayName = "Foraging"),
+	Woodcutting UMETA(DisplayName = "Woodcutting"),
+	Hunting UMETA(DisplayName = "Hunting"),
+	Converting UMETA(DisplayName = "Converting"),
+	Expansion UMETA(DisplayName = "Expansion"),
+	MAX UMETA(Hidden) // Sentinel value for enum size
+};
+
+UENUM(BlueprintType)
+enum class ECultureLoyalty : uint8
+{
+	Colonists UMETA(DisplayName = "Colonists"),
+	Guardian1 UMETA(DisplayName = "Guardian1"),
+	Guardian2 UMETA(DisplayName = "Guardian2"),
+	Guardian3 UMETA(DisplayName = "Guardian3"),
+	Guardian4 UMETA(DisplayName = "Guardian4"),
+	MAX UMETA(Hidden) // Sentinel value for enum size
+};
+
+UENUM(BlueprintType)
+enum class EMood : uint8
+{
+	Neutral UMETA(DisplayName = "Neutral"),
+	Fearful UMETA(DisplayName = "Fearful"),
+	Aggressive UMETA(DisplayName = "Aggressive"),
+	MAX UMETA(Hidden) // Sentinel value for enum size
+};

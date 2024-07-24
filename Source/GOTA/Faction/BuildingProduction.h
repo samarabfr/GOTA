@@ -4,18 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Population.h"
+#include "Enums.h"
 #include "BuildingProduction.generated.h"
-
-UENUM(BlueprintType)
-enum class EProductionType : uint8
-{
-	Foraging UMETA(DisplayName = "Foraging"),
-	Woodcutting UMETA(DisplayName = "Woodcutting"),
-	Hunting UMETA(DisplayName = "Hunting"),
-	Converting UMETA(DisplayName = "Converting"),
-	Expansion UMETA(DisplayName = "Expansion"),
-	MAX UMETA(Hidden) // Sentinel value for enum size
-};
 
 UCLASS()
 class GOTA_API UBuildingProduction : public UObject
@@ -31,7 +21,7 @@ class GOTA_API UBuildingProduction : public UObject
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnProductionChangedSignature,
 	                                             int32, Changed,
 	                                             EProductionType, Type);
-	
+
 	int32 CurrentPopulation = 0;
 	void RecalculateProduction();
 
@@ -62,4 +52,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Building")
 	void Setup(int32 NewPopulationThreshold, int32 NewProductionPerThreshold, EProductionType NewProductionType);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Building")
+	void SetupWithTierData(FBuildingTierData TierData);
 };

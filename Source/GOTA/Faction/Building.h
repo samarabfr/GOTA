@@ -43,7 +43,7 @@ public:
 	//--------------------Simple Variables
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	UPROPERTY(BlueprintReadOnly, Replicated, EditDefaultsOnly, Category="Building")
 	UBuildingDataAsset* DataAsset;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
@@ -54,4 +54,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
 	int32 Tier = 1;
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Building")
+	bool Upgrade();
 };

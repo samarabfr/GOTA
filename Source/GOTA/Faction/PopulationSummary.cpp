@@ -23,7 +23,7 @@ bool UPopulationSummary::IsSupportedForNetworking() const
 
 UPopulationSummary::UPopulationSummary()
 {
-	Follower.Init(0, static_cast<int32>(EReligion::MAX));
+	Follower.Init(0, static_cast<int32>(ECultureLoyalty::MAX));
 	Moods.Init(0, static_cast<int32>(EMood::MAX));
 }
 
@@ -51,7 +51,7 @@ void UPopulationSummary::OnRep_Moods()
 	OnChanged.Broadcast();
 }
 
-int32 UPopulationSummary::GetFollower(EReligion Religion) const
+int32 UPopulationSummary::GetFollower(ECultureLoyalty Religion) const
 {
 	return Follower[static_cast<int32>(Religion)];
 }
