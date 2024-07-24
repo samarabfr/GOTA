@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Population.h"
-#include "ProductionType.h"
+#include "Enums.h"
 #include "BuildingProduction.generated.h"
 
 UCLASS()

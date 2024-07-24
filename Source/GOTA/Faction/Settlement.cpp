@@ -2,6 +2,7 @@
 
 #include "Settlement.h"
 
+#include "Army.h"
 #include "AI/NavigationSystemBase.h"
 #include "GOTA/Core/GOTAGameState.h"
 #include "GOTA/Core/LoadingManager.h"
@@ -20,6 +21,7 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(ASettlement, Wood);
 	DOREPLIFETIME(ASettlement, Stone);
 	DOREPLIFETIME(ASettlement, Expansion);
+	DOREPLIFETIME(ASettlement, PrimaryCulture);
 }
 
 ASettlement::ASettlement()
@@ -77,8 +79,31 @@ void ASettlement::OnBuildingRemoved(UBuilding* Building)
 {
 }
 
+bool ASettlement::SpawnArmy()
+{
+	// nowhere to spawn
+	if(ClaimedTiles.IsEmpty()) return false;
+	// random Tile that has no TileEntity
+	ATile* SpawnLocation = ClaimedTiles[FMath::RandRange(0, ClaimedTiles.Num() - 1)];
+	
+	// spawn the army
+
+	// evaluate how many pops to send
+	// figure out which pops to send, remove them from the buildlings and add them to the army
+	
+	return true;
+}
+
 void ASettlement::SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject)
 {
+	if(CurrentBuildingProject)
+	{
+		RemoveReplicatedSubObject(CurrentBuildingProject);
+	}
 	CurrentBuildingProject = NewCurrentBuildingProject;
 	OnCurrentBuildingProjectChanged.Broadcast();
+	if(CurrentBuildingProject)
+	{
+		AddReplicatedSubObject(CurrentBuildingProject);
+	}
 }

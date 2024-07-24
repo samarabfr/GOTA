@@ -21,7 +21,7 @@ bool UPopulation::IsSupportedForNetworking() const
 
 UPopulation::UPopulation()
 {
-	Follower.Init(0, static_cast<int32>(EReligion::MAX));
+	Follower.Init(0, static_cast<int32>(ECultureLoyalty::MAX));
 	Moods.Init(0, static_cast<int32>(EMood::MAX));
 }
 
@@ -113,12 +113,12 @@ void UPopulation::ChangeMaximum(int32 Change, int32& Effective_Change)
 //-------------------- Followers
 //vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
-void UPopulation::AddOneFollowerWeightedRandom(EReligion Exclude)
+void UPopulation::AddOneFollowerWeightedRandom(ECultureLoyalty Exclude)
 {
 	int32 ExcludeIndex = static_cast<int32>(Exclude);
 	int32 TotalBelievers = 0;
 	// Calculate TotalBelievers in the selection pool
-	for (int i = 0; i < static_cast<int32>(EReligion::MAX); i++)
+	for (int i = 0; i < static_cast<int32>(ECultureLoyalty::MAX); i++)
 	{
 		if (i != ExcludeIndex)
 		{
@@ -130,7 +130,7 @@ void UPopulation::AddOneFollowerWeightedRandom(EReligion Exclude)
 	// Select a random Believer
 	int32 cursor = FMath::RandRange(0, TotalBelievers);
 	// Find Selected Religion
-	for (int i = 0; i < static_cast<int32>(EReligion::MAX); i++)
+	for (int i = 0; i < static_cast<int32>(ECultureLoyalty::MAX); i++)
 	{
 		if (i != ExcludeIndex && Follower[i] > 0)
 		{
@@ -145,12 +145,12 @@ void UPopulation::AddOneFollowerWeightedRandom(EReligion Exclude)
 	}
 }
 
-void UPopulation::SubtractOneFollowerWeightedRandom(EReligion Exclude)
+void UPopulation::SubtractOneFollowerWeightedRandom(ECultureLoyalty Exclude)
 {
 	int32 ExcludeIndex = static_cast<int32>(Exclude);
 	int32 TotalBelievers = 0;
 	// Calculate TotalBelievers in the selection pool
-	for (int i = 0; i < static_cast<int32>(EReligion::MAX); i++)
+	for (int i = 0; i < static_cast<int32>(ECultureLoyalty::MAX); i++)
 	{
 		if (i != ExcludeIndex)
 		{
@@ -160,7 +160,7 @@ void UPopulation::SubtractOneFollowerWeightedRandom(EReligion Exclude)
 	// Select a random Believer
 	int32 cursor = FMath::RandRange(0, TotalBelievers);
 	// Find Selected Religion
-	for (int i = 0; i < static_cast<int32>(EReligion::MAX); i++)
+	for (int i = 0; i < static_cast<int32>(ECultureLoyalty::MAX); i++)
 	{
 		// Exclude and don't use 0 Weight Religions
 		if (i != ExcludeIndex && Follower[i] > 0)
@@ -187,7 +187,7 @@ void UPopulation::OnRep_Follower()
 	OnChanged.Broadcast();
 }
 
-void UPopulation::ChangeFollower(EReligion Religion, int32 Change, int32& Effective_Change)
+void UPopulation::ChangeFollower(ECultureLoyalty Religion, int32 Change, int32& Effective_Change)
 {
 	if (Change == 0) return; // nothing happens...
 	int32 SelectedIndex = static_cast<int32>(Religion);
@@ -211,7 +211,7 @@ void UPopulation::ChangeFollower(EReligion Religion, int32 Change, int32& Effect
 	if (Follower[SelectedIndex] == Current)
 	{
 		// all other Religions have 0 follower now
-		for (int i = 0; i < static_cast<int32>(EReligion::MAX); i++)
+		for (int i = 0; i < static_cast<int32>(ECultureLoyalty::MAX); i++)
 		{
 			if (i != SelectedIndex)
 			{
@@ -231,11 +231,11 @@ void UPopulation::ChangeFollower(EReligion Religion, int32 Change, int32& Effect
 	else
 	{
 		// We need to distinguish if Target Religion is Colonist or not
-		if (Religion == EReligion::Colonists)
+		if (Religion == ECultureLoyalty::Colonists)
 		{
 			// Calculate how many Followers native religions have
 			int32 OtherReligionTotal = 0;
-			for (int i = 0; i < static_cast<int32>(EReligion::MAX); i++)
+			for (int i = 0; i < static_cast<int32>(ECultureLoyalty::MAX); i++)
 			{
 				if (SelectedIndex != i)
 				{
@@ -261,7 +261,7 @@ void UPopulation::ChangeFollower(EReligion Religion, int32 Change, int32& Effect
 		}
 		else // Guardian gets reduced, so colonist gets increased
 		{
-			Follower[static_cast<int32>(EReligion::Colonists)] += Effective_Change;
+			Follower[static_cast<int32>(ECultureLoyalty::Colonists)] += Effective_Change;
 		}
 	}
 	OnFollowerChanged.Broadcast(
@@ -272,7 +272,7 @@ void UPopulation::ChangeFollower(EReligion Religion, int32 Change, int32& Effect
 		Follower[4] - OldFollower[4]);
 }
 
-int32 UPopulation::GetFollower(EReligion Religion) const
+int32 UPopulation::GetFollower(ECultureLoyalty Religion) const
 {
 	return Follower[static_cast<int32>(Religion)];
 }

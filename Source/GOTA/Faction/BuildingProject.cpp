@@ -18,7 +18,7 @@ void UBuildingProject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 bool UBuildingProject::IsSupportedForNetworking() const
 {
-	return UObject::IsSupportedForNetworking();
+	return true;
 }
 
 bool UBuildingProject::IsPossible() const

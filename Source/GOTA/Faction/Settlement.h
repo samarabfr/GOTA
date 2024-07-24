@@ -6,6 +6,7 @@
 #include "Building.h"
 #include "BuildingProductionSummary.h"
 #include "BuildingProject.h"
+#include "SettlementBalance.h"
 #include "PopulationSummary.h"
 #include "GOTA/TileMap/Tile.h"
 #include "GameFramework/Actor.h"
@@ -80,6 +81,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
 	void OnBuildingRemoved(UBuilding* Building);
 
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
+	bool SpawnArmy();
+	
 	//====================================================================
 	//--------------------Variables
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -97,7 +101,7 @@ public:
 	TArray<UBuildingDataAsset*> PossibleBuildings;
 
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
-	EReligion PrimaryReligion = EReligion::Colonists;
+	ECultureLoyalty PrimaryReligion = ECultureLoyalty::Colonists;
 
 	UPROPERTY(BlueprintReadWrite, BlueprintSetter=SetCurrentBuildingProject, Replicated, Category="Settlement")
 	UBuildingProject* CurrentBuildingProject;
@@ -105,9 +109,12 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject);
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Replicated, Category="Settlement")
-	EReligion PrimaryCulture;
-
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
+	ECultureLoyalty PrimaryCulture;
+	
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Settlement")
+	USettlementBalance* SettlementBalance;
+	
 	//====================================================================
 	//--------------------Attributes
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv

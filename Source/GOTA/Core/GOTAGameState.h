@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Guardian.h"
+#include "GOTA/Faction/SettlementBalance.h"
 #include "GOTA/Faction/PopulationSummary.h"
 #include "GOTA/TileMap/TileMap.h"
 #include "GameFramework/GameState.h"
@@ -143,4 +144,10 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
 	TArray<ASettlement*> NativeSettlements;
+
+	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
+	USettlementBalance* NativeCulture;
+
+	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
+	USettlementBalance* ColonistCulture;
 };

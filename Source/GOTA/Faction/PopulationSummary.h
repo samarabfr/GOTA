@@ -76,7 +76,7 @@ public:
 	void OnRep_Moods();
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Population")
-	int32 GetFollower(EReligion Religion) const;
+	int32 GetFollower(ECultureLoyalty Religion) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Population")
 	int32 GetFollowerNatives();
