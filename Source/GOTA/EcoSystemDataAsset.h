@@ -35,4 +35,7 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
 	int32 MaxWildlife;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	int32 WildlifeGrowthThreshold; 
 };

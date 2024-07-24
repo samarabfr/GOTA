@@ -64,6 +64,11 @@ public:
 
 	UFUNCTION()
 	void CalculateTreeGrowthChangeWithNeighbors(int32 Change);
+	
+	void CalculateWildlifeGrowthChange();
+
+	UFUNCTION()
+	void CalculateWildlifeGrowthChangeWithNeighbors(int32 Change);
 
 	//====================================================================
 	//--------------------Bool Flags
@@ -117,16 +122,22 @@ public:
 	UGOTAAttributeLimited* Trees;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UGOTAAttribute* TreeGrowth;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UGOTAAttribute* TreeGrowthChange;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttributeLimited* Forage;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttributeLimited* Wildlife;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
-	UGOTAAttribute* TreeGrowth;
+	UGOTAAttribute* WildlifeGrowth;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
-	UGOTAAttribute* TreeGrowthChange;
+	UGOTAAttribute* WildlifeGrowthChange;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	TArray<ATile*> Neighbors; // 0 = North, 1 = NorthEast, 2 = SouthEast, 3 = South, 4 = SouthWest, 5 = NorthWest
