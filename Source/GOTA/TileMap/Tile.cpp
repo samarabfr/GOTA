@@ -120,6 +120,16 @@ void ATile::CalculateTurn()
 		Wildlife->Add(WildlifeGrowCount, _);
 		WildlifeGrowth->Subtract(WildlifeGrowCount * BalanceData->WildlifeGrowthThreshold, _);
 	}
+	if(!Building) return;
+	// apply PopulationGrowthChange
+	Building->Population->Growth += Building->Population->GrowthChange;
+	// grow Wildlife
+	if (Building->Population->Growth > Building->Population->GrowthThreshold)
+	{
+		const int32 PopulationGrowCount = Building->Population->Growth / Building->Population->GrowthThreshold;
+		Building->Population += PopulationGrowCount;
+		Building->Population->Growth -= PopulationGrowCount * Building->Population->GrowthThreshold;
+	}
 }
 
 void ATile::CalculateTreeGrowthChange()
@@ -200,11 +210,40 @@ void ATile::CalculateWildlifeGrowthChangeWithNeighbors(int32 Change)
 	}
 }
 
+void ATile::CalculatePopulationGrowthChange()
+{
+	if(!Building) return;
+	
+	Building->Population->Growth = 0;
+	for (int i = 0; i < 6; ++i)
+	{
+		if (Neighbors[i] && Neighbors[i]->Building)
+		{
+			Building->Population->Growth += Neighbors[i]->Building->Population->Current;
+		}
+	}
+	Building->Population->Growth += Building->Population->Current;
+}
+
+void ATile::CalculatePopulationGrowthChangeWithNeighbors()
+{
+	if (bFreezeGrowthChanges) return;
+
+	CalculatePopulationGrowthChange();
+	for (int i = 0; i < 6; ++i)
+	{
+		if (Neighbors[i]) Neighbors[i]->CalculatePopulationGrowthChange();
+	}
+}
+
 void ATile::AddBuildingToReplication()
 {
 	AddReplicatedSubObject(Building);
 	AddReplicatedSubObject(Building->Population);
 	AddReplicatedSubObject(Building->Production);
+
+	// TODO: Not Here
+	Building->Population->OnChanged.AddDynamic(this, &ATile::CalculatePopulationGrowthChangeWithNeighbors);
 }
 
 void ATile::OnRep_Claimant(ASettlement* NewClaimant)

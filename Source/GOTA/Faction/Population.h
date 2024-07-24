@@ -50,6 +50,15 @@ public:
 public:
 	UPROPERTY(ReplicatedUsing=OnRep_Current, BlueprintGetter=GetCurrent, Category = "Population")
 	int32 Current = 0;
+	
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Population")
+	int32 Growth = 0;
+	
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Population")
+	int32 GrowthChange = 0;
+
+	// TODO: DataAsset
+	int32 GrowthThreshold = 30;
 
 	UFUNCTION()
 	void OnRep_Current(int32 Change);
@@ -67,7 +76,7 @@ public:
 	void ChangePopulation(int32 Change, int32& Effective_Change);
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ChangeMaximum(int32 Change, int32& Effective_Change);
+	void ChangeMaximum(int32 Change, int32& Effective_Change);	
 
 	//====================================================================
 	//                           Followers

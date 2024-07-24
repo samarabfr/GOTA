@@ -4,6 +4,7 @@
 #include "Population.h"
 #include "Net/UnrealNetwork.h"
 
+
 void UPopulation::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

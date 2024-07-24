@@ -56,8 +56,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintCosmetic, Category="Tile")
 	void OnLeavingActiveRangeOfGuardian();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
+	
 	void CalculateTurn();
 	
 	void CalculateTreeGrowthChange();
@@ -74,6 +73,11 @@ public:
 
 	UFUNCTION()
 	void CalculateWildlifeGrowthChangeWithNeighbors(int32 Change);
+	
+	void CalculatePopulationGrowthChange();
+
+	UFUNCTION()
+	void CalculatePopulationGrowthChangeWithNeighbors();
 
 	//====================================================================
 	//--------------------Bool Flags
