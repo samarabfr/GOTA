@@ -14,12 +14,13 @@ bool ATile::bFreezeGrowthChanges = false;
 void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
+
 	DOREPLIFETIME(ATile, Claimant);
 	DOREPLIFETIME(ATile, Trees);
 	DOREPLIFETIME(ATile, TreeGrowth);
 	DOREPLIFETIME(ATile, TreeGrowthChange);
 	DOREPLIFETIME(ATile, Forage);
+	DOREPLIFETIME(ATile, ForageChange);
 	DOREPLIFETIME(ATile, Wildlife);
 	DOREPLIFETIME(ATile, WildlifeGrowth);
 	DOREPLIFETIME(ATile, WildlifeGrowthChange);
@@ -38,7 +39,7 @@ ATile::ATile()
 	{
 		Neighbors.Add(nullptr);
 	}
-	
+
 	// Replication stuff
 	bReplicates = true;
 	bReplicateUsingRegisteredSubObjectList = true;
@@ -46,6 +47,7 @@ ATile::ATile()
 	TreeGrowth = CreateDefaultSubobject<UGOTAAttribute>(TEXT("TreeGrowth"));
 	TreeGrowthChange = CreateDefaultSubobject<UGOTAAttribute>(TEXT("TreeGrowthChange"));
 	Forage = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Forage"));
+	ForageChange = CreateDefaultSubobject<UGOTAAttribute>(TEXT("ForageChange"));
 	Wildlife = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Wildlife"));
 	WildlifeGrowth = CreateDefaultSubobject<UGOTAAttribute>(TEXT("WildlifeGrowth"));
 	WildlifeGrowthChange = CreateDefaultSubobject<UGOTAAttribute>(TEXT("WildlifeGrowthChange"));
@@ -54,17 +56,18 @@ ATile::ATile()
 void ATile::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	// Get the GameState
 	AGOTAGameState* GameState = GetWorld()->GetGameState<AGOTAGameState>();
 	GameState->LoadingManager->IncrementReplicationCount();
 
-	if(HasAuthority())
+	if (HasAuthority())
 	{
 		AddReplicatedSubObject(Trees);
 		AddReplicatedSubObject(TreeGrowth);
 		AddReplicatedSubObject(TreeGrowthChange);
 		AddReplicatedSubObject(Forage);
+		AddReplicatedSubObject(ForageChange);
 		AddReplicatedSubObject(Wildlife);
 		AddReplicatedSubObject(WildlifeGrowth);
 		AddReplicatedSubObject(WildlifeGrowthChange);
@@ -76,6 +79,7 @@ void ATile::Init()
 	Trees->OnChanged.AddDynamic(this, &ATile::CalculateTreeGrowthChangeWithNeighbors);
 	Trees->SetMaximum(BalanceData->MaxTrees);
 	Trees->SetCurrent(BalanceData->StartingTrees);
+	Forage->OnChanged.AddDynamic(this, &ATile::CalculateForageChangeWithNeighbors);
 	Forage->SetMaximum(BalanceData->MaxForage);
 	Forage->SetCurrent(BalanceData->StartingForage);
 	Wildlife->OnChanged.AddDynamic(this, &ATile::CalculateWildlifeGrowthChangeWithNeighbors);
@@ -93,18 +97,26 @@ void ATile::CalculateTurn()
 	// apply TreeGrowthChange
 	TreeGrowth->Add(TreeGrowthChange->Current, _);
 	// grow trees
-	if(TreeGrowth->Current > BalanceData->TreeGrowthThreshold)
+	if (TreeGrowth->Current > BalanceData->TreeGrowthThreshold)
 	{
-		const int32 TreeGrowCount = TreeGrowth->Current/BalanceData->TreeGrowthThreshold;
+		const int32 TreeGrowCount = TreeGrowth->Current / BalanceData->TreeGrowthThreshold;
 		Trees->Add(TreeGrowCount, _);
 		TreeGrowth->Subtract(TreeGrowCount * BalanceData->TreeGrowthThreshold, _);
+	}
+	// apply ForageChange
+	int32 ForageEffectiveChange = 0;
+	Forage->Add(ForageChange->Current, ForageEffectiveChange);
+	// wildlife starvation
+	if (ForageEffectiveChange < 0)
+	{
+		Wildlife->Add(ForageEffectiveChange, _);
 	}
 	// apply WildlifeGrowthChange
 	WildlifeGrowth->Add(WildlifeGrowthChange->Current, _);
 	// grow Wildlife
-	if(WildlifeGrowth->Current > BalanceData->WildlifeGrowthThreshold)
+	if (WildlifeGrowth->Current > BalanceData->WildlifeGrowthThreshold)
 	{
-		const int32 WildlifeGrowCount = WildlifeGrowth->Current/BalanceData->WildlifeGrowthThreshold;
+		const int32 WildlifeGrowCount = WildlifeGrowth->Current / BalanceData->WildlifeGrowthThreshold;
 		Wildlife->Add(WildlifeGrowCount, _);
 		WildlifeGrowth->Subtract(WildlifeGrowCount * BalanceData->WildlifeGrowthThreshold, _);
 	}
@@ -116,7 +128,7 @@ void ATile::CalculateTreeGrowthChange()
 	int32 _;
 	for (int i = 0; i < 6; ++i)
 	{
-		if(Neighbors[i])
+		if (Neighbors[i])
 		{
 			TreeGrowthChange->Add(Neighbors[i]->Trees->Current, _);
 		}
@@ -126,12 +138,40 @@ void ATile::CalculateTreeGrowthChange()
 
 void ATile::CalculateTreeGrowthChangeWithNeighbors(int32 Change)
 {
-	if(bFreezeGrowthChanges) return;
-	
+	if (bFreezeGrowthChanges) return;
+
 	CalculateTreeGrowthChange();
 	for (int i = 0; i < 6; ++i)
 	{
-		if(Neighbors[i]) Neighbors[i]->CalculateTreeGrowthChange();
+		if (Neighbors[i]) Neighbors[i]->CalculateTreeGrowthChange();
+	}
+}
+
+void ATile::CalculateForageChange()
+{
+	ForageChange->SetCurrent(0);
+	int32 _;
+	for (int i = 0; i < 6; ++i)
+	{
+		if (Neighbors[i])
+		{
+			ForageChange->Add(Neighbors[i]->Trees->Current * BalanceData->ForagePerNeighboringTree, _);
+			ForageChange->Add(Neighbors[i]->ForageChange->Current * BalanceData->ForagePerNeighboringForage, _);
+		}
+	}
+	ForageChange->Add(Trees->Current * BalanceData->ForagePerTree, _);
+	ForageChange->Add(ForageChange->Current * BalanceData->ForagePerForage, _);
+	ForageChange->Subtract(Wildlife->Current, _);
+}
+
+void ATile::CalculateForageChangeWithNeighbors(int32 Change)
+{
+	if (bFreezeGrowthChanges) return;
+
+	CalculateForageChange();
+	for (int i = 0; i < 6; ++i)
+	{
+		if (Neighbors[i]) Neighbors[i]->CalculateForageChange();
 	}
 }
 
@@ -141,7 +181,7 @@ void ATile::CalculateWildlifeGrowthChange()
 	int32 _;
 	for (int i = 0; i < 6; ++i)
 	{
-		if(Neighbors[i])
+		if (Neighbors[i])
 		{
 			WildlifeGrowthChange->Add(Neighbors[i]->Wildlife->Current, _);
 		}
@@ -151,12 +191,12 @@ void ATile::CalculateWildlifeGrowthChange()
 
 void ATile::CalculateWildlifeGrowthChangeWithNeighbors(int32 Change)
 {
-	if(bFreezeGrowthChanges) return;
-	
+	if (bFreezeGrowthChanges) return;
+
 	CalculateWildlifeGrowthChange();
 	for (int i = 0; i < 6; ++i)
 	{
-		if(Neighbors[i]) Neighbors[i]->CalculateWildlifeGrowthChange();
+		if (Neighbors[i]) Neighbors[i]->CalculateWildlifeGrowthChange();
 	}
 }
 

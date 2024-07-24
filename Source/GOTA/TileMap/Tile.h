@@ -65,6 +65,11 @@ public:
 	UFUNCTION()
 	void CalculateTreeGrowthChangeWithNeighbors(int32 Change);
 	
+	void CalculateForageChange();
+
+	UFUNCTION()
+	void CalculateForageChangeWithNeighbors(int32 Change);
+	
 	void CalculateWildlifeGrowthChange();
 
 	UFUNCTION()
@@ -129,6 +134,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttributeLimited* Forage;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UGOTAAttribute* ForageChange;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttributeLimited* Wildlife;

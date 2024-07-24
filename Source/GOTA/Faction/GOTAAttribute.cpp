@@ -26,20 +26,7 @@ int32 UGOTAAttribute::GetCurrent() const
 
 void UGOTAAttribute::SetCurrent(int32 NewValue)
 {
-	if(NewValue < 0) // New Value is negative, NOT ALLOWED
-	{
-		if((Current == 0))
-		{
-			// Current Value is already 0, nothing happens
-			return;
-		}
-		// Current Value has to be set to 0;
-		Current = 0;
-
-	} else // New Value is a valid value for Current
-	{
-		Current = NewValue;
-	}
+	Current = NewValue;
 	OnChange();
 }
 

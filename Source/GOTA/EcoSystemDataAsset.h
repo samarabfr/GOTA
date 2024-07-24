@@ -28,7 +28,19 @@ public:
 	int32 StartingForage;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	int32 MaxForage;
+	int32 MaxForage; 
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	float ForagePerTree; 
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	float ForagePerForage; 
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	float ForagePerNeighboringTree; 
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	float ForagePerNeighboringForage;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
 	int32 StartingWildlife;
