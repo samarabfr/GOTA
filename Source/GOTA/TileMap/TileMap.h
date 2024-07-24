@@ -25,17 +25,12 @@ private:
 public:
 	UPROPERTY(EditAnywhere, Category = "TileMap")
 	float GridSize;
-	
-	//====================================================================
-	//--------------------Overrideable Functions
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="TileMap")
 	void GenerateCircle(const int32 Radius);
 
-	//====================================================================
-	//--------------------Functions
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
+	void CalculateTurn();
 	
 protected:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
@@ -54,11 +49,6 @@ public:
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	ATile* GetRandomTile();
-
-	/*
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
-	TArray<ATile*> GetNeighboringTiles(ATile* Origin);
-	*/
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	TArray<ATile*> GetPath(ATile* Start, ATile* End);

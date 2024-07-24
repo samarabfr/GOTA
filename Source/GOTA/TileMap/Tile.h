@@ -9,6 +9,7 @@
 #include "GOTA/Faction/GOTAAttributeLimited.h"
 #include "Tile.generated.h"
 
+class UBuilding;
 class ASettlement;
 
 UCLASS()
@@ -35,6 +36,9 @@ public:
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 public:
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
+	void Init();
+	
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Tile")
 	void Claim(const ASettlement* PotentialClaimant, bool& Success);
 
@@ -55,6 +59,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	void CalculateTurn();
+	
+	void CalculateTreeGrowthChange();
+
+	UFUNCTION()
+	void CalculateTreeGrowthChangeWithNeighbors(int32 Change);
 
 	//====================================================================
 	//--------------------Bool Flags
@@ -71,7 +80,7 @@ public:
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 protected:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	UEcoSystemDataAsset* DataAsset;
+	UEcoSystemDataAsset* BalanceData;
 	
 public:
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Tile")
@@ -117,5 +126,10 @@ public:
 	UGOTAAttribute* TreeGrowth;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UGOTAAttribute* TreeGrowthChange;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	TArray<ATile*> Neighbors; // 0 = North, 1 = NorthEast, 2 = SouthEast, 3 = South, 4 = SouthWest, 5 = NorthWest
+
+	static bool bFreezeGrowthChanges;
 };

@@ -18,6 +18,20 @@ ATileMap::ATileMap()
 	bAlwaysRelevant = true;
 }
 
+void ATileMap::CalculateTurn()
+{
+	ATile::bFreezeGrowthChanges = false;
+	for (ATile* Tile : TileMap)
+	{
+		if(Tile) Tile->CalculateTurn();
+	}
+	ATile::bFreezeGrowthChanges = true;
+	for (ATile* Tile : TileMap)
+	{
+		if(Tile) Tile->CalculateTreeGrowthChange();
+	}
+}
+
 void ATileMap::Init(int32 Init_MapSize)
 {
 	MapSize = FMath::Max(Init_MapSize, 0);
@@ -73,6 +87,8 @@ void ATileMap::AddTile(FHexCoords HexCoords, ATile* Tile)
 	if(Tile->Neighbors[3]) Tile->Neighbors[0] = Tile;
 	if(Tile->Neighbors[4]) Tile->Neighbors[1] = Tile;
 	if(Tile->Neighbors[5]) Tile->Neighbors[2] = Tile;
+	// init
+	Tile->Init();
 }
 
 ATile* ATileMap::GetRandomTile()
@@ -97,32 +113,6 @@ ATile* ATileMap::GetRandomTile()
 	}
 	return nullptr;
 }
-
-/*
-TArray<ATile*> ATileMap::GetNeighboringTiles(ATile* Origin)
-{
-	TArray<ATile*> Neighbors;
-	if (!Origin)
-	{
-		return Neighbors;
-	}
-	for (int Q = -1; Q <= 1; ++Q)
-	{
-		for (int R = -1; R <= 1; ++R)
-		{
-			FHexCoords NeighborCoords = Origin->HexCoords + FHexCoords(Q, R);
-			if (Q != R)
-			{
-				if (ATile* Neighbor = GetTile(NeighborCoords))
-				{
-					Neighbors.Add(Neighbor);
-				}
-			}
-		}
-	}
-	return Neighbors;
-}
-*/
 
 TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End)
 {

@@ -5,7 +5,10 @@
 
 #include "GOTA/Core/GOTAGameState.h"
 #include "GOTA/Core/LoadingManager.h"
+#include "GOTA/Faction/Building.h"
 #include "Net/UnrealNetwork.h"
+
+bool ATile::bFreezeGrowthChanges = false;
 
 //Unreal Engine Mystery Code
 void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -18,6 +21,8 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME(ATile, Wildlife);
 	DOREPLIFETIME(ATile, Building);
 	DOREPLIFETIME(ATile, TreeGrowth);
+	DOREPLIFETIME(ATile, Neighbors);
+	DOREPLIFETIME(ATile, TreeGrowthChange);
 }
 
 // Constructor
@@ -39,6 +44,7 @@ ATile::ATile()
 	Forage = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Forage"));
 	Wildlife = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Wildlife"));
 	TreeGrowth = CreateDefaultSubobject<UGOTAAttribute>(TEXT("TreeGrowth"));
+	TreeGrowthChange = CreateDefaultSubobject<UGOTAAttribute>(TEXT("TreeGrowthChange"));
 }
 
 void ATile::BeginPlay()
@@ -55,7 +61,19 @@ void ATile::BeginPlay()
 		AddReplicatedSubObject(Forage);
 		AddReplicatedSubObject(Wildlife);
 		AddReplicatedSubObject(TreeGrowth);
+		AddReplicatedSubObject(TreeGrowthChange);
 	}
+}
+
+void ATile::Init()
+{
+	Trees->SetMaximum(BalanceData->MaxTrees);
+	Trees->SetCurrent(BalanceData->StartingTrees);
+	Forage->SetMaximum(BalanceData->MaxForage);
+	Forage->SetCurrent(BalanceData->StartingForage);
+	Wildlife->SetMaximum(BalanceData->MaxWildlife);
+	Wildlife->SetCurrent(BalanceData->StartingWildlife);
+	Trees->OnChanged.AddDynamic(this, &ATile::CalculateTreeGrowthChangeWithNeighbors);
 }
 
 //====================================================================
@@ -64,15 +82,41 @@ void ATile::BeginPlay()
 
 void ATile::CalculateTurn()
 {
-	// calculate Tree growth
-	
+	int32 _;
+	// apply TreeGrowthChange
+	TreeGrowth->Add(TreeGrowthChange->Current, _);
 	// grow trees
-	if(TreeGrowth->Current > DataAsset->TreeGrowthThreshold)
+	if(TreeGrowth->Current > BalanceData->TreeGrowthThreshold)
 	{
-		int32 _ = 0;
-		int32 TreeGrowCount = TreeGrowth->Current/DataAsset->TreeGrowthThreshold;
+		const int32 TreeGrowCount = TreeGrowth->Current/BalanceData->TreeGrowthThreshold;
 		Trees->Add(TreeGrowCount, _);
-		TreeGrowth->Subtract(TreeGrowCount * DataAsset->TreeGrowthThreshold, _);
+		TreeGrowth->Subtract(TreeGrowCount * BalanceData->TreeGrowthThreshold, _);
+	}
+}
+
+void ATile::CalculateTreeGrowthChange()
+{
+	TreeGrowthChange->SetCurrent(0);
+	int32 _;
+	for (int i = 0; i < 6; ++i)
+	{
+		if(Neighbors[i])
+		{
+			TreeGrowthChange->Add(Neighbors[i]->Trees->Current, _);
+		}
+	}
+	TreeGrowthChange->Add(Trees->Current, _);
+	TreeGrowth->Add(TreeGrowthChange->Current, _);
+}
+
+void ATile::CalculateTreeGrowthChangeWithNeighbors(int32 Change)
+{
+	if(bFreezeGrowthChanges) return;
+	
+	CalculateTreeGrowthChange();
+	for (int i = 0; i < 6; ++i)
+	{
+		if(Neighbors[i]) Neighbors[i]->CalculateTreeGrowthChange();
 	}
 }
 
