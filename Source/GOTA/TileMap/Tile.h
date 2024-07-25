@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HexCoords.h"
+#include "GOTA/Faction/TileEntity.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/EcoSystemDataAsset.h"
 #include "GOTA/Faction/GOTAAttributeLimited.h"
@@ -155,4 +156,10 @@ public:
 	TArray<ATile*> Neighbors; // 0 = North, 1 = NorthEast, 2 = SouthEast, 3 = South, 4 = SouthWest, 5 = NorthWest
 
 	static bool bFreezeGrowthChanges;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	ATileEntity* AlliedTileEntity;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	ATileEntity* EnemyTileEntity;
 };

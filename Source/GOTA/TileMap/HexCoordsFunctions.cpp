@@ -2,18 +2,19 @@
 
 
 #include "HexCoordsFunctions.h"
+#include "TileMap.h"
 
 FVector2D UHexCoordsFunctions::HexCoordsToVector2D(FHexCoords HexCoords)
 {
-	const double X = HexCoords.Q * 1.5;
-	const double Y = HexCoords.Q * 0.866 + HexCoords.R * 1.732;
-	return FVector2D(X*FHexCoords::Gridsize,Y*FHexCoords::Gridsize);
+	const double X = (HexCoords.Q - ATileMap::MapOffset) * 1.5;
+	const double Y = (HexCoords.Q - ATileMap::MapOffset) * 0.866 + (HexCoords.R - ATileMap::MapOffset) * 1.732;
+	return FVector2D(X * FHexCoords::Gridsize, Y * FHexCoords::Gridsize);
 }
 
 FHexCoords UHexCoordsFunctions::Vector2DToHexCoords(FVector2D Vector)
 {
-	Vector = Vector/FHexCoords::Gridsize;
-	const double FracQ =  0.667 * Vector.X;
+	Vector = Vector / FHexCoords::Gridsize;
+	const double FracQ = 0.667 * Vector.X;
 	const double FracR = -0.333 * Vector.X + 0.577 * Vector.Y;
 	const double FracS = -FracQ - FracR;
 	const int32 RoundQ = round(FracQ);
@@ -22,15 +23,15 @@ FHexCoords UHexCoordsFunctions::Vector2DToHexCoords(FVector2D Vector)
 	const int32 DiffQ = abs(RoundQ - FracQ);
 	const int32 DiffR = abs(RoundR - FracR);
 	const int32 DiffS = abs(RoundS - FracS);
-	if(DiffQ > DiffR && DiffQ > DiffS)
+	if (DiffQ > DiffR && DiffQ > DiffS)
 	{
-		return FHexCoords(-RoundR-RoundS,RoundR);
+		return FHexCoords(-RoundR - RoundS - ATileMap::MapOffset, RoundR - ATileMap::MapOffset);
 	}
-	if(DiffR > DiffS)
+	if (DiffR > DiffS)
 	{
-		return FHexCoords(RoundQ, -RoundQ-RoundS);
+		return FHexCoords(RoundQ - ATileMap::MapOffset, -RoundQ - RoundS - ATileMap::MapOffset);
 	}
-	return FHexCoords(RoundQ,RoundR);
+	return FHexCoords(RoundQ - ATileMap::MapOffset, RoundR - ATileMap::MapOffset);
 }
 
 FHexCoords UHexCoordsFunctions::VectorToHexCoords(FVector Vector)
@@ -46,7 +47,7 @@ TArray<FHexCoords> UHexCoordsFunctions::GetAllCoordsInRange(FHexCoords Origin, i
 	{
 		for (int32 R = FMath::Max(-Range, -Q - Range); R <= FMath::Min(Range, -Q + Range); ++R)
 		{
-			int32 S = -Q-R;
+			int32 S = -Q - R;
 			int32 newQ = Origin.Q + Q;
 			int32 newR = Origin.R + R;
 			Coords.Add(FHexCoords(newQ, newR));

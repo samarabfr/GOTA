@@ -13,42 +13,54 @@ class GOTA_API ATileMap : public AActor
 {
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 	ATileMap();
+	
+public:
+	static int32 MapOffset;
+	
 private:
 	UPROPERTY(Replicated)
 	TArray<ATile*> TileMap;
-
-	UPROPERTY(Replicated)
+	
+protected:
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_MapRadius)
+	int32 MapRadius;
+	
+	UPROPERTY(BlueprintReadOnly, Replicated)
 	int32 MapSize;
-
-public:
-	UPROPERTY(EditAnywhere, Category = "TileMap")
-	float GridSize;
-public:
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="TileMap")
-	void GenerateCircle(const int32 Radius);
-
+	
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
-	void CalculateTurn();
+	void Init(int32 Init_MapRadius);
+
+	UFUNCTION()
+	void OnRep_MapRadius() const;
+	
+private:
+	ATile*** array;
+	void InitializeArray();
 	
 protected:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
-	void Init(int32 Init_MapSize);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
-	void AddTile(FHexCoords HexCoords, ATile* Tile);
-
+	bool TryAddTile(FHexCoords HexCoords, ATile* Tile);
+	
 public:
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
+	ATile* GetTile(FHexCoords HexCoords);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintAuthorityOnly, Category="TileMap")
+	ATile* GetTileFast(FHexCoords HexCoords);
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	bool DoesTileExist(FHexCoords HexCoords);
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
-	ATile* GetTile(FHexCoords HexCoords);
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	ATile* GetRandomTile();
+	
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="TileMap")
+	void GenerateTilesInAHexagon();
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
+	void CalculateTurn();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	TArray<ATile*> GetPath(ATile* Start, ATile* End);
