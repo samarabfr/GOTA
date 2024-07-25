@@ -20,7 +20,7 @@ public:
 	
 private:
 	UPROPERTY(Replicated)
-	TArray<ATile*> TileMap;
+	TArray<ATile*> Tiles;
 	
 protected:
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_MapRadius)
@@ -36,7 +36,7 @@ protected:
 	void OnRep_MapRadius() const;
 	
 private:
-	ATile*** array;
+	ATile*** TilesArray;
 	void InitializeArray();
 	
 protected:
@@ -63,5 +63,8 @@ public:
 	void CalculateTurn();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
-	TArray<ATile*> GetPath(ATile* Start, ATile* End);
+	TArray<ATile*> GetPath(ATile* Start, ATile* End, EAffiliation Affiliation);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
+	TArray<ATile*> GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation Affiliation);
 };

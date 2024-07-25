@@ -30,3 +30,10 @@ enum class EMood : uint8
 	Aggressive UMETA(DisplayName = "Aggressive"),
 	MAX UMETA(Hidden) // Sentinel value for enum size
 };
+
+UENUM(BlueprintType)
+enum class EAffiliation : uint8
+{
+	Ally UMETA(DisplayName = "Ally"),
+	Enemy UMETA(DisplayName = "Enemy")
+};

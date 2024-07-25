@@ -29,7 +29,7 @@ class GOTA_API ATile : public AActor
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
 
 public:
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(Replicated, BlueprintReadOnly)
 	FHexCoords HexCoords;
 
 	//====================================================================
@@ -83,12 +83,13 @@ public:
 	//====================================================================
 	//--------------------Bool Flags
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	
 public:
-	UPROPERTY(BlueprintReadWrite, Category="Tile")
-	bool IsWalkable;
-
-	UPROPERTY(BlueprintReadWrite, Category="Tile")
-	bool IsClaimable;
+	UFUNCTION(BlueprintCallable, Category="Tile")
+	bool IsWalkable(EAffiliation Affiliation) const;
+	
+	UFUNCTION(BlueprintCallable, Category="Tile")
+	bool IsClaimable() const;
 
 	//====================================================================
 	//--------------------Building
