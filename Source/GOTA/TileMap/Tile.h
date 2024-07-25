@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HexCoords.h"
-#include "GOTA/Faction/TileEntity.h"
+#include "GOTA/Faction/Entity.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/EcoSystemDataAsset.h"
 #include "GOTA/Faction/GOTAAttributeLimited.h"
@@ -159,8 +159,8 @@ public:
 	static bool bFreezeGrowthChanges;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
-	ATileEntity* AlliedTileEntity;
+	AEntity* AlliedTileEntity;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
-	ATileEntity* EnemyTileEntity;
+	AEntity* EnemyTileEntity;
 };

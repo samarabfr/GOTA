@@ -3,14 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TileEntity.h"
+#include "Entity.h"
 #include "Army.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class GOTA_API AArmy : public ATileEntity
+class GOTA_API AArmy : public AEntity
 {
 	GENERATED_BODY()
 	

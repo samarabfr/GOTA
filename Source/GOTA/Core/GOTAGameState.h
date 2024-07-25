@@ -8,7 +8,7 @@
 #include "GOTA/Faction/PopulationSummary.h"
 #include "GOTA/TileMap/TileMap.h"
 #include "GameFramework/GameState.h"
-#include "GOTA/Faction/TileEntity.h"
+#include "GOTA/Faction/Entity.h"
 #include "GOTAGameState.generated.h"
 
 class ALoadingManager;
@@ -43,7 +43,7 @@ public:
 	TArray<AGuardian*> Guardians;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
-	TArray<ATileEntity*> TileEntities;
+	TArray<AEntity*> TileEntities;
 
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
 	bool IsCalculatingTurn;
@@ -94,7 +94,7 @@ public:
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void AddTileEntity(ATileEntity* NewTileEntity);
+	void AddTileEntity(AEntity* NewTileEntity);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void CallCalculationStart();

@@ -1,29 +1,30 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "TileEntity.h"
+#include "Entity.h"
 #include "Settlement.h"
 #include "GOTA/Core/GOTAGameState.h"
 #include "GOTA/TileMap/Tile.h"
 #include "Net/UnrealNetwork.h"
 
-void ATileEntity::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void AEntity::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ATileEntity, Affiliation);
-	DOREPLIFETIME(ATileEntity, Target);
-	DOREPLIFETIME(ATileEntity, CurrentTile);
-	DOREPLIFETIME(ATileEntity, Path);
-	DOREPLIFETIME(ATileEntity, MovementSpeed);
+	DOREPLIFETIME(AEntity, Affiliation);
+	DOREPLIFETIME(AEntity, Target);
+	DOREPLIFETIME(AEntity, CurrentTile);
+	DOREPLIFETIME(AEntity, Path);
+	DOREPLIFETIME(AEntity, MovementSpeed);
 }
 
-ATileEntity::ATileEntity()
+AEntity::AEntity()
 {
 	bReplicates = true;
+	SetReplicateMovement(true);
 }
 
-void ATileEntity::Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 MovementSpeed_)
+void AEntity::Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 MovementSpeed_)
 {
 	Affiliation = Affiliation_;
 	CurrentTile = CurrentTile_;
@@ -33,7 +34,7 @@ void ATileEntity::Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 Mov
 	GameState->TileEntities.Add(this);
 }
 
-bool ATileEntity::ShouldCombatTrigger() const
+bool AEntity::ShouldCombatTrigger() const
 {
 	// Combat between this unit and enemy building
 	if (CurrentTile->Building
@@ -55,7 +56,7 @@ bool ATileEntity::ShouldCombatTrigger() const
 	return false;
 }
 
-void ATileEntity::TriggerCombat()
+void AEntity::TriggerCombat()
 {
 	// destroy building
 	if (CurrentTile->Building) CurrentTile->Unbuild();
@@ -72,7 +73,7 @@ void ATileEntity::TriggerCombat()
 	Kill();
 }
 
-void ATileEntity::Kill()
+void AEntity::Kill()
 {
 	AGOTAGameState* GameState = GetWorld()->GetGameState<AGOTAGameState>();
 	GameState->TileEntities.Remove(this);
@@ -87,7 +88,7 @@ void ATileEntity::Kill()
 	Destroy();
 }
 
-bool ATileEntity::IsNextStepBlocked()
+bool AEntity::IsNextStepBlocked()
 {
 	for (int32 i = 0; i < MovementSpeed; ++i)
 	{
@@ -100,7 +101,7 @@ bool ATileEntity::IsNextStepBlocked()
 	return false;
 }
 
-void ATileEntity::Step()
+void AEntity::Step()
 {
 	ATile* NewCurrent = nullptr;
 	for (int32 i = 0; i < MovementSpeed; ++i)

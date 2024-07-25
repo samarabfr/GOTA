@@ -39,7 +39,7 @@ AGOTAGameState::AGOTAGameState()
 	TotalPopulation = CreateDefaultSubobject<UPopulationSummary>(TEXT("Total Population"));
 }
 
-void AGOTAGameState::AddTileEntity(ATileEntity* NewTileEntity)
+void AGOTAGameState::AddTileEntity(AEntity* NewTileEntity)
 {
 	TileEntities.Add(NewTileEntity);
 }
