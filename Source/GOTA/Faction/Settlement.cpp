@@ -15,13 +15,13 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(ASettlement, ClaimColor);
 	DOREPLIFETIME(ASettlement, PopulationSummary);
 	DOREPLIFETIME(ASettlement, ProductionSummary);
-	DOREPLIFETIME(ASettlement, PrimaryReligion);
 	DOREPLIFETIME(ASettlement, CurrentBuildingProject);
 	DOREPLIFETIME(ASettlement, Food);
 	DOREPLIFETIME(ASettlement, Wood);
 	DOREPLIFETIME(ASettlement, Stone);
 	DOREPLIFETIME(ASettlement, Expansion);
 	DOREPLIFETIME(ASettlement, PrimaryCulture);
+	DOREPLIFETIME(ASettlement, Affiliation);
 }
 
 ASettlement::ASettlement()

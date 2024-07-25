@@ -100,9 +100,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Settlement")
 	TArray<UBuildingDataAsset*> PossibleBuildings;
 
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
-	ECultureLoyalty PrimaryReligion = ECultureLoyalty::Colonists;
-
 	UPROPERTY(BlueprintReadWrite, BlueprintSetter=SetCurrentBuildingProject, Replicated, Category="Settlement")
 	UBuildingProject* CurrentBuildingProject;
 
@@ -110,7 +107,10 @@ public:
 	void SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject);
 
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
-	ECultureLoyalty PrimaryCulture;
+	ECultureLoyalty PrimaryCulture = ECultureLoyalty::MAX;
+	
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
+	EAffiliation Affiliation;
 	
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Settlement")
 	USettlementBalance* SettlementBalance;

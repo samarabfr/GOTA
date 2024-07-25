@@ -14,4 +14,8 @@ class GOTA_API AArmy : public ATileEntity
 {
 	GENERATED_BODY()
 	
+	bool IsTargetValid() const;
+	
+public:
+	virtual void CalculateMovement() override;
 };

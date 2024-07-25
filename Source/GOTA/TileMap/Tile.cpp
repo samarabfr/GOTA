@@ -14,7 +14,8 @@ bool ATile::bFreezeGrowthChanges = false;
 void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
+	
+	DOREPLIFETIME(ATile, HexCoords);
 	DOREPLIFETIME(ATile, Claimant);
 	DOREPLIFETIME(ATile, Trees);
 	DOREPLIFETIME(ATile, TreeGrowth);
@@ -26,14 +27,13 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME(ATile, WildlifeGrowthChange);
 	DOREPLIFETIME(ATile, Building);
 	DOREPLIFETIME(ATile, Neighbors);
+	DOREPLIFETIME(ATile, AlliedTileEntity);
+	DOREPLIFETIME(ATile, EnemyTileEntity);
 }
 
 // Constructor
 ATile::ATile()
 {
-	IsWalkable = true;
-	IsClaimable = true;
-
 	// initialize neighbor array
 	for (int i = 0; i < 6; ++i)
 	{
@@ -56,7 +56,7 @@ ATile::ATile()
 void ATile::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	// Get the GameState
 	AGOTAGameState* GameState = GetWorld()->GetGameState<AGOTAGameState>();
 	GameState->LoadingManager->IncrementReplicationCount();
@@ -234,6 +234,24 @@ void ATile::CalculatePopulationGrowthChangeWithNeighbors()
 	{
 		if (Neighbors[i]) Neighbors[i]->CalculatePopulationGrowthChange();
 	}
+}
+
+bool ATile::IsWalkable(EAffiliation Affiliation) const
+{
+	if(Affiliation == EAffiliation::Ally)
+	{
+		return !EnemyTileEntity;
+	}
+	if(Affiliation == EAffiliation::Enemy)
+	{
+		return !AlliedTileEntity;
+	}
+	return false;
+}
+
+bool ATile::IsClaimable() const
+{
+	return !Claimant;
 }
 
 void ATile::AddBuildingToReplication()

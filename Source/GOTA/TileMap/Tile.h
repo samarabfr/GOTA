@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "HexCoords.h"
+#include "GOTA/Faction/TileEntity.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/EcoSystemDataAsset.h"
 #include "GOTA/Faction/GOTAAttributeLimited.h"
@@ -28,7 +29,7 @@ class GOTA_API ATile : public AActor
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
 
 public:
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(Replicated, BlueprintReadOnly)
 	FHexCoords HexCoords;
 
 	//====================================================================
@@ -82,12 +83,13 @@ public:
 	//====================================================================
 	//--------------------Bool Flags
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	
 public:
-	UPROPERTY(BlueprintReadWrite, Category="Tile")
-	bool IsWalkable;
-
-	UPROPERTY(BlueprintReadWrite, Category="Tile")
-	bool IsClaimable;
+	UFUNCTION(BlueprintCallable, Category="Tile")
+	bool IsWalkable(EAffiliation Affiliation) const;
+	
+	UFUNCTION(BlueprintCallable, Category="Tile")
+	bool IsClaimable() const;
 
 	//====================================================================
 	//--------------------Building
@@ -155,4 +157,10 @@ public:
 	TArray<ATile*> Neighbors; // 0 = North, 1 = NorthEast, 2 = SouthEast, 3 = South, 4 = SouthWest, 5 = NorthWest
 
 	static bool bFreezeGrowthChanges;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	ATileEntity* AlliedTileEntity;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	ATileEntity* EnemyTileEntity;
 };
