@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "HexCoords.h"
 #include "SpawnPointLayout.h"
+#include "TileContent.h"
 #include "TileGraphicsDataAsset.h"
 #include "TileLayout.h"
 #include "GOTA/Faction/Entity.h"
@@ -55,10 +56,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Tile")
 	void Unbuild();
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintCosmetic, Category="Tile")
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Tile")
 	void OnEnteringActiveRangeOfGuardian();
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintCosmetic, Category="Tile")
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Tile")
 	void OnLeavingActiveRangeOfGuardian();
 
 	void CalculateTurn();
@@ -176,9 +177,16 @@ public:
 	void SetIsRiver(bool IsRiver);
 
 
-	UPROPERTY(BlueprintReadwrite)
+	UPROPERTY(BlueprintReadwrite, BlueprintSetter=SetBiome, ReplicatedUsing=OnRep_Biome, Category="Tile")
 	EBiome Biome = EBiome::Gras;
 
+	UFUNCTION(BlueprintSetter)
+	void SetBiome(EBiome NewBiome);
+
+	UFUNCTION()
+	void OnRep_Biome();
+
+	void BiomeChanged();
 	// TileContent relevant
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
@@ -191,7 +199,7 @@ public:
 	FTileLayout TileLayout;
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Tile")
-	void OnTileLayoutChanged();
+	void UpdateTileLayout();
 
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_SpawnPointLayout, Category="Tile")
 	FSpawnPointLayout SpawnPointLayout;
@@ -202,8 +210,14 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category="Tile")
 	void OnSpawnPointLayoutChanged();
 
+	UFUNCTION(BlueprintImplementableEvent, Category="Tile")
+	void SpawnTileContent();
+
+	UPROPERTY(BlueprintReadWrite)
+	ATileContent* TileContent;
+
 private:
-	void RefreshTileLayout();
+	void RecalculateTileLayout();
 
 	FTileLayout* FindNewValidTileLayout();
 

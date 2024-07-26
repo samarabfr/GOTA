@@ -63,7 +63,10 @@ void ATile::BeginPlay()
 	// Get the GameState
 	AGOTAGameState* GameState = GetWorld()->GetGameState<AGOTAGameState>();
 	GameState->LoadingManager->IncrementReplicationCount();
-
+	
+	SpawnTileContent();
+	TileContent->Init(this);
+	
 	if (HasAuthority())
 	{
 		AddReplicatedSubObject(Trees);
@@ -88,7 +91,7 @@ void ATile::Init()
 	Wildlife->OnChanged.AddDynamic(this, &ATile::CalculateWildlifeGrowthChangeWithNeighbors);
 	Wildlife->SetMaximum(BalanceData->MaxWildlife);
 	Wildlife->SetCurrent(BalanceData->StartingWildlife);
-	RefreshTileLayout();
+	RecalculateTileLayout();
 }
 
 //====================================================================
@@ -287,10 +290,32 @@ void ATile::SetClaimant(ASettlement* NewClaimant)
 void ATile::SetIsRiver(bool IsRiver)
 {
 	bIsRiver = IsRiver;
-	RefreshTileLayout();
+	RecalculateTileLayout();
 	for (ATile* Tile : Neighbors)
 	{
-		if (Tile) Tile->RefreshTileLayout();
+		if (Tile) Tile->RecalculateTileLayout();
+	}
+}
+
+void ATile::SetBiome(EBiome NewBiome)
+{
+	Biome = NewBiome;
+	BiomeChanged();
+}
+
+void ATile::OnRep_Biome()
+{
+	BiomeChanged();
+}
+
+void ATile::BiomeChanged()
+{
+	if(IsValidTileLayout(&TileLayout))
+	{
+		UpdateTileLayout();
+	}
+	{
+		RecalculateTileLayout();	
 	}
 }
 
@@ -299,7 +324,7 @@ void ATile::OnRep_SpawnPointLayout()
 	OnSpawnPointLayoutChanged();
 }
 
-void ATile::RefreshTileLayout()
+void ATile::RecalculateTileLayout()
 {
 	FTileLayout* NewLayout = FindNewValidTileLayout();
 	if (!NewLayout) return;
@@ -307,7 +332,7 @@ void ATile::RefreshTileLayout()
 	// Select random SpawnPointLayout
 	SpawnPointLayout = TileLayout.SpawnPointsLayouts[FMath::RandRange(0, TileLayout.SpawnPointsLayouts.Num() - 1)];
 	OnSpawnPointLayoutChanged();
-	OnTileLayoutChanged();
+	UpdateTileLayout();
 }
 
 FTileLayout* ATile::FindNewValidTileLayout()
@@ -335,11 +360,9 @@ FTileLayout* ATile::FindNewValidTileLayout()
 bool ATile::IsValidTileLayout(FTileLayout* Layout)
 {
 	// Tile has River but Row doesn't allow that
-	if (bIsRiver && !Layout->AllowRiver) return false;
+	if (bIsRiver != Layout->HasRiver) return false;
 	// Tile has no Building but Row doesn't allow that
-	bool test = !Building;
-	bool test2 = !Layout->AllowNoBuilding;
-	if (test && test2) return false;
+	if (!Building && !Layout->AllowNoBuilding) return false;
 	// Tile has Building but Row doesn't allow that
 	if (Building && !Layout->AllowBuilding) return false;
 	// Row doesn't allow this biome
@@ -362,7 +385,6 @@ int32 ATile::FindRiverConnectionRotation(TArray<bool> Connections)
 	{
 		RealConnections.Add(Neighbors[i] && Neighbors[i]->bIsRiver);
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Connections: %d - %d"), Connections.Num(), RealConnections.Num());
 	for (int32 Rotation = 0; Rotation < 6; ++Rotation)
 	{
 		bool ThisRotationWorks = true;

@@ -28,7 +28,7 @@ struct FTileLayout : public FTableRowBase
 	bool AllowNoBuilding;
 	
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
-	bool AllowRiver;
+	bool HasRiver;
 	
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
 	TArray<bool> RiverConnections;

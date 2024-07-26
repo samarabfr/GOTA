@@ -6,6 +6,7 @@
 #include "HexCoords.h"
 #include "Tile.h"
 #include "TestRiverDataAsset.h"
+#include "TestBiomeDataAsset.h"
 #include "GameFramework/Actor.h"
 #include "TileMap.generated.h"
 
@@ -72,4 +73,7 @@ public:
 	// temp property until Terraforming works, just to have a river on the map
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	UTestRiver* TestRiverDataAsset;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UTestBiomeDataAsset* TestBiomeDataAsset;
 };

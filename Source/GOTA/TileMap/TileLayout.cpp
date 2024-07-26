@@ -5,6 +5,6 @@ FTileLayout::FTileLayout()
 	HexagonMesh = nullptr;
 	AllowBuilding = false;
 	AllowNoBuilding = false;
-	AllowRiver = false;
+	HasRiver = false;
 	RiverConnections.SetNum(6);
 }

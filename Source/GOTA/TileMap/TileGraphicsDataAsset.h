@@ -13,14 +13,14 @@ class GOTA_API UTileGraphicsDataAsset : public UPrimaryDataAsset
 	
 public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	UMaterial* M_Gras;
+	UMaterialInstance* M_Grass;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	UMaterial* M_Beach;
+	UMaterialInstance* M_Beach;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	UMaterial* M_Mountain;
+	UMaterialInstance* M_Mountain;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	UMaterial* M_Volcano;
+	UMaterialInstance* M_Volcano;
 };
