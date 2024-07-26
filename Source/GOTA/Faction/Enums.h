@@ -37,3 +37,12 @@ enum class EAffiliation : uint8
 	Ally UMETA(DisplayName = "Ally"),
 	Enemy UMETA(DisplayName = "Enemy")
 };
+
+UENUM(BlueprintType)
+enum class EBiome : uint8
+{
+	Gras UMETA(DisplayName = "Gras"),
+	Beach UMETA(DisplayName = "Beach"),
+	Mountain UMETA(DisplayName = "Mountain"),
+	Volcano UMETA(DisplayName = "Volcano")
+};

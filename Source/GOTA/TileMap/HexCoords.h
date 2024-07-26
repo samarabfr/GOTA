@@ -14,10 +14,10 @@ struct FHexCoords
 public:
 	static const float Gridsize;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
 	int32 Q;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
 	int32 R;
 
 	FHexCoords();

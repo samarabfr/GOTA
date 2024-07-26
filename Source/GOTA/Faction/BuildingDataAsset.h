@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "BuildingTierData.h"
 #include "Engine/DataAsset.h"
+#include "GOTA/TileMap/TileAsset.h"
 #include "BuildingDataAsset.generated.h"
 
 UCLASS()
@@ -20,7 +21,7 @@ public:
 	FText Description;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	UStaticMesh* Mesh;
+	FTileAsset MainBuilding;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	TSubclassOf<class UBuilding> BuildingClass;

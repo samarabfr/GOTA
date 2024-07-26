@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "HexCoords.h"
 #include "Tile.h"
+#include "TestRiverDataAsset.h"
 #include "GameFramework/Actor.h"
 #include "TileMap.generated.h"
 
@@ -67,4 +68,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	TArray<ATile*> GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation Affiliation);
+
+	// temp property until Terraforming works, just to have a river on the map
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UTestRiver* TestRiverDataAsset;
 };

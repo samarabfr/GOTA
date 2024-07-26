@@ -4,6 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "HexCoords.h"
+#include "SpawnPointLayout.h"
+#include "TileGraphicsDataAsset.h"
+#include "TileLayout.h"
 #include "GOTA/Faction/Entity.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/EcoSystemDataAsset.h"
@@ -39,7 +42,7 @@ public:
 public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	void Init();
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Tile")
 	void Claim(const ASettlement* PotentialClaimant, bool& Success);
 
@@ -57,24 +60,24 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintCosmetic, Category="Tile")
 	void OnLeavingActiveRangeOfGuardian();
-	
+
 	void CalculateTurn();
-	
+
 	void CalculateTreeGrowthChange();
 
 	UFUNCTION()
 	void CalculateTreeGrowthChangeWithNeighbors(int32 Change);
-	
+
 	void CalculateForageChange();
 
 	UFUNCTION()
 	void CalculateForageChangeWithNeighbors(int32 Change);
-	
+
 	void CalculateWildlifeGrowthChange();
 
 	UFUNCTION()
 	void CalculateWildlifeGrowthChangeWithNeighbors(int32 Change);
-	
+
 	void CalculatePopulationGrowthChange();
 
 	UFUNCTION()
@@ -83,11 +86,11 @@ public:
 	//====================================================================
 	//--------------------Bool Flags
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-	
+
 public:
 	UFUNCTION(BlueprintCallable, Category="Tile")
 	bool IsWalkable(EAffiliation Affiliation) const;
-	
+
 	UFUNCTION(BlueprintCallable, Category="Tile")
 	bool IsClaimable() const;
 
@@ -97,11 +100,11 @@ public:
 protected:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
 	UEcoSystemDataAsset* BalanceData;
-	
+
 public:
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="Tile")
 	UBuilding* Building;
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	void AddBuildingToReplication();
 
@@ -163,4 +166,51 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	AEntity* EnemyTileEntity;
+
+	// River
+
+	UPROPERTY(BlueprintReadwrite, BlueprintSetter=SetIsRiver, Replicated, Category="Tile")
+	bool bIsRiver;
+
+	UFUNCTION(BlueprintSetter)
+	void SetIsRiver(bool IsRiver);
+
+
+	UPROPERTY(BlueprintReadwrite)
+	EBiome Biome = EBiome::Gras;
+
+	// TileContent relevant
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	UTileGraphicsDataAsset* DA_TileGraphics;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	UDataTable* TileLayouts;
+
+	UPROPERTY(BlueprintReadOnly, Category="Tile")
+	FTileLayout TileLayout;
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Tile")
+	void OnTileLayoutChanged();
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_SpawnPointLayout, Category="Tile")
+	FSpawnPointLayout SpawnPointLayout;
+
+	UFUNCTION()
+	void OnRep_SpawnPointLayout();
+
+	UFUNCTION(BlueprintImplementableEvent, Category="Tile")
+	void OnSpawnPointLayoutChanged();
+
+private:
+	void RefreshTileLayout();
+
+	FTileLayout* FindNewValidTileLayout();
+
+	bool IsValidTileLayout(FTileLayout* Layout);
+
+protected:
+	// Returns -1 when none found, returns rotation ID (0-5) if one is found
+	UFUNCTION(BlueprintCallable, Category="Tile")
+	int32 FindRiverConnectionRotation(TArray<bool> Connections);
 };

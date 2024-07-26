@@ -3,6 +3,7 @@
 
 #include "Tile.h"
 
+#include "HairStrandsInterface.h"
 #include "GOTA/Core/GOTAGameState.h"
 #include "GOTA/Core/LoadingManager.h"
 #include "GOTA/Faction/Building.h"
@@ -14,7 +15,7 @@ bool ATile::bFreezeGrowthChanges = false;
 void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
+
 	DOREPLIFETIME(ATile, HexCoords);
 	DOREPLIFETIME(ATile, Claimant);
 	DOREPLIFETIME(ATile, Trees);
@@ -29,6 +30,8 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME(ATile, Neighbors);
 	DOREPLIFETIME(ATile, AlliedTileEntity);
 	DOREPLIFETIME(ATile, EnemyTileEntity);
+	DOREPLIFETIME(ATile, bIsRiver);
+	DOREPLIFETIME(ATile, SpawnPointLayout);
 }
 
 // Constructor
@@ -56,7 +59,7 @@ ATile::ATile()
 void ATile::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	// Get the GameState
 	AGOTAGameState* GameState = GetWorld()->GetGameState<AGOTAGameState>();
 	GameState->LoadingManager->IncrementReplicationCount();
@@ -85,6 +88,7 @@ void ATile::Init()
 	Wildlife->OnChanged.AddDynamic(this, &ATile::CalculateWildlifeGrowthChangeWithNeighbors);
 	Wildlife->SetMaximum(BalanceData->MaxWildlife);
 	Wildlife->SetCurrent(BalanceData->StartingWildlife);
+	RefreshTileLayout();
 }
 
 //====================================================================
@@ -120,7 +124,7 @@ void ATile::CalculateTurn()
 		Wildlife->Add(WildlifeGrowCount, _);
 		WildlifeGrowth->Subtract(WildlifeGrowCount * BalanceData->WildlifeGrowthThreshold, _);
 	}
-	if(!Building) return;
+	if (!Building) return;
 	// apply PopulationGrowthChange
 	Building->Population->Growth += Building->Population->GrowthChange;
 	// grow Wildlife
@@ -212,8 +216,8 @@ void ATile::CalculateWildlifeGrowthChangeWithNeighbors(int32 Change)
 
 void ATile::CalculatePopulationGrowthChange()
 {
-	if(!Building) return;
-	
+	if (!Building) return;
+
 	Building->Population->Growth = 0;
 	for (int i = 0; i < 6; ++i)
 	{
@@ -238,11 +242,11 @@ void ATile::CalculatePopulationGrowthChangeWithNeighbors()
 
 bool ATile::IsWalkable(EAffiliation Affiliation) const
 {
-	if(Affiliation == EAffiliation::Ally)
+	if (Affiliation == EAffiliation::Ally)
 	{
 		return !EnemyTileEntity;
 	}
-	if(Affiliation == EAffiliation::Enemy)
+	if (Affiliation == EAffiliation::Enemy)
 	{
 		return !AlliedTileEntity;
 	}
@@ -278,4 +282,99 @@ void ATile::SetClaimant(ASettlement* NewClaimant)
 {
 	Claimant = NewClaimant;
 	ClaimantChanged();
+}
+
+void ATile::SetIsRiver(bool IsRiver)
+{
+	bIsRiver = IsRiver;
+	RefreshTileLayout();
+	for (ATile* Tile : Neighbors)
+	{
+		if (Tile) Tile->RefreshTileLayout();
+	}
+}
+
+void ATile::OnRep_SpawnPointLayout()
+{
+	OnSpawnPointLayoutChanged();
+}
+
+void ATile::RefreshTileLayout()
+{
+	FTileLayout* NewLayout = FindNewValidTileLayout();
+	if (!NewLayout) return;
+	TileLayout = *NewLayout;
+	// Select random SpawnPointLayout
+	SpawnPointLayout = TileLayout.SpawnPointsLayouts[FMath::RandRange(0, TileLayout.SpawnPointsLayouts.Num() - 1)];
+	OnSpawnPointLayoutChanged();
+	OnTileLayoutChanged();
+}
+
+FTileLayout* ATile::FindNewValidTileLayout()
+{
+	FString ContextString;
+	TArray<FTileLayout*> AllRows;
+	TileLayouts->GetAllRows<FTileLayout>(ContextString, AllRows);
+	TArray<FTileLayout*> PossibleLayouts;
+	for (FTileLayout* Row : AllRows)
+	{
+		if (IsValidTileLayout(Row))
+		{
+			PossibleLayouts.Add(Row);
+		}
+	}
+	// No valid Layout found, so we use Default
+	if (PossibleLayouts.IsEmpty())
+	{
+		FName DefaultName = "Default";
+		return TileLayouts->FindRow<FTileLayout>(DefaultName, ContextString);
+	}
+	return PossibleLayouts[FMath::RandRange(0, PossibleLayouts.Num() - 1)];
+}
+
+bool ATile::IsValidTileLayout(FTileLayout* Layout)
+{
+	// Tile has River but Row doesn't allow that
+	if (bIsRiver && !Layout->AllowRiver) return false;
+	// Tile has no Building but Row doesn't allow that
+	bool test = !Building;
+	bool test2 = !Layout->AllowNoBuilding;
+	if (test && test2) return false;
+	// Tile has Building but Row doesn't allow that
+	if (Building && !Layout->AllowBuilding) return false;
+	// Row doesn't allow this biome
+	if (!Layout->AllowedBiomes.Contains(Biome)) return false;
+	if (bIsRiver)
+	{
+		// Check if RiverConnections fit
+		if (FindRiverConnectionRotation(Layout->RiverConnections) < 0) return false;
+	}
+	// This layout has no SpawnPointLayout
+	if (Layout->SpawnPointsLayouts.IsEmpty()) return false;
+	return true;
+}
+
+int32 ATile::FindRiverConnectionRotation(TArray<bool> Connections)
+{
+	if (Connections.Num() != 6) return false;
+	TArray<bool> RealConnections;
+	for (int32 i = 0; i < 6; ++i)
+	{
+		RealConnections.Add(Neighbors[i] && Neighbors[i]->bIsRiver);
+	}
+	UE_LOG(LogTemp, Warning, TEXT("Connections: %d - %d"), Connections.Num(), RealConnections.Num());
+	for (int32 Rotation = 0; Rotation < 6; ++Rotation)
+	{
+		bool ThisRotationWorks = true;
+		for (int i = 0; i < 6; ++i)
+		{
+			if (RealConnections[i] != Connections[(i + Rotation) % 6])
+			{
+				ThisRotationWorks = false;
+				break;
+			}
+		}
+		if (ThisRotationWorks) return Rotation;
+	}
+	return -1;
 }
