@@ -1,10 +1,14 @@
 ﻿#include "TileContent.h"
 #include "Tile.h"
+#include "TileAsset.h"
+#include "GOTA/Faction/Building.h"
+#include "GOTA/Faction/BuildingDataAsset.h"
 
 ATileContent::ATileContent()
 {
 	RootComponent = CreateDefaultSubobject<USceneComponent>("Root");
 	MainBuilding = CreateDefaultSubobject<UStaticMeshComponent>("MainBuilding");
+	MainBuilding->SetupAttachment(RootComponent);
 }
 
 void ATileContent::Init(ATile* Tile_)
@@ -16,7 +20,7 @@ void ATileContent::Init(ATile* Tile_)
 
 void ATileContent::UpdateTrees(int32 Change)
 {
-	if(Change == 0) return;
+	if (Change == 0) return;
 	int32 Counter = 0;
 	// increase the amount of visible trees
 	if (Change > 0)
@@ -29,7 +33,8 @@ void ATileContent::UpdateTrees(int32 Change)
 				if (++Counter >= Change) return;
 			}
 		}
-	} else
+	}
+	else
 	{
 		for (UStaticMeshComponent* Mesh : TreeMeshes)
 		{
@@ -39,5 +44,35 @@ void ATileContent::UpdateTrees(int32 Change)
 				if (--Counter <= Change) return;
 			}
 		}
+	}
+}
+
+void ATileContent::UpdateBuildings()
+{
+	if (Tile->Building)
+	{
+		FString ContextString;
+		TArray<FTileAsset*> BuildingTileAssets;
+		BuildingAssets->GetAllRows<FTileAsset>(ContextString, BuildingTileAssets);
+		// TODO: Filter Rows for fitting GameplayTags
+		// Activate Building Stuff
+		MainBuilding->SetStaticMesh(Tile->Building->DataAsset->MainBuilding.StaticMesh);
+		MainBuilding->SetVisibility(true);
+		if (BuildingTileAssets.IsEmpty()) return;
+		for (UStaticMeshComponent* BuildingMesh : BuildingMeshes)
+		{
+			BuildingMesh->SetStaticMesh(
+				BuildingTileAssets[FMath::RandRange(0, BuildingTileAssets.Num() - 1)]->StaticMesh);
+			BuildingMesh->SetVisibility(true);
+		}
+	}
+	else
+	{
+		// Deactivate Building Stuff
+		for (UStaticMeshComponent* BuildingMesh : BuildingMeshes)
+		{
+			BuildingMesh->SetVisibility(false);
+		}
+		MainBuilding->SetVisibility(false);
 	}
 }

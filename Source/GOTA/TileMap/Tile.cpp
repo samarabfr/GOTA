@@ -34,6 +34,7 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME(ATile, bIsRiver);
 	DOREPLIFETIME(ATile, Biome);
 	DOREPLIFETIME(ATile, SpawnPointLayout);
+	DOREPLIFETIME(ATile, GameplayTags);
 }
 
 // Constructor
@@ -129,16 +130,11 @@ void ATile::Unbuild()
 	}
 	// Remove Building related GameplayTags
 	GameplayTags.AppendTags(Building->DataAsset->GameplayTags);
-	// Destroy the Object, not sure if i should call MarkAsGarbage or not
-	Building->MarkAsGarbage();
+	// Destroy the Object
 	Building = nullptr;
 	// Set Graphics
 	RecalculateTileLayout();
 }
-
-//====================================================================
-//--------------------Claimant
-//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 void ATile::CalculateTurn()
 {

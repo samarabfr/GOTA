@@ -29,19 +29,14 @@ class GOTA_API ATile : public AActor
 	ATile();
 
 	virtual void BeginPlay() override;
-
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
-
+	
 public:
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	FGameplayTagContainer GameplayTags;
+	
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	FHexCoords HexCoords;
 
-	//====================================================================
-	//--------------------Overrideable Functions
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-
-public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	void Init();
 
@@ -85,11 +80,6 @@ public:
 	UFUNCTION()
 	void CalculatePopulationGrowthChangeWithNeighbors();
 
-	//====================================================================
-	//--------------------Bool Flags
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-
-public:
 	UFUNCTION(BlueprintCallable, Category="Tile")
 	bool IsWalkable(EAffiliation Affiliation) const;
 
@@ -162,10 +152,9 @@ public:
 
 	// River
 
-	UPROPERTY(BlueprintReadwrite, BlueprintSetter=SetIsRiver, Replicated, Category="Tile")
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	bool bIsRiver;
-
-	UFUNCTION(BlueprintSetter)
+	
 	void SetIsRiver(bool IsRiver);
 
 
@@ -228,8 +217,4 @@ protected:
 	// Returns -1 when none found, returns rotation ID (0-5) if one is found
 	UFUNCTION(BlueprintCallable, Category="Tile")
 	int32 FindRiverConnectionRotation(const TArray<bool> Connections) const;
-
-public:
-	UPROPERTY(BlueprintReadOnly, Category="Tile")
-	FGameplayTagContainer GameplayTags;
 };

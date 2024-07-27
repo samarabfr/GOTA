@@ -27,15 +27,30 @@ public:
 	UFUNCTION(BlueprintCallable, Category="TileContent")
 	void UpdateTrees(int32 Change);
 
-	UPROPERTY(BlueprintReadWrite, Category="TileContent")
+	UPROPERTY(BlueprintReadOnly, Category="TileContent")
 	ATile* Tile;
 
 	UPROPERTY(BlueprintReadOnly, Category="TileContent")
 	TArray<UStaticMeshComponent*> TreeMeshes;
+
+	UPROPERTY(BlueprintReadOnly, Category="TileContent")
+	TArray<UStaticMeshComponent*> PropMeshes;
 	
 	UPROPERTY(BlueprintReadOnly, Category="TileContent")
+	TArray<UStaticMeshComponent*> BuildingMeshes;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="TileContent")
+	UDataTable* BuildingAssets;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="TileContent")
+	UDataTable* TreeAssets;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="TileContent")
+	UDataTable* PropAssets;
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="TileContent")
 	UStaticMeshComponent* MainBuilding;
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="TileContent")
+	UFUNCTION(BlueprintCallable, Category="TileContent")
 	void UpdateBuildings();
 };
