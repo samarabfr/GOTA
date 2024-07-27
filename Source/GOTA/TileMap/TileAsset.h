@@ -3,20 +3,34 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "GameFramework/Actor.h"
 #include "TileAsset.generated.h"
+
+UENUM(BlueprintType)
+enum class EGameplayTagMode : uint8
+{
+	MatchAny UMETA(DisplayName = "Match Any"),
+	MatchAll UMETA(DisplayName = "Match All")
+};
 
 USTRUCT(BlueprintType)
 struct FTileAsset : public FTableRowBase
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Structure")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Structure")
 	UStaticMesh* StaticMesh = nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Structure")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Structure")
 	USkeletalMesh* SkeletalMesh= nullptr;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Structure")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Structure")
 	UAnimSequence* Animation = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Structure")
+	EGameplayTagMode TagMode = EGameplayTagMode::MatchAny;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Structure")
+	FGameplayTagContainer SpawnConditionTags;
 };

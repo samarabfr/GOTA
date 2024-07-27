@@ -11,6 +11,8 @@ class GOTA_API ATileContent : public AActor
 	GENERATED_BODY()
 
 public:
+	ATileContent();
+	
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="TileContent")
 	void OnSpawnPointLayoutChanged(FSpawnPointLayout NewSpawnPointLayout);
 
@@ -20,5 +22,20 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="TileContent")
 	void OnLeavingActiveRangeOfGuardian();
 	
-	void Init(const ATile* Tile);
+	void Init(ATile* Tile_);
+
+	UFUNCTION(BlueprintCallable, Category="TileContent")
+	void UpdateTrees(int32 Change);
+
+	UPROPERTY(BlueprintReadWrite, Category="TileContent")
+	ATile* Tile;
+
+	UPROPERTY(BlueprintReadOnly, Category="TileContent")
+	TArray<UStaticMeshComponent*> TreeMeshes;
+	
+	UPROPERTY(BlueprintReadOnly, Category="TileContent")
+	UStaticMeshComponent* MainBuilding;
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="TileContent")
+	void UpdateBuildings();
 };

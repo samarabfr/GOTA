@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "HexCoords.h"
 #include "SpawnPointLayout.h"
 #include "TileContent.h"
@@ -50,10 +51,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Tile")
 	void Unclaim();
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Tile")
-	void Build(TSubclassOf<UBuilding> BuildingClass, bool& Success);
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
+	bool TryBuild(UBuildingDataAsset* BuildingDataAsset);
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Tile")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	void Unbuild();
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Tile")
@@ -95,9 +96,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Tile")
 	bool IsClaimable() const;
 
-	//====================================================================
-	//--------------------Building
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 protected:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
 	UEcoSystemDataAsset* BalanceData;
@@ -109,9 +107,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	void AddBuildingToReplication();
 
-	//====================================================================
-	//--------------------Claimant
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 private:
 	UPROPERTY(BlueprintSetter=SetClaimant, BlueprintGetter=GetClaimant, ReplicatedUsing=OnRep_Claimant, Category="Tile")
 	ASettlement* Claimant;
@@ -130,9 +125,6 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetClaimant(ASettlement* NewClaimant);
 
-	//====================================================================
-	//--------------------Attributes
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttributeLimited* Trees;
 
@@ -186,20 +178,29 @@ public:
 	UFUNCTION()
 	void OnRep_Biome();
 
-	void BiomeChanged();
+	// ---------------------------------------------------------
 	// TileContent relevant
-
+private:
+	EBiome MaterialBiome;
+	
+public:
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="TileContent")
+	void UpdateHexagonMaterial();
+	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
 	UTileGraphicsDataAsset* DA_TileGraphics;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
 	UDataTable* TileLayouts;
 
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UStaticMeshComponent* SM_Hexagon;
+	
 	UPROPERTY(BlueprintReadOnly, Category="Tile")
 	FTileLayout TileLayout;
-
-	UFUNCTION(BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Tile")
-	void UpdateTileLayout();
+	
+	// Check if anything needs to be changed and do that
+	void RefreshTileLayout();
 
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_SpawnPointLayout, Category="Tile")
 	FSpawnPointLayout SpawnPointLayout;
@@ -219,12 +220,16 @@ public:
 private:
 	void RecalculateTileLayout();
 
-	FTileLayout* FindNewValidTileLayout();
+	FTileLayout* FindNewValidTileLayout() const;
 
-	bool IsValidTileLayout(FTileLayout* Layout);
+	bool IsValidTileLayout(const FTileLayout* Layout) const;
 
 protected:
 	// Returns -1 when none found, returns rotation ID (0-5) if one is found
 	UFUNCTION(BlueprintCallable, Category="Tile")
-	int32 FindRiverConnectionRotation(TArray<bool> Connections);
+	int32 FindRiverConnectionRotation(const TArray<bool> Connections) const;
+
+public:
+	UPROPERTY(BlueprintReadOnly, Category="Tile")
+	FGameplayTagContainer GameplayTags;
 };

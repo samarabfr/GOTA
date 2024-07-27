@@ -7,6 +7,7 @@
 #include "GOTA/Core/GOTAGameState.h"
 #include "GOTA/Core/LoadingManager.h"
 #include "GOTA/Faction/Building.h"
+#include "GOTA/Faction/Settlement.h"
 #include "Net/UnrealNetwork.h"
 
 bool ATile::bFreezeGrowthChanges = false;
@@ -31,6 +32,7 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME(ATile, AlliedTileEntity);
 	DOREPLIFETIME(ATile, EnemyTileEntity);
 	DOREPLIFETIME(ATile, bIsRiver);
+	DOREPLIFETIME(ATile, Biome);
 	DOREPLIFETIME(ATile, SpawnPointLayout);
 }
 
@@ -42,6 +44,9 @@ ATile::ATile()
 	{
 		Neighbors.Add(nullptr);
 	}
+
+	SM_Hexagon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SM_Hexagon"));
+	RootComponent = SM_Hexagon;
 
 	// Replication stuff
 	bReplicates = true;
@@ -63,10 +68,10 @@ void ATile::BeginPlay()
 	// Get the GameState
 	AGOTAGameState* GameState = GetWorld()->GetGameState<AGOTAGameState>();
 	GameState->LoadingManager->IncrementReplicationCount();
-	
+
 	SpawnTileContent();
 	TileContent->Init(this);
-	
+
 	if (HasAuthority())
 	{
 		AddReplicatedSubObject(Trees);
@@ -83,14 +88,51 @@ void ATile::BeginPlay()
 void ATile::Init()
 {
 	Trees->OnChanged.AddDynamic(this, &ATile::CalculateTreeGrowthChangeWithNeighbors);
-	Trees->SetMaximum(BalanceData->MaxTrees);
-	Trees->SetCurrent(BalanceData->StartingTrees);
 	Forage->OnChanged.AddDynamic(this, &ATile::CalculateForageChangeWithNeighbors);
 	Forage->SetMaximum(BalanceData->MaxForage);
 	Forage->SetCurrent(BalanceData->StartingForage);
 	Wildlife->OnChanged.AddDynamic(this, &ATile::CalculateWildlifeGrowthChangeWithNeighbors);
 	Wildlife->SetMaximum(BalanceData->MaxWildlife);
 	Wildlife->SetCurrent(BalanceData->StartingWildlife);
+	RecalculateTileLayout();
+}
+
+bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
+{
+	// There is already a Building, can't build here
+	if (Building) return false;
+	// Create Building Object
+	Building = NewObject<UBuilding>(this, BuildingDataAsset->BuildingClass);
+	Building->OnBuild(this);
+	if (Claimant)
+	{
+		Building->OnClaim(Claimant);
+		Claimant->OnBuildingAdded(Building);
+	}
+	// Add Building related GameplayTags
+	GameplayTags.AppendTags(BuildingDataAsset->GameplayTags);
+	AddBuildingToReplication();
+	// Set Graphics
+	RecalculateTileLayout();
+	return true;
+}
+
+void ATile::Unbuild()
+{
+	// there is no Building
+	if (!Building) return;
+	Building->OnUnbuild(this);
+	if (Claimant)
+	{
+		Building->OnUnclaim(Claimant);
+		Claimant->OnBuildingRemoved(Building);
+	}
+	// Remove Building related GameplayTags
+	GameplayTags.AppendTags(Building->DataAsset->GameplayTags);
+	// Destroy the Object, not sure if i should call MarkAsGarbage or not
+	Building->MarkAsGarbage();
+	Building = nullptr;
+	// Set Graphics
 	RecalculateTileLayout();
 }
 
@@ -300,23 +342,12 @@ void ATile::SetIsRiver(bool IsRiver)
 void ATile::SetBiome(EBiome NewBiome)
 {
 	Biome = NewBiome;
-	BiomeChanged();
+	RecalculateTileLayout();
 }
 
 void ATile::OnRep_Biome()
 {
-	BiomeChanged();
-}
-
-void ATile::BiomeChanged()
-{
-	if(IsValidTileLayout(&TileLayout))
-	{
-		UpdateTileLayout();
-	}
-	{
-		RecalculateTileLayout();	
-	}
+	RecalculateTileLayout();
 }
 
 void ATile::OnRep_SpawnPointLayout()
@@ -326,16 +357,53 @@ void ATile::OnRep_SpawnPointLayout()
 
 void ATile::RecalculateTileLayout()
 {
+	if (IsValidTileLayout(&TileLayout))
+	{
+		RefreshTileLayout();
+		return;
+	}
 	FTileLayout* NewLayout = FindNewValidTileLayout();
 	if (!NewLayout) return;
 	TileLayout = *NewLayout;
 	// Select random SpawnPointLayout
 	SpawnPointLayout = TileLayout.SpawnPointsLayouts[FMath::RandRange(0, TileLayout.SpawnPointsLayouts.Num() - 1)];
+	Trees->SetMaximum(SpawnPointLayout.Trees.Num());
+	Trees->SetCurrent(BalanceData->StartingTrees);
 	OnSpawnPointLayoutChanged();
-	UpdateTileLayout();
+	RefreshTileLayout();
 }
 
-FTileLayout* ATile::FindNewValidTileLayout()
+void ATile::RefreshTileLayout()
+{
+	if (SM_Hexagon->GetStaticMesh() != TileLayout.HexagonMesh)
+	{
+		SM_Hexagon->SetStaticMesh(TileLayout.HexagonMesh);
+		UpdateHexagonMaterial();
+		MaterialBiome = Biome;
+		int32 Rotation = 0;
+		if (bIsRiver)
+		{
+			Rotation = FindRiverConnectionRotation(TileLayout.RiverConnections);
+		}
+		else
+		{
+			Rotation = FMath::RandRange(0, 5);
+		}
+		SM_Hexagon->SetRelativeRotation(FRotator(0, Rotation * -60, 0));
+		TileContent->SetActorRotation(FRotator(0, Rotation * -60, 0));
+	}
+	if (MaterialBiome != Biome)
+	{
+		UpdateHexagonMaterial();
+		MaterialBiome = Biome;
+	}
+	if (Building && TileContent->MainBuilding->GetStaticMesh() != Building->DataAsset->MainBuilding.StaticMesh)
+	{
+		TileContent->UpdateBuildings();
+	}
+}
+
+FTileLayout* ATile::FindNewValidTileLayout() const
 {
 	FString ContextString;
 	TArray<FTileLayout*> AllRows;
@@ -352,12 +420,13 @@ FTileLayout* ATile::FindNewValidTileLayout()
 	if (PossibleLayouts.IsEmpty())
 	{
 		FName DefaultName = "Default";
+		UE_LOG(LogTemp, Warning, TEXT("Had to Default TileLayout on (%d:%d)"), HexCoords.Q, HexCoords.R);
 		return TileLayouts->FindRow<FTileLayout>(DefaultName, ContextString);
 	}
 	return PossibleLayouts[FMath::RandRange(0, PossibleLayouts.Num() - 1)];
 }
 
-bool ATile::IsValidTileLayout(FTileLayout* Layout)
+bool ATile::IsValidTileLayout(const FTileLayout* Layout) const
 {
 	// Tile has River but Row doesn't allow that
 	if (bIsRiver != Layout->HasRiver) return false;
@@ -367,19 +436,16 @@ bool ATile::IsValidTileLayout(FTileLayout* Layout)
 	if (Building && !Layout->AllowBuilding) return false;
 	// Row doesn't allow this biome
 	if (!Layout->AllowedBiomes.Contains(Biome)) return false;
-	if (bIsRiver)
-	{
-		// Check if RiverConnections fit
-		if (FindRiverConnectionRotation(Layout->RiverConnections) < 0) return false;
-	}
+	// Is a river but can't find a working Rotation
+	if (bIsRiver && FindRiverConnectionRotation(Layout->RiverConnections) < 0) return false;
 	// This layout has no SpawnPointLayout
 	if (Layout->SpawnPointsLayouts.IsEmpty()) return false;
 	return true;
 }
 
-int32 ATile::FindRiverConnectionRotation(TArray<bool> Connections)
+int32 ATile::FindRiverConnectionRotation(const TArray<bool> Connections) const
 {
-	if (Connections.Num() != 6) return false;
+	if (Connections.Num() != 6) return -1;
 	TArray<bool> RealConnections;
 	for (int32 i = 0; i < 6; ++i)
 	{

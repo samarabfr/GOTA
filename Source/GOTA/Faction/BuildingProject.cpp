@@ -54,9 +54,7 @@ bool UBuildingProject::TryBuilding()
 	// Trying to build a new building
 	if (Tier == 1)
 	{
-		bool success = false;
-		Tile->Build(Data->BuildingClass, success);
-		return success;
+		return Tile->TryBuild(Data);
 	}
 	// Trying to upgrade a Building
 	if (Tile->Building->Upgrade())
