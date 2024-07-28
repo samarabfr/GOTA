@@ -12,7 +12,9 @@
 
 bool ATile::bFreezeGrowthChanges = false;
 
-//Unreal Engine Mystery Code
+// ---------------------------------------------------------
+// Initialisation and core variables
+
 void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -37,7 +39,6 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME(ATile, GameplayTags);
 }
 
-// Constructor
 ATile::ATile()
 {
 	// initialize neighbor array
@@ -98,6 +99,91 @@ void ATile::Init()
 	RecalculateTileLayout();
 }
 
+void ATile::SetIsRiver(bool IsRiver)
+{
+	bIsRiver = IsRiver;
+	RecalculateTileLayout();
+	for (ATile* Tile : Neighbors)
+	{
+		if (Tile) Tile->RecalculateTileLayout();
+	}
+}
+
+void ATile::SetBiome(EBiome NewBiome)
+{
+	Biome = NewBiome;
+	RecalculateTileLayout();
+}
+
+void ATile::OnRep_Biome()
+{
+	RecalculateTileLayout();
+}
+
+bool ATile::IsWalkable(EAffiliation Affiliation) const
+{
+	if (Affiliation == EAffiliation::Ally)
+	{
+		return !EnemyTileEntity;
+	}
+	if (Affiliation == EAffiliation::Enemy)
+	{
+		return !AlliedTileEntity;
+	}
+	return false;
+}
+
+// ---------------------------------------------------------
+// Claimant and claiming
+
+ASettlement* ATile::GetClaimant()
+{
+	return Claimant;
+}
+
+void ATile::SetClaimant(ASettlement* NewClaimant)
+{
+	Claimant = NewClaimant;
+	ClaimantChanged();
+}
+
+void ATile::OnRep_Claimant(ASettlement* NewClaimant)
+{
+	ClaimantChanged();
+}
+
+bool ATile::IsClaimable() const
+{
+	return !Claimant;
+}
+
+bool ATile::TryClaim(ASettlement* PotentialClaimant)
+{
+	if (!IsClaimable()) return false;
+	Claimant = PotentialClaimant;
+	if (Building)
+	{
+		Building->OnClaim(Claimant);
+		Claimant->OnBuildingAdded(Building);
+	}
+	return true;
+}
+
+void ATile::Unclaim()
+{
+	if (!Claimant) return;
+	if (Building)
+	{
+		Building->OnUnclaim(Claimant);
+		Claimant->OnBuildingRemoved(Building);
+	}
+	Claimant->LostClaim(this);
+	Claimant = nullptr;
+}
+
+// ---------------------------------------------------------
+// Building
+
 bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 {
 	// There is already a Building, can't build here
@@ -135,6 +221,19 @@ void ATile::Unbuild()
 	// Set Graphics
 	RecalculateTileLayout();
 }
+
+void ATile::AddBuildingToReplication()
+{
+	AddReplicatedSubObject(Building);
+	AddReplicatedSubObject(Building->Population);
+	AddReplicatedSubObject(Building->Production);
+
+	// TODO: Not Here
+	Building->Population->OnChanged.AddDynamic(this, &ATile::CalculatePopulationGrowthChangeWithNeighbors);
+}
+
+// ---------------------------------------------------------
+// Ecosystem and calculate Turn 
 
 void ATile::CalculateTurn()
 {
@@ -281,93 +380,8 @@ void ATile::CalculatePopulationGrowthChangeWithNeighbors()
 	}
 }
 
-bool ATile::IsWalkable(EAffiliation Affiliation) const
-{
-	if (Affiliation == EAffiliation::Ally)
-	{
-		return !EnemyTileEntity;
-	}
-	if (Affiliation == EAffiliation::Enemy)
-	{
-		return !AlliedTileEntity;
-	}
-	return false;
-}
-
-bool ATile::IsClaimable() const
-{
-	return !Claimant;
-}
-
-void ATile::AddBuildingToReplication()
-{
-	AddReplicatedSubObject(Building);
-	AddReplicatedSubObject(Building->Population);
-	AddReplicatedSubObject(Building->Production);
-
-	// TODO: Not Here
-	Building->Population->OnChanged.AddDynamic(this, &ATile::CalculatePopulationGrowthChangeWithNeighbors);
-}
-
-void ATile::OnRep_Claimant(ASettlement* NewClaimant)
-{
-	ClaimantChanged();
-}
-
-ASettlement* ATile::GetClaimant()
-{
-	return Claimant;
-}
-
-void ATile::SetClaimant(ASettlement* NewClaimant)
-{
-	Claimant = NewClaimant;
-	ClaimantChanged();
-}
-
-void ATile::SetIsRiver(bool IsRiver)
-{
-	bIsRiver = IsRiver;
-	RecalculateTileLayout();
-	for (ATile* Tile : Neighbors)
-	{
-		if (Tile) Tile->RecalculateTileLayout();
-	}
-}
-
-void ATile::SetBiome(EBiome NewBiome)
-{
-	Biome = NewBiome;
-	RecalculateTileLayout();
-}
-
-void ATile::OnRep_Biome()
-{
-	RecalculateTileLayout();
-}
-
-void ATile::OnRep_SpawnPointLayout()
-{
-	OnSpawnPointLayoutChanged();
-}
-
-void ATile::RecalculateTileLayout()
-{
-	if (IsValidTileLayout(&TileLayout))
-	{
-		RefreshTileLayout();
-		return;
-	}
-	FTileLayout* NewLayout = FindNewValidTileLayout();
-	if (!NewLayout) return;
-	TileLayout = *NewLayout;
-	// Select random SpawnPointLayout
-	SpawnPointLayout = TileLayout.SpawnPointsLayouts[FMath::RandRange(0, TileLayout.SpawnPointsLayouts.Num() - 1)];
-	Trees->SetMaximum(SpawnPointLayout.Trees.Num());
-	Trees->SetCurrent(BalanceData->StartingTrees);
-	OnSpawnPointLayoutChanged();
-	RefreshTileLayout();
-}
+// ---------------------------------------------------------
+// TileLayout & TileContent and graphics relevant
 
 void ATile::RefreshTileLayout()
 {
@@ -397,6 +411,24 @@ void ATile::RefreshTileLayout()
 	{
 		TileContent->UpdateBuildings();
 	}
+}
+
+void ATile::RecalculateTileLayout()
+{
+	if (IsValidTileLayout(&TileLayout))
+	{
+		RefreshTileLayout();
+		return;
+	}
+	FTileLayout* NewLayout = FindNewValidTileLayout();
+	if (!NewLayout) return;
+	TileLayout = *NewLayout;
+	// Select random SpawnPointLayout
+	SpawnPointLayout = TileLayout.SpawnPointsLayouts[FMath::RandRange(0, TileLayout.SpawnPointsLayouts.Num() - 1)];
+	Trees->SetMaximum(SpawnPointLayout.Trees.Num());
+	Trees->SetCurrent(BalanceData->StartingTrees);
+	OnSpawnPointLayoutChanged();
+	RefreshTileLayout();
 }
 
 FTileLayout* ATile::FindNewValidTileLayout() const
@@ -461,4 +493,9 @@ int32 ATile::FindRiverConnectionRotation(const TArray<bool> Connections) const
 		if (ThisRotationWorks) return Rotation;
 	}
 	return -1;
+}
+
+void ATile::OnRep_SpawnPointLayout()
+{
+	OnSpawnPointLayoutChanged();
 }
