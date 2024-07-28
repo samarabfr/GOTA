@@ -3,7 +3,6 @@
 
 #include "Tile.h"
 
-#include "HairStrandsInterface.h"
 #include "GOTA/Core/GOTAGameState.h"
 #include "GOTA/Core/LoadingManager.h"
 #include "GOTA/Faction/Building.h"
@@ -111,6 +110,8 @@ void ATile::SetIsRiver(bool IsRiver)
 
 void ATile::SetBiome(EBiome NewBiome)
 {
+	GameplayTags.RemoveTag(DA_Biomes->AllBiomes);
+	GameplayTags.AddTag(DA_Biomes->EnumToTag[NewBiome]);
 	Biome = NewBiome;
 	RecalculateTileLayout();
 }
@@ -166,6 +167,7 @@ bool ATile::TryClaim(ASettlement* PotentialClaimant)
 		Building->OnClaim(Claimant);
 		Claimant->OnBuildingAdded(Building);
 	}
+	GameplayTags.AppendTags(Claimant->GameplayTags);
 	return true;
 }
 
@@ -178,6 +180,7 @@ void ATile::Unclaim()
 		Claimant->OnBuildingRemoved(Building);
 	}
 	Claimant->LostClaim(this);
+	GameplayTags.RemoveTags(Claimant->GameplayTags);
 	Claimant = nullptr;
 }
 
@@ -215,7 +218,7 @@ void ATile::Unbuild()
 		Claimant->OnBuildingRemoved(Building);
 	}
 	// Remove Building related GameplayTags
-	GameplayTags.AppendTags(Building->DataAsset->GameplayTags);
+	GameplayTags.RemoveTags(Building->DataAsset->GameplayTags);
 	// Destroy the Object
 	Building = nullptr;
 	// Set Graphics

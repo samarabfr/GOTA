@@ -4,33 +4,39 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
+#include "GameplayTagRule.h"
 #include "GameFramework/Actor.h"
 #include "TileAsset.generated.h"
-
-UENUM(BlueprintType)
-enum class EGameplayTagMode : uint8
-{
-	MatchAny UMETA(DisplayName = "Match Any"),
-	MatchAll UMETA(DisplayName = "Match All")
-};
 
 USTRUCT(BlueprintType)
 struct FTileAsset : public FTableRowBase
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Structure")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Graphics")
 	UStaticMesh* StaticMesh = nullptr;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Structure")
-	USkeletalMesh* SkeletalMesh= nullptr;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Graphics")
+	USkeletalMesh* SkeletalMesh = nullptr;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Structure")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Graphics")
 	UAnimSequence* Animation = nullptr;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Structure")
-	EGameplayTagMode TagMode = EGameplayTagMode::MatchAny;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
+	int32 SpawnBias = 1;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Structure")
-	FGameplayTagContainer SpawnConditionTags;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
+	bool bUseDistanceToOceanBiasMultiplier = false;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
+	UCurveFloat* DistanceToOceanBiasMultiplier = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
+	bool bUseDistanceToRiverBiasMultiplier = false;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
+	UCurveFloat* DistanceToRiverBiasMultiplier = nullptr;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Condition")
+	TArray<FGameplayTagRule> GameplayTagRules;
 };

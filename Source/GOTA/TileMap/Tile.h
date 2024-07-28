@@ -10,6 +10,7 @@
 #include "TileGraphicsDataAsset.h"
 #include "TileLayout.h"
 #include "GOTA/Faction/Entity.h"
+#include "BiomesDataAsset.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/EcoSystemDataAsset.h"
 #include "GOTA/Faction/GOTAAttributeLimited.h"
@@ -45,11 +46,15 @@ public:
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	TArray<ATile*> Neighbors; // 0 = North, 1 = NorthEast, 2 = SouthEast, 3 = South, 4 = SouthWest, 5 = NorthWest
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UPROPERTY(BlueprintReadwrite, BlueprintSetter=SetIsRiver, Replicated, Category="Tile")
 	bool bIsRiver;
 
+	UFUNCTION(BlueprintSetter)
 	void SetIsRiver(bool IsRiver);
 
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	UBiomesDataAsset* DA_Biomes;
+	
 	UPROPERTY(BlueprintReadwrite, BlueprintSetter=SetBiome, ReplicatedUsing=OnRep_Biome, Category="Tile")
 	EBiome Biome = EBiome::Gras;
 
@@ -202,7 +207,7 @@ public:
 	FSpawnPointLayout SpawnPointLayout;
 
 private:
-	EBiome MaterialBiome;
+	EBiome MaterialBiome = EBiome::Gras;
 
 	// Check if anything needs to be changed and do that
 	void RefreshTileLayout();

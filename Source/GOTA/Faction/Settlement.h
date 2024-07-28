@@ -114,6 +114,9 @@ public:
 	
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Settlement")
 	USettlementBalance* SettlementBalance;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
+	FGameplayTagContainer GameplayTags;
 	
 	//====================================================================
 	//--------------------Attributes
