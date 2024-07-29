@@ -3,6 +3,7 @@
 #include "TileAssetSpawn.h"
 #include "TileContent.generated.h"
 
+class AGOTAGameState;
 class ATile;
 
 UCLASS()
@@ -37,8 +38,8 @@ private:
 
 	TArray<FTileAssetSpawn> ForageTileAssetSpawn;
 
-	static void BringArrayToCorrectSize(TArray<FTileAssetSpawn>& Array, int32 Size);
-	static void SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<FSpawnPoint> SpawnPoints);
+	void BringArrayToCorrectSize(TArray<FTileAssetSpawn>& Array, int32 Size);
+	void SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<FSpawnPoint> SpawnPoints);
 
 public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="TileContent")
@@ -53,14 +54,15 @@ public:
 	void ValidateTrees();
 
 private:
-	void ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets) const;
+	void ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets);
 
 	void SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn);
 
-	static void DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn);
+	void DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn);
 
 	void FindRandomValidAssets(int32 Amount, const UDataTable* DataTable,
 	                           TArray<FTileAsset*>& OutFoundAssets) const;
-
-	static void ShuffleTArray(TArray<FSpawnPoint>& Array);
+	
+	UPROPERTY()
+	AGOTAGameState* GameState;
 };

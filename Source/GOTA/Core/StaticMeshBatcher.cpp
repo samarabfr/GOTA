@@ -1,40 +1,45 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "StaticMeshBatcher.h"
 #include "Components/InstancedStaticMeshComponent.h"
 
-
-// Sets default values
 AStaticMeshBatcher::AStaticMeshBatcher()
 {
-	InstancedStaticMeshComponent = CreateDefaultSubobject<UInstancedStaticMeshComponent>("Test");
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ROOT"));
 }
 
-// Called when the game starts or when spawned
-void AStaticMeshBatcher::BeginPlay()
+FPrimitiveInstanceId AStaticMeshBatcher::AddStaticMeshInstance(UStaticMesh* StaticMesh, FTransform& Transform)
 {
-	Super::BeginPlay();
-	TArray<FPrimitiveInstanceId> InstanceIds;
-	for (int i = 0; i < 10; ++i)
+	UInstancedStaticMeshComponent* ISMC = nullptr;
+	if (!ISMC_Map.Contains(StaticMesh))
 	{
-		FTransform T = FTransform();
-		T.SetLocation(FVector(0.0,i*100.0,1000.0));
-		InstanceIds.Add(InstancedStaticMeshComponent->AddInstanceById(T));
-		
+		// Create ISMC for a new StaticMesh
+		ISMC = Cast<UInstancedStaticMeshComponent>(AddComponentByClass(
+			UInstancedStaticMeshComponent::StaticClass(),
+			false,
+			FTransform::Identity,
+			false));
+		ISMC->SetStaticMesh(StaticMesh);
+		if (StaticMesh->GetMaterial(0)) ISMC->SetMaterial(0, StaticMesh->GetMaterial(0));
+		ISMC_Map.Add(StaticMesh, ISMC);
 	}
-	InstancedStaticMeshComponent->RemoveInstanceById(InstanceIds[2]);
-	InstancedStaticMeshComponent->RemoveInstanceById(InstanceIds[5]);
-	InstancedStaticMeshComponent->RemoveInstanceById(InstanceIds[6]);
+	else
+	{
+		ISMC = *ISMC_Map.Find(StaticMesh);
+	}
+	return ISMC->AddInstanceById(Transform);
 }
 
-// Called every frame
-void AStaticMeshBatcher::Tick(float DeltaTime)
+void AStaticMeshBatcher::RemoveStaticMeshInstance(UStaticMesh* StaticMesh, FPrimitiveInstanceId& InstanceId)
 {
-	Super::Tick(DeltaTime);
-
+	UInstancedStaticMeshComponent* ISMC = *ISMC_Map.Find(StaticMesh);
+	ISMC->RemoveInstanceById(InstanceId);
+	
 }
 
+void AStaticMeshBatcher::UpdateStaticMeshTransform(UStaticMesh* StaticMesh, FPrimitiveInstanceId& InstanceId,
+	FTransform& Transform)
+{
+	UInstancedStaticMeshComponent* ISMC = *ISMC_Map.Find(StaticMesh);
+	ISMC->UpdateInstanceTransformById(InstanceId, Transform, false, true);
+}

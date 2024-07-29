@@ -8,13 +8,11 @@
 
 struct FTileAssetSpawn
 {
-	FSpawnPoint* SpawnPoint = nullptr;
+	FSpawnPoint SpawnPoint;
 	
 	bool bIsSpawned = false;
 
 	FTileAsset* TileAsset = nullptr;
 
-	UStaticMeshComponent* StaticMeshComponent = nullptr;
-
-	void RefreshPosition();
+	FPrimitiveInstanceId InstanceId;
 };

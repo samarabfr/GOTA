@@ -1,6 +1,7 @@
 ﻿#include "TileContent.h"
 #include "Tile.h"
 #include "Components/StaticMeshComponent.h"
+#include "GOTA/Core/GOTAGameState.h"
 
 ATileContent::ATileContent()
 {
@@ -11,6 +12,7 @@ ATileContent::ATileContent()
 
 void ATileContent::Init(ATile* Tile_)
 {
+	GameState = GetWorld()->GetGameState<AGOTAGameState>();
 	Tile = Tile_;
 	Tile->OnSpawnPointLayoutChanged.AddDynamic(this, &ATileContent::OnSpawnPointLayoutChanged);
 	Tile->OnGameplayTagsChanged.AddDynamic(this, &ATileContent::ValidateAllTileAssets);
@@ -82,22 +84,14 @@ void ATileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<
 {
 	for (int i = 0; i < Array.Num(); ++i)
 	{
-		Array[i].SpawnPoint = &SpawnPoints[i];
+		Array[i].SpawnPoint = SpawnPoints[i];
 		if (Array[i].bIsSpawned)
 		{
-			Array[i].RefreshPosition();
+			FTransform Transform = FTransform();
+			Transform.SetLocation(Array[i].SpawnPoint.LocationOnTile + GetActorLocation());
+			GameState->StaticMeshBatcher->UpdateStaticMeshTransform(
+				Array[i].TileAsset->StaticMesh, Array[i].InstanceId, Transform);
 		}
-	}
-}
-
-void ATileContent::ShuffleTArray(TArray<FSpawnPoint>& Array)
-{
-	FRandomStream RandomStream(FMath::Rand());
-
-	for (int32 i = Array.Num() - 1; i > 0; i--)
-	{
-		int32 j = RandomStream.RandRange(0, i);
-		Array.Swap(i, j);
 	}
 }
 
@@ -122,7 +116,7 @@ void ATileContent::ValidateTrees()
 	UpdateTrees(Tile->Trees->Current - SpawnedTrees);
 }
 
-void ATileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets) const
+void ATileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets)
 {
 	// Remove Invalid and count how many new Assets we need
 	int32 NewAssetsNeeded = 0;
@@ -155,11 +149,10 @@ void ATileContent::SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
 {
 	// already spawned
 	if (FTileAssetSpawn.bIsSpawned) return;
-	UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(
-		AddComponentByClass(UStaticMeshComponent::StaticClass(), false, FTransform::Identity, false));
-	StaticMeshComponent->SetStaticMesh(FTileAssetSpawn.TileAsset->StaticMesh);
-	FTileAssetSpawn.StaticMeshComponent = StaticMeshComponent;
-	FTileAssetSpawn.RefreshPosition();
+	FTransform Transform = FTransform();
+	Transform.SetLocation(FTileAssetSpawn.SpawnPoint.LocationOnTile + GetActorLocation());
+	FTileAssetSpawn.InstanceId = GameState->StaticMeshBatcher->AddStaticMeshInstance(
+		FTileAssetSpawn.TileAsset->StaticMesh, Transform);
 	FTileAssetSpawn.bIsSpawned = true;
 }
 
@@ -167,8 +160,8 @@ void ATileContent::DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
 {
 	// not spawned
 	if (!FTileAssetSpawn.bIsSpawned) return;
-	FTileAssetSpawn.StaticMeshComponent->DestroyComponent();
-	FTileAssetSpawn.StaticMeshComponent = nullptr;
+	GameState->StaticMeshBatcher->RemoveStaticMeshInstance(FTileAssetSpawn.TileAsset->StaticMesh,
+	                                                       FTileAssetSpawn.InstanceId);
 	FTileAssetSpawn.bIsSpawned = false;
 }
 

@@ -74,7 +74,7 @@ void ATile::BeginPlay()
 
 	SpawnTileContent();
 	TileContent->Init(this);
-
+	
 	if (HasAuthority())
 	{
 		AddReplicatedSubObject(Trees);

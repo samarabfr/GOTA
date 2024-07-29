@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Guardian.h"
+#include "StaticMeshBatcher.h"
 #include "GOTA/Faction/SettlementBalance.h"
 #include "GOTA/Faction/PopulationSummary.h"
 #include "GOTA/TileMap/TileMap.h"
@@ -51,6 +52,9 @@ public:
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
 	bool ShouldTickTurnTime = false;
 
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="GOTAGameState")
+	AStaticMeshBatcher* StaticMeshBatcher;
+	
 	//====================================================================
 	//--------------------ElapsedTurnTime
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
@@ -108,6 +112,8 @@ public:
 	//====================================================================
 	//--------------------Overrideable Functions
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
+	void SpawnStaticMeshBatcher();
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void RegisterTileForTotalsUpdates(ATile* Tile);
