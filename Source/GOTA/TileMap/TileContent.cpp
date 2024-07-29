@@ -1,8 +1,6 @@
 ﻿#include "TileContent.h"
 #include "Tile.h"
-#include "TileAsset.h"
-#include "GOTA/Faction/Building.h"
-#include "GOTA/Faction/BuildingDataAsset.h"
+#include "Components/StaticMeshComponent.h"
 
 ATileContent::ATileContent()
 {
@@ -14,8 +12,10 @@ ATileContent::ATileContent()
 void ATileContent::Init(ATile* Tile_)
 {
 	Tile = Tile_;
+	Tile->OnSpawnPointLayoutChanged.AddDynamic(this, &ATileContent::OnSpawnPointLayoutChanged);
+	Tile->OnGameplayTagsChanged.AddDynamic(this, &ATileContent::ValidateAllTileAssets);
 	Tile->Trees->OnChanged.AddDynamic(this, &ATileContent::UpdateTrees);
-	UpdateTrees(Tile->Trees->Current);
+	OnSpawnPointLayoutChanged();
 }
 
 void ATileContent::UpdateTrees(int32 Change)
@@ -25,71 +25,168 @@ void ATileContent::UpdateTrees(int32 Change)
 	// increase the amount of visible trees
 	if (Change > 0)
 	{
-		for (UStaticMeshComponent* Mesh : TreeMeshes)
+		for (FTileAssetSpawn& TileAssetSpawn : TreeTileAssetSpawns)
 		{
-			if (!Mesh->IsVisible())
+			if (!TileAssetSpawn.bIsSpawned)
 			{
-				Mesh->SetVisibility(true);
+				SpawnTileAsset(TileAssetSpawn);
 				if (++Counter >= Change) return;
 			}
 		}
 	}
 	else
 	{
-		for (UStaticMeshComponent* Mesh : TreeMeshes)
+		for (FTileAssetSpawn& TileAssetSpawn : TreeTileAssetSpawns)
 		{
-			if (Mesh->IsVisible())
+			if (TileAssetSpawn.bIsSpawned)
 			{
-				Mesh->SetVisibility(false);
+				DespawnTileAsset(TileAssetSpawn);
 				if (--Counter <= Change) return;
 			}
 		}
 	}
 }
 
-void ATileContent::UpdateBuildings()
+void ATileContent::OnSpawnPointLayoutChanged()
 {
-	if (Tile->Building)
+	BringArrayToCorrectSize(TreeTileAssetSpawns, Tile->SpawnPointLayout.Trees.Num());
+	SetSpawnPointsOnArray(TreeTileAssetSpawns, Tile->SpawnPointLayout.Trees);
+
+	BringArrayToCorrectSize(PropTileAssetSpawn, Tile->SpawnPointLayout.Props.Num());
+	SetSpawnPointsOnArray(PropTileAssetSpawn, Tile->SpawnPointLayout.Props);
+
+	BringArrayToCorrectSize(BuildingTileAssetSpawn, Tile->SpawnPointLayout.Buildings.Num());
+	SetSpawnPointsOnArray(BuildingTileAssetSpawn, Tile->SpawnPointLayout.Buildings);
+
+	BringArrayToCorrectSize(ForageTileAssetSpawn, Tile->SpawnPointLayout.Forage.Num());
+	SetSpawnPointsOnArray(ForageTileAssetSpawn, Tile->SpawnPointLayout.Forage);
+	ValidateAllTileAssets();
+}
+
+void ATileContent::BringArrayToCorrectSize(TArray<FTileAssetSpawn>& Array, int32 Size)
+{
+	if (Array.Num() < Size)
 	{
-		FString ContextString;
-		TArray<FTileAsset*> BuildingTileAssets;
-		BuildingAssets->GetAllRows<FTileAsset>(ContextString, BuildingTileAssets);
-		// Activate Building Stuff
-		MainBuilding->SetStaticMesh(Tile->Building->DataAsset->MainBuilding.StaticMesh);
-		MainBuilding->SetVisibility(true);
-		if (BuildingTileAssets.IsEmpty()) return;
-		TArray<FTileAsset*> FoundBuildingAssets;
-		FindRandomValidAssets(BuildingMeshes.Num(), BuildingTileAssets, FoundBuildingAssets);
-		// Something went wrong while finding Building Assets
-		if(FoundBuildingAssets.Num() != BuildingMeshes.Num()) return;
-		for (int i = 0; i < BuildingMeshes.Num(); ++i)
-		{
-			BuildingMeshes[i]->SetStaticMesh(FoundBuildingAssets[i]->StaticMesh);
-			BuildingMeshes[i]->SetVisibility(true);
-		}
+		// Array has to grow
+		Array.SetNum(Size);
 	}
-	else
+	// Array has to shrink
+	while (Array.Num() > Size)
 	{
-		// Deactivate Building Stuff
-		for (UStaticMeshComponent* BuildingMesh : BuildingMeshes)
-		{
-			BuildingMesh->SetVisibility(false);
-		}
-		MainBuilding->SetVisibility(false);
+		FTileAssetSpawn TileAssetSpawn = Array.Pop();
+		DespawnTileAsset(TileAssetSpawn);
 	}
 }
 
-void ATileContent::FindRandomValidAssets(const int32 Amount, const TArray<FTileAsset*>& Assets,
+void ATileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<FSpawnPoint> SpawnPoints)
+{
+	for (int i = 0; i < Array.Num(); ++i)
+	{
+		Array[i].SpawnPoint = &SpawnPoints[i];
+		if (Array[i].bIsSpawned)
+		{
+			Array[i].RefreshPosition();
+		}
+	}
+}
+
+void ATileContent::ShuffleTArray(TArray<FSpawnPoint>& Array)
+{
+	FRandomStream RandomStream(FMath::Rand());
+
+	for (int32 i = Array.Num() - 1; i > 0; i--)
+	{
+		int32 j = RandomStream.RandRange(0, i);
+		Array.Swap(i, j);
+	}
+}
+
+void ATileContent::ValidateAllTileAssets()
+{
+	ValidateTileAssets(TreeTileAssetSpawns, Tile->DA_TileGraphics->TreeAssets);
+	ValidateTrees();
+	ValidateTileAssets(PropTileAssetSpawn, Tile->DA_TileGraphics->PropAssets);
+	ValidateTileAssets(BuildingTileAssetSpawn, Tile->DA_TileGraphics->BuildingAssets);
+	ValidateTileAssets(ForageTileAssetSpawn, Tile->DA_TileGraphics->ForageAssets);
+}
+
+void ATileContent::ValidateTrees()
+{
+	int32 SpawnedTrees = 0;
+	for (FTileAssetSpawn& TileAssetSpawn : TreeTileAssetSpawns)
+	{
+		if (TileAssetSpawn.bIsSpawned) SpawnedTrees++;
+	}
+	// correct amount of Trees, everything is good
+	if (Tile->Trees->Current == SpawnedTrees) return;
+	UpdateTrees(Tile->Trees->Current - SpawnedTrees);
+}
+
+void ATileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets) const
+{
+	// Remove Invalid and count how many new Assets we need
+	int32 NewAssetsNeeded = 0;
+	for (FTileAssetSpawn& TileAssetSpawn : Array)
+	{
+		if (!TileAssetSpawn.TileAsset)
+		{
+			NewAssetsNeeded++;
+		}
+		else if (!TileAssetSpawn.TileAsset->IsValidFor(Tile->GameplayTags))
+		{
+			NewAssetsNeeded++;
+			DespawnTileAsset(TileAssetSpawn);
+			TileAssetSpawn.TileAsset = nullptr;
+		}
+	}
+	// Get new Assets and put them on the Array
+	TArray<FTileAsset*> OutFoundAssets;
+	FindRandomValidAssets(NewAssetsNeeded, Assets, OutFoundAssets);
+	for (FTileAssetSpawn& TileAssetSpawn : Array)
+	{
+		if (!TileAssetSpawn.TileAsset)
+		{
+			TileAssetSpawn.TileAsset = OutFoundAssets.Pop();
+		}
+	}
+}
+
+void ATileContent::SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
+{
+	// already spawned
+	if (FTileAssetSpawn.bIsSpawned) return;
+	UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(
+		AddComponentByClass(UStaticMeshComponent::StaticClass(), false, FTransform::Identity, false));
+	StaticMeshComponent->SetStaticMesh(FTileAssetSpawn.TileAsset->StaticMesh);
+	FTileAssetSpawn.StaticMeshComponent = StaticMeshComponent;
+	FTileAssetSpawn.RefreshPosition();
+	FTileAssetSpawn.bIsSpawned = true;
+}
+
+void ATileContent::DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
+{
+	// not spawned
+	if (!FTileAssetSpawn.bIsSpawned) return;
+	FTileAssetSpawn.StaticMeshComponent->DestroyComponent();
+	FTileAssetSpawn.StaticMeshComponent = nullptr;
+	FTileAssetSpawn.bIsSpawned = false;
+}
+
+void ATileContent::FindRandomValidAssets(const int32 Amount, const UDataTable* DataTable,
                                          TArray<FTileAsset*>& OutFoundAssets) const
 {
+	FString _;
+	TArray<FTileAsset*> AllAssets;
+	DataTable->GetAllRows(_, AllAssets);
+
 	// First Filter Through the Input Array to find out which Assets are valid for this Tile
 	TArray<FTileAsset*> PossibleAssets;
-	for (FTileAsset* Asset : Assets)
+	for (FTileAsset* Asset : AllAssets)
 	{
 		bool bValid = true;
 		for (FGameplayTagRule Rule : Asset->GameplayTagRules)
 		{
-			if (!Rule.IsValid(&Tile->GameplayTags))
+			if (!Rule.IsValid(Tile->GameplayTags))
 			{
 				bValid = false;
 				break; // Break if any rule is invalid

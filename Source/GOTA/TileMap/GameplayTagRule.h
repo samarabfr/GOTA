@@ -31,5 +31,5 @@ struct FGameplayTagRule
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "GameplayTag Rule")
 	FGameplayTagContainer ConditionTags;
 
-	bool IsValid(const FGameplayTagContainer* GameplayTagContainer) const;
+	bool IsValid(const FGameplayTagContainer& GameplayTagContainer) const;
 };

@@ -23,4 +23,7 @@ struct FSpawnPointLayout
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
 	TArray<FSpawnPoint> Props;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	TArray<FSpawnPoint> Forage;
 };

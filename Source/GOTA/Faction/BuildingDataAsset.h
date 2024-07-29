@@ -21,7 +21,7 @@ public:
 	FText Description;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	FTileAsset MainBuilding;
+	FName MainBuildingRowName;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	FGameplayTagContainer GameplayTags;

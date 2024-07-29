@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "SpawnPointLayout.h"
-#include "TileAsset.h"
+#include "TileAssetSpawn.h"
 #include "TileContent.generated.h"
 
 class ATile;
@@ -15,9 +15,6 @@ public:
 	ATileContent();
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="TileContent")
-	void OnSpawnPointLayoutChanged(FSpawnPointLayout NewSpawnPointLayout);
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="TileContent")
 	void OnEnteringActiveRangeOfGuardian();
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="TileContent")
@@ -25,36 +22,45 @@ public:
 
 	void Init(ATile* Tile_);
 
-	UFUNCTION(BlueprintCallable, Category="TileContent")
+	UFUNCTION()
 	void UpdateTrees(int32 Change);
 
-	UPROPERTY(BlueprintReadOnly, Category="TileContent")
+private:
+	UPROPERTY()
 	ATile* Tile;
 
-	UPROPERTY(BlueprintReadOnly, Category="TileContent")
-	TArray<UStaticMeshComponent*> TreeMeshes;
+	TArray<FTileAssetSpawn> TreeTileAssetSpawns;
 
-	UPROPERTY(BlueprintReadOnly, Category="TileContent")
-	TArray<UStaticMeshComponent*> PropMeshes;
+	TArray<FTileAssetSpawn> PropTileAssetSpawn;
 
-	UPROPERTY(BlueprintReadOnly, Category="TileContent")
-	TArray<UStaticMeshComponent*> BuildingMeshes;
+	TArray<FTileAssetSpawn> BuildingTileAssetSpawn;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="TileContent")
-	UDataTable* BuildingAssets;
+	TArray<FTileAssetSpawn> ForageTileAssetSpawn;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="TileContent")
-	UDataTable* TreeAssets;
+	static void BringArrayToCorrectSize(TArray<FTileAssetSpawn>& Array, int32 Size);
+	static void SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<FSpawnPoint> SpawnPoints);
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="TileContent")
-	UDataTable* PropAssets;
-
+public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="TileContent")
 	UStaticMeshComponent* MainBuilding;
 
-	UFUNCTION(BlueprintCallable, Category="TileContent")
-	void UpdateBuildings();
+	UFUNCTION()
+	void OnSpawnPointLayoutChanged();
 
-	void FindRandomValidAssets(int32 Amount, const TArray<FTileAsset*>& Assets,
+	UFUNCTION()
+	void ValidateAllTileAssets();
+
+	void ValidateTrees();
+
+private:
+	void ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets) const;
+
+	void SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn);
+
+	static void DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn);
+
+	void FindRandomValidAssets(int32 Amount, const UDataTable* DataTable,
 	                           TArray<FTileAsset*>& OutFoundAssets) const;
+
+	static void ShuffleTArray(TArray<FSpawnPoint>& Array);
 };

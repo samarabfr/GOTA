@@ -15,5 +15,5 @@ struct FSpawnPoint
 	FVector LocationOnTile = FVector(0, 0, 0);
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
-	int32 DefaultRotation = 0;
+	float DefaultRotation = 0.0f;
 };

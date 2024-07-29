@@ -8,6 +8,7 @@
 #include "SpawnPointLayout.h"
 #include "TileContent.h"
 #include "TileGraphicsDataAsset.h"
+#include "TileAssetWithPosition.h"
 #include "TileLayout.h"
 #include "GOTA/Faction/Entity.h"
 #include "BiomesDataAsset.h"
@@ -24,6 +25,9 @@ class GOTA_API ATile : public AActor
 {
 	GENERATED_BODY()
 
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnChangedSignature);
+
 	// ---------------------------------------------------------
 	// Initialisation and core variables
 
@@ -37,8 +41,14 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	void Init();
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_GameplayTags, Category="Tile")
 	FGameplayTagContainer GameplayTags;
+
+	UFUNCTION()
+	void OnRep_GameplayTags();
+
+	UPROPERTY()
+	FOnChangedSignature OnGameplayTagsChanged;
 
 	UPROPERTY(Replicated, BlueprintReadOnly)
 	FHexCoords HexCoords;
@@ -54,15 +64,12 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
 	UBiomesDataAsset* DA_Biomes;
-	
-	UPROPERTY(BlueprintReadwrite, BlueprintSetter=SetBiome, ReplicatedUsing=OnRep_Biome, Category="Tile")
+
+	UPROPERTY(BlueprintReadwrite, BlueprintSetter=SetBiome, Replicated, Category="Tile")
 	EBiome Biome = EBiome::Gras;
 
 	UFUNCTION(BlueprintSetter)
 	void SetBiome(EBiome NewBiome);
-
-	UFUNCTION()
-	void OnRep_Biome();
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	AEntity* AlliedTileEntity;
@@ -188,23 +195,32 @@ public:
 	// ---------------------------------------------------------
 	// TileLayout & TileContent and graphics relevant
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Tile Graphics")
 	UStaticMeshComponent* SM_Hexagon;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, Category="Tile Graphics")
 	ATileContent* TileContent;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Graphics")
 	UTileGraphicsDataAsset* DA_TileGraphics;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	UDataTable* TileLayouts;
-
-	UPROPERTY(BlueprintReadOnly, Category="Tile")
+	UPROPERTY(BlueprintReadOnly, Category="Tile Graphics")
 	FTileLayout TileLayout;
 
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_SpawnPointLayout, Category="Tile")
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_SpawnPointLayout, Category="Tile Graphics")
 	FSpawnPointLayout SpawnPointLayout;
+
+	UFUNCTION()
+	void OnRep_SpawnPointLayout();
+
+	UPROPERTY()
+	FOnChangedSignature OnSpawnPointLayoutChanged;
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_TileContentRotation)
+	float TileContentRotation = 0.0;
+
+	UFUNCTION()
+	void OnRep_TileContentRotation();
 
 private:
 	EBiome MaterialBiome = EBiome::Gras;
@@ -221,16 +237,13 @@ private:
 	// Returns -1 when none found, returns rotation ID (0-5) if one is found
 	int32 FindRiverConnectionRotation(const TArray<bool> Connections) const;
 
+
+	void UpdateBuildingAssets();
+
 public:
-	UFUNCTION(BlueprintImplementableEvent, Category="Tile")
+	UFUNCTION(BlueprintImplementableEvent, Category="Tile Graphics")
 	void SpawnTileContent();
 
-	UFUNCTION(BlueprintImplementableEvent, Category="TileContent")
+	UFUNCTION(BlueprintImplementableEvent, Category="Tile Graphics")
 	void UpdateHexagonMaterial();
-
-	UFUNCTION()
-	void OnRep_SpawnPointLayout();
-
-	UFUNCTION(BlueprintImplementableEvent, Category="Tile")
-	void OnSpawnPointLayoutChanged();
 };

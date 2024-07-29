@@ -36,6 +36,7 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME(ATile, Biome);
 	DOREPLIFETIME(ATile, SpawnPointLayout);
 	DOREPLIFETIME(ATile, GameplayTags);
+	DOREPLIFETIME(ATile, TileContentRotation);
 }
 
 ATile::ATile()
@@ -46,8 +47,9 @@ ATile::ATile()
 		Neighbors.Add(nullptr);
 	}
 
+	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ROOT"));
 	SM_Hexagon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SM_Hexagon"));
-	RootComponent = SM_Hexagon;
+	SM_Hexagon->SetupAttachment(RootComponent);
 
 	// Replication stuff
 	bReplicates = true;
@@ -98,6 +100,11 @@ void ATile::Init()
 	RecalculateTileLayout();
 }
 
+void ATile::OnRep_GameplayTags()
+{
+	OnGameplayTagsChanged.Broadcast();
+}
+
 void ATile::SetIsRiver(bool IsRiver)
 {
 	bIsRiver = IsRiver;
@@ -112,12 +119,8 @@ void ATile::SetBiome(EBiome NewBiome)
 {
 	GameplayTags.RemoveTag(DA_Biomes->AllBiomes);
 	GameplayTags.AddTag(DA_Biomes->EnumToTag[NewBiome]);
+	OnGameplayTagsChanged.Broadcast();
 	Biome = NewBiome;
-	RecalculateTileLayout();
-}
-
-void ATile::OnRep_Biome()
-{
 	RecalculateTileLayout();
 }
 
@@ -168,6 +171,7 @@ bool ATile::TryClaim(ASettlement* PotentialClaimant)
 		Claimant->OnBuildingAdded(Building);
 	}
 	GameplayTags.AppendTags(Claimant->GameplayTags);
+	OnGameplayTagsChanged.Broadcast();
 	return true;
 }
 
@@ -181,6 +185,7 @@ void ATile::Unclaim()
 	}
 	Claimant->LostClaim(this);
 	GameplayTags.RemoveTags(Claimant->GameplayTags);
+	OnGameplayTagsChanged.Broadcast();
 	Claimant = nullptr;
 }
 
@@ -201,6 +206,7 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 	}
 	// Add Building related GameplayTags
 	GameplayTags.AppendTags(BuildingDataAsset->GameplayTags);
+	OnGameplayTagsChanged.Broadcast();
 	AddBuildingToReplication();
 	// Set Graphics
 	RecalculateTileLayout();
@@ -219,6 +225,7 @@ void ATile::Unbuild()
 	}
 	// Remove Building related GameplayTags
 	GameplayTags.RemoveTags(Building->DataAsset->GameplayTags);
+	OnGameplayTagsChanged.Broadcast();
 	// Destroy the Object
 	Building = nullptr;
 	// Set Graphics
@@ -386,6 +393,16 @@ void ATile::CalculatePopulationGrowthChangeWithNeighbors()
 // ---------------------------------------------------------
 // TileLayout & TileContent and graphics relevant
 
+void ATile::OnRep_SpawnPointLayout()
+{
+	OnSpawnPointLayoutChanged.Broadcast();
+}
+
+void ATile::OnRep_TileContentRotation()
+{
+	if (TileContent) TileContent->SetActorRotation(FRotator(0, TileContentRotation, 0));
+}
+
 void ATile::RefreshTileLayout()
 {
 	if (SM_Hexagon->GetStaticMesh() != TileLayout.HexagonMesh)
@@ -404,15 +421,12 @@ void ATile::RefreshTileLayout()
 		}
 		SM_Hexagon->SetRelativeRotation(FRotator(0, Rotation * -60, 0));
 		TileContent->SetActorRotation(FRotator(0, Rotation * -60, 0));
+		TileContentRotation = Rotation * -60;
 	}
 	if (MaterialBiome != Biome)
 	{
 		UpdateHexagonMaterial();
 		MaterialBiome = Biome;
-	}
-	if (Building && TileContent->MainBuilding->GetStaticMesh() != Building->DataAsset->MainBuilding.StaticMesh)
-	{
-		TileContent->UpdateBuildings();
 	}
 }
 
@@ -428,9 +442,9 @@ void ATile::RecalculateTileLayout()
 	TileLayout = *NewLayout;
 	// Select random SpawnPointLayout
 	SpawnPointLayout = TileLayout.SpawnPointsLayouts[FMath::RandRange(0, TileLayout.SpawnPointsLayouts.Num() - 1)];
+	OnSpawnPointLayoutChanged.Broadcast();
 	Trees->SetMaximum(SpawnPointLayout.Trees.Num());
 	Trees->SetCurrent(BalanceData->StartingTrees);
-	OnSpawnPointLayoutChanged();
 	RefreshTileLayout();
 }
 
@@ -438,7 +452,7 @@ FTileLayout* ATile::FindNewValidTileLayout() const
 {
 	FString ContextString;
 	TArray<FTileLayout*> AllRows;
-	TileLayouts->GetAllRows<FTileLayout>(ContextString, AllRows);
+	DA_TileGraphics->TileLayouts->GetAllRows<FTileLayout>(ContextString, AllRows);
 	TArray<FTileLayout*> PossibleLayouts;
 	for (FTileLayout* Row : AllRows)
 	{
@@ -452,7 +466,7 @@ FTileLayout* ATile::FindNewValidTileLayout() const
 	{
 		FName DefaultName = "Default";
 		UE_LOG(LogTemp, Warning, TEXT("Had to Default TileLayout on (%d:%d)"), HexCoords.Q, HexCoords.R);
-		return TileLayouts->FindRow<FTileLayout>(DefaultName, ContextString);
+		return DA_TileGraphics->TileLayouts->FindRow<FTileLayout>(DefaultName, ContextString);
 	}
 	return PossibleLayouts[FMath::RandRange(0, PossibleLayouts.Num() - 1)];
 }
@@ -496,9 +510,4 @@ int32 ATile::FindRiverConnectionRotation(const TArray<bool> Connections) const
 		if (ThisRotationWorks) return Rotation;
 	}
 	return -1;
-}
-
-void ATile::OnRep_SpawnPointLayout()
-{
-	OnSpawnPointLayoutChanged();
 }

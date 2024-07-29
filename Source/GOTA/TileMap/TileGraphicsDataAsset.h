@@ -12,15 +12,30 @@ class GOTA_API UTileGraphicsDataAsset : public UPrimaryDataAsset
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Biome Material Instances")
 	UMaterialInstance* M_Grass;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Biome Material Instances")
 	UMaterialInstance* M_Beach;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Biome Material Instances")
 	UMaterialInstance* M_Mountain;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Biome Material Instances")
 	UMaterialInstance* M_Volcano;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Asset DataTables")
+	UDataTable* BuildingAssets;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Asset DataTables")
+	UDataTable* TreeAssets;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Asset DataTables")
+	UDataTable* PropAssets;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Asset DataTables")
+	UDataTable* ForageAssets;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Graphics")
+	UDataTable* TileLayouts;
 };

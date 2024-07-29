@@ -39,4 +39,6 @@ struct FTileAsset : public FTableRowBase
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Condition")
 	TArray<FGameplayTagRule> GameplayTagRules;
+
+	bool IsValidFor(const FGameplayTagContainer& GameplayTagContainer);
 };
