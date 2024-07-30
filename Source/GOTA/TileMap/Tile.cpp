@@ -171,6 +171,7 @@ bool ATile::TryClaim(ASettlement* PotentialClaimant)
 		Claimant->OnBuildingAdded(Building);
 	}
 	GameplayTags.AppendTags(Claimant->GameplayTags);
+	ClaimantChanged();
 	OnGameplayTagsChanged.Broadcast();
 	return true;
 }
