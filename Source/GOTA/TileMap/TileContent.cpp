@@ -158,7 +158,7 @@ void ATileContent::ValidateTrees()
 
 void ATileContent::SpawnProps()
 {
-	for (FTileAssetSpawn TileAssetSpawn : PropTileAssetSpawns)
+	for (FTileAssetSpawn& TileAssetSpawn : PropTileAssetSpawns)
 	{
 		SpawnTileAsset(TileAssetSpawn);
 	}
@@ -168,13 +168,13 @@ void ATileContent::ValidateBuildings()
 {
 	if(Tile->Building)
 	{
-		for (FTileAssetSpawn TileAssetSpawn : BuildingTileAssetSpawns)
+		for (FTileAssetSpawn& TileAssetSpawn : BuildingTileAssetSpawns)
 		{
 			SpawnTileAsset(TileAssetSpawn);
 		}
 	} else
 	{
-		for (FTileAssetSpawn TileAssetSpawn : BuildingTileAssetSpawns)
+		for (FTileAssetSpawn& TileAssetSpawn : BuildingTileAssetSpawns)
 		{
 			DespawnTileAsset(TileAssetSpawn);
 		}
