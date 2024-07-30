@@ -54,6 +54,7 @@ ATile::ATile()
 	// Replication stuff
 	bReplicates = true;
 	bReplicateUsingRegisteredSubObjectList = true;
+	bAlwaysRelevant = true;
 	Trees = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Trees"));
 	TreeGrowth = CreateDefaultSubobject<UGOTAAttribute>(TEXT("TreeGrowth"));
 	TreeGrowthChange = CreateDefaultSubobject<UGOTAAttribute>(TEXT("TreeGrowthChange"));
