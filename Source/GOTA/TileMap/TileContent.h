@@ -28,8 +28,13 @@ public:
 
 	UFUNCTION()
 	void UpdateForage(int32 Change);
-
 private:
+	void ValidateTrees();
+
+	void SpawnProps();
+
+	void ValidateBuildings();
+	
 	UPROPERTY()
 	ATile* Tile;
 
@@ -42,24 +47,19 @@ private:
 	TArray<FTileAssetSpawn> BuildingTileAssetSpawns;
 
 	TArray<FTileAssetSpawn> ForageTileAssetSpawns;
-
+	
+	FTileAssetSpawn MainBuilding;
+	
 	void BringArrayToCorrectSize(TArray<FTileAssetSpawn>& Array, int32 Size);
 	void SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<FSpawnPoint> SpawnPoints);
 
 public:
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="TileContent")
-	UStaticMeshComponent* MainBuilding;
-
 	UFUNCTION()
 	void OnSpawnPointLayoutChanged();
 
 	UFUNCTION()
 	void ValidateAllTileAssets();
-
-	void ValidateTrees();
-
-	void SpawnProps();
-
+	
 private:
 	void ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets);
 

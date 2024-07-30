@@ -6,8 +6,6 @@
 ATileContent::ATileContent()
 {
 	RootComponent = CreateDefaultSubobject<USceneComponent>("Root");
-	MainBuilding = CreateDefaultSubobject<UStaticMeshComponent>("MainBuilding");
-	MainBuilding->SetupAttachment(RootComponent);
 }
 
 void ATileContent::Init(ATile* Tile_)
@@ -141,6 +139,7 @@ void ATileContent::ValidateAllTileAssets()
 	ValidateTileAssets(PropTileAssetSpawns, Tile->DA_TileGraphics->PropAssets);
 	SpawnProps();
 	ValidateTileAssets(BuildingTileAssetSpawns, Tile->DA_TileGraphics->BuildingAssets);
+	ValidateBuildings();
 	ValidateTileAssets(ForageTileAssetSpawns, Tile->DA_TileGraphics->ForageAssets);
 	UpdateForage(0);
 }
@@ -162,6 +161,23 @@ void ATileContent::SpawnProps()
 	for (FTileAssetSpawn TileAssetSpawn : PropTileAssetSpawns)
 	{
 		SpawnTileAsset(TileAssetSpawn);
+	}
+}
+
+void ATileContent::ValidateBuildings()
+{
+	if(Tile->Building)
+	{
+		for (FTileAssetSpawn TileAssetSpawn : BuildingTileAssetSpawns)
+		{
+			SpawnTileAsset(TileAssetSpawn);
+		}
+	} else
+	{
+		for (FTileAssetSpawn TileAssetSpawn : BuildingTileAssetSpawns)
+		{
+			DespawnTileAsset(TileAssetSpawn);
+		}
 	}
 }
 
