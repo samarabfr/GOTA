@@ -115,8 +115,14 @@ public:
 	// ---------------------------------------------------------
 	// Building
 
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="Tile")
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=OnRep_Building, Category="Tile")
 	UBuilding* Building;
+
+	UFUNCTION()
+	void OnRep_Building();
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnChangedSignature OnBuildingChanged;
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	bool TryBuild(UBuildingDataAsset* BuildingDataAsset);

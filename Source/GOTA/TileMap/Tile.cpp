@@ -190,6 +190,11 @@ void ATile::Unclaim()
 	Claimant = nullptr;
 }
 
+void ATile::OnRep_Building()
+{
+	OnBuildingChanged.Broadcast();
+}
+
 // ---------------------------------------------------------
 // Building
 
@@ -210,6 +215,7 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 	OnGameplayTagsChanged.Broadcast();
 	AddBuildingToReplication();
 	// Set Graphics
+	OnBuildingChanged.Broadcast();
 	RecalculateTileLayout();
 	return true;
 }
@@ -230,6 +236,7 @@ void ATile::Unbuild()
 	// Destroy the Object
 	Building = nullptr;
 	// Set Graphics
+	OnBuildingChanged.Broadcast();
 	RecalculateTileLayout();
 }
 

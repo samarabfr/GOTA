@@ -19,22 +19,30 @@ void ATileContent::Init(ATile* Tile_)
 	Tile->OnGameplayTagsChanged.AddDynamic(this, &ATileContent::ValidateAllTileAssets);
 	Tile->Trees->OnChanged.AddDynamic(this, &ATileContent::UpdateTrees);
 	Tile->Forage->OnChanged.AddDynamic(this, &ATileContent::UpdateForage);
+	Tile->OnBuildingChanged.AddDynamic(this, &ATileContent::ValidateBuildings);
+	Tile->OnBuildingChanged.AddDynamic(this, &ATileContent::ValidateMainBuilding);
 	OnSpawnPointLayoutChanged();
 }
 
 void ATileContent::UpdateTrees(int32 Change)
 {
-	if (Change == 0) return;
+	int8 CountHowManyAreSpawned = 0;
+	for (FTileAssetSpawn TileAssetSpawn : TreeTileAssetSpawns)
+	{
+		if(TileAssetSpawn.bIsSpawned) ++CountHowManyAreSpawned;
+	}
+	int8 RealChange = Tile->Trees->Current - CountHowManyAreSpawned;
+	if (RealChange == 0) return;
 	int32 Counter = 0;
 	// increase the amount of visible trees
-	if (Change > 0)
+	if (RealChange > 0)
 	{
 		for (FTileAssetSpawn& TileAssetSpawn : TreeTileAssetSpawns)
 		{
 			if (!TileAssetSpawn.bIsSpawned)
 			{
 				SpawnTileAsset(TileAssetSpawn);
-				if (++Counter >= Change) return;
+				if (++Counter >= RealChange) return;
 			}
 		}
 	}
@@ -45,7 +53,7 @@ void ATileContent::UpdateTrees(int32 Change)
 			if (TileAssetSpawn.bIsSpawned)
 			{
 				DespawnTileAsset(TileAssetSpawn);
-				if (--Counter <= Change) return;
+				if (--Counter <= RealChange) return;
 			}
 		}
 	}
@@ -53,7 +61,12 @@ void ATileContent::UpdateTrees(int32 Change)
 
 void ATileContent::UpdateForage(int32 Change)
 {
-	uint8 ForageSpawnAssetChange = Tile->Forage->Current / 4 - ForageAssetSpawnedCounter;
+	int8 CountHowManyAreSpawned = 0;
+	for (FTileAssetSpawn TileAssetSpawn : ForageTileAssetSpawns)
+	{
+		if(TileAssetSpawn.bIsSpawned) ++CountHowManyAreSpawned;
+	}
+	uint8 ForageSpawnAssetChange = Tile->Forage->Current / 4 - CountHowManyAreSpawned;
 	if (ForageSpawnAssetChange == 0) return;
 	int32 Counter = 0;
 	// increase the amount of visible forage
@@ -64,7 +77,6 @@ void ATileContent::UpdateForage(int32 Change)
 			if (!TileAssetSpawn.bIsSpawned)
 			{
 				SpawnTileAsset(TileAssetSpawn);
-				++ForageAssetSpawnedCounter;
 				if (++Counter >= ForageSpawnAssetChange) return;
 			}
 		}
@@ -76,7 +88,6 @@ void ATileContent::UpdateForage(int32 Change)
 			if (TileAssetSpawn.bIsSpawned)
 			{
 				DespawnTileAsset(TileAssetSpawn);
-				--ForageAssetSpawnedCounter;
 				if (--Counter <= ForageSpawnAssetChange) return;
 			}
 		}
@@ -149,7 +160,7 @@ void ATileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<
 void ATileContent::ValidateAllTileAssets()
 {
 	ValidateTileAssets(TreeTileAssetSpawns, Tile->DA_TileGraphics->TreeAssets);
-	ValidateTrees();
+	UpdateTrees(0);
 	ValidateTileAssets(PropTileAssetSpawns, Tile->DA_TileGraphics->PropAssets);
 	SpawnProps();
 	ValidateTileAssets(BuildingTileAssetSpawns, Tile->DA_TileGraphics->BuildingAssets);
@@ -170,18 +181,6 @@ void ATileContent::ValidateMainBuilding()
 	{
 		DespawnTileAsset(MainBuilding);
 	}
-}
-
-void ATileContent::ValidateTrees()
-{
-	int32 SpawnedTrees = 0;
-	for (FTileAssetSpawn& TileAssetSpawn : TreeTileAssetSpawns)
-	{
-		if (TileAssetSpawn.bIsSpawned) SpawnedTrees++;
-	}
-	// correct amount of Trees, everything is good
-	if (Tile->Trees->Current == SpawnedTrees) return;
-	UpdateTrees(Tile->Trees->Current - SpawnedTrees);
 }
 
 void ATileContent::SpawnProps()
