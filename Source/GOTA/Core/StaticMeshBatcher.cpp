@@ -19,7 +19,9 @@ FPrimitiveInstanceId AStaticMeshBatcher::AddStaticMeshInstance(UStaticMesh* Stat
 			false,
 			FTransform::Identity,
 			false));
+		AddInstanceComponent(ISMC);
 		ISMC->SetStaticMesh(StaticMesh);
+		ISMC->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		if (StaticMesh->GetMaterial(0)) ISMC->SetMaterial(0, StaticMesh->GetMaterial(0));
 		ISMC_Map.Add(StaticMesh, ISMC);
 	}
