@@ -56,7 +56,7 @@ public:
 private:
 	void ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets);
 
-	void SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn);
+	void SpawnTileAssetRandomRotation(FTileAssetSpawn& FTileAssetSpawn);
 
 	void DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn);
 
@@ -65,4 +65,7 @@ private:
 	
 	UPROPERTY()
 	AGOTAGameState* GameState;
+
+	template<typename T>
+	static void ShuffleTArray(TArray<T>& Array);
 };

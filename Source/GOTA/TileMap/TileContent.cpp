@@ -31,7 +31,7 @@ void ATileContent::UpdateTrees(int32 Change)
 		{
 			if (!TileAssetSpawn.bIsSpawned)
 			{
-				SpawnTileAsset(TileAssetSpawn);
+				SpawnTileAssetRandomRotation(TileAssetSpawn);
 				if (++Counter >= Change) return;
 			}
 		}
@@ -82,6 +82,7 @@ void ATileContent::BringArrayToCorrectSize(TArray<FTileAssetSpawn>& Array, int32
 
 void ATileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<FSpawnPoint> SpawnPoints)
 {
+	ShuffleTArray(SpawnPoints);
 	for (int i = 0; i < Array.Num(); ++i)
 	{
 		Array[i].SpawnPoint = SpawnPoints[i];
@@ -145,12 +146,13 @@ void ATileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDat
 	}
 }
 
-void ATileContent::SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
+void ATileContent::SpawnTileAssetRandomRotation(FTileAssetSpawn& FTileAssetSpawn)
 {
 	// already spawned
 	if (FTileAssetSpawn.bIsSpawned) return;
 	FTransform Transform = FTransform();
 	Transform.SetLocation(FTileAssetSpawn.SpawnPoint.LocationOnTile + GetActorLocation());
+	Transform.SetRotation(FRotator(0,FMath::RandRange(0,359),0).Quaternion());
 	FTileAssetSpawn.InstanceId = GameState->StaticMeshBatcher->AddStaticMeshInstance(
 		FTileAssetSpawn.TileAsset->StaticMesh, Transform);
 	FTileAssetSpawn.bIsSpawned = true;
@@ -211,5 +213,22 @@ void ATileContent::FindRandomValidAssets(const int32 Amount, const UDataTable* D
 			}
 			Count -= Asset->SpawnBias;
 		}
+	}
+}
+
+template<typename T>
+void ATileContent::ShuffleTArray(TArray<T>& Array)
+{
+	if (Array.Num() <= 1)
+	{
+		return;
+	}
+	// Create a random stream with a random seed
+	FRandomStream RandomStream(FMath::Rand());
+
+	for (int32 i = Array.Num() - 1; i > 0; i--)
+	{
+		int32 j = RandomStream.RandRange(0, i);
+		Array.Swap(i, j);
 	}
 }
