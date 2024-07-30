@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Enums.h"
+#include "GOTA/TileMap/TileAsset.h"
 #include "BuildingTierData.generated.h"
 
 USTRUCT(BlueprintType)
@@ -11,7 +12,9 @@ struct GOTA_API FBuildingTierData
 {
 	GENERATED_BODY()
 
-public:
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	FTileAsset MainBuildingAsset;
+	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	int32 WoodCost = -1;
 

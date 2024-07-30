@@ -30,10 +30,10 @@ UBuilding::UBuilding()
 
 bool UBuilding::Upgrade()
 {
-	FBuildingTierData NewTierData = DataAsset->GetTierData(Tier + 1);
-	if (NewTierData.Housing < 0) return false;
+	FBuildingTierData* NewTierData = DataAsset->GetTierData(Tier + 1);
+	if (NewTierData->Housing < 0) return false;
 	Production->SetupWithTierData(NewTierData);
 	int32 EC = 0;
-	Population->ChangeMaximum(NewTierData.Housing - Population->Maximum, EC);
+	Population->ChangeMaximum(NewTierData->Housing - Population->Maximum, EC);
 	return true;
 }

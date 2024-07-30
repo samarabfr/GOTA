@@ -44,8 +44,8 @@ bool UBuildingProject::IsPossible() const
 
 bool UBuildingProject::CanAfford() const
 {
-	if (Data->GetTierData(Tier).WoodCost > Builder->Wood->Current) return false;
-	if (Data->GetTierData(Tier).StoneCost > Builder->Stone->Current) return false;
+	if (Data->GetTierData(Tier)->WoodCost > Builder->Wood->Current) return false;
+	if (Data->GetTierData(Tier)->StoneCost > Builder->Stone->Current) return false;
 	return true;
 }
 
@@ -59,10 +59,10 @@ bool UBuildingProject::TryBuilding()
 	// Trying to upgrade a Building
 	if (Tile->Building->Upgrade())
 	{
-		FBuildingTierData TierData = Data->GetTierData(Tier);
+		FBuildingTierData* TierData = Data->GetTierData(Tier);
 		int32 EC = 0;
-		if (TierData.WoodCost > 0) Builder->Wood->Subtract(TierData.WoodCost, EC);
-		if (TierData.StoneCost > 0) Builder->Stone->Subtract(TierData.StoneCost, EC);
+		if (TierData->WoodCost > 0) Builder->Wood->Subtract(TierData->WoodCost, EC);
+		if (TierData->StoneCost > 0) Builder->Stone->Subtract(TierData->StoneCost, EC);
 		Tile->Building->Tier++;
 		return true;
 	}

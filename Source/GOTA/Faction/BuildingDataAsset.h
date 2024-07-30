@@ -21,9 +21,6 @@ public:
 	FText Description;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	FName MainBuildingRowName;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	FGameplayTagContainer GameplayTags;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
@@ -37,7 +34,6 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	FBuildingTierData TierThree;
-
-	UFUNCTION(BlueprintCallable)
-	FBuildingTierData GetTierData(int32 Tier);
+	
+	FBuildingTierData* GetTierData(int32 Tier);
 };

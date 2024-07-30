@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Population.h"
 #include "Enums.h"
+#include "BuildingTierData.h"
 #include "BuildingProduction.generated.h"
 
 UCLASS()
@@ -53,6 +54,5 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Building")
 	void Setup(int32 NewPopulationThreshold, int32 NewProductionPerThreshold, EProductionType NewProductionType);
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Building")
-	void SetupWithTierData(FBuildingTierData TierData);
+	void SetupWithTierData(FBuildingTierData* TierData);
 };

@@ -2,6 +2,9 @@
 #include "Tile.h"
 #include "Components/StaticMeshComponent.h"
 #include "GOTA/Core/GOTAGameState.h"
+#include "GOTA/Faction/Building.h"
+#include "GOTA/Faction/BuildingDataAsset.h"
+#include "GOTA/Faction/BuildingTierData.h"
 
 ATileContent::ATileContent()
 {
@@ -93,6 +96,17 @@ void ATileContent::OnSpawnPointLayoutChanged()
 
 	BringArrayToCorrectSize(ForageTileAssetSpawns, Tile->SpawnPointLayout.Forage.Num());
 	SetSpawnPointsOnArray(ForageTileAssetSpawns, Tile->SpawnPointLayout.Forage);
+
+	MainBuilding.SpawnPoint = Tile->SpawnPointLayout.MainBuilding;
+	if(MainBuilding.bIsSpawned)
+	{
+		FTransform Transform = FTransform();
+		Transform.SetLocation(MainBuilding.SpawnPoint.LocationOnTile + GetActorLocation());
+		Transform.SetRotation(FRotator(0, MainBuilding.SpawnPoint.Rotation, 0).Quaternion());
+		GameState->StaticMeshBatcher->UpdateStaticMeshTransform(
+			MainBuilding.TileAsset->StaticMesh, MainBuilding.InstanceId, Transform);
+	}
+
 	ValidateAllTileAssets();
 }
 
@@ -117,7 +131,7 @@ void ATileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<
 	for (int i = 0; i < Array.Num(); ++i)
 	{
 		Array[i].SpawnPoint = SpawnPoints[i];
-		if(Array[i].TileAsset && Array[i].TileAsset->bRandomRotation)
+		if (Array[i].TileAsset && Array[i].TileAsset->bRandomRotation)
 		{
 			Array[i].SpawnPoint.Rotation = FMath::RandRange(0, 359);
 		}
@@ -142,6 +156,20 @@ void ATileContent::ValidateAllTileAssets()
 	ValidateBuildings();
 	ValidateTileAssets(ForageTileAssetSpawns, Tile->DA_TileGraphics->ForageAssets);
 	UpdateForage(0);
+	ValidateMainBuilding();
+}
+
+void ATileContent::ValidateMainBuilding()
+{
+	if (Tile->Building)
+	{
+		MainBuilding.TileAsset = &(Tile->Building->DataAsset->GetTierData(Tile->Building->Tier)->MainBuildingAsset);
+		SpawnTileAsset(MainBuilding);
+	}
+	else
+	{
+		DespawnTileAsset(MainBuilding);
+	}
 }
 
 void ATileContent::ValidateTrees()
@@ -166,13 +194,14 @@ void ATileContent::SpawnProps()
 
 void ATileContent::ValidateBuildings()
 {
-	if(Tile->Building)
+	if (Tile->Building)
 	{
 		for (FTileAssetSpawn& TileAssetSpawn : BuildingTileAssetSpawns)
 		{
 			SpawnTileAsset(TileAssetSpawn);
 		}
-	} else
+	}
+	else
 	{
 		for (FTileAssetSpawn& TileAssetSpawn : BuildingTileAssetSpawns)
 		{

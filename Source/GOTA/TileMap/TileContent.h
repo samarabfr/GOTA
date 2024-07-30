@@ -61,6 +61,8 @@ public:
 	void ValidateAllTileAssets();
 	
 private:
+	void ValidateMainBuilding();
+	
 	void ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets);
 
 	void SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn);

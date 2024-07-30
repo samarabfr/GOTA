@@ -23,7 +23,7 @@ class GOTA_API UBuilding : public UObject
 	//--------------------Overrideable Events
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
-public:
+public:	
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
 	void OnBuild(const ATile* Tile);
 
