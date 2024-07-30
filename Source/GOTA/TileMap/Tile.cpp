@@ -99,6 +99,7 @@ void ATile::Init()
 	Wildlife->SetMaximum(BalanceData->MaxWildlife);
 	Wildlife->SetCurrent(BalanceData->StartingWildlife);
 	RecalculateTileLayout();
+	SetBiome(Biome);
 }
 
 void ATile::OnRep_GameplayTags()
