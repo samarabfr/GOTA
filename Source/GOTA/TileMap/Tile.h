@@ -230,13 +230,14 @@ private:
 
 	void RecalculateTileLayout();
 
+	void ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints);
+
 	FTileLayout* FindNewValidTileLayout() const;
 
 	bool IsValidTileLayout(const FTileLayout* Layout) const;
 
 	// Returns -1 when none found, returns rotation ID (0-5) if one is found
 	int32 FindRiverConnectionRotation(const TArray<bool> Connections) const;
-
 
 	void UpdateBuildingAssets();
 

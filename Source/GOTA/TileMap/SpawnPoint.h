@@ -15,5 +15,8 @@ struct FSpawnPoint
 	FVector LocationOnTile = FVector(0, 0, 0);
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
-	float DefaultRotation = 0.0f;
+	float Rotation = 0.0f;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	uint8 SpawnChance = 100;
 };

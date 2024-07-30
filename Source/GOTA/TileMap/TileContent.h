@@ -32,11 +32,11 @@ private:
 
 	TArray<FTileAssetSpawn> TreeTileAssetSpawns;
 
-	TArray<FTileAssetSpawn> PropTileAssetSpawn;
+	TArray<FTileAssetSpawn> PropTileAssetSpawns;
 
-	TArray<FTileAssetSpawn> BuildingTileAssetSpawn;
+	TArray<FTileAssetSpawn> BuildingTileAssetSpawns;
 
-	TArray<FTileAssetSpawn> ForageTileAssetSpawn;
+	TArray<FTileAssetSpawn> ForageTileAssetSpawns;
 
 	void BringArrayToCorrectSize(TArray<FTileAssetSpawn>& Array, int32 Size);
 	void SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<FSpawnPoint> SpawnPoints);
@@ -53,10 +53,12 @@ public:
 
 	void ValidateTrees();
 
+	void SpawnProps();
+
 private:
 	void ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets);
 
-	void SpawnTileAssetRandomRotation(FTileAssetSpawn& FTileAssetSpawn);
+	void SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn);
 
 	void DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn);
 

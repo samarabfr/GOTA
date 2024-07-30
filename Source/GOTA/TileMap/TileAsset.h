@@ -22,6 +22,9 @@ struct FTileAsset : public FTableRowBase
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Graphics")
 	UAnimSequence* Animation = nullptr;
 
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Graphics")
+	bool bRandomRotation = false;
+
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
 	int32 SpawnBias = 1;
 
