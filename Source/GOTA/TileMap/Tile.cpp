@@ -75,6 +75,7 @@ void ATile::BeginPlay()
 
 	SpawnTileContent();
 	TileContent->Init(this);
+	UpdateHexagonMaterial();
 	
 	if (HasAuthority())
 	{
