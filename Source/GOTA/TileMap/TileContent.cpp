@@ -29,7 +29,7 @@ void ATileContent::UpdateTrees(int32 Change)
 	int8 CountHowManyAreSpawned = 0;
 	for (FTileAssetSpawn TileAssetSpawn : TreeTileAssetSpawns)
 	{
-		if(TileAssetSpawn.bIsSpawned) ++CountHowManyAreSpawned;
+		if (TileAssetSpawn.bIsSpawned) ++CountHowManyAreSpawned;
 	}
 	int8 RealChange = Tile->Trees->Current - CountHowManyAreSpawned;
 	if (RealChange == 0) return;
@@ -64,7 +64,7 @@ void ATileContent::UpdateForage(int32 Change)
 	int8 CountHowManyAreSpawned = 0;
 	for (FTileAssetSpawn TileAssetSpawn : ForageTileAssetSpawns)
 	{
-		if(TileAssetSpawn.bIsSpawned) ++CountHowManyAreSpawned;
+		if (TileAssetSpawn.bIsSpawned) ++CountHowManyAreSpawned;
 	}
 	uint8 ForageSpawnAssetChange = Tile->Forage->Current / 4 - CountHowManyAreSpawned;
 	if (ForageSpawnAssetChange == 0) return;
@@ -109,7 +109,18 @@ void ATileContent::OnSpawnPointLayoutChanged()
 	SetSpawnPointsOnArray(ForageTileAssetSpawns, Tile->SpawnPointLayout.Forage);
 
 	MainBuilding.SpawnPoint = Tile->SpawnPointLayout.MainBuilding;
-	if(MainBuilding.bIsSpawned)
+	if (MainBuilding.TileAsset)
+	{
+		if (MainBuilding.TileAsset->RotationMode == ERotationMode::Random360Degree)
+		{
+			MainBuilding.SpawnPoint.Rotation = FMath::RandRange(0, 359);
+		}
+		else if (MainBuilding.TileAsset->RotationMode == ERotationMode::Random90Degree)
+		{
+			MainBuilding.SpawnPoint.Rotation = 90 * FMath::RandRange(0, 3);
+		}
+	}
+	if (MainBuilding.bIsSpawned)
 	{
 		FTransform Transform = FTransform();
 		Transform.SetLocation(MainBuilding.SpawnPoint.LocationOnTile + GetActorLocation());
@@ -142,9 +153,16 @@ void ATileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<
 	for (int i = 0; i < Array.Num(); ++i)
 	{
 		Array[i].SpawnPoint = SpawnPoints[i];
-		if (Array[i].TileAsset && Array[i].TileAsset->bRandomRotation)
+		if (Array[i].TileAsset)
 		{
-			Array[i].SpawnPoint.Rotation = FMath::RandRange(0, 359);
+			if (Array[i].TileAsset->RotationMode == ERotationMode::Random360Degree)
+			{
+				Array[i].SpawnPoint.Rotation = FMath::RandRange(0, 359);
+			}
+			else if (Array[i].TileAsset->RotationMode == ERotationMode::Random90Degree)
+			{
+				Array[i].SpawnPoint.Rotation = 90 * FMath::RandRange(0, 3);
+			}
 		}
 		if (Array[i].bIsSpawned)
 		{
@@ -234,9 +252,16 @@ void ATileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDat
 		if (!TileAssetSpawn.TileAsset)
 		{
 			TileAssetSpawn.TileAsset = OutFoundAssets.Pop();
-			if (TileAssetSpawn.TileAsset->bRandomRotation)
+			if (TileAssetSpawn.TileAsset)
 			{
-				TileAssetSpawn.SpawnPoint.Rotation = FMath::RandRange(0, 359);
+				if (TileAssetSpawn.TileAsset->RotationMode == ERotationMode::Random360Degree)
+				{
+					TileAssetSpawn.SpawnPoint.Rotation = FMath::RandRange(0, 359);
+				}
+				else if (TileAssetSpawn.TileAsset->RotationMode == ERotationMode::Random90Degree)
+				{
+					TileAssetSpawn.SpawnPoint.Rotation = 90 * FMath::RandRange(0, 3);
+				}
 			}
 		}
 	}

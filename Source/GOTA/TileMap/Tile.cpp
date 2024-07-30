@@ -100,6 +100,7 @@ void ATile::Init()
 	Wildlife->SetMaximum(BalanceData->MaxWildlife);
 	Wildlife->SetCurrent(BalanceData->StartingWildlife);
 	RecalculateTileLayout();
+	Trees->SetCurrent(BalanceData->StartingTrees);
 }
 
 void ATile::OnRep_GameplayTags()
@@ -459,7 +460,6 @@ void ATile::RecalculateTileLayout()
 	SpawnPointLayout = SPL;
 	OnSpawnPointLayoutChanged.Broadcast();
 	Trees->SetMaximum(SpawnPointLayout.Trees.Num());
-	Trees->SetCurrent(BalanceData->StartingTrees);
 	RefreshTileLayout();
 }
 

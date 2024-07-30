@@ -8,6 +8,14 @@
 #include "GameFramework/Actor.h"
 #include "TileAsset.generated.h"
 
+UENUM(BlueprintType)
+enum class ERotationMode : uint8
+{
+	SpawnPointRotation UMETA(DisplayName = "Default Spawn Point Rotation"),
+	Random90Degree UMETA(DisplayName = "90 Degree Random"),
+	Random360Degree UMETA(DisplayName = "360 Degree Random"),
+};
+
 USTRUCT(BlueprintType)
 struct FTileAsset : public FTableRowBase
 {
@@ -23,7 +31,7 @@ struct FTileAsset : public FTableRowBase
 	UAnimSequence* Animation = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Graphics")
-	bool bRandomRotation = false;
+	ERotationMode RotationMode = ERotationMode::SpawnPointRotation;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
 	int32 SpawnBias = 1;
