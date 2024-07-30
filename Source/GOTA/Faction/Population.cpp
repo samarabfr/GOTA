@@ -13,6 +13,8 @@ void UPopulation::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME(UPopulation, Maximum);
 	DOREPLIFETIME(UPopulation, Follower);
 	DOREPLIFETIME(UPopulation, Moods);
+	DOREPLIFETIME(UPopulation, Growth);
+	DOREPLIFETIME(UPopulation, GrowthChange);
 }
 
 bool UPopulation::IsSupportedForNetworking() const

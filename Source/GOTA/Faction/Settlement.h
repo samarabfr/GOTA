@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Components/InstancedStaticMeshComponent.h"
 #include "CoreMinimal.h"
 #include "Building.h"
 #include "BuildingProductionSummary.h"
@@ -47,6 +48,18 @@ protected:
 	void RefreshBorderingTiles();
 
 public:
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* ClaimMesh;
+
+	UPROPERTY(EditDefaultsOnly)
+	UMaterial* ClaimMaterial;
+	
+	UPROPERTY(EditAnywhere)
+	UInstancedStaticMeshComponent* ISM_ClaimFlags;
+
+	FPrimitiveInstanceId AddClaimMeshInstance(FTransform& Transform);
+	void RemoveClaimMeshInstance(FPrimitiveInstanceId InstanceId);
+	
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void Init();
 
@@ -94,9 +107,12 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category="Settlement")
 	TArray<ATile*> ClaimedTiles;
 
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="Settlement")
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=OnRep_ClaimColor, Category="Settlement")
 	FLinearColor ClaimColor;
 
+	UFUNCTION()
+	void OnRep_ClaimColor();
+	
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Settlement")
 	TArray<UBuildingDataAsset*> PossibleBuildings;
 
@@ -114,6 +130,9 @@ public:
 	
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Settlement")
 	USettlementBalance* SettlementBalance;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
+	FGameplayTagContainer GameplayTags;
 	
 	//====================================================================
 	//--------------------Attributes

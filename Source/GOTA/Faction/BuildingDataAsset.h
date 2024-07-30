@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "BuildingTierData.h"
 #include "Engine/DataAsset.h"
+#include "GOTA/TileMap/TileAsset.h"
 #include "BuildingDataAsset.generated.h"
 
 UCLASS()
@@ -20,7 +21,7 @@ public:
 	FText Description;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	UStaticMesh* Mesh;
+	FGameplayTagContainer GameplayTags;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	TSubclassOf<class UBuilding> BuildingClass;
@@ -33,7 +34,6 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	FBuildingTierData TierThree;
-
-	UFUNCTION(BlueprintCallable)
-	FBuildingTierData GetTierData(int32 Tier);
+	
+	FBuildingTierData* GetTierData(int32 Tier);
 };

@@ -78,4 +78,5 @@ void AGOTAGameState::Init()
 	AddReplicatedSubObject(TotalColonialPopulation);
 	AddReplicatedSubObject(TotalNativePopulation);
 	AddReplicatedSubObject(TotalPopulation);
+	SpawnStaticMeshBatcher();
 }

@@ -61,10 +61,10 @@ void UBuildingProduction::Setup(int32 NewPopulationThreshold, int32 NewProductio
 	RecalculateProduction();
 }
 
-void UBuildingProduction::SetupWithTierData(FBuildingTierData TierData)
+void UBuildingProduction::SetupWithTierData(FBuildingTierData* TierData)
 {
-	PopulationThreshold = TierData.PopulationThreshold;
-	ProductionPerThreshold = TierData.ProductionPerThreshold;
-	ProductionType = TierData.ProductionType;
+	PopulationThreshold = TierData->PopulationThreshold;
+	ProductionPerThreshold = TierData->ProductionPerThreshold;
+	ProductionType = TierData->ProductionType;
 	RecalculateProduction();
 }

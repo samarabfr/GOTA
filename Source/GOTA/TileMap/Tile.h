@@ -3,8 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "HexCoords.h"
+#include "SpawnPointLayout.h"
+#include "TileContent.h"
+#include "TileGraphicsDataAsset.h"
+#include "TileAssetWithPosition.h"
+#include "TileLayout.h"
 #include "GOTA/Faction/Entity.h"
+#include "BiomesDataAsset.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/EcoSystemDataAsset.h"
 #include "GOTA/Faction/GOTAAttributeLimited.h"
@@ -16,109 +23,71 @@ class ASettlement;
 UCLASS()
 class GOTA_API ATile : public AActor
 {
-	//Unreal Engine Mystery Code
 	GENERATED_BODY()
+
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnChangedSignature);
+
+	// ---------------------------------------------------------
+	// Initialisation and core variables
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	//Constructor
 	ATile();
 
 	virtual void BeginPlay() override;
 
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnAttributeChangedSignature, float, NewValue);
-
-public:
-	UPROPERTY(Replicated, BlueprintReadOnly)
-	FHexCoords HexCoords;
-
-	//====================================================================
-	//--------------------Overrideable Functions
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-
 public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	void Init();
-	
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Tile")
-	void Claim(const ASettlement* PotentialClaimant, bool& Success);
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Tile")
-	void Unclaim();
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Tile")
-	void Build(TSubclassOf<UBuilding> BuildingClass, bool& Success);
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Tile")
-	void Unbuild();
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintCosmetic, Category="Tile")
-	void OnEnteringActiveRangeOfGuardian();
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintCosmetic, Category="Tile")
-	void OnLeavingActiveRangeOfGuardian();
-	
-	void CalculateTurn();
-	
-	void CalculateTreeGrowthChange();
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_GameplayTags, Category="Tile")
+	FGameplayTagContainer GameplayTags;
 
 	UFUNCTION()
-	void CalculateTreeGrowthChangeWithNeighbors(int32 Change);
-	
-	void CalculateForageChange();
+	void OnRep_GameplayTags();
 
-	UFUNCTION()
-	void CalculateForageChangeWithNeighbors(int32 Change);
-	
-	void CalculateWildlifeGrowthChange();
+	UPROPERTY()
+	FOnChangedSignature OnGameplayTagsChanged;
 
-	UFUNCTION()
-	void CalculateWildlifeGrowthChangeWithNeighbors(int32 Change);
-	
-	void CalculatePopulationGrowthChange();
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	FHexCoords HexCoords;
 
-	UFUNCTION()
-	void CalculatePopulationGrowthChangeWithNeighbors();
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	TArray<ATile*> Neighbors; // 0 = North, 1 = NorthEast, 2 = SouthEast, 3 = South, 4 = SouthWest, 5 = NorthWest
 
-	//====================================================================
-	//--------------------Bool Flags
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-	
-public:
+	UPROPERTY(BlueprintReadwrite, BlueprintSetter=SetIsRiver, Replicated, Category="Tile")
+	bool bIsRiver;
+
+	UFUNCTION(BlueprintSetter)
+	void SetIsRiver(bool IsRiver);
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	UBiomesDataAsset* DA_Biomes;
+
+	UPROPERTY(BlueprintReadwrite, BlueprintSetter=SetBiome, Replicated, Category="Tile")
+	EBiome Biome = EBiome::Gras;
+
+	UFUNCTION(BlueprintSetter)
+	void SetBiome(EBiome NewBiome);
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	AEntity* AlliedTileEntity;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	AEntity* EnemyTileEntity;
+
 	UFUNCTION(BlueprintCallable, Category="Tile")
 	bool IsWalkable(EAffiliation Affiliation) const;
-	
-	UFUNCTION(BlueprintCallable, Category="Tile")
-	bool IsClaimable() const;
 
-	//====================================================================
-	//--------------------Building
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-protected:
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	UEcoSystemDataAsset* BalanceData;
-	
-public:
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="Tile")
-	UBuilding* Building;
-	
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
-	void AddBuildingToReplication();
+	// ---------------------------------------------------------
+	// Claimant and claiming
 
-	//====================================================================
-	//--------------------Claimant
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 private:
 	UPROPERTY(BlueprintSetter=SetClaimant, BlueprintGetter=GetClaimant, ReplicatedUsing=OnRep_Claimant, Category="Tile")
 	ASettlement* Claimant;
 
-	UFUNCTION()
-	void OnRep_Claimant(ASettlement* NewClaimant);
-
-protected:
-	UFUNCTION(BlueprintImplementableEvent, Category="Tile")
-	void ClaimantChanged();
-
+	TMap<uint8, FPrimitiveInstanceId> ClaimFlagInstanceIds;
 public:
 	UFUNCTION(BlueprintGetter)
 	ASettlement* GetClaimant();
@@ -126,9 +95,86 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetClaimant(ASettlement* NewClaimant);
 
-	//====================================================================
-	//--------------------Attributes
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+private:
+	UFUNCTION()
+	void OnRep_Claimant(ASettlement* NewClaimant);
+
+public:
+	void UpdateClaimFlagsWithNeighbors();
+	
+	void UpdateClaimFlags();
+	
+	UFUNCTION(BlueprintCallable, Category="Tile")
+	bool IsClaimable() const;
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
+	bool TryClaim(ASettlement* PotentialClaimant);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
+	void Unclaim();
+
+	// ---------------------------------------------------------
+	// Building
+
+	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=OnRep_Building, Category="Tile")
+	UBuilding* Building;
+
+	UFUNCTION()
+	void OnRep_Building();
+
+	UPROPERTY(BlueprintAssignable)
+	FOnChangedSignature OnBuildingChanged;
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
+	bool TryBuild(UBuildingDataAsset* BuildingDataAsset);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
+	void Unbuild();
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
+	void AddBuildingToReplication();
+
+	// ---------------------------------------------------------
+	// Weird solution for the Guardian is in X range for animation performance
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Tile")
+	void OnEnteringActiveRangeOfGuardian();
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Tile")
+	void OnLeavingActiveRangeOfGuardian();
+
+	// ---------------------------------------------------------
+	// Ecosystem and calculate Turn 
+
+	void CalculateTurn();
+
+	void CalculateTreeGrowthChange();
+
+	UFUNCTION()
+	void CalculateTreeGrowthChangeWithNeighbors(int32 Change);
+
+	void CalculateForageChange();
+
+	UFUNCTION()
+	void CalculateForageChangeWithNeighbors(int32 Change);
+
+	void CalculateWildlifeGrowthChange();
+
+	UFUNCTION()
+	void CalculateWildlifeGrowthChangeWithNeighbors(int32 Change);
+
+	void CalculatePopulationGrowthChange();
+
+	UFUNCTION()
+	void CalculatePopulationGrowthChangeWithNeighbors();
+
+protected:
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	UEcoSystemDataAsset* BalanceData;
+
+public:
+	static bool bFreezeGrowthChanges;
+
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttributeLimited* Trees;
 
@@ -153,14 +199,59 @@ public:
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttribute* WildlifeGrowthChange;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
-	TArray<ATile*> Neighbors; // 0 = North, 1 = NorthEast, 2 = SouthEast, 3 = South, 4 = SouthWest, 5 = NorthWest
+	// ---------------------------------------------------------
+	// TileLayout & TileContent and graphics relevant
 
-	static bool bFreezeGrowthChanges;
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Tile Graphics")
+	UStaticMeshComponent* SM_Hexagon;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
-	AEntity* AlliedTileEntity;
+	UPROPERTY(BlueprintReadWrite, Category="Tile Graphics")
+	ATileContent* TileContent;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
-	AEntity* EnemyTileEntity;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Graphics")
+	UTileGraphicsDataAsset* DA_TileGraphics;
+
+	UPROPERTY(BlueprintReadOnly, Category="Tile Graphics")
+	FTileLayout TileLayout;
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_SpawnPointLayout, Category="Tile Graphics")
+	FSpawnPointLayout SpawnPointLayout;
+
+	UFUNCTION()
+	void OnRep_SpawnPointLayout();
+
+	UPROPERTY()
+	FOnChangedSignature OnSpawnPointLayoutChanged;
+
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_TileContentRotation)
+	float TileContentRotation = 0.0;
+
+	UFUNCTION()
+	void OnRep_TileContentRotation();
+
+private:
+	EBiome MaterialBiome = EBiome::Gras;
+
+	// Check if anything needs to be changed and do that
+	void RefreshTileLayout();
+
+	void RecalculateTileLayout();
+
+	void ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints);
+
+	FTileLayout* FindNewValidTileLayout() const;
+
+	bool IsValidTileLayout(const FTileLayout* Layout) const;
+
+	// Returns -1 when none found, returns rotation ID (0-5) if one is found
+	int32 FindRiverConnectionRotation(const TArray<bool> Connections) const;
+
+	void UpdateBuildingAssets();
+
+public:
+	UFUNCTION(BlueprintImplementableEvent, Category="Tile Graphics")
+	void SpawnTileContent();
+
+	UFUNCTION(BlueprintImplementableEvent, Category="Tile Graphics")
+	void UpdateHexagonMaterial();
 };
