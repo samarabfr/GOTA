@@ -31,7 +31,7 @@ void ATileContent::UpdateTrees(int32 Change)
 		{
 			if (!TileAssetSpawn.bIsSpawned)
 			{
-				SpawnTileAssetRandomRotation(TileAssetSpawn);
+				SpawnTileAsset(TileAssetSpawn);
 				if (++Counter >= Change) return;
 			}
 		}
@@ -86,10 +86,15 @@ void ATileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<
 	for (int i = 0; i < Array.Num(); ++i)
 	{
 		Array[i].SpawnPoint = SpawnPoints[i];
+		if(Array[i].TileAsset && Array[i].TileAsset->bRandomRotation)
+		{
+			Array[i].SpawnPoint.Rotation = FMath::RandRange(0, 359);
+		}
 		if (Array[i].bIsSpawned)
 		{
 			FTransform Transform = FTransform();
 			Transform.SetLocation(Array[i].SpawnPoint.LocationOnTile + GetActorLocation());
+			Transform.SetRotation(FRotator(0, Array[i].SpawnPoint.Rotation, 0).Quaternion());
 			GameState->StaticMeshBatcher->UpdateStaticMeshTransform(
 				Array[i].TileAsset->StaticMesh, Array[i].InstanceId, Transform);
 		}
@@ -142,17 +147,21 @@ void ATileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDat
 		if (!TileAssetSpawn.TileAsset)
 		{
 			TileAssetSpawn.TileAsset = OutFoundAssets.Pop();
+			if (TileAssetSpawn.TileAsset->bRandomRotation)
+			{
+				TileAssetSpawn.SpawnPoint.Rotation = FMath::RandRange(0, 359);
+			}
 		}
 	}
 }
 
-void ATileContent::SpawnTileAssetRandomRotation(FTileAssetSpawn& FTileAssetSpawn)
+void ATileContent::SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
 {
 	// already spawned
 	if (FTileAssetSpawn.bIsSpawned) return;
 	FTransform Transform = FTransform();
 	Transform.SetLocation(FTileAssetSpawn.SpawnPoint.LocationOnTile + GetActorLocation());
-	Transform.SetRotation(FRotator(0,FMath::RandRange(0,359),0).Quaternion());
+	Transform.SetRotation(FRotator(0, FTileAssetSpawn.SpawnPoint.Rotation, 0).Quaternion());
 	FTileAssetSpawn.InstanceId = GameState->StaticMeshBatcher->AddStaticMeshInstance(
 		FTileAssetSpawn.TileAsset->StaticMesh, Transform);
 	FTileAssetSpawn.bIsSpawned = true;
@@ -216,7 +225,7 @@ void ATileContent::FindRandomValidAssets(const int32 Amount, const UDataTable* D
 	}
 }
 
-template<typename T>
+template <typename T>
 void ATileContent::ShuffleTArray(TArray<T>& Array)
 {
 	if (Array.Num() <= 1)

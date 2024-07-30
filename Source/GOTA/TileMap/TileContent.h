@@ -56,7 +56,7 @@ public:
 private:
 	void ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets);
 
-	void SpawnTileAssetRandomRotation(FTileAssetSpawn& FTileAssetSpawn);
+	void SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn);
 
 	void DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn);
 
