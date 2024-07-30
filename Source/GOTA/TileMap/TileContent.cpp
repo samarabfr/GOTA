@@ -54,14 +54,14 @@ void ATileContent::OnSpawnPointLayoutChanged()
 	BringArrayToCorrectSize(TreeTileAssetSpawns, Tile->SpawnPointLayout.Trees.Num());
 	SetSpawnPointsOnArray(TreeTileAssetSpawns, Tile->SpawnPointLayout.Trees);
 
-	BringArrayToCorrectSize(PropTileAssetSpawn, Tile->SpawnPointLayout.Props.Num());
-	SetSpawnPointsOnArray(PropTileAssetSpawn, Tile->SpawnPointLayout.Props);
+	BringArrayToCorrectSize(PropTileAssetSpawns, Tile->SpawnPointLayout.Props.Num());
+	SetSpawnPointsOnArray(PropTileAssetSpawns, Tile->SpawnPointLayout.Props);
 
-	BringArrayToCorrectSize(BuildingTileAssetSpawn, Tile->SpawnPointLayout.Buildings.Num());
-	SetSpawnPointsOnArray(BuildingTileAssetSpawn, Tile->SpawnPointLayout.Buildings);
+	BringArrayToCorrectSize(BuildingTileAssetSpawns, Tile->SpawnPointLayout.Buildings.Num());
+	SetSpawnPointsOnArray(BuildingTileAssetSpawns, Tile->SpawnPointLayout.Buildings);
 
-	BringArrayToCorrectSize(ForageTileAssetSpawn, Tile->SpawnPointLayout.Forage.Num());
-	SetSpawnPointsOnArray(ForageTileAssetSpawn, Tile->SpawnPointLayout.Forage);
+	BringArrayToCorrectSize(ForageTileAssetSpawns, Tile->SpawnPointLayout.Forage.Num());
+	SetSpawnPointsOnArray(ForageTileAssetSpawns, Tile->SpawnPointLayout.Forage);
 	ValidateAllTileAssets();
 }
 
@@ -105,9 +105,10 @@ void ATileContent::ValidateAllTileAssets()
 {
 	ValidateTileAssets(TreeTileAssetSpawns, Tile->DA_TileGraphics->TreeAssets);
 	ValidateTrees();
-	ValidateTileAssets(PropTileAssetSpawn, Tile->DA_TileGraphics->PropAssets);
-	ValidateTileAssets(BuildingTileAssetSpawn, Tile->DA_TileGraphics->BuildingAssets);
-	ValidateTileAssets(ForageTileAssetSpawn, Tile->DA_TileGraphics->ForageAssets);
+	ValidateTileAssets(PropTileAssetSpawns, Tile->DA_TileGraphics->PropAssets);
+	SpawnProps();
+	ValidateTileAssets(BuildingTileAssetSpawns, Tile->DA_TileGraphics->BuildingAssets);
+	ValidateTileAssets(ForageTileAssetSpawns, Tile->DA_TileGraphics->ForageAssets);
 }
 
 void ATileContent::ValidateTrees()
@@ -120,6 +121,14 @@ void ATileContent::ValidateTrees()
 	// correct amount of Trees, everything is good
 	if (Tile->Trees->Current == SpawnedTrees) return;
 	UpdateTrees(Tile->Trees->Current - SpawnedTrees);
+}
+
+void ATileContent::SpawnProps()
+{
+	for (FTileAssetSpawn TileAssetSpawn : PropTileAssetSpawns)
+	{
+		SpawnTileAsset(TileAssetSpawn);
+	}
 }
 
 void ATileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets)
