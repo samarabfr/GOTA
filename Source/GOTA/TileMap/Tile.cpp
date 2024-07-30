@@ -76,7 +76,7 @@ void ATile::BeginPlay()
 	SpawnTileContent();
 	TileContent->Init(this);
 	UpdateHexagonMaterial();
-	
+
 	if (HasAuthority())
 	{
 		AddReplicatedSubObject(Trees);
@@ -152,12 +152,58 @@ ASettlement* ATile::GetClaimant()
 void ATile::SetClaimant(ASettlement* NewClaimant)
 {
 	Claimant = NewClaimant;
-	ClaimantChanged();
+	UpdateClaimFlagsWithNeighbors();
 }
 
 void ATile::OnRep_Claimant(ASettlement* NewClaimant)
 {
-	ClaimantChanged();
+	UpdateClaimFlagsWithNeighbors();
+}
+
+void ATile::UpdateClaimFlagsWithNeighbors()
+{
+	for (ATile* Neighbor : Neighbors)
+	{
+		if(Neighbor) Neighbor->UpdateClaimFlags();
+	}
+	UpdateClaimFlags();
+}
+
+void ATile::UpdateClaimFlags()
+{
+	if (Claimant)
+	{
+		for (uint8 i = 0; i < 6; ++i)
+		{
+			if (!Neighbors[i] || !Neighbors[i]->Claimant || Neighbors[i]->Claimant != Claimant)
+			{
+				// Should have flag in this direction
+				if(!ClaimFlagInstanceIds.Contains(i))
+				{
+					// doesn't have one yet, so we make one
+					FTransform Transform = FTransform();
+					Transform.SetLocation(DA_TileGraphics->ClaimFlagSpawnPoints[i].LocationOnTile + GetActorLocation());
+					Transform.SetRotation(FRotator(0, DA_TileGraphics->ClaimFlagSpawnPoints[i].Rotation, 0).Quaternion());
+					ClaimFlagInstanceIds.Add(i, Claimant->AddClaimMeshInstance(Transform));
+				}
+			}
+			else if (ClaimFlagInstanceIds.Contains(i))
+			{
+				// Should NOT have flag in this direction
+				Claimant->RemoveClaimMeshInstance(*ClaimFlagInstanceIds.Find(i));
+				ClaimFlagInstanceIds.Remove(i);
+			}
+		}
+	}
+	else
+	{
+		// remove all flags
+		for (TTuple<uint8, FPrimitiveInstanceId> Tuple : ClaimFlagInstanceIds)
+		{
+			Claimant->RemoveClaimMeshInstance(Tuple.Value);
+		}
+		ClaimFlagInstanceIds.Empty();
+	}
 }
 
 bool ATile::IsClaimable() const
@@ -175,7 +221,7 @@ bool ATile::TryClaim(ASettlement* PotentialClaimant)
 		Claimant->OnBuildingAdded(Building);
 	}
 	GameplayTags.AppendTags(Claimant->GameplayTags);
-	ClaimantChanged();
+	UpdateClaimFlagsWithNeighbors();
 	OnGameplayTagsChanged.Broadcast();
 	return true;
 }
@@ -468,9 +514,9 @@ void ATile::RecalculateTileLayout()
 void ATile::ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints)
 {
 	// Check for Spawnpoints to remove
-	for (int i = SpawnPoints.Num()-1; i >= 0; --i)
+	for (int i = SpawnPoints.Num() - 1; i >= 0; --i)
 	{
-		if(SpawnPoints[i].SpawnChance != 100 && SpawnPoints[i].SpawnChance <= FMath::RandRange(0, 99))
+		if (SpawnPoints[i].SpawnChance != 100 && SpawnPoints[i].SpawnChance <= FMath::RandRange(0, 99))
 		{
 			SpawnPoints.RemoveAt(i);
 		}

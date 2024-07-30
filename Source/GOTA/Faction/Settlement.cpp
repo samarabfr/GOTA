@@ -11,7 +11,7 @@
 void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
+
 	DOREPLIFETIME(ASettlement, ClaimColor);
 	DOREPLIFETIME(ASettlement, PopulationSummary);
 	DOREPLIFETIME(ASettlement, ProductionSummary);
@@ -26,6 +26,11 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 ASettlement::ASettlement()
 {
+	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
+	ISM_ClaimFlags = CreateDefaultSubobject<UInstancedStaticMeshComponent>("Claim Flags");
+	ISM_ClaimFlags->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ISM_ClaimFlags->SetupAttachment(RootComponent);
+
 	// Replication stuff
 	bReplicates = true;
 	bReplicateUsingRegisteredSubObjectList = true;
@@ -38,16 +43,30 @@ ASettlement::ASettlement()
 	CurrentBuildingProject = CreateDefaultSubobject<UBuildingProject>(TEXT("Current Building Project"));
 }
 
+void ASettlement::OnRep_ClaimColor()
+{
+	ISM_ClaimFlags->SetStaticMesh(ClaimMesh);
+	UMaterialInstanceDynamic* DynMaterial = UMaterialInstanceDynamic::Create(ClaimMaterial, this);
+	DynMaterial->SetVectorParameterValue(EName::Color, ClaimColor);
+	ISM_ClaimFlags->SetMaterialByName(FName("Flag"), DynMaterial);
+}
+
 void ASettlement::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	// Get the GameState
 	AGOTAGameState* GameState = GetWorld()->GetGameState<AGOTAGameState>();
 	GameState->LoadingManager->IncrementReplicationCount();
 
-	if(HasAuthority())
+	if (HasAuthority())
 	{
+		ISM_ClaimFlags->SetStaticMesh(ClaimMesh);
+		ClaimColor = FLinearColor(FMath::FRand(), FMath::FRand(), FMath::FRand());
+		UMaterialInstanceDynamic* DynMaterial = UMaterialInstanceDynamic::Create(ClaimMaterial, this);
+		DynMaterial->SetVectorParameterValue(EName::Color, ClaimColor);
+		ISM_ClaimFlags->SetMaterialByName(FName("Flag"), DynMaterial);
+
 		AddReplicatedSubObject(Food);
 		AddReplicatedSubObject(Wood);
 		AddReplicatedSubObject(Stone);
@@ -58,16 +77,27 @@ void ASettlement::BeginPlay()
 	}
 }
 
+FPrimitiveInstanceId ASettlement::AddClaimMeshInstance(FTransform& Transform)
+{
+	return ISM_ClaimFlags->AddInstanceById(Transform);
+}
+
+void ASettlement::RemoveClaimMeshInstance(FPrimitiveInstanceId InstanceId)
+{
+	ISM_ClaimFlags->RemoveInstanceById(InstanceId);
+}
+
 void ASettlement::OnBuildingAdded(UBuilding* Building)
 {
-	if(Building)
+	if (Building)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Building exist"));
-	} else
+	}
+	else
 	{
 		UE_LOG(LogTemp, Log, TEXT("Building doesn't exist wtf"));
 	}
-	if(Building->Population)
+	if (Building->Population)
 	{
 		UE_LOG(LogTemp, Log, TEXT("Building Population exist"));
 	}
@@ -82,27 +112,28 @@ void ASettlement::OnBuildingRemoved(UBuilding* Building)
 bool ASettlement::SpawnArmy()
 {
 	// nowhere to spawn
-	if(ClaimedTiles.IsEmpty()) return false;
+	if (ClaimedTiles.IsEmpty()) return false;
 	// random Tile that has no TileEntity
 	ATile* SpawnLocation = ClaimedTiles[FMath::RandRange(0, ClaimedTiles.Num() - 1)];
-	
+
 	// spawn the army
 
 	// evaluate how many pops to send
 	// figure out which pops to send, remove them from the buildlings and add them to the army
-	
+
 	return true;
 }
 
+
 void ASettlement::SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject)
 {
-	if(CurrentBuildingProject)
+	if (CurrentBuildingProject)
 	{
 		RemoveReplicatedSubObject(CurrentBuildingProject);
 	}
 	CurrentBuildingProject = NewCurrentBuildingProject;
 	OnCurrentBuildingProjectChanged.Broadcast();
-	if(CurrentBuildingProject)
+	if (CurrentBuildingProject)
 	{
 		AddReplicatedSubObject(CurrentBuildingProject);
 	}

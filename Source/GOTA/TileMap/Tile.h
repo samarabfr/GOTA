@@ -87,6 +87,7 @@ private:
 	UPROPERTY(BlueprintSetter=SetClaimant, BlueprintGetter=GetClaimant, ReplicatedUsing=OnRep_Claimant, Category="Tile")
 	ASettlement* Claimant;
 
+	TMap<uint8, FPrimitiveInstanceId> ClaimFlagInstanceIds;
 public:
 	UFUNCTION(BlueprintGetter)
 	ASettlement* GetClaimant();
@@ -98,11 +99,11 @@ private:
 	UFUNCTION()
 	void OnRep_Claimant(ASettlement* NewClaimant);
 
-protected:
-	UFUNCTION(BlueprintImplementableEvent, Category="Tile")
-	void ClaimantChanged();
-
 public:
+	void UpdateClaimFlagsWithNeighbors();
+	
+	void UpdateClaimFlags();
+	
 	UFUNCTION(BlueprintCallable, Category="Tile")
 	bool IsClaimable() const;
 
@@ -120,7 +121,7 @@ public:
 
 	UFUNCTION()
 	void OnRep_Building();
-	
+
 	UPROPERTY(BlueprintAssignable)
 	FOnChangedSignature OnBuildingChanged;
 

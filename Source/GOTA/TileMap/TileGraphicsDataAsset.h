@@ -38,4 +38,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Graphics")
 	UDataTable* TileLayouts;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Graphics")
+	TArray<FSpawnPoint> ClaimFlagSpawnPoints;
 };
