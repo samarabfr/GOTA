@@ -16,4 +16,7 @@ struct FSpawnPoint
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
 	float Rotation = 0.0f;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	uint8 SpawnChance = 100;
 };

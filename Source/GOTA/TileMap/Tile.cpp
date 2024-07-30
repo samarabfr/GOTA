@@ -442,11 +442,28 @@ void ATile::RecalculateTileLayout()
 	if (!NewLayout) return;
 	TileLayout = *NewLayout;
 	// Select random SpawnPointLayout
-	SpawnPointLayout = TileLayout.SpawnPointsLayouts[FMath::RandRange(0, TileLayout.SpawnPointsLayouts.Num() - 1)];
+	FSpawnPointLayout SPL = TileLayout.SpawnPointsLayouts[FMath::RandRange(0, TileLayout.SpawnPointsLayouts.Num() - 1)];
+	ApplySpawnChances(SPL.Trees);
+	ApplySpawnChances(SPL.Forage);
+	ApplySpawnChances(SPL.Props);
+	ApplySpawnChances(SPL.Buildings);
+	SpawnPointLayout = SPL;
 	OnSpawnPointLayoutChanged.Broadcast();
 	Trees->SetMaximum(SpawnPointLayout.Trees.Num());
 	Trees->SetCurrent(BalanceData->StartingTrees);
 	RefreshTileLayout();
+}
+
+void ATile::ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints)
+{
+	// Check for Spawnpoints to remove
+	for (int i = SpawnPoints.Num()-1; i >= 0; --i)
+	{
+		if(SpawnPoints[i].SpawnChance != 100 && SpawnPoints[i].SpawnChance <= FMath::RandRange(0, 99))
+		{
+			SpawnPoints.RemoveAt(i);
+		}
+	}
 }
 
 FTileLayout* ATile::FindNewValidTileLayout() const
