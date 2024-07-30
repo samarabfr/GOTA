@@ -17,6 +17,7 @@ void ATileContent::Init(ATile* Tile_)
 	Tile->OnSpawnPointLayoutChanged.AddDynamic(this, &ATileContent::OnSpawnPointLayoutChanged);
 	Tile->OnGameplayTagsChanged.AddDynamic(this, &ATileContent::ValidateAllTileAssets);
 	Tile->Trees->OnChanged.AddDynamic(this, &ATileContent::UpdateTrees);
+	Tile->Forage->OnChanged.AddDynamic(this, &ATileContent::UpdateForage);
 	OnSpawnPointLayoutChanged();
 }
 
@@ -44,6 +45,38 @@ void ATileContent::UpdateTrees(int32 Change)
 			{
 				DespawnTileAsset(TileAssetSpawn);
 				if (--Counter <= Change) return;
+			}
+		}
+	}
+}
+
+void ATileContent::UpdateForage(int32 Change)
+{
+	uint8 ForageSpawnAssetChange = Tile->Forage->Current / 4 - ForageAssetSpawnedCounter;
+	if (ForageSpawnAssetChange == 0) return;
+	int32 Counter = 0;
+	// increase the amount of visible forage
+	if (ForageSpawnAssetChange > 0)
+	{
+		for (FTileAssetSpawn& TileAssetSpawn : ForageTileAssetSpawns)
+		{
+			if (!TileAssetSpawn.bIsSpawned)
+			{
+				SpawnTileAsset(TileAssetSpawn);
+				++ForageAssetSpawnedCounter;
+				if (++Counter >= ForageSpawnAssetChange) return;
+			}
+		}
+	}
+	else
+	{
+		for (FTileAssetSpawn& TileAssetSpawn : ForageTileAssetSpawns)
+		{
+			if (TileAssetSpawn.bIsSpawned)
+			{
+				DespawnTileAsset(TileAssetSpawn);
+				--ForageAssetSpawnedCounter;
+				if (--Counter <= ForageSpawnAssetChange) return;
 			}
 		}
 	}
@@ -109,6 +142,7 @@ void ATileContent::ValidateAllTileAssets()
 	SpawnProps();
 	ValidateTileAssets(BuildingTileAssetSpawns, Tile->DA_TileGraphics->BuildingAssets);
 	ValidateTileAssets(ForageTileAssetSpawns, Tile->DA_TileGraphics->ForageAssets);
+	UpdateForage(0);
 }
 
 void ATileContent::ValidateTrees()

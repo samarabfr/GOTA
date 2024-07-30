@@ -26,9 +26,14 @@ public:
 	UFUNCTION()
 	void UpdateTrees(int32 Change);
 
+	UFUNCTION()
+	void UpdateForage(int32 Change);
+
 private:
 	UPROPERTY()
 	ATile* Tile;
+
+	uint8 ForageAssetSpawnedCounter = 0;
 
 	TArray<FTileAssetSpawn> TreeTileAssetSpawns;
 
