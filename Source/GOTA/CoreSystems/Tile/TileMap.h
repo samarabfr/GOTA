@@ -16,33 +16,30 @@ class GOTA_API ATileMap : public AActor
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	ATileMap();
+
+	virtual void BeginPlay() override;
 	
-public:
-	static int32 MapOffset;
+protected:
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	TSubclassOf<ATile> TileClass;
 	
 private:
+	AGS_Ingame* GameState;
+	
+	UPROPERTY(Replicated)
+	FHexCoords Size;
+	
+	// Array for replication to clients
 	UPROPERTY(Replicated)
 	TArray<ATile*> Tiles;
 	
-protected:
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_MapRadius)
-	int32 MapRadius;
+	// Array for fast access on server
+	ATile** TilesArray;
 	
-	UPROPERTY(BlueprintReadOnly, Replicated)
-	int32 MapSize;
-	
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
-	void Init(int32 Init_MapRadius);
+	void InitializeBothArrays(FHexCoords SizeInit);
 
-	UFUNCTION()
-	void OnRep_MapRadius() const;
+	void SpawnNewTile(FHexCoords Coords, float Height);
 	
-private:
-	ATile*** TilesArray;
-	void InitializeArray();
-	
-protected:
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	bool TryAddTile(FHexCoords HexCoords, ATile* Tile);
 	
 public:
@@ -58,8 +55,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	ATile* GetRandomTile();
 	
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="TileMap")
-	void GenerateTilesInAHexagon();
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
+	void GenerateTiles(int32 GenerationSize, int32 TileCount);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	void CalculateTurn();
@@ -69,11 +66,4 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	TArray<ATile*> GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation Affiliation);
-
-	// temp property until Terraforming works, just to have a river on the map
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	UTestRiver* TestRiverDataAsset;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	UTestBiomeDataAsset* TestBiomeDataAsset;
 };

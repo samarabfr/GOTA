@@ -2,7 +2,11 @@
 
 #include "TileMap.h"
 #include "HexCoords.h"
+#include "HexCoordsFunctions.h"
+#include "IContentBrowserSingleton.h"
+#include "TileGeneratedInfo.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
+#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "Net/UnrealNetwork.h"
 
 void ATileMap::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -10,8 +14,7 @@ void ATileMap::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ATileMap, Tiles);
-	DOREPLIFETIME(ATileMap, MapRadius);
-	DOREPLIFETIME(ATileMap, MapSize);
+	DOREPLIFETIME(ATileMap, Size);
 }
 
 ATileMap::ATileMap()
@@ -20,34 +23,43 @@ ATileMap::ATileMap()
 	bAlwaysRelevant = true;
 }
 
-int32 ATileMap::MapOffset = 0;
-
-void ATileMap::Init(int32 Init_MapRadius)
+void ATileMap::BeginPlay()
 {
-	MapRadius = FMath::Max(Init_MapRadius, 0);
-	MapOffset = MapRadius;
-	MapSize = MapRadius * 2 + 1;
-	for (int32 i = 0; i < MapSize * MapSize; ++i)
-	{
-		Tiles.Add(nullptr);
-	}
-	InitializeArray();
+	Super::BeginPlay();
+	
+	GameState = GetWorld()->GetGameState<AGS_Ingame>();
 }
 
-void ATileMap::OnRep_MapRadius() const
+void ATileMap::InitializeBothArrays(FHexCoords SizeInit)
 {
-	MapOffset = MapRadius;
-}
-
-void ATileMap::InitializeArray()
-{
-	TilesArray = new ATile**[MapSize];
-	for (int32 i = 0; i < MapSize; ++i)
+	Size = SizeInit;
+	TilesArray = new ATile*[Size.Q * Size.R];
+	for (int32 Q = 0; Q < Size.Q; ++Q)
 	{
-		TilesArray[i] = new ATile*[MapSize];
-		for (int32 j = 0; j < MapSize; ++j)
+		for (int32 R = 0; R < Size.R; ++R)
 		{
-			TilesArray[i][j] = nullptr; // Initialize to nullptr or any default value
+			TilesArray[Q * Size.R + R] = nullptr;
+			Tiles.Add(nullptr);
+		}
+	}
+}
+
+void ATileMap::SpawnNewTile(FHexCoords Coords, float Height)
+{
+	FActorSpawnParameters SpawnInfo;
+	FVector2d Vector2d = UHexCoordsFunctions::HexCoordsToVector2D(Coords);
+	FVector Vector = FVector(Vector2d.X, Vector2d.Y, Height);
+	ATile* NewTile = Cast<ATile>(GetWorld()->SpawnActor(TileClass.Get(), &Vector));
+	if(NewTile)
+	{
+		if(TryAddTile(Coords, NewTile))
+		{
+			GameState->RegisterTileForTotalsUpdates(NewTile);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Tile couldnt be added to array (%d, %d)"), NewTile->HexCoords.Q, NewTile->HexCoords.R)
+			NewTile->Destroy();
 		}
 	}
 }
@@ -56,7 +68,7 @@ void ATileMap::InitializeArray()
 bool ATileMap::TryAddTile(FHexCoords HexCoords, ATile* Tile)
 {
 	// Check for out of bounds
-	if (HexCoords.Q >= MapSize || HexCoords.R >= MapSize ||
+	if (HexCoords.Q >= Size.Q || HexCoords.R >= Size.R  ||
 		HexCoords.Q < 0 || HexCoords.R < 0)
 	{
 		return false;
@@ -65,10 +77,10 @@ bool ATileMap::TryAddTile(FHexCoords HexCoords, ATile* Tile)
 	{
 		return false;
 	}
-	Tiles[HexCoords.Q * MapSize + HexCoords.R] = Tile;
-	TilesArray[HexCoords.Q][HexCoords.R] = Tile;
+	Tiles[HexCoords.Q * Size.R + HexCoords.R] = Tile;
+	TilesArray[HexCoords.Q * Size.R + HexCoords.R] = Tile;
 	Tile->HexCoords = HexCoords;
-	// set neigbors on new tile
+	// set neighbors on new tile
 	Tile->Neighbors[0] = GetTileFast(FHexCoords(HexCoords.Q, HexCoords.R - 1));
 	Tile->Neighbors[1] = GetTileFast(FHexCoords(HexCoords.Q + 1, HexCoords.R - 1));
 	Tile->Neighbors[2] = GetTileFast(FHexCoords(HexCoords.Q + 1, HexCoords.R));
@@ -90,24 +102,23 @@ bool ATileMap::TryAddTile(FHexCoords HexCoords, ATile* Tile)
 ATile* ATileMap::GetTile(FHexCoords HexCoords)
 {
 	// Check for out of bounds
-	if (HexCoords.Q >= MapSize || HexCoords.R >= MapSize ||
+	if (HexCoords.Q >= Size.Q || HexCoords.R >= Size.R  ||
 		HexCoords.Q < 0 || HexCoords.R < 0)
 	{
 		return nullptr;
 	}
-	// Check in 2D-Array
-	return Tiles[HexCoords.Q * MapSize + HexCoords.R];
+	return Tiles[HexCoords.Q * Size.R + HexCoords.R];
 }
 
 ATile* ATileMap::GetTileFast(FHexCoords HexCoords)
 {
 	// Check for out of bounds
-	if (HexCoords.Q >= MapSize || HexCoords.R >= MapSize ||
+	if (HexCoords.Q >= Size.Q || HexCoords.R >= Size.R  ||
 		HexCoords.Q < 0 || HexCoords.R < 0)
 	{
 		return nullptr;
 	}
-	return TilesArray[HexCoords.Q][HexCoords.R];
+	return TilesArray[HexCoords.Q * Size.R + HexCoords.R];
 }
 
 bool ATileMap::DoesTileExist(FHexCoords HexCoords)
@@ -125,7 +136,7 @@ ATile* ATileMap::GetRandomTile()
 	const int32 MaxTries = 100;
 	for (int32 i = 0; i < MaxTries; ++i)
 	{
-		const int32 RandomIndex = FMath::RandRange(0, MapSize * MapSize - 1);
+		const int32 RandomIndex = FMath::RandRange(0, Size.Q * Size.R - 1);
 		if (ATile* RandomTile = Tiles[RandomIndex])
 		{
 			return RandomTile;
@@ -140,6 +151,28 @@ ATile* ATileMap::GetRandomTile()
 		}
 	}
 	return nullptr;
+}
+
+void ATileMap::GenerateTiles(int32 GenerationSize, int32 TileCount)
+{
+	// Generate Island
+	TArray<FTileGeneratedInfo> GeneratedTiles;
+	for (int32 Q = 0; Q < GenerationSize; ++Q)
+	{
+		for (int32 R = 0; R < GenerationSize; ++R)
+		{
+			GeneratedTiles.Add(FTileGeneratedInfo(FHexCoords(Q,R), 0, false, EBiome::Gras));
+		}
+	}
+	// Cut to the right tile count
+
+	// Initialize Tile Arrays to fit the island just right
+	InitializeBothArrays(FHexCoords(GenerationSize,GenerationSize));
+	// Spawn Tiles
+	for (FTileGeneratedInfo GeneratedTile : GeneratedTiles)
+	{
+		SpawnNewTile(GeneratedTile.HexCoords, GeneratedTile.Height);
+	}
 }
 
 void ATileMap::CalculateTurn()
