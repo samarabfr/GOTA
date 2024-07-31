@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TileMap.h"
-
 #include "FastNoiseWrapper.h"
 #include "HexCoords.h"
 #include "HexCoordsFunctions.h"
 #include "TileGeneratedInfo.h"
+#include "VectorTypes.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "Net/UnrealNetwork.h"
@@ -27,7 +27,7 @@ ATileMap::ATileMap()
 void ATileMap::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	GameState = GetWorld()->GetGameState<AGS_Ingame>();
 }
 
@@ -51,15 +51,16 @@ void ATileMap::SpawnNewTile(FHexCoords Coords, float Height)
 	FVector2d Vector2d = UHexCoordsFunctions::HexCoordsToVector2D(Coords);
 	FVector Vector = FVector(Vector2d.X, Vector2d.Y, Height);
 	ATile* NewTile = Cast<ATile>(GetWorld()->SpawnActor(TileClass.Get(), &Vector));
-	if(NewTile)
+	if (NewTile)
 	{
-		if(TryAddTile(Coords, NewTile))
+		if (TryAddTile(Coords, NewTile))
 		{
 			GameState->RegisterTileForTotalsUpdates(NewTile);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Tile couldnt be added to array (%d, %d)"), NewTile->HexCoords.Q, NewTile->HexCoords.R)
+			UE_LOG(LogTemp, Warning, TEXT("Tile couldnt be added to array (%d, %d)"), NewTile->HexCoords.Q,
+			       NewTile->HexCoords.R)
 			NewTile->Destroy();
 		}
 	}
@@ -69,7 +70,7 @@ void ATileMap::SpawnNewTile(FHexCoords Coords, float Height)
 bool ATileMap::TryAddTile(FHexCoords HexCoords, ATile* Tile)
 {
 	// Check for out of bounds
-	if (HexCoords.Q >= Size.Q || HexCoords.R >= Size.R  ||
+	if (HexCoords.Q >= Size.Q || HexCoords.R >= Size.R ||
 		HexCoords.Q < 0 || HexCoords.R < 0)
 	{
 		return false;
@@ -103,7 +104,7 @@ bool ATileMap::TryAddTile(FHexCoords HexCoords, ATile* Tile)
 ATile* ATileMap::GetTile(FHexCoords HexCoords)
 {
 	// Check for out of bounds
-	if (HexCoords.Q >= Size.Q || HexCoords.R >= Size.R  ||
+	if (HexCoords.Q >= Size.Q || HexCoords.R >= Size.R ||
 		HexCoords.Q < 0 || HexCoords.R < 0)
 	{
 		return nullptr;
@@ -114,7 +115,7 @@ ATile* ATileMap::GetTile(FHexCoords HexCoords)
 ATile* ATileMap::GetTileFast(FHexCoords HexCoords)
 {
 	// Check for out of bounds
-	if (HexCoords.Q >= Size.Q || HexCoords.R >= Size.R  ||
+	if (HexCoords.Q >= Size.Q || HexCoords.R >= Size.R ||
 		HexCoords.Q < 0 || HexCoords.R < 0)
 	{
 		return nullptr;
@@ -160,37 +161,44 @@ void ATileMap::GenerateTiles(int32 GenerationSize, int32 TileCount)
 	UFastNoiseWrapper* FastNoiseWrapper = nullptr;
 	// Noise settings
 	FastNoiseWrapper = NewObject<UFastNoiseWrapper>(this);
-	const EFastNoise_NoiseType NoiseType =EFastNoise_NoiseType::Simplex;
+	const EFastNoise_NoiseType NoiseType = EFastNoise_NoiseType::Simplex;
 	const int32 Seed = FMath::Rand32();
 	const float Frequency = 0.1;
 	const EFastNoise_Interp Interpolation = EFastNoise_Interp::Quintic;
 	const EFastNoise_FractalType FractalType = EFastNoise_FractalType::FBM;
-	const int32 Octaves = 3;
+	const int32 Octaves = 1;
 	const float Lacunarity = 2;
 	const float gain = 0.5;
 	const float CellularJitter = 0.45;
 	const EFastNoise_CellularDistanceFunction CellularDistanceFunction = EFastNoise_CellularDistanceFunction::Euclidean;
 	const EFastNoise_CellularReturnType CellularReturnType = EFastNoise_CellularReturnType::CellValue;
 	// factors
-	const float NoiseFactor = 1000;
-
-	
+	const float NoiseFactor = 500;
+	// distance to middle point factor
+	const FVector2d MiddlePoint = FVector2d(GenerationSize / 2, GenerationSize / 2);
+	const float DistanceToMiddlePointMaxHeightFactor = 4000;
+	const float DistanceToMiddlePointGradientFactor = 0.2;
+	// Setup noise	
 	FastNoiseWrapper->SetupFastNoise(NoiseType, Seed, Frequency, Interpolation, FractalType, Octaves,
-		Lacunarity, gain, CellularJitter, CellularDistanceFunction, CellularReturnType );
+	                                 Lacunarity, gain, CellularJitter, CellularDistanceFunction, CellularReturnType);
 	// Generate Island
 	TArray<FTileGeneratedInfo> GeneratedTiles;
 	for (int32 Q = 0; Q < GenerationSize; ++Q)
 	{
 		for (int32 R = 0; R < GenerationSize; ++R)
 		{
-			float Height = FastNoiseWrapper->GetNoise2D(Q,R) * NoiseFactor;
-			GeneratedTiles.Add(FTileGeneratedInfo(FHexCoords(Q,R), Height, false, EBiome::Gras));
+			const float DistanceToMiddlePointHeight = DistanceToMiddlePointMaxHeightFactor /
+				FMath::Pow(EULERS_NUMBER,
+					DistanceToMiddlePointGradientFactor * UE::Geometry::Distance(FVector2d(Q,R), MiddlePoint));
+			const float NoiseHeight = NoiseFactor * FastNoiseWrapper->GetNoise2D(Q, R);
+			const float Height = NoiseHeight + DistanceToMiddlePointHeight;
+			GeneratedTiles.Add(FTileGeneratedInfo(FHexCoords(Q, R), Height, false, EBiome::Gras));
 		}
 	}
 	// Cut to the right tile count
 
 	// Initialize Tile Arrays to fit the island just right
-	InitializeBothArrays(FHexCoords(GenerationSize,GenerationSize));
+	InitializeBothArrays(FHexCoords(GenerationSize, GenerationSize));
 	// Spawn Tiles
 	for (FTileGeneratedInfo GeneratedTile : GeneratedTiles)
 	{
