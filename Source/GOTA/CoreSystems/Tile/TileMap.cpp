@@ -196,7 +196,7 @@ void ATileMap::GenerateTiles(int32 GenSizeQ, int32 TileCount)
 			ShapeHeight += TerrainGenData->DistanceToMiddlePointCurve.GetRichCurveConst()->Eval(NormalizedDistance) *
 				TerrainGenData->ShapeDistanceToMiddlePointFactor;
 			ShapeHeight += TerrainGenData->ShapeHeightOffset;
-			GeneratedTiles[Q * GenSizeR + R].Height = ShapeHeight;
+			GeneratedTiles[Q * GenSizeR + R].Height = 1;
 			if (ShapeHeight < TerrainGenData->ShouldGenerateThreshhold)
 				GeneratedTiles[Q * GenSizeR + R].ShouldGenerate = false;
 		}
