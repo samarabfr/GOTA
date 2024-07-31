@@ -3,7 +3,7 @@
 
 #include "Entity.h"
 #include "Settlement.h"
-#include "GOTA/Core/GOTAGameState.h"
+#include "GOTA/CoreSystems/GOTAGameState.h"
 #include "GOTA/TileMap/Tile.h"
 #include "Net/UnrealNetwork.h"
 

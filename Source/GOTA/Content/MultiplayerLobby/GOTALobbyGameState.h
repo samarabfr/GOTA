@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GOTAPlayerState.h"
 #include "LobbyPlayer.h"
 #include "GameFramework/GameStateBase.h"
 #include "GOTALobbyGameState.generated.h"

@@ -3,7 +3,7 @@
 #include "Army.h"
 #include "GOTA/TileMap/Tile.h"
 #include "Settlement.h"
-#include "GOTA/Core/GOTAGameState.h"
+#include "GOTA/CoreSystems/GOTAGameState.h"
 
 void AArmy::CalculateMovement()
 {

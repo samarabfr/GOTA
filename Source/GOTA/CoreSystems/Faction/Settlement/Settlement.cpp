@@ -4,8 +4,8 @@
 
 #include "Army.h"
 #include "AI/NavigationSystemBase.h"
-#include "GOTA/Core/GOTAGameState.h"
-#include "GOTA/Core/LoadingManager.h"
+#include "GOTA/CoreSystems/GOTAGameState.h"
+#include "GOTA/CoreSystems/LoadingManager.h"
 #include "Net/UnrealNetwork.h"
 
 void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

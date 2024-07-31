@@ -1,7 +1,7 @@
 ﻿#include "TileContent.h"
 #include "Tile.h"
 #include "Components/StaticMeshComponent.h"
-#include "GOTA/Core/GOTAGameState.h"
+#include "GOTA/CoreSystems/GOTAGameState.h"
 #include "GOTA/Faction/Building.h"
 #include "GOTA/Faction/BuildingDataAsset.h"
 #include "GOTA/Faction/BuildingTierData.h"

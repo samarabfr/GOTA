@@ -3,8 +3,8 @@
 
 #include "Tile.h"
 
-#include "GOTA/Core/GOTAGameState.h"
-#include "GOTA/Core/LoadingManager.h"
+#include "GOTA/CoreSystems/GOTAGameState.h"
+#include "GOTA/CoreSystems/LoadingManager.h"
 #include "GOTA/Faction/Building.h"
 #include "GOTA/Faction/Settlement.h"
 #include "Net/UnrealNetwork.h"
