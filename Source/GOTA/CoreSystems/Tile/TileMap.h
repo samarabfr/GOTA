@@ -3,7 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "FastNoiseWrapper.h"
 #include "HexCoords.h"
+#include "NoiseParameter.h"
+#include "TerrainGeneratorDataAsset.h"
 #include "Tile.h"
 #include "TestRiverDataAsset.h"
 #include "TestBiomeDataAsset.h"
@@ -20,8 +23,11 @@ class GOTA_API ATileMap : public AActor
 	virtual void BeginPlay() override;
 	
 protected:
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ATile> TileClass;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UTerrainGeneratorDataAsset* TerrainGenData;
 	
 private:
 	AGS_Ingame* GameState;
@@ -41,6 +47,8 @@ private:
 	void SpawnNewTile(FHexCoords Coords, float Height);
 	
 	bool TryAddTile(FHexCoords HexCoords, ATile* Tile);
+	
+	void SetupNoise(UFastNoiseWrapper* FastNoiseWrapper, FNoiseParameter& Parameter);
 	
 public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")

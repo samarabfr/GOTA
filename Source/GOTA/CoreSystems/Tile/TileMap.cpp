@@ -4,6 +4,7 @@
 #include "FastNoiseWrapper.h"
 #include "HexCoords.h"
 #include "HexCoordsFunctions.h"
+#include "Landscape.h"
 #include "TileGeneratedInfo.h"
 #include "VectorTypes.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
@@ -101,6 +102,15 @@ bool ATileMap::TryAddTile(FHexCoords HexCoords, ATile* Tile)
 	return true;
 }
 
+void ATileMap::SetupNoise(UFastNoiseWrapper* FastNoiseWrapper, FNoiseParameter& Parameter)
+{
+	const int32 Seed = FMath::Rand32();
+	FastNoiseWrapper->SetupFastNoise(Parameter.NoiseType, Seed, Parameter.Frequency, Parameter.Interpolation,
+	                                 Parameter.FractalType, Parameter.Octaves, Parameter.Lacunarity, Parameter.gain,
+	                                 Parameter.CellularJitter, Parameter.CellularDistanceFunction,
+	                                 Parameter.CellularReturnType);
+}
+
 ATile* ATileMap::GetTile(FHexCoords HexCoords)
 {
 	// Check for out of bounds
@@ -158,41 +168,25 @@ ATile* ATileMap::GetRandomTile()
 void ATileMap::GenerateTiles(int32 GenerationSize, int32 TileCount)
 {
 	// Generate Noisemap
-	UFastNoiseWrapper* FastNoiseWrapper = nullptr;
-	// Noise settings
-	FastNoiseWrapper = NewObject<UFastNoiseWrapper>(this);
-	const EFastNoise_NoiseType NoiseType = EFastNoise_NoiseType::Simplex;
-	const int32 Seed = FMath::Rand32();
-	const float Frequency = 0.1;
-	const EFastNoise_Interp Interpolation = EFastNoise_Interp::Quintic;
-	const EFastNoise_FractalType FractalType = EFastNoise_FractalType::FBM;
-	const int32 Octaves = 1;
-	const float Lacunarity = 2;
-	const float gain = 0.5;
-	const float CellularJitter = 0.45;
-	const EFastNoise_CellularDistanceFunction CellularDistanceFunction = EFastNoise_CellularDistanceFunction::Euclidean;
-	const EFastNoise_CellularReturnType CellularReturnType = EFastNoise_CellularReturnType::CellValue;
-	// factors
-	const float NoiseFactor = 500;
+	UFastNoiseWrapper* FastNoiseWrapper = NewObject<UFastNoiseWrapper>(this);
+	SetupNoise(FastNoiseWrapper, TerrainGenData->NoiseParameter);
 	// distance to middle point factor
 	const FVector2d MiddlePoint = FVector2d(GenerationSize / 2, GenerationSize / 2);
-	const float DistanceToMiddlePointMaxHeightFactor = 4000;
-	const float DistanceToMiddlePointGradientFactor = 0.2;
-	// Setup noise	
-	FastNoiseWrapper->SetupFastNoise(NoiseType, Seed, Frequency, Interpolation, FractalType, Octaves,
-	                                 Lacunarity, gain, CellularJitter, CellularDistanceFunction, CellularReturnType);
 	// Generate Island
 	TArray<FTileGeneratedInfo> GeneratedTiles;
 	for (int32 Q = 0; Q < GenerationSize; ++Q)
 	{
 		for (int32 R = 0; R < GenerationSize; ++R)
 		{
-			const float DistanceToMiddlePointHeight = DistanceToMiddlePointMaxHeightFactor /
-				FMath::Pow(EULERS_NUMBER,
-					DistanceToMiddlePointGradientFactor * UE::Geometry::Distance(FVector2d(Q,R), MiddlePoint));
-			const float NoiseHeight = NoiseFactor * FastNoiseWrapper->GetNoise2D(Q, R);
-			const float Height = NoiseHeight + DistanceToMiddlePointHeight;
-			GeneratedTiles.Add(FTileGeneratedInfo(FHexCoords(Q, R), Height, false, EBiome::Gras));
+			const float DistanceToMiddlePointHeight = TerrainGenData->DistanceToMiddlePointMaxHeightFactor /
+				FMath::Pow(
+					EULERS_NUMBER,
+					TerrainGenData->DistanceToMiddlePointGradientFactor * UE::Geometry::Distance(
+						FVector2d(Q, R), MiddlePoint));
+			const float NoiseHeight = TerrainGenData->NoiseParameter.NoiseFactor * FastNoiseWrapper->GetNoise2D(Q, R);
+			float Height = NoiseHeight + DistanceToMiddlePointHeight + TerrainGenData->HeightOffset;
+
+			if (Height > 0) GeneratedTiles.Add(FTileGeneratedInfo(FHexCoords(Q, R), Height, false, EBiome::Gras));
 		}
 	}
 	// Cut to the right tile count
