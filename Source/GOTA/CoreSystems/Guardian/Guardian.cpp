@@ -2,8 +2,7 @@
 
 
 #include "Guardian.h"
-#include "GOTA/CoreSystems/GOTAGameState.h"
-#include "GOTA/CoreSystems/LoadingManager.h"
+#include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 
 void AGuardian::BeginPlay()
 {

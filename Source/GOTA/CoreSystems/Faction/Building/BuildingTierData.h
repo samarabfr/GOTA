@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Enums.h"
-#include "GOTA/TileMap/TileAsset.h"
+#include "GOTA/CoreSystems/Tile/TileAsset.h"
+#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "BuildingTierData.generated.h"
 
 USTRUCT(BlueprintType)

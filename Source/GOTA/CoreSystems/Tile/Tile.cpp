@@ -2,11 +2,10 @@
 
 
 #include "Tile.h"
-
-#include "GOTA/CoreSystems/GOTAGameState.h"
-#include "GOTA/CoreSystems/LoadingManager.h"
-#include "GOTA/Faction/Building.h"
-#include "GOTA/Faction/Settlement.h"
+#include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
+#include "GOTA/CoreSystems/GameplayFramework/GOTAGameState.h"
+#include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "Net/UnrealNetwork.h"
 
 bool ATile::bFreezeGrowthChanges = false;

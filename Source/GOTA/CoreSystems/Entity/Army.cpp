@@ -1,9 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Army.h"
-#include "GOTA/TileMap/Tile.h"
-#include "Settlement.h"
-#include "GOTA/CoreSystems/GOTAGameState.h"
+
+#include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
+#include "GOTA/CoreSystems/GameplayFramework/GOTAGameState.h"
+#include "GOTA/CoreSystems/Tile/TileMap.h"
 
 void AArmy::CalculateMovement()
 {

@@ -3,9 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BuildingDataAsset.h"
-#include "BuildingTierData.h"
-#include "Gota/TileMap/Tile.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
+#include "GOTA/CoreSystems/Tile/Tile.h"
 #include "BuildingProject.generated.h"
 
 class ASettlement;

@@ -2,7 +2,7 @@
 
 #include "TileMap.h"
 #include "HexCoords.h"
-#include "GOTA/Faction/Settlement.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "Net/UnrealNetwork.h"
 
 void ATileMap::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

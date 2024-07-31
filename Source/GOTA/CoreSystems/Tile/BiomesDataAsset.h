@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "Engine/DataAsset.h"
-#include "GOTA/Faction/Enums.h"
 #include "BiomesDataAsset.generated.h"
 
 UCLASS()

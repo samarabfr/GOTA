@@ -3,9 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GOTAGameState.h"
 #include "GameFramework/Actor.h"
-#include "GOTA/TileMap/HexCoords.h"
+#include "GOTA/CoreSystems/GameplayFramework/GOTAGameState.h"
 #include "DistanceUtils.generated.h"
 
 UCLASS()

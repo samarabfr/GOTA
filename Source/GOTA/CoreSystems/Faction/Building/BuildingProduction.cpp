@@ -2,7 +2,6 @@
 
 
 #include "BuildingProduction.h"
-#include "Enums.h"
 #include "BuildingTierData.h"
 #include "Net/UnrealNetwork.h"
 

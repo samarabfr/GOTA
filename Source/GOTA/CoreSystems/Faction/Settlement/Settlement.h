@@ -2,14 +2,11 @@
 
 #pragma once
 
-#include "Components/InstancedStaticMeshComponent.h"
 #include "CoreMinimal.h"
-#include "Building.h"
 #include "BuildingProductionSummary.h"
 #include "BuildingProject.h"
 #include "SettlementBalance.h"
 #include "PopulationSummary.h"
-#include "GOTA/TileMap/Tile.h"
 #include "GameFramework/Actor.h"
 #include "Settlement.generated.h"
 

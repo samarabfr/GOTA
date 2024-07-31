@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include "GOTA/Faction/Enums.h"
 #include "CoreMinimal.h"
 #include "SpawnPointLayout.h"
 #include "GameFramework/Actor.h"
+#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "TileLayout.generated.h"
 
 USTRUCT(BlueprintType)

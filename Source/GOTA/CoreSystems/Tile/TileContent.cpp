@@ -1,10 +1,9 @@
 ﻿#include "TileContent.h"
 #include "Tile.h"
 #include "Components/StaticMeshComponent.h"
-#include "GOTA/CoreSystems/GOTAGameState.h"
-#include "GOTA/Faction/Building.h"
-#include "GOTA/Faction/BuildingDataAsset.h"
-#include "GOTA/Faction/BuildingTierData.h"
+#include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
+#include "GOTA/CoreSystems/GameplayFramework/GOTAGameState.h"
 
 ATileContent::ATileContent()
 {

@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "BuildingTierData.h"
 #include "Engine/DataAsset.h"
-#include "GOTA/TileMap/TileAsset.h"
 #include "BuildingDataAsset.generated.h"
 
 UCLASS()

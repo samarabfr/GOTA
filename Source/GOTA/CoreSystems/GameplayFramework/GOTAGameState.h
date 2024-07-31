@@ -3,13 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Guardian.h"
-#include "StaticMeshBatcher.h"
-#include "GOTA/Faction/SettlementBalance.h"
-#include "GOTA/Faction/PopulationSummary.h"
-#include "GOTA/TileMap/TileMap.h"
 #include "GameFramework/GameState.h"
-#include "GOTA/Faction/Entity.h"
+#include "GOTA/CoreSystems/Entity/Entity.h"
+#include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
+#include "GOTA/CoreSystems/Faction/Settlement/PopulationSummary.h"
+#include "GOTA/CoreSystems/Faction/Settlement/SettlementBalance.h"
+#include "GOTA/CoreSystems/Guardian/Guardian.h"
+#include "GOTA/CoreSystems/Tile/TileMap.h"
+#include "GOTA/CoreSystems/Utility/StaticMeshBatcher.h"
 #include "GOTAGameState.generated.h"
 
 class ALoadingManager;

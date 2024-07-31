@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Enums.h"
+#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Population.generated.h"
 
 UCLASS(Blueprintable)

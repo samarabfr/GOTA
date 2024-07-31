@@ -3,8 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Guardian.h"
-#include "LobbyPlayer.h"
 #include "Engine/GameInstance.h"
 #include "GOTAGameInstance.generated.h"
 

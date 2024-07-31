@@ -2,9 +2,9 @@
 
 
 #include "Entity.h"
-#include "Settlement.h"
-#include "GOTA/CoreSystems/GOTAGameState.h"
-#include "GOTA/TileMap/Tile.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
+#include "GOTA/CoreSystems/GameplayFramework/GOTAGameState.h"
+#include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
 
 void AEntity::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

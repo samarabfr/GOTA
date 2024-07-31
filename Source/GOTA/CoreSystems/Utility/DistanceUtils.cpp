@@ -3,8 +3,7 @@
 
 #include "DistanceUtils.h"
 
-#include "GOTA/TileMap/HexCoordsFunctions.h"
-#include "GOTA/TileMap/TileMap.h"
+#include "GOTA/CoreSystems/Tile/HexCoordsFunctions.h"
 
 const float ADistanceUtils::ActiveTileRange = 4;
 

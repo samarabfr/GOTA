@@ -2,8 +2,8 @@
 
 
 #include "BuildingProject.h"
-#include "Building.h"
 #include "Settlement.h"
+#include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "Net/UnrealNetwork.h"
 
 void UBuildingProject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

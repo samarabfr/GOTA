@@ -2,11 +2,10 @@
 
 #pragma once
 
-
-#include "Gota/TileMap/Tile.h"
 #include "CoreMinimal.h"
 #include "Population.h"
 #include "BuildingProduction.h"
+#include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Building.generated.h"
 
 class UBuildingDataAsset;

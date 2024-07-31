@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BuildingProduction.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingProduction.h"
 #include "BuildingProductionSummary.generated.h"
 
 /**

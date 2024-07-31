@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "HexCoords.h"
 #include "Engine/DataAsset.h"
-#include "GOTA/Faction/Enums.h"
+#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "TestBiomeDataAsset.generated.h"
 
 UCLASS()

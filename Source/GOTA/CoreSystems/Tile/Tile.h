@@ -10,11 +10,12 @@
 #include "TileGraphicsDataAsset.h"
 #include "TileAssetWithPosition.h"
 #include "TileLayout.h"
-#include "GOTA/Faction/Entity.h"
 #include "BiomesDataAsset.h"
+#include "EcoSystemDataAsset.h"
 #include "GameFramework/Actor.h"
-#include "GOTA/EcoSystemDataAsset.h"
-#include "GOTA/Faction/GOTAAttributeLimited.h"
+#include "GOTA/CoreSystems/Entity/Entity.h"
+#include "GOTA/CoreSystems/Faction/Attribute/GOTAAttributeLimited.h"
+#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Tile.generated.h"
 
 class UBuilding;

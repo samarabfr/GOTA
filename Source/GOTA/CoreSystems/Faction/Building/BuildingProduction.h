@@ -4,8 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Population.h"
-#include "Enums.h"
 #include "BuildingTierData.h"
+#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "BuildingProduction.generated.h"
 
 UCLASS()

@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Enums.h"
 #include "GameFramework/Actor.h"
+#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Entity.generated.h"
 
 class ATile;

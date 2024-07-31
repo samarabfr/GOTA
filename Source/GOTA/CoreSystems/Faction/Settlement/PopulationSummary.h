@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Population.h"
+#include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "PopulationSummary.generated.h"
 
 /**

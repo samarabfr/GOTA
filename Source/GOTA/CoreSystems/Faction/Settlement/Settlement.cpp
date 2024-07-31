@@ -2,10 +2,12 @@
 
 #include "Settlement.h"
 
-#include "Army.h"
-#include "AI/NavigationSystemBase.h"
-#include "GOTA/CoreSystems/GOTAGameState.h"
-#include "GOTA/CoreSystems/LoadingManager.h"
+#include "Components/InstancedStaticMeshComponent.h"
+#include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
+#include "GOTA/CoreSystems/Faction/Attribute/GOTAAttributeLimited.h"
+#include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/GameplayFramework/GOTAGameState.h"
+#include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "Net/UnrealNetwork.h"
 
 void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -119,7 +121,7 @@ bool ASettlement::SpawnArmy()
 	// spawn the army
 
 	// evaluate how many pops to send
-	// figure out which pops to send, remove them from the buildlings and add them to the army
+	// figure out which pops to send, remove them from the buildings and add them to the army
 
 	return true;
 }
