@@ -1,9 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "TileMap.h"
+
+#include "FastNoiseWrapper.h"
 #include "HexCoords.h"
 #include "HexCoordsFunctions.h"
-#include "IContentBrowserSingleton.h"
 #include "TileGeneratedInfo.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
@@ -155,13 +156,35 @@ ATile* ATileMap::GetRandomTile()
 
 void ATileMap::GenerateTiles(int32 GenerationSize, int32 TileCount)
 {
+	// Generate Noisemap
+	UFastNoiseWrapper* FastNoiseWrapper = nullptr;
+	// Noise settings
+	FastNoiseWrapper = NewObject<UFastNoiseWrapper>(this);
+	const EFastNoise_NoiseType NoiseType =EFastNoise_NoiseType::Simplex;
+	const int32 Seed = FMath::Rand32();
+	const float Frequency = 0.1;
+	const EFastNoise_Interp Interpolation = EFastNoise_Interp::Quintic;
+	const EFastNoise_FractalType FractalType = EFastNoise_FractalType::FBM;
+	const int32 Octaves = 3;
+	const float Lacunarity = 2;
+	const float gain = 0.5;
+	const float CellularJitter = 0.45;
+	const EFastNoise_CellularDistanceFunction CellularDistanceFunction = EFastNoise_CellularDistanceFunction::Euclidean;
+	const EFastNoise_CellularReturnType CellularReturnType = EFastNoise_CellularReturnType::CellValue;
+	// factors
+	const float NoiseFactor = 1000;
+
+	
+	FastNoiseWrapper->SetupFastNoise(NoiseType, Seed, Frequency, Interpolation, FractalType, Octaves,
+		Lacunarity, gain, CellularJitter, CellularDistanceFunction, CellularReturnType );
 	// Generate Island
 	TArray<FTileGeneratedInfo> GeneratedTiles;
 	for (int32 Q = 0; Q < GenerationSize; ++Q)
 	{
 		for (int32 R = 0; R < GenerationSize; ++R)
 		{
-			GeneratedTiles.Add(FTileGeneratedInfo(FHexCoords(Q,R), 0, false, EBiome::Gras));
+			float Height = FastNoiseWrapper->GetNoise2D(Q,R) * NoiseFactor;
+			GeneratedTiles.Add(FTileGeneratedInfo(FHexCoords(Q,R), Height, false, EBiome::Gras));
 		}
 	}
 	// Cut to the right tile count
