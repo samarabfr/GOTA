@@ -9,6 +9,7 @@
 #include "VectorTypes.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
+#include "Misc/LowLevelTestAdapter.h"
 #include "Net/UnrealNetwork.h"
 
 void ATileMap::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -165,38 +166,66 @@ ATile* ATileMap::GetRandomTile()
 	return nullptr;
 }
 
-void ATileMap::GenerateTiles(int32 GenerationSize, int32 TileCount)
+void ATileMap::GenerateTiles(int32 GenSizeQ, int32 TileCount)
 {
+	const int32 GenSizeR = GenSizeQ * 1.5;
+	// Calculate Middle Point
+	const FVector2d MiddlePoint = FVector2d(GenSizeQ / 2, GenSizeR / 2);
 	// Generate Noisemap
 	UFastNoiseWrapper* FastNoiseWrapper = NewObject<UFastNoiseWrapper>(this);
-	SetupNoise(FastNoiseWrapper, TerrainGenData->NoiseParameter);
-	// distance to middle point factor
-	const FVector2d MiddlePoint = FVector2d(GenerationSize / 2, GenerationSize / 2);
-	// Generate Island
+	// Initialize Array
 	TArray<FTileGeneratedInfo> GeneratedTiles;
-	for (int32 Q = 0; Q < GenerationSize; ++Q)
+	GeneratedTiles.SetNum(GenSizeQ * GenSizeR);
+	for (int32 Q = 0; Q < GenSizeQ; ++Q)
 	{
-		for (int32 R = 0; R < GenerationSize; ++R)
+		for (int32 R = 0; R < GenSizeR; ++R)
+		{
+			GeneratedTiles[Q * GenSizeR + R].HexCoords = FHexCoords(Q, R);
+		}
+	}
+	// Generate Shape
+	const float MaxDistanceToMiddle =  UE::Geometry::Distance(FVector2d(0, 0), MiddlePoint);
+	SetupNoise(FastNoiseWrapper, TerrainGenData->ShapeNoiseParameter);
+	for (int32 Q = 0; Q < GenSizeQ; ++Q)
+	{
+		for (int32 R = 0; R < GenSizeR; ++R)
+		{
+			const float DistanceToMiddlePoint = UE::Geometry::Distance(FVector2d(Q, R), MiddlePoint);
+			const float NormalizedDistance = DistanceToMiddlePoint / MaxDistanceToMiddle;
+			float ShapeHeight = FastNoiseWrapper->GetNoise2D(Q, R) * TerrainGenData->ShapeNoiseParameter.NoiseFactor;
+			ShapeHeight += TerrainGenData->DistanceToMiddlePointCurve.GetRichCurveConst()->Eval(NormalizedDistance) *
+				TerrainGenData->ShapeDistanceToMiddlePointFactor;
+			ShapeHeight += TerrainGenData->ShapeHeightOffset;
+			GeneratedTiles[Q * GenSizeR + R].Height = ShapeHeight;
+			if (ShapeHeight < TerrainGenData->ShouldGenerateThreshhold)
+				GeneratedTiles[Q * GenSizeR + R].ShouldGenerate = false;
+		}
+	}
+	// Generate Height
+	SetupNoise(FastNoiseWrapper, TerrainGenData->HeightNoiseParameter);
+	for (int32 Q = 0; Q < GenSizeQ; ++Q)
+	{
+		for (int32 R = 0; R < GenSizeR; ++R)
 		{
 			const float DistanceToMiddlePointHeight = TerrainGenData->DistanceToMiddlePointMaxHeightFactor /
 				FMath::Pow(
 					EULERS_NUMBER,
 					TerrainGenData->DistanceToMiddlePointGradientFactor * UE::Geometry::Distance(
 						FVector2d(Q, R), MiddlePoint));
-			const float NoiseHeight = TerrainGenData->NoiseParameter.NoiseFactor * FastNoiseWrapper->GetNoise2D(Q, R);
+			const float NoiseHeight = TerrainGenData->HeightNoiseParameter.NoiseFactor * FastNoiseWrapper->
+				GetNoise2D(Q, R);
 			float Height = NoiseHeight + DistanceToMiddlePointHeight + TerrainGenData->HeightOffset;
-
-			if (Height > 0) GeneratedTiles.Add(FTileGeneratedInfo(FHexCoords(Q, R), Height, false, EBiome::Gras));
+			// set height
 		}
 	}
 	// Cut to the right tile count
 
 	// Initialize Tile Arrays to fit the island just right
-	InitializeBothArrays(FHexCoords(GenerationSize, GenerationSize));
+	InitializeBothArrays(FHexCoords(GenSizeR, GenSizeR));
 	// Spawn Tiles
 	for (FTileGeneratedInfo GeneratedTile : GeneratedTiles)
 	{
-		SpawnNewTile(GeneratedTile.HexCoords, GeneratedTile.Height);
+		if (GeneratedTile.ShouldGenerate) SpawnNewTile(GeneratedTile.HexCoords, GeneratedTile.Height);
 	}
 }
 

@@ -8,11 +8,13 @@
 
 struct FTileGeneratedInfo
 {
-	FHexCoords HexCoords;
+	FHexCoords HexCoords = FHexCoords(0,0);
 
-	float Height;
+	float Height = 0;
 
-	bool HasRiver;
+	bool HasRiver = false;
 
-	EBiome Biome;
+	EBiome Biome = EBiome::Gras;
+
+	bool ShouldGenerate = true;
 };
