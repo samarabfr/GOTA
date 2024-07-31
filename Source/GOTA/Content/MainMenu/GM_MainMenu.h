@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "MainMenuGameMode.generated.h"
+#include "GM_MainMenu.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class GOTA_API AMainMenuGameMode : public AGameModeBase
+class GOTA_API AGM_MainMenu : public AGameModeBase
 {
 	GENERATED_BODY()
 

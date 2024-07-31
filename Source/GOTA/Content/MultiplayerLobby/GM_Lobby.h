@@ -4,13 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "GOTALobbyGameMode.generated.h"
+#include "GM_Lobby.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class GOTA_API AGOTALobbyGameMode : public AGameModeBase
+class GOTA_API AGM_Lobby : public AGameModeBase
 {
 	GENERATED_BODY()
 	

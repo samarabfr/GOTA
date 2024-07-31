@@ -5,19 +5,19 @@
 #include "CoreMinimal.h"
 #include "LobbyPlayer.h"
 #include "GameFramework/GameStateBase.h"
-#include "GOTALobbyGameState.generated.h"
+#include "GS_Lobby.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class GOTA_API AGOTALobbyGameState : public AGameStateBase
+class GOTA_API AGS_Lobby : public AGameStateBase
 {
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual void BeginPlay() override;
-	AGOTALobbyGameState();
+	AGS_Lobby();
 
 public:
 	// Island Radius

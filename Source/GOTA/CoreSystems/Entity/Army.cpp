@@ -3,14 +3,14 @@
 #include "Army.h"
 
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
-#include "GOTA/CoreSystems/GameplayFramework/GOTAGameState.h"
+#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 
 void AArmy::CalculateMovement()
 {
 	if (!IsTargetValid() || IsNextStepBlocked())
 	{
-		AGOTAGameState* GameState = GetWorld()->GetGameState<AGOTAGameState>();
+		AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 		EAffiliation Enemy = Affiliation == EAffiliation::Ally ? EAffiliation::Enemy : EAffiliation::Ally;
 		Path = GameState->TileMap->GetPathToNearestAffiliatedBuilding(CurrentTile, Enemy);
 	}

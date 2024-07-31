@@ -11,19 +11,19 @@
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "GOTA/CoreSystems/Utility/StaticMeshBatcher.h"
-#include "GOTAGameState.generated.h"
+#include "GS_Ingame.generated.h"
 
 class ALoadingManager;
 
 UCLASS()
-class GOTA_API AGOTAGameState : public AGameState
+class GOTA_API AGS_Ingame : public AGameState
 {
 	//Unreal Engine Mystery Code
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	//Constructor
-	AGOTAGameState();
+	AGS_Ingame();
 
 	//====================================================================
 	//--------------------Simple Variables

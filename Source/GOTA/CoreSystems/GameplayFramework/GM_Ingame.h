@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
-#include "GOTAGameMode.generated.h"
+#include "GM_Ingame.generated.h"
 
 UCLASS()
-class GOTA_API AGOTAGameMode : public AGameMode
+class GOTA_API AGM_Ingame : public AGameMode
 {
 	GENERATED_BODY()
 	

@@ -3,7 +3,7 @@
 #include "Components/StaticMeshComponent.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
-#include "GOTA/CoreSystems/GameplayFramework/GOTAGameState.h"
+#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 
 ATileContent::ATileContent()
 {
@@ -12,7 +12,7 @@ ATileContent::ATileContent()
 
 void ATileContent::Init(ATile* Tile_)
 {
-	GameState = GetWorld()->GetGameState<AGOTAGameState>();
+	GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	Tile = Tile_;
 	Tile->OnSpawnPointLayoutChanged.AddDynamic(this, &ATileContent::OnSpawnPointLayoutChanged);
 	Tile->OnGameplayTagsChanged.AddDynamic(this, &ATileContent::ValidateAllTileAssets);

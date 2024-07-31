@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "GOTA/CoreSystems/GameplayFramework/GOTAGameState.h"
+#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "DistanceUtils.generated.h"
 
 UCLASS()
@@ -23,5 +23,5 @@ protected:
 private:
 	FHexCoords LastCoords;
 	TArray<FHexCoords> LastCoordsInRange;
-	TWeakObjectPtr<AGOTAGameState> CachedGameState;
+	TWeakObjectPtr<AGS_Ingame> CachedGameState;
 };

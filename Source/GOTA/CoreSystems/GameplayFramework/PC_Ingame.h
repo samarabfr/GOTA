@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
-#include "GOTAPlayerController.generated.h"
+#include "PC_Ingame.generated.h"
 
 UCLASS()
-class GOTA_API AGOTAPlayerController : public APlayerController
+class GOTA_API APC_Ingame : public APlayerController
 {
 	GENERATED_BODY()
 

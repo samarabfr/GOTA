@@ -4,7 +4,7 @@
 #include "Tile.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
-#include "GOTA/CoreSystems/GameplayFramework/GOTAGameState.h"
+#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "Net/UnrealNetwork.h"
 
@@ -69,7 +69,7 @@ void ATile::BeginPlay()
 	Super::BeginPlay();
 
 	// Get the GameState
-	AGOTAGameState* GameState = GetWorld()->GetGameState<AGOTAGameState>();
+	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
 
 	SpawnTileContent();

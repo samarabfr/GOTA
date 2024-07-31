@@ -9,6 +9,6 @@ void AGuardian::BeginPlay()
 	Super::BeginPlay();
 	
 	// Get the GameState
-	AGOTAGameState* GameState = GetWorld()->GetGameState<AGOTAGameState>();
+	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
 }

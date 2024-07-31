@@ -1,24 +1,24 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GOTALobbyGameState.h"
+#include "GS_Lobby.h"
 
 #include "Net/UnrealNetwork.h"
 
-void AGOTALobbyGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void AGS_Lobby::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	
-	DOREPLIFETIME(AGOTALobbyGameState, IslandRadius);
-	DOREPLIFETIME(AGOTALobbyGameState, NativesCount);
-	DOREPLIFETIME(AGOTALobbyGameState, ColonistsCount);
-	DOREPLIFETIME(AGOTALobbyGameState, LobbyPlayer1);
-	DOREPLIFETIME(AGOTALobbyGameState, LobbyPlayer2);
-	DOREPLIFETIME(AGOTALobbyGameState, LobbyPlayer3);
-	DOREPLIFETIME(AGOTALobbyGameState, LobbyPlayer4);
+	DOREPLIFETIME(AGS_Lobby, IslandRadius);
+	DOREPLIFETIME(AGS_Lobby, NativesCount);
+	DOREPLIFETIME(AGS_Lobby, ColonistsCount);
+	DOREPLIFETIME(AGS_Lobby, LobbyPlayer1);
+	DOREPLIFETIME(AGS_Lobby, LobbyPlayer2);
+	DOREPLIFETIME(AGS_Lobby, LobbyPlayer3);
+	DOREPLIFETIME(AGS_Lobby, LobbyPlayer4);
 }
 
-void AGOTALobbyGameState::BeginPlay()
+void AGS_Lobby::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -31,7 +31,7 @@ void AGOTALobbyGameState::BeginPlay()
 	}
 }
 
-AGOTALobbyGameState::AGOTALobbyGameState()
+AGS_Lobby::AGS_Lobby()
 {
 	bReplicateUsingRegisteredSubObjectList = true;
 	LobbyPlayer1 = CreateDefaultSubobject<ULobbyPlayer>(TEXT("Lobby Player 1"));
@@ -40,40 +40,40 @@ AGOTALobbyGameState::AGOTALobbyGameState()
 	LobbyPlayer4 = CreateDefaultSubobject<ULobbyPlayer>(TEXT("Lobby Player 4"));
 }
 
-void AGOTALobbyGameState::SetIslandRadius(int32 NewIslandRadius)
+void AGS_Lobby::SetIslandRadius(int32 NewIslandRadius)
 {
 	IslandRadius = NewIslandRadius;
 	OnIslandRadiusChanged.Broadcast(IslandRadius);
 }
 
-void AGOTALobbyGameState::OnRep_IslandRadius()
+void AGS_Lobby::OnRep_IslandRadius()
 {
 	OnIslandRadiusChanged.Broadcast(IslandRadius);
 }
 
-void AGOTALobbyGameState::SetNativesCount(int32 NewNativesCount)
+void AGS_Lobby::SetNativesCount(int32 NewNativesCount)
 {
 	NativesCount = NewNativesCount;
 	OnNativesCountChanged.Broadcast(NativesCount);
 }
 
-void AGOTALobbyGameState::OnRep_NativesCount()
+void AGS_Lobby::OnRep_NativesCount()
 {
 	OnNativesCountChanged.Broadcast(NativesCount);
 }
 
-void AGOTALobbyGameState::SetColonistsCount(int32 NewColonistsCount)
+void AGS_Lobby::SetColonistsCount(int32 NewColonistsCount)
 {
 	ColonistsCount = NewColonistsCount;
 	OnColonistsCountChanged.Broadcast(ColonistsCount);
 }
 
-void AGOTALobbyGameState::OnRep_ColonistsCount()
+void AGS_Lobby::OnRep_ColonistsCount()
 {
 	OnColonistsCountChanged.Broadcast(ColonistsCount);
 }
 
-void AGOTALobbyGameState::SetSelectedGuardian_Implementation(TSubclassOf<AGuardian> Guardian, ULobbyPlayer* LobbyPlayer)
+void AGS_Lobby::SetSelectedGuardian_Implementation(TSubclassOf<AGuardian> Guardian, ULobbyPlayer* LobbyPlayer)
 {
 	if(!LobbyPlayer) return;
 	

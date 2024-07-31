@@ -4,8 +4,8 @@
 #include "LoadingManager.h"
 
 #include "GOTAGameInstance.h"
-#include "GOTAPlayerController.h"
-#include "GOTAPlayerState.h"
+#include "PC_Ingame.h"
+#include "PS_Ingame.h"
 #include "Net/UnrealNetwork.h"
 
 void ALoadingManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const

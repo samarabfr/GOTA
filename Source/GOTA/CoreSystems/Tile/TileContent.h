@@ -3,7 +3,7 @@
 #include "TileAssetSpawn.h"
 #include "TileContent.generated.h"
 
-class AGOTAGameState;
+class AGS_Ingame;
 class ATile;
 
 UCLASS()
@@ -70,7 +70,7 @@ private:
 	                           TArray<FTileAsset*>& OutFoundAssets) const;
 
 	UPROPERTY()
-	AGOTAGameState* GameState;
+	AGS_Ingame* GameState;
 
 	template <typename T>
 	static void ShuffleTArray(TArray<T>& Array);

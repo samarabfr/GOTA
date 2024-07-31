@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GOTALobbyGameMode.h"
+#include "GM_Lobby.h"
 
 
 
-void AGOTALobbyGameMode::Travel(FString LevelPath)
+void AGM_Lobby::Travel(FString LevelPath)
 {
 	GetWorld()->ServerTravel(LevelPath + "?listen", TRAVEL_Absolute);
 }

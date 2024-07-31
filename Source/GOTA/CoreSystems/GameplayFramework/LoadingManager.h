@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GOTAGameState.h"
+#include "GS_Ingame.h"
 #include "GameFramework/Actor.h"
 #include "LoadingStatusActor.h"
 #include "LoadingManager.generated.h"

@@ -6,7 +6,7 @@
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttributeLimited.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
-#include "GOTA/CoreSystems/GameplayFramework/GOTAGameState.h"
+#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "Net/UnrealNetwork.h"
 
@@ -58,7 +58,7 @@ void ASettlement::BeginPlay()
 	Super::BeginPlay();
 
 	// Get the GameState
-	AGOTAGameState* GameState = GetWorld()->GetGameState<AGOTAGameState>();
+	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
 
 	if (HasAuthority())

@@ -10,7 +10,7 @@ const float ADistanceUtils::ActiveTileRange = 4;
 void ADistanceUtils::BeginPlay()
 {
 	Super::BeginPlay();
-	CachedGameState = GetWorld()->GetGameState<AGOTAGameState>();
+	CachedGameState = GetWorld()->GetGameState<AGS_Ingame>();
 	LastCoords = FHexCoords(-100,-100);
 }
 

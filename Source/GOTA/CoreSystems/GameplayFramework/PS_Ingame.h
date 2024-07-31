@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
-#include "GOTAPlayerState.generated.h"
+#include "PS_Ingame.generated.h"
 
 UCLASS()
-class GOTA_API AGOTAPlayerState : public APlayerState
+class GOTA_API APS_Ingame : public APlayerState
 {
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;

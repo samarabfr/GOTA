@@ -3,7 +3,7 @@
 
 #include "Entity.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
-#include "GOTA/CoreSystems/GameplayFramework/GOTAGameState.h"
+#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
 
@@ -30,7 +30,7 @@ void AEntity::Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 Movemen
 	CurrentTile = CurrentTile_;
 	MovementSpeed = MovementSpeed_;
 	SetActorLocation(CurrentTile->GetActorLocation());
-	AGOTAGameState* GameState = GetWorld()->GetGameState<AGOTAGameState>();
+	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->TileEntities.Add(this);
 }
 
@@ -75,7 +75,7 @@ void AEntity::TriggerCombat()
 
 void AEntity::Kill()
 {
-	AGOTAGameState* GameState = GetWorld()->GetGameState<AGOTAGameState>();
+	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->TileEntities.Remove(this);
 	if (Affiliation == EAffiliation::Ally)
 	{

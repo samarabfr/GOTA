@@ -1,33 +1,33 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GOTAGameState.h"
+#include "GS_Ingame.h"
 #include "Net/UnrealNetwork.h"
 
 //Unreal Engine Mystery Code
-void AGOTAGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void AGS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(AGOTAGameState, MaxTurnTime);
-	DOREPLIFETIME(AGOTAGameState, IsCalculatingTurn);
-	DOREPLIFETIME(AGOTAGameState, ShouldTickTurnTime);
+	DOREPLIFETIME(AGS_Ingame, MaxTurnTime);
+	DOREPLIFETIME(AGS_Ingame, IsCalculatingTurn);
+	DOREPLIFETIME(AGS_Ingame, ShouldTickTurnTime);
 
-	DOREPLIFETIME(AGOTAGameState, TileMap);
-	DOREPLIFETIME(AGOTAGameState, Settlements);
-	DOREPLIFETIME(AGOTAGameState, Guardians);
-	DOREPLIFETIME(AGOTAGameState, TileEntities);
+	DOREPLIFETIME(AGS_Ingame, TileMap);
+	DOREPLIFETIME(AGS_Ingame, Settlements);
+	DOREPLIFETIME(AGS_Ingame, Guardians);
+	DOREPLIFETIME(AGS_Ingame, TileEntities);
 	
-	DOREPLIFETIME(AGOTAGameState, TotalTrees);
-	DOREPLIFETIME(AGOTAGameState, TotalForage);
-	DOREPLIFETIME(AGOTAGameState, TotalWildlife);
+	DOREPLIFETIME(AGS_Ingame, TotalTrees);
+	DOREPLIFETIME(AGS_Ingame, TotalForage);
+	DOREPLIFETIME(AGS_Ingame, TotalWildlife);
 
-	DOREPLIFETIME(AGOTAGameState, TotalColonialPopulation);
-	DOREPLIFETIME(AGOTAGameState, TotalNativePopulation);
-	DOREPLIFETIME(AGOTAGameState, TotalPopulation);
+	DOREPLIFETIME(AGS_Ingame, TotalColonialPopulation);
+	DOREPLIFETIME(AGS_Ingame, TotalNativePopulation);
+	DOREPLIFETIME(AGS_Ingame, TotalPopulation);
 }
 
-AGOTAGameState::AGOTAGameState()
+AGS_Ingame::AGS_Ingame()
 {
 	bReplicates = true;
 	bReplicateUsingRegisteredSubObjectList = true;
@@ -39,38 +39,38 @@ AGOTAGameState::AGOTAGameState()
 	TotalPopulation = CreateDefaultSubobject<UPopulationSummary>(TEXT("Total Population"));
 }
 
-void AGOTAGameState::AddTileEntity(AEntity* NewTileEntity)
+void AGS_Ingame::AddTileEntity(AEntity* NewTileEntity)
 {
 	TileEntities.Add(NewTileEntity);
 }
 
-float AGOTAGameState::GetElapsedTurnTime()
+float AGS_Ingame::GetElapsedTurnTime()
 {
 	return ElapsedTurnTime;
 }
 
-void AGOTAGameState::SetElapsedTurnTime(float NewValue)
+void AGS_Ingame::SetElapsedTurnTime(float NewValue)
 {
 	ElapsedTurnTime = NewValue;
 	TurnTimerChanged.Broadcast(ElapsedTurnTime, MaxTurnTime);
 }
 
-void AGOTAGameState::MulticastSetElapsedTurnTime_Implementation(float NewValue)
+void AGS_Ingame::MulticastSetElapsedTurnTime_Implementation(float NewValue)
 {
 	SetElapsedTurnTime(NewValue);
 }
 
-void AGOTAGameState::CallCalculationStart()
+void AGS_Ingame::CallCalculationStart()
 {
 	TurnCalculationStart.Broadcast();
 }
 
-void AGOTAGameState::CallCalculationEnd()
+void AGS_Ingame::CallCalculationEnd()
 {
 	TurnCalculationEnd.Broadcast();
 }
 
-void AGOTAGameState::Init()
+void AGS_Ingame::Init()
 {
 	AddReplicatedSubObject(TotalTrees);
 	AddReplicatedSubObject(TotalForage);
