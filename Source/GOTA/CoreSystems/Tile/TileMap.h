@@ -64,7 +64,7 @@ public:
 	ATile* GetRandomTile();
 	
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
-	void GenerateTiles(int32 GenerationSize, int32 TileCount);
+	void GenerateTiles(int32 TileCount);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	void CalculateTurn();

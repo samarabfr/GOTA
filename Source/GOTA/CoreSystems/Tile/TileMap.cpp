@@ -4,7 +4,6 @@
 #include "FastNoiseWrapper.h"
 #include "HexCoords.h"
 #include "HexCoordsFunctions.h"
-#include "Landscape.h"
 #include "TileGeneratedInfo.h"
 #include "VectorTypes.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
@@ -166,9 +165,13 @@ ATile* ATileMap::GetRandomTile()
 	return nullptr;
 }
 
-void ATileMap::GenerateTiles(int32 GenSizeQ, int32 TileCount)
+void ATileMap::GenerateTiles(int32 TileCount)
 {
+	// calculating Generation size. HAS TO BE CHANGED WHEN PARAMETERS CHANGE
+	const float Approx = TerrainGenData->LandToArraySizeRatio;
+	const int32 GenSizeQ = FMath::Sqrt(TileCount / (Approx * 1.5));
 	const int32 GenSizeR = GenSizeQ * 1.5;
+	UE_LOG(LogTemp, Warning, TEXT("Gensize is: %dx%d"), GenSizeQ, GenSizeR)
 	// Calculate Middle Point
 	const FVector2d MiddlePoint = FVector2d(GenSizeQ / 2, GenSizeR / 2);
 	// Generate Noisemap
@@ -184,22 +187,48 @@ void ATileMap::GenerateTiles(int32 GenSizeQ, int32 TileCount)
 		}
 	}
 	// Generate Shape
-	const float MaxDistanceToMiddle =  UE::Geometry::Distance(FVector2d(0, 0), MiddlePoint);
-	SetupNoise(FastNoiseWrapper, TerrainGenData->ShapeNoiseParameter);
-	for (int32 Q = 0; Q < GenSizeQ; ++Q)
+	int32 FilledCounter = 0;
+	int32 Tries = 0;
+	const int32 MaxTries = 100;
+	// Generate shapes until it has enough tiles
+	while ( FilledCounter < TileCount && Tries < MaxTries)
 	{
-		for (int32 R = 0; R < GenSizeR; ++R)
+		FilledCounter = 0;
+		++Tries;
+		// reset every tile
+		for (auto &GeneratedTile : GeneratedTiles)
 		{
-			const float DistanceToMiddlePoint = UE::Geometry::Distance(FVector2d(Q, R), MiddlePoint);
-			const float NormalizedDistance = DistanceToMiddlePoint / MaxDistanceToMiddle;
-			float ShapeHeight = FastNoiseWrapper->GetNoise2D(Q, R) * TerrainGenData->ShapeNoiseParameter.NoiseFactor;
-			ShapeHeight += TerrainGenData->DistanceToMiddlePointCurve.GetRichCurveConst()->Eval(NormalizedDistance) *
-				TerrainGenData->ShapeDistanceToMiddlePointFactor;
-			ShapeHeight += TerrainGenData->ShapeHeightOffset;
-			GeneratedTiles[Q * GenSizeR + R].Height = 1;
-			if (ShapeHeight < TerrainGenData->ShouldGenerateThreshhold)
-				GeneratedTiles[Q * GenSizeR + R].ShouldGenerate = false;
+			GeneratedTile.ShouldGenerate = true;
+			GeneratedTile.Height = 0;
 		}
+		const float MaxDistanceToMiddle =  UE::Geometry::Distance(FVector2d(0, 0), MiddlePoint);
+		SetupNoise(FastNoiseWrapper, TerrainGenData->ShapeNoiseParameter);
+		for (int32 Q = 0; Q < GenSizeQ; ++Q)
+		{
+			for (int32 R = 0; R < GenSizeR; ++R)
+			{
+				const float DistanceToMiddlePoint = UE::Geometry::Distance(FVector2d(Q, R), MiddlePoint);
+				const float NormalizedDistance = DistanceToMiddlePoint / MaxDistanceToMiddle;
+				float ShapeHeight = FastNoiseWrapper->GetNoise2D(Q, R) * TerrainGenData->ShapeNoiseParameter.NoiseFactor;
+				ShapeHeight += TerrainGenData->DistanceToMiddlePointCurve.GetRichCurveConst()->Eval(NormalizedDistance) *
+					TerrainGenData->ShapeDistanceToMiddlePointFactor;
+				ShapeHeight += TerrainGenData->ShapeHeightOffset;
+				GeneratedTiles[Q * GenSizeR + R].Height = 1;
+				if (ShapeHeight < TerrainGenData->ShouldGenerateThreshhold)
+					GeneratedTiles[Q * GenSizeR + R].ShouldGenerate = false;				
+			}
+		}
+		// cut away islands
+		
+		// fill in oceans
+		
+		// calculate TileCount
+		for (auto GeneratedTile : GeneratedTiles)
+		{
+			if(GeneratedTile.Height == 1) ++FilledCounter;
+		}
+		UE_LOG(LogTemp, Warning, TEXT("Tile count is: %d/%d"), FilledCounter, GeneratedTiles.Num())
+		UE_LOG(LogTemp, Warning, TEXT("Tile to array percentage: %f"), (float)FilledCounter / GeneratedTiles.Num())
 	}
 	// Generate Height
 	SetupNoise(FastNoiseWrapper, TerrainGenData->HeightNoiseParameter);

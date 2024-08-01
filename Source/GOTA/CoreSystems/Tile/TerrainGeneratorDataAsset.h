@@ -17,6 +17,9 @@ class GOTA_API UTerrainGeneratorDataAsset : public UPrimaryDataAsset
 
 public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="ShapeGen")
+	float LandToArraySizeRatio = 0.5;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="ShapeGen")
 	float ShapeDistanceToMiddlePointFactor = 1;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="ShapeGen")
