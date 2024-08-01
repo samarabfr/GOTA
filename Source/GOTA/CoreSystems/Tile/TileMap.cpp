@@ -183,7 +183,43 @@ void ATileMap::GenerateTiles(int32 TileCount)
 	{
 		for (int32 R = 0; R < GenSizeR; ++R)
 		{
-			GeneratedTiles[Q * GenSizeR + R].HexCoords = FHexCoords(Q, R);
+			FTileGeneratedInfo& GeneratedTile = GeneratedTiles[Q * GenSizeR + R];
+			GeneratedTile.HexCoords = FHexCoords(Q, R);
+			// set neighbors on new tile
+			FHexCoords GenSize = FHexCoords(GenSizeQ, GenSizeR);
+			if (IsInBounds(FHexCoords(Q, R - 1), GenSize))
+				GeneratedTile.Neighbors[0] = &GeneratedTiles[Q * GenSizeR + R - 1];
+			if (IsInBounds(FHexCoords(Q + 1, R - 1), GenSize))
+				GeneratedTile.Neighbors[1] = &GeneratedTiles[(Q + 1) * GenSizeR + R - 1];
+			if (IsInBounds(FHexCoords(Q + 1, R), GenSize))
+				GeneratedTile.Neighbors[2] = &GeneratedTiles[(Q + 1) * GenSizeR + R];
+			if (IsInBounds(FHexCoords(Q, R + 1), GenSize))
+				GeneratedTile.Neighbors[3] = &GeneratedTiles[Q * GenSizeR + R + 1];
+			if (IsInBounds(FHexCoords(Q - 1, R + 1), GenSize))
+				GeneratedTile.Neighbors[4] = &GeneratedTiles[(Q - 1) * GenSizeR + R + 1];
+			if (IsInBounds(FHexCoords(Q - 1, R), GenSize))
+				GeneratedTile.Neighbors[5] = &GeneratedTiles[(Q - 1) * GenSizeR + R];
+			// count up neighbor count on new tile
+			if (GeneratedTile.Neighbors[0]) GeneratedTile.NeighborCount++;
+			if (GeneratedTile.Neighbors[1]) GeneratedTile.NeighborCount++;
+			if (GeneratedTile.Neighbors[2]) GeneratedTile.NeighborCount++;
+			if (GeneratedTile.Neighbors[3]) GeneratedTile.NeighborCount++;
+			if (GeneratedTile.Neighbors[4]) GeneratedTile.NeighborCount++;
+			if (GeneratedTile.Neighbors[5]) GeneratedTile.NeighborCount++;
+			// set new tile on neighbors
+			if (GeneratedTile.Neighbors[0]) GeneratedTile.Neighbors[0]->Neighbors[3] = &GeneratedTile;
+			if (GeneratedTile.Neighbors[1]) GeneratedTile.Neighbors[1]->Neighbors[4] = &GeneratedTile;
+			if (GeneratedTile.Neighbors[2]) GeneratedTile.Neighbors[2]->Neighbors[5] = &GeneratedTile;
+			if (GeneratedTile.Neighbors[3]) GeneratedTile.Neighbors[3]->Neighbors[0] = &GeneratedTile;
+			if (GeneratedTile.Neighbors[4]) GeneratedTile.Neighbors[4]->Neighbors[1] = &GeneratedTile;
+			if (GeneratedTile.Neighbors[5]) GeneratedTile.Neighbors[5]->Neighbors[2] = &GeneratedTile;
+			// count up neighbor count on neighbors
+			if (GeneratedTile.Neighbors[0]) GeneratedTile.Neighbors[0]->NeighborCount++;
+			if (GeneratedTile.Neighbors[1]) GeneratedTile.Neighbors[1]->NeighborCount++;
+			if (GeneratedTile.Neighbors[2]) GeneratedTile.Neighbors[2]->NeighborCount++;
+			if (GeneratedTile.Neighbors[3]) GeneratedTile.Neighbors[3]->NeighborCount++;
+			if (GeneratedTile.Neighbors[4]) GeneratedTile.Neighbors[4]->NeighborCount++;
+			if (GeneratedTile.Neighbors[5]) GeneratedTile.Neighbors[5]->NeighborCount++;
 		}
 	}
 	// Generate Shape
@@ -191,17 +227,17 @@ void ATileMap::GenerateTiles(int32 TileCount)
 	int32 Tries = 0;
 	const int32 MaxTries = 100;
 	// Generate shapes until it has enough tiles
-	while ( FilledCounter < TileCount && Tries < MaxTries)
+	while (FilledCounter < TileCount && Tries < MaxTries)
 	{
 		FilledCounter = 0;
 		++Tries;
 		// reset every tile
-		for (auto &GeneratedTile : GeneratedTiles)
+		for (auto& GeneratedTile : GeneratedTiles)
 		{
 			GeneratedTile.ShouldGenerate = true;
 			GeneratedTile.Height = 0;
 		}
-		const float MaxDistanceToMiddle =  UE::Geometry::Distance(FVector2d(0, 0), MiddlePoint);
+		const float MaxDistanceToMiddle = UE::Geometry::Distance(FVector2d(0, 0), MiddlePoint);
 		SetupNoise(FastNoiseWrapper, TerrainGenData->ShapeNoiseParameter);
 		for (int32 Q = 0; Q < GenSizeQ; ++Q)
 		{
@@ -209,23 +245,29 @@ void ATileMap::GenerateTiles(int32 TileCount)
 			{
 				const float DistanceToMiddlePoint = UE::Geometry::Distance(FVector2d(Q, R), MiddlePoint);
 				const float NormalizedDistance = DistanceToMiddlePoint / MaxDistanceToMiddle;
-				float ShapeHeight = FastNoiseWrapper->GetNoise2D(Q, R) * TerrainGenData->ShapeNoiseParameter.NoiseFactor;
-				ShapeHeight += TerrainGenData->DistanceToMiddlePointCurve.GetRichCurveConst()->Eval(NormalizedDistance) *
+				float ShapeHeight = FastNoiseWrapper->GetNoise2D(Q, R) * TerrainGenData->ShapeNoiseParameter.
+					NoiseFactor;
+				ShapeHeight += TerrainGenData->DistanceToMiddlePointCurve.GetRichCurveConst()->Eval(NormalizedDistance)
+					*
 					TerrainGenData->ShapeDistanceToMiddlePointFactor;
 				ShapeHeight += TerrainGenData->ShapeHeightOffset;
 				GeneratedTiles[Q * GenSizeR + R].Height = 1;
 				if (ShapeHeight < TerrainGenData->ShouldGenerateThreshhold)
-					GeneratedTiles[Q * GenSizeR + R].ShouldGenerate = false;				
+					GeneratedTiles[Q * GenSizeR + R].ShouldGenerate = false;
 			}
 		}
-		// cut away islands
-		
-		// fill in oceans
-		
-		// calculate TileCount
-		for (auto GeneratedTile : GeneratedTiles)
+		// cut away non-main islands
+		CheckConnectionToMainIsland(GeneratedTiles[MiddlePoint.X * GenSizeR + MiddlePoint.Y]);
+		for (auto& GeneratedTile : GeneratedTiles)
 		{
-			if(GeneratedTile.Height == 1) ++FilledCounter;
+			if (!GeneratedTile.ConnectedToMainIsland) GeneratedTile.ShouldGenerate = false;
+		}
+		// fill in oceans
+
+		// calculate TileCount
+		for (auto& GeneratedTile : GeneratedTiles)
+		{
+			if (GeneratedTile.Height == 1) ++FilledCounter;
 		}
 		UE_LOG(LogTemp, Warning, TEXT("Tile count is: %d/%d"), FilledCounter, GeneratedTiles.Num())
 		UE_LOG(LogTemp, Warning, TEXT("Tile to array percentage: %f"), (float)FilledCounter / GeneratedTiles.Num())
@@ -256,6 +298,28 @@ void ATileMap::GenerateTiles(int32 TileCount)
 	{
 		if (GeneratedTile.ShouldGenerate) SpawnNewTile(GeneratedTile.HexCoords, GeneratedTile.Height);
 	}
+}
+
+void ATileMap::CheckConnectionToMainIsland(FTileGeneratedInfo& TileGeneratedInfo)
+{
+	if (!TileGeneratedInfo.ShouldGenerate) return;
+
+	TileGeneratedInfo.ConnectedToMainIsland = true;
+	// Go through neighbors recursively
+	for (FTileGeneratedInfo* Neighbor : TileGeneratedInfo.Neighbors)
+	{
+		if (Neighbor && !Neighbor->ConnectedToMainIsland) CheckConnectionToMainIsland(*Neighbor);
+	}
+}
+
+bool ATileMap::IsInBounds(FHexCoords Coords, FHexCoords SizeOfArray)
+{
+	if (Coords.Q >= SizeOfArray.Q || Coords.R >= SizeOfArray.R ||
+		Coords.Q < 0 || Coords.R < 0)
+	{
+		return false;
+	}
+	return true;
 }
 
 void ATileMap::CalculateTurn()

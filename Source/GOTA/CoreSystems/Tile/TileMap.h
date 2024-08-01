@@ -10,6 +10,7 @@
 #include "Tile.h"
 #include "TestRiverDataAsset.h"
 #include "TestBiomeDataAsset.h"
+#include "TileGeneratedInfo.h"
 #include "GameFramework/Actor.h"
 #include "TileMap.generated.h"
 
@@ -49,6 +50,10 @@ private:
 	bool TryAddTile(FHexCoords HexCoords, ATile* Tile);
 	
 	void SetupNoise(UFastNoiseWrapper* FastNoiseWrapper, FNoiseParameter& Parameter);
+	
+	void CheckConnectionToMainIsland(FTileGeneratedInfo& TileGeneratedInfo);
+
+	static bool IsInBounds(FHexCoords Coords, FHexCoords SizeOfArray);
 	
 public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")

@@ -17,4 +17,12 @@ struct FTileGeneratedInfo
 	EBiome Biome = EBiome::Gras;
 
 	bool ShouldGenerate = true;
+
+	bool ConnectedToMainIsland = false;
+
+	bool ConnectedToOcean = false;
+
+	FTileGeneratedInfo* Neighbors[6];
+
+	int32 NeighborCount = 0;
 };
