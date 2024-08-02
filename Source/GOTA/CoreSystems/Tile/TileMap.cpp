@@ -270,10 +270,10 @@ void ATileMap::GenerateTiles(int32 TileCount)
 			int32 FilledNeighborsCounter = 0;
 			for (int i = 0; i < 6; ++i)
 			{
-				if(GeneratedTile.Neighbors[i] && GeneratedTile.Neighbors[i]->ShouldGenerate) ++FilledNeighborsCounter;
+				if (GeneratedTile.Neighbors[i] && GeneratedTile.Neighbors[i]->ShouldGenerate) ++FilledNeighborsCounter;
 			}
 			// every filled tile should have 1-6 neighbors
-			if(GeneratedTile.ShouldGenerate) TilesByNeighborCount[FilledNeighborsCounter - 1].Add(&GeneratedTile);
+			if (GeneratedTile.ShouldGenerate) TilesByNeighborCount[FilledNeighborsCounter - 1].Add(&GeneratedTile);
 		}
 		// cut until TileCount is met
 		while (FilledCounter > TileCount && TileCount != 0)
@@ -310,11 +310,46 @@ void ATileMap::GenerateTiles(int32 TileCount)
 	// Check if shape generation failed
 	if (Tries == MaxTries) UE_LOG(LogTemp, Warning, TEXT("Shape generation failed"))
 	// Generate Height
+	// Calculate distance to ocean
+	bool TilesHaveChanged = false;
+	do
+	{
+		TilesHaveChanged = false;
+		for (FGeneratedTileInfo& GeneratedTile : GeneratedTiles)
+		{
+			if (GeneratedTile.ShouldGenerate && !GeneratedTile.DistanceFromOceanWasCalculated)
+			{
+				// go through every neighbor
+				for (int i = 0; i < 6; ++i)
+				{
+					// is bordering to water
+					if (!GeneratedTile.Neighbors[i] || !GeneratedTile.Neighbors[i]->ShouldGenerate)
+					{
+						GeneratedTile.DistanceFromOcean = 1;
+						GeneratedTile.DistanceFromOceanWasCalculated = true;
+						break; // No need to check other neighbors if bordering water
+					}
+					// see if there's a neighbor that has a closer connection to water than previous ones
+					else if (GeneratedTile.Neighbors[i]->DistanceFromOceanWasCalculated && GeneratedTile.Neighbors[i]->
+						DistanceFromOcean + 1 < GeneratedTile.DistanceFromOcean)
+					{
+						GeneratedTile.DistanceFromOcean = GeneratedTile.Neighbors[i]->DistanceFromOcean + 1;
+						GeneratedTile.DistanceFromOceanWasCalculated = true;
+					}
+				}
+				if (GeneratedTile.DistanceFromOceanWasCalculated) TilesHaveChanged = true;
+			}
+		}
+	}
+	while (TilesHaveChanged);
+	// Calculate Height
 	SetupNoise(FastNoiseWrapper, TerrainGenData->HeightNoiseParameter);
 	for (int32 Q = 0; Q < GenSizeQ; ++Q)
 	{
 		for (int32 R = 0; R < GenSizeR; ++R)
 		{
+			FGeneratedTileInfo* GeneratedTile = GetGeneratedTile(FHexCoords(Q,R));
+			/*
 			const float DistanceToMiddlePointHeight = TerrainGenData->DistanceToMiddlePointMaxHeightFactor /
 				FMath::Pow(
 					EULERS_NUMBER,
@@ -323,7 +358,10 @@ void ATileMap::GenerateTiles(int32 TileCount)
 			const float NoiseHeight = TerrainGenData->HeightNoiseParameter.NoiseFactor * FastNoiseWrapper->
 				GetNoise2D(Q, R);
 			float Height = NoiseHeight + DistanceToMiddlePointHeight + TerrainGenData->HeightOffset;
+			*/
+			
 			// set height
+			GeneratedTile->Height = 200 * GeneratedTile->DistanceFromOcean;
 		}
 	}
 	// Initialize Tile Arrays to fit the island just right

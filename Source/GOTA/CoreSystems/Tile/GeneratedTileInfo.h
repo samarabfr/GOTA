@@ -21,6 +21,10 @@ struct FGeneratedTileInfo
 
 	// Height generation
 	float Height = 0;
+
+	bool DistanceFromOceanWasCalculated = false;
+	
+	int8 DistanceFromOcean = MAX_int8;
 	
 	// Details
 	bool HasRiver = false;
