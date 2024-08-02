@@ -266,7 +266,7 @@ void ATileMap::GenerateTiles(int32 TileCount)
 			}
 		}
 		// cut away non-main islands
-		FlagConnectionToMainIsland(GetGeneratedTile(FHexCoords(MiddlePoint.X,MiddlePoint.Y)));
+		FlagConnectionToMainIsland(GetGeneratedTile(FHexCoords(MiddlePoint.X, MiddlePoint.Y)));
 		int32 CutCounter = 0;
 		for (auto& GeneratedTile : GeneratedTiles)
 		{
@@ -279,6 +279,18 @@ void ATileMap::GenerateTiles(int32 TileCount)
 		}
 		UE_LOG(LogTemp, Warning, TEXT("Unconnected Tiles cut: %d"), CutCounter)
 		// fill in oceans
+		FlagConnectionToOcean(GetGeneratedTile(FHexCoords(0, 0)));
+		int32 WaterFilledCounter = 0;
+		for (auto& GeneratedTile : GeneratedTiles)
+		{
+			//if (!GeneratedTile.ConnectedToOcean) GeneratedTile.ShouldGenerate = true;
+			if (!GeneratedTile.ShouldGenerate && !GeneratedTile.ConnectedToOcean)
+			{
+				GeneratedTile.ShouldGenerate = true;
+				++WaterFilledCounter;
+			}
+		}
+		UE_LOG(LogTemp, Warning, TEXT("Unconnected Water filled: %d"), WaterFilledCounter)
 		// calculate TileCount
 		for (auto& GeneratedTile : GeneratedTiles)
 		{
