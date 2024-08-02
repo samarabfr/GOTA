@@ -51,9 +51,9 @@ private:
 	
 	void SetupNoise(UFastNoiseWrapper* FastNoiseWrapper, FNoiseParameter& Parameter);
 	
-	void FlagConnectionToMainIsland(FTileGeneratedInfo* TileGeneratedInfo);
+	void FlagConnectionToMainIsland(FGeneratedTileInfo* TileGeneratedInfo);
 	
-	void FlagConnectionToOcean(FTileGeneratedInfo* TileGeneratedInfo);
+	void FlagConnectionToOcean(FGeneratedTileInfo* TileGeneratedInfo);
 	
 public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")

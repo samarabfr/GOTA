@@ -4,7 +4,7 @@
 #include "FastNoiseWrapper.h"
 #include "HexCoords.h"
 #include "HexCoordsFunctions.h"
-#include "TileGeneratedInfo.h"
+#include "GeneratedTileInfo.h"
 #include "VectorTypes.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
@@ -177,7 +177,7 @@ void ATileMap::GenerateTiles(int32 TileCount)
 	// Generate Noisemap
 	UFastNoiseWrapper* FastNoiseWrapper = NewObject<UFastNoiseWrapper>(this);
 	// Initialize Array
-	TArray<FTileGeneratedInfo> GeneratedTiles;
+	TArray<FGeneratedTileInfo> GeneratedTiles;
 	GeneratedTiles.SetNum(GenSizeQ * GenSizeR);
 	// lambda function for bounds check
 	auto IsInBounds = [&](FHexCoords Coords) -> bool
@@ -185,7 +185,7 @@ void ATileMap::GenerateTiles(int32 TileCount)
 		return Coords.Q < GenSizeQ && Coords.R < GenSizeR && Coords.Q >= 0 && Coords.R >= 0;
 	};
 	// lambda function for generated tile getting
-	auto GetGeneratedTile = [&](FHexCoords Coords) -> FTileGeneratedInfo* {
+	auto GetGeneratedTile = [&](FHexCoords Coords) -> FGeneratedTileInfo* {
 		if (IsInBounds(Coords))
 			return &GeneratedTiles[Coords.Q * GenSizeR + Coords.R];
 		return nullptr;
@@ -195,7 +195,7 @@ void ATileMap::GenerateTiles(int32 TileCount)
 	{
 		for (int32 R = 0; R < GenSizeR; ++R)
 		{
-			FTileGeneratedInfo* GeneratedTile = GetGeneratedTile(FHexCoords(Q, R));
+			FGeneratedTileInfo* GeneratedTile = GetGeneratedTile(FHexCoords(Q, R));
 			GeneratedTile->HexCoords = FHexCoords(Q, R);
 
 			// Set neighbors on the new tile
@@ -298,6 +298,46 @@ void ATileMap::GenerateTiles(int32 TileCount)
 		}
 		UE_LOG(LogTemp, Warning, TEXT("Tile count is: %d/%d"), FilledCounter, GeneratedTiles.Num())
 		UE_LOG(LogTemp, Warning, TEXT("Tile to array percentage: %f"), (float)FilledCounter / GeneratedTiles.Num())
+		// cut to tilecount
+		// sort tiles by neigborcount
+		TArray<FGeneratedTileInfo*> TilesByNeighborCount[6];
+		for (auto& GeneratedTile : GeneratedTiles)
+		{
+			// every should have 1-6 neighbors
+			TilesByNeighborCount[GeneratedTile.NeighborCount - 1].Add(&GeneratedTile);
+		}
+		// cut until TileCount is met
+		while (FilledCounter > TileCount && TileCount != 0)
+		{
+			// cut from fewest neighbors to most
+			for (int i = 0; i < 6; ++i)
+			{
+				if (TilesByNeighborCount[i].Num() > 0)
+				{
+					const int32 RandomIndex = FMath::RandRange(0, TilesByNeighborCount[i].Num() - 1);
+					FGeneratedTileInfo* GeneratedTile = TilesByNeighborCount[i][RandomIndex];
+					GeneratedTile->ShouldGenerate = false;
+					--FilledCounter;
+					break;
+				}
+			}
+		}
+		// check for non-main islands again
+		for (auto& GeneratedTile : GeneratedTiles)
+		{
+			GeneratedTile.ConnectedToMainIsland = false;
+		}
+		FlagConnectionToMainIsland(GetGeneratedTile(FHexCoords(MiddlePoint.X, MiddlePoint.Y)));
+		for (auto& GeneratedTile : GeneratedTiles)
+		{
+			if (GeneratedTile.ShouldGenerate && !GeneratedTile.ConnectedToMainIsland)
+			{
+				GeneratedTile.ShouldGenerate = false;
+				--FilledCounter;
+			}
+		}
+		if (FilledCounter < TileCount) UE_LOG(LogTemp, Warning,
+		                                      TEXT("Cutting lead to non-main island. Regenerating shape..."))
 	}
 	// Check if shape generation failed
 	UE_LOG(LogTemp, Warning, TEXT("Tries needed: %d"), Tries)
@@ -322,31 +362,31 @@ void ATileMap::GenerateTiles(int32 TileCount)
 	// Initialize Tile Arrays to fit the island just right
 	InitializeBothArrays(FHexCoords(GenSizeR, GenSizeR));
 	// Spawn Tiles
-	for (FTileGeneratedInfo GeneratedTile : GeneratedTiles)
+	for (FGeneratedTileInfo GeneratedTile : GeneratedTiles)
 	{
 		if (GeneratedTile.ShouldGenerate) SpawnNewTile(GeneratedTile.HexCoords, GeneratedTile.Height);
 	}
 }
 
-void ATileMap::FlagConnectionToMainIsland(FTileGeneratedInfo* TileGeneratedInfo)
+void ATileMap::FlagConnectionToMainIsland(FGeneratedTileInfo* TileGeneratedInfo)
 {
 	if (!TileGeneratedInfo->ShouldGenerate) return;
 
 	TileGeneratedInfo->ConnectedToMainIsland = true;
 	// Go through neighbors recursively
-	for (FTileGeneratedInfo* Neighbor : TileGeneratedInfo->Neighbors)
+	for (FGeneratedTileInfo* Neighbor : TileGeneratedInfo->Neighbors)
 	{
 		if (Neighbor && !Neighbor->ConnectedToMainIsland) FlagConnectionToMainIsland(Neighbor);
 	}
 }
 
-void ATileMap::FlagConnectionToOcean(FTileGeneratedInfo* TileGeneratedInfo)
+void ATileMap::FlagConnectionToOcean(FGeneratedTileInfo* TileGeneratedInfo)
 {
 	if (TileGeneratedInfo->ShouldGenerate) return;
 
 	TileGeneratedInfo->ConnectedToOcean = true;
 	// Go through neighbors recursively
-	for (FTileGeneratedInfo* Neighbor : TileGeneratedInfo->Neighbors)
+	for (FGeneratedTileInfo* Neighbor : TileGeneratedInfo->Neighbors)
 	{
 		if (Neighbor && !Neighbor->ConnectedToOcean) FlagConnectionToOcean(Neighbor);
 	}

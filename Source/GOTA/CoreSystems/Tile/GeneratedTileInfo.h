@@ -6,11 +6,11 @@
 #include "HexCoords.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 
-struct FTileGeneratedInfo
+struct FGeneratedTileInfo
 {
 	FHexCoords HexCoords = FHexCoords(0,0);
 
-	FTileGeneratedInfo* Neighbors[6];
+	FGeneratedTileInfo* Neighbors[6];
 
 	int32 NeighborCount = 0;
 
