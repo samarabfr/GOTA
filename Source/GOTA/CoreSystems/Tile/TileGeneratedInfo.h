@@ -10,19 +10,22 @@ struct FTileGeneratedInfo
 {
 	FHexCoords HexCoords = FHexCoords(0,0);
 
-	float Height = 0;
+	FTileGeneratedInfo* Neighbors[6];
 
-	bool HasRiver = false;
+	int32 NeighborCount = 0;
 
-	EBiome Biome = EBiome::Gras;
-
+	// shape generation
 	bool ShouldGenerate = true;
 
 	bool ConnectedToMainIsland = false;
 
 	bool ConnectedToOcean = false;
 
-	FTileGeneratedInfo* Neighbors[6];
+	// Height generation
+	float Height = 0;
+	
+	// Details
+	bool HasRiver = false;
 
-	int32 NeighborCount = 0;
+	EBiome Biome = EBiome::Gras;
 };

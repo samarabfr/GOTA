@@ -179,47 +179,54 @@ void ATileMap::GenerateTiles(int32 TileCount)
 	// Initialize Array
 	TArray<FTileGeneratedInfo> GeneratedTiles;
 	GeneratedTiles.SetNum(GenSizeQ * GenSizeR);
+	// lambda function for bounds check
+	auto IsInBounds = [&](FHexCoords Coords) -> bool
+	{
+		return Coords.Q < GenSizeQ && Coords.R < GenSizeR && Coords.Q >= 0 && Coords.R >= 0;
+	};
+	// lambda function for generated tile getting
+	auto GetGeneratedTile = [&](FHexCoords Coords) -> FTileGeneratedInfo* {
+		if (IsInBounds(Coords))
+			return &GeneratedTiles[Coords.Q * GenSizeR + Coords.R];
+		return nullptr;
+	};
+	// Init tiles
 	for (int32 Q = 0; Q < GenSizeQ; ++Q)
 	{
 		for (int32 R = 0; R < GenSizeR; ++R)
 		{
-			FTileGeneratedInfo& GeneratedTile = GeneratedTiles[Q * GenSizeR + R];
-			GeneratedTile.HexCoords = FHexCoords(Q, R);
-			// set neighbors on new tile
-			FHexCoords GenSize = FHexCoords(GenSizeQ, GenSizeR);
-			if (IsInBounds(FHexCoords(Q, R - 1), GenSize))
-				GeneratedTile.Neighbors[0] = &GeneratedTiles[Q * GenSizeR + R - 1];
-			if (IsInBounds(FHexCoords(Q + 1, R - 1), GenSize))
-				GeneratedTile.Neighbors[1] = &GeneratedTiles[(Q + 1) * GenSizeR + R - 1];
-			if (IsInBounds(FHexCoords(Q + 1, R), GenSize))
-				GeneratedTile.Neighbors[2] = &GeneratedTiles[(Q + 1) * GenSizeR + R];
-			if (IsInBounds(FHexCoords(Q, R + 1), GenSize))
-				GeneratedTile.Neighbors[3] = &GeneratedTiles[Q * GenSizeR + R + 1];
-			if (IsInBounds(FHexCoords(Q - 1, R + 1), GenSize))
-				GeneratedTile.Neighbors[4] = &GeneratedTiles[(Q - 1) * GenSizeR + R + 1];
-			if (IsInBounds(FHexCoords(Q - 1, R), GenSize))
-				GeneratedTile.Neighbors[5] = &GeneratedTiles[(Q - 1) * GenSizeR + R];
-			// count up neighbor count on new tile
-			if (GeneratedTile.Neighbors[0]) GeneratedTile.NeighborCount++;
-			if (GeneratedTile.Neighbors[1]) GeneratedTile.NeighborCount++;
-			if (GeneratedTile.Neighbors[2]) GeneratedTile.NeighborCount++;
-			if (GeneratedTile.Neighbors[3]) GeneratedTile.NeighborCount++;
-			if (GeneratedTile.Neighbors[4]) GeneratedTile.NeighborCount++;
-			if (GeneratedTile.Neighbors[5]) GeneratedTile.NeighborCount++;
-			// set new tile on neighbors
-			if (GeneratedTile.Neighbors[0]) GeneratedTile.Neighbors[0]->Neighbors[3] = &GeneratedTile;
-			if (GeneratedTile.Neighbors[1]) GeneratedTile.Neighbors[1]->Neighbors[4] = &GeneratedTile;
-			if (GeneratedTile.Neighbors[2]) GeneratedTile.Neighbors[2]->Neighbors[5] = &GeneratedTile;
-			if (GeneratedTile.Neighbors[3]) GeneratedTile.Neighbors[3]->Neighbors[0] = &GeneratedTile;
-			if (GeneratedTile.Neighbors[4]) GeneratedTile.Neighbors[4]->Neighbors[1] = &GeneratedTile;
-			if (GeneratedTile.Neighbors[5]) GeneratedTile.Neighbors[5]->Neighbors[2] = &GeneratedTile;
-			// count up neighbor count on neighbors
-			if (GeneratedTile.Neighbors[0]) GeneratedTile.Neighbors[0]->NeighborCount++;
-			if (GeneratedTile.Neighbors[1]) GeneratedTile.Neighbors[1]->NeighborCount++;
-			if (GeneratedTile.Neighbors[2]) GeneratedTile.Neighbors[2]->NeighborCount++;
-			if (GeneratedTile.Neighbors[3]) GeneratedTile.Neighbors[3]->NeighborCount++;
-			if (GeneratedTile.Neighbors[4]) GeneratedTile.Neighbors[4]->NeighborCount++;
-			if (GeneratedTile.Neighbors[5]) GeneratedTile.Neighbors[5]->NeighborCount++;
+			FTileGeneratedInfo* GeneratedTile = GetGeneratedTile(FHexCoords(Q, R));
+			GeneratedTile->HexCoords = FHexCoords(Q, R);
+
+			// Set neighbors on the new tile
+			GeneratedTile->Neighbors[0] = GetGeneratedTile(FHexCoords(Q, R - 1));
+			GeneratedTile->Neighbors[1] = GetGeneratedTile(FHexCoords(Q + 1, R - 1));
+			GeneratedTile->Neighbors[2] = GetGeneratedTile(FHexCoords(Q + 1, R));
+			GeneratedTile->Neighbors[3] = GetGeneratedTile(FHexCoords(Q, R + 1));
+			GeneratedTile->Neighbors[4] = GetGeneratedTile(FHexCoords(Q - 1, R + 1));
+			GeneratedTile->Neighbors[5] = GetGeneratedTile(FHexCoords(Q - 1, R));
+			// Count up neighbor count on the new tile
+			for (int32 i = 0; i < 6; ++i)
+			{
+				if (GeneratedTile->Neighbors[i])
+					GeneratedTile->NeighborCount++;
+			}
+			// Set the new tile on neighbors and count up neighbor count on neighbors
+			auto SetNeighborAndCount = [&](int32 NeighborIndex, int32 OppositeIndex)
+			{
+				if (GeneratedTile->Neighbors[NeighborIndex])
+				{
+					GeneratedTile->Neighbors[NeighborIndex]->Neighbors[OppositeIndex] = GeneratedTile;
+					GeneratedTile->Neighbors[NeighborIndex]->NeighborCount++;
+				}
+			};
+
+			SetNeighborAndCount(0, 3);
+			SetNeighborAndCount(1, 4);
+			SetNeighborAndCount(2, 5);
+			SetNeighborAndCount(3, 0);
+			SetNeighborAndCount(4, 1);
+			SetNeighborAndCount(5, 2);
 		}
 	}
 	// Generate Shape
@@ -235,6 +242,8 @@ void ATileMap::GenerateTiles(int32 TileCount)
 		for (auto& GeneratedTile : GeneratedTiles)
 		{
 			GeneratedTile.ShouldGenerate = true;
+			GeneratedTile.ConnectedToMainIsland = false;
+			GeneratedTile.ConnectedToOcean = false;
 			GeneratedTile.Height = 0;
 		}
 		const float MaxDistanceToMiddle = UE::Geometry::Distance(FVector2d(0, 0), MiddlePoint);
@@ -257,21 +266,30 @@ void ATileMap::GenerateTiles(int32 TileCount)
 			}
 		}
 		// cut away non-main islands
-		CheckConnectionToMainIsland(GeneratedTiles[MiddlePoint.X * GenSizeR + MiddlePoint.Y]);
+		FlagConnectionToMainIsland(GetGeneratedTile(FHexCoords(MiddlePoint.X,MiddlePoint.Y)));
+		int32 CutCounter = 0;
 		for (auto& GeneratedTile : GeneratedTiles)
 		{
-			if (!GeneratedTile.ConnectedToMainIsland) GeneratedTile.ShouldGenerate = false;
+			//if (!GeneratedTile.ConnectedToMainIsland) GeneratedTile.ShouldGenerate = false;
+			if (GeneratedTile.ShouldGenerate && !GeneratedTile.ConnectedToMainIsland)
+			{
+				GeneratedTile.ShouldGenerate = false;
+				++CutCounter;
+			}
 		}
+		UE_LOG(LogTemp, Warning, TEXT("Unconnected Tiles cut: %d"), CutCounter)
 		// fill in oceans
-
 		// calculate TileCount
 		for (auto& GeneratedTile : GeneratedTiles)
 		{
-			if (GeneratedTile.Height == 1) ++FilledCounter;
+			if (GeneratedTile.ShouldGenerate) ++FilledCounter;
 		}
 		UE_LOG(LogTemp, Warning, TEXT("Tile count is: %d/%d"), FilledCounter, GeneratedTiles.Num())
 		UE_LOG(LogTemp, Warning, TEXT("Tile to array percentage: %f"), (float)FilledCounter / GeneratedTiles.Num())
 	}
+	// Check if shape generation failed
+	UE_LOG(LogTemp, Warning, TEXT("Tries needed: %d"), Tries)
+	if (Tries == MaxTries) UE_LOG(LogTemp, Warning, TEXT("Shape generation failed"))
 	// Generate Height
 	SetupNoise(FastNoiseWrapper, TerrainGenData->HeightNoiseParameter);
 	for (int32 Q = 0; Q < GenSizeQ; ++Q)
@@ -289,8 +307,6 @@ void ATileMap::GenerateTiles(int32 TileCount)
 			// set height
 		}
 	}
-	// Cut to the right tile count
-
 	// Initialize Tile Arrays to fit the island just right
 	InitializeBothArrays(FHexCoords(GenSizeR, GenSizeR));
 	// Spawn Tiles
@@ -300,26 +316,28 @@ void ATileMap::GenerateTiles(int32 TileCount)
 	}
 }
 
-void ATileMap::CheckConnectionToMainIsland(FTileGeneratedInfo& TileGeneratedInfo)
+void ATileMap::FlagConnectionToMainIsland(FTileGeneratedInfo* TileGeneratedInfo)
 {
-	if (!TileGeneratedInfo.ShouldGenerate) return;
+	if (!TileGeneratedInfo->ShouldGenerate) return;
 
-	TileGeneratedInfo.ConnectedToMainIsland = true;
+	TileGeneratedInfo->ConnectedToMainIsland = true;
 	// Go through neighbors recursively
-	for (FTileGeneratedInfo* Neighbor : TileGeneratedInfo.Neighbors)
+	for (FTileGeneratedInfo* Neighbor : TileGeneratedInfo->Neighbors)
 	{
-		if (Neighbor && !Neighbor->ConnectedToMainIsland) CheckConnectionToMainIsland(*Neighbor);
+		if (Neighbor && !Neighbor->ConnectedToMainIsland) FlagConnectionToMainIsland(Neighbor);
 	}
 }
 
-bool ATileMap::IsInBounds(FHexCoords Coords, FHexCoords SizeOfArray)
+void ATileMap::FlagConnectionToOcean(FTileGeneratedInfo* TileGeneratedInfo)
 {
-	if (Coords.Q >= SizeOfArray.Q || Coords.R >= SizeOfArray.R ||
-		Coords.Q < 0 || Coords.R < 0)
+	if (TileGeneratedInfo->ShouldGenerate) return;
+
+	TileGeneratedInfo->ConnectedToOcean = true;
+	// Go through neighbors recursively
+	for (FTileGeneratedInfo* Neighbor : TileGeneratedInfo->Neighbors)
 	{
-		return false;
+		if (Neighbor && !Neighbor->ConnectedToOcean) FlagConnectionToOcean(Neighbor);
 	}
-	return true;
 }
 
 void ATileMap::CalculateTurn()

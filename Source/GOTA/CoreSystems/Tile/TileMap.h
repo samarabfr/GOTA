@@ -51,9 +51,9 @@ private:
 	
 	void SetupNoise(UFastNoiseWrapper* FastNoiseWrapper, FNoiseParameter& Parameter);
 	
-	void CheckConnectionToMainIsland(FTileGeneratedInfo& TileGeneratedInfo);
-
-	static bool IsInBounds(FHexCoords Coords, FHexCoords SizeOfArray);
+	void FlagConnectionToMainIsland(FTileGeneratedInfo* TileGeneratedInfo);
+	
+	void FlagConnectionToOcean(FTileGeneratedInfo* TileGeneratedInfo);
 	
 public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
