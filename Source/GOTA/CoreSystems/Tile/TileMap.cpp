@@ -205,28 +205,6 @@ void ATileMap::GenerateTiles(int32 TileCount)
 			GeneratedTile->Neighbors[3] = GetGeneratedTile(FHexCoords(Q, R + 1));
 			GeneratedTile->Neighbors[4] = GetGeneratedTile(FHexCoords(Q - 1, R + 1));
 			GeneratedTile->Neighbors[5] = GetGeneratedTile(FHexCoords(Q - 1, R));
-			// Count up neighbor count on the new tile
-			for (int32 i = 0; i < 6; ++i)
-			{
-				if (GeneratedTile->Neighbors[i])
-					GeneratedTile->NeighborCount++;
-			}
-			// Set the new tile on neighbors and count up neighbor count on neighbors
-			auto SetNeighborAndCount = [&](int32 NeighborIndex, int32 OppositeIndex)
-			{
-				if (GeneratedTile->Neighbors[NeighborIndex])
-				{
-					GeneratedTile->Neighbors[NeighborIndex]->Neighbors[OppositeIndex] = GeneratedTile;
-					GeneratedTile->Neighbors[NeighborIndex]->NeighborCount++;
-				}
-			};
-
-			SetNeighborAndCount(0, 3);
-			SetNeighborAndCount(1, 4);
-			SetNeighborAndCount(2, 5);
-			SetNeighborAndCount(3, 0);
-			SetNeighborAndCount(4, 1);
-			SetNeighborAndCount(5, 2);
 		}
 	}
 	// Generate Shape
@@ -244,6 +222,8 @@ void ATileMap::GenerateTiles(int32 TileCount)
 			GeneratedTile.ShouldGenerate = true;
 			GeneratedTile.ConnectedToMainIsland = false;
 			GeneratedTile.ConnectedToOcean = false;
+			GeneratedTile.CutToTileCount = false; // TEMP test variable
+			GeneratedTile.CutNonMainIsland = false;// TEMP  test variable
 			GeneratedTile.Height = 0;
 		}
 		const float MaxDistanceToMiddle = UE::Geometry::Distance(FVector2d(0, 0), MiddlePoint);
@@ -274,6 +254,7 @@ void ATileMap::GenerateTiles(int32 TileCount)
 			if (GeneratedTile.ShouldGenerate && !GeneratedTile.ConnectedToMainIsland)
 			{
 				GeneratedTile.ShouldGenerate = false;
+				GeneratedTile.CutNonMainIsland = true;
 				++CutCounter;
 			}
 		}
@@ -287,6 +268,7 @@ void ATileMap::GenerateTiles(int32 TileCount)
 			if (!GeneratedTile.ShouldGenerate && !GeneratedTile.ConnectedToOcean)
 			{
 				GeneratedTile.ShouldGenerate = true;
+				GeneratedTile.Height = 200; // TEMP just for testing
 				++WaterFilledCounter;
 			}
 		}
@@ -300,23 +282,32 @@ void ATileMap::GenerateTiles(int32 TileCount)
 		UE_LOG(LogTemp, Warning, TEXT("Tile to array percentage: %f"), (float)FilledCounter / GeneratedTiles.Num())
 		// cut to tilecount
 		// sort tiles by neigborcount
-		TArray<FGeneratedTileInfo*> TilesByNeighborCount[6];
-		for (auto& GeneratedTile : GeneratedTiles)
+		TArray<TArray<FGeneratedTileInfo*>> TilesByNeighborCount;
+		TilesByNeighborCount.SetNum(6);
+		for (FGeneratedTileInfo& GeneratedTile : GeneratedTiles)
 		{
-			// every should have 1-6 neighbors
-			TilesByNeighborCount[GeneratedTile.NeighborCount - 1].Add(&GeneratedTile);
+			// count filled neighbors once before cutting and not while cutting
+			int32 FilledNeighborsCounter = 0;
+			for (int i = 0; i < 6; ++i)
+			{
+				if(GeneratedTile.Neighbors[i] && GeneratedTile.Neighbors[i]->ShouldGenerate) ++FilledNeighborsCounter;
+			}
+			// every filled tile should have 1-6 neighbors
+			if(GeneratedTile.ShouldGenerate) TilesByNeighborCount[FilledNeighborsCounter - 1].Add(&GeneratedTile);
 		}
 		// cut until TileCount is met
 		while (FilledCounter > TileCount && TileCount != 0)
 		{
-			// cut from fewest neighbors to most
+			// cut from the fewest neighbors to most. neighbors wont be recalculated to not smoothen too much
 			for (int i = 0; i < 6; ++i)
 			{
 				if (TilesByNeighborCount[i].Num() > 0)
 				{
 					const int32 RandomIndex = FMath::RandRange(0, TilesByNeighborCount[i].Num() - 1);
 					FGeneratedTileInfo* GeneratedTile = TilesByNeighborCount[i][RandomIndex];
+					TilesByNeighborCount[i].RemoveAt(RandomIndex);
 					GeneratedTile->ShouldGenerate = false;
+					GeneratedTile->CutToTileCount = true; // TEMP for testing
 					--FilledCounter;
 					break;
 				}
@@ -365,10 +356,25 @@ void ATileMap::GenerateTiles(int32 TileCount)
 	// Initialize Tile Arrays to fit the island just right
 	InitializeBothArrays(FHexCoords(GenSizeR, GenSizeR));
 	// Spawn Tiles
+	int32 SpawnCounter = 0;
 	for (FGeneratedTileInfo GeneratedTile : GeneratedTiles)
 	{
-		if (GeneratedTile.ShouldGenerate) SpawnNewTile(GeneratedTile.HexCoords, GeneratedTile.Height);
+		if (GeneratedTile.ShouldGenerate)
+		{
+			SpawnNewTile(GeneratedTile.HexCoords, GeneratedTile.Height);
+			++SpawnCounter;
+		}
+		// just for testing
+		else if(GeneratedTile.CutToTileCount)
+		{
+			SpawnNewTile(GeneratedTile.HexCoords, 500);
+		}
+		else if(GeneratedTile.CutNonMainIsland)
+		{
+			SpawnNewTile(GeneratedTile.HexCoords, 1000);
+		}
 	}
+	UE_LOG(LogTemp, Warning, TEXT("Tiles spawned: %d"), SpawnCounter)
 }
 
 void ATileMap::FlagConnectionToMainIsland(FGeneratedTileInfo* TileGeneratedInfo)

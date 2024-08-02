@@ -12,14 +12,17 @@ struct FGeneratedTileInfo
 
 	FGeneratedTileInfo* Neighbors[6];
 
-	int32 NeighborCount = 0;
-
 	// shape generation
 	bool ShouldGenerate = true;
 
 	bool ConnectedToMainIsland = false;
 
 	bool ConnectedToOcean = false;
+
+	//test variable
+	bool CutToTileCount = false;
+
+	bool CutNonMainIsland = false;
 
 	// Height generation
 	float Height = 0;
