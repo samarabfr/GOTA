@@ -8,9 +8,7 @@
 #include "NoiseParameter.h"
 #include "TerrainGeneratorDataAsset.h"
 #include "Tile.h"
-#include "TestRiverDataAsset.h"
-#include "TestBiomeDataAsset.h"
-#include "TileGeneratedInfo.h"
+#include "GeneratedTileInfo.h"
 #include "GameFramework/Actor.h"
 #include "TileMap.generated.h"
 
