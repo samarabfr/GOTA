@@ -19,11 +19,6 @@ struct FGeneratedTileInfo
 
 	bool ConnectedToOcean = false;
 
-	//test variable
-	bool CutToTileCount = false;
-
-	bool CutNonMainIsland = false;
-
 	// Height generation
 	float Height = 0;
 	
