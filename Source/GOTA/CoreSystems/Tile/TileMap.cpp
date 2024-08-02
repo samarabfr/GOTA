@@ -296,7 +296,7 @@ void ATileMap::GenerateTiles(int32 TileCount)
 		{
 			if (GeneratedTile.ShouldGenerate) ++FilledCounter;
 		}
-		UE_LOG(LogTemp, Warning, TEXT("Tile count is: %d/%d"), FilledCounter, GeneratedTiles.Num())
+		UE_LOG(LogTemp, Warning, TEXT("Tile count pre-cutting is: %d/%d"), FilledCounter, GeneratedTiles.Num())
 		UE_LOG(LogTemp, Warning, TEXT("Tile to array percentage: %f"), (float)FilledCounter / GeneratedTiles.Num())
 		// cut to tilecount
 		// sort tiles by neigborcount
@@ -336,8 +336,11 @@ void ATileMap::GenerateTiles(int32 TileCount)
 				--FilledCounter;
 			}
 		}
+		// tile count log messages
+		UE_LOG(LogTemp, Warning, TEXT("Tile count post-cutting is: %d/%d"), FilledCounter, GeneratedTiles.Num())
+		UE_LOG(LogTemp, Warning, TEXT("Tile to array percentage: %f"), (float)FilledCounter / GeneratedTiles.Num())
 		if (FilledCounter < TileCount) UE_LOG(LogTemp, Warning,
-		                                      TEXT("Cutting lead to non-main island. Regenerating shape..."))
+		                                      TEXT("Island is too small. Regenerating shape..."))
 	}
 	// Check if shape generation failed
 	UE_LOG(LogTemp, Warning, TEXT("Tries needed: %d"), Tries)
