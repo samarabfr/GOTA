@@ -46,7 +46,7 @@ void ATileMap::InitializeBothArrays(FHexCoords SizeInit)
 	}
 }
 
-void ATileMap::SpawnNewTile(FHexCoords Coords, float Height)
+ATile* ATileMap::SpawnNewTile(FHexCoords Coords, float Height)
 {
 	FActorSpawnParameters SpawnInfo;
 	FVector2d Vector2d = UHexCoordsFunctions::HexCoordsToVector2D(Coords);
@@ -65,6 +65,7 @@ void ATileMap::SpawnNewTile(FHexCoords Coords, float Height)
 			NewTile->Destroy();
 		}
 	}
+	return NewTile;
 }
 
 
@@ -219,9 +220,9 @@ void ATileMap::GenerateTiles(int32 TileCount)
 		// reset every tile
 		for (auto& GeneratedTile : GeneratedTiles)
 		{
-			GeneratedTile.ShouldGenerate = true;
-			GeneratedTile.ConnectedToMainIsland = false;
-			GeneratedTile.ConnectedToOcean = false;
+			GeneratedTile.IsLand = true;
+			GeneratedTile.IsLandConnectedToMainIsland = false;
+			GeneratedTile.IsWaterConnectedToOcean = false;
 			GeneratedTile.Height = 0;
 		}
 		const float MaxDistanceToMiddle = UE::Geometry::Distance(FVector2d(0, 0), MiddlePoint);
@@ -235,30 +236,29 @@ void ATileMap::GenerateTiles(int32 TileCount)
 				float ShapeHeight = FastNoiseWrapper->GetNoise2D(Q, R) * TerrainGenData->ShapeNoiseParameter.
 					NoiseFactor;
 				ShapeHeight += TerrainGenData->DistanceToMiddlePointCurve.GetRichCurveConst()->Eval(NormalizedDistance)
-					*
-					TerrainGenData->ShapeDistanceToMiddlePointFactor;
+					* TerrainGenData->ShapeDistanceToMiddlePointFactor;
 				ShapeHeight += TerrainGenData->ShapeHeightOffset;
 				GeneratedTiles[Q * GenSizeR + R].Height = 1;
 				if (ShapeHeight < TerrainGenData->ShouldGenerateThreshhold)
-					GeneratedTiles[Q * GenSizeR + R].ShouldGenerate = false;
+					GeneratedTiles[Q * GenSizeR + R].IsLand = false;
 			}
 		}
 		// cut away non-main islands
 		FlagConnectionToMainIsland(GetGeneratedTile(FHexCoords(MiddlePoint.X, MiddlePoint.Y)));
 		for (auto& GeneratedTile : GeneratedTiles)
 		{
-			if (!GeneratedTile.ConnectedToMainIsland) GeneratedTile.ShouldGenerate = false;
+			if (!GeneratedTile.IsLandConnectedToMainIsland) GeneratedTile.IsLand = false;
 		}
 		// fill in oceans
 		FlagConnectionToOcean(GetGeneratedTile(FHexCoords(0, 0)));
 		for (auto& GeneratedTile : GeneratedTiles)
 		{
-			if (!GeneratedTile.ConnectedToOcean) GeneratedTile.ShouldGenerate = true;
+			if (!GeneratedTile.IsWaterConnectedToOcean) GeneratedTile.IsLand = true;
 		}
 		// calculate filled tile count
 		for (auto& GeneratedTile : GeneratedTiles)
 		{
-			if (GeneratedTile.ShouldGenerate) ++FilledCounter;
+			if (GeneratedTile.IsLand) ++FilledCounter;
 		}
 		// cut to tilecount
 		// sort tiles by neigborcount
@@ -270,10 +270,10 @@ void ATileMap::GenerateTiles(int32 TileCount)
 			int32 FilledNeighborsCounter = 0;
 			for (int i = 0; i < 6; ++i)
 			{
-				if (GeneratedTile.Neighbors[i] && GeneratedTile.Neighbors[i]->ShouldGenerate) ++FilledNeighborsCounter;
+				if (GeneratedTile.Neighbors[i] && GeneratedTile.Neighbors[i]->IsLand) ++FilledNeighborsCounter;
 			}
 			// every filled tile should have 1-6 neighbors
-			if (GeneratedTile.ShouldGenerate) TilesByNeighborCount[FilledNeighborsCounter - 1].Add(&GeneratedTile);
+			if (GeneratedTile.IsLand) TilesByNeighborCount[FilledNeighborsCounter - 1].Add(&GeneratedTile);
 		}
 		// cut until TileCount is met
 		while (FilledCounter > TileCount && TileCount != 0)
@@ -286,7 +286,7 @@ void ATileMap::GenerateTiles(int32 TileCount)
 					const int32 RandomIndex = FMath::RandRange(0, TilesByNeighborCount[i].Num() - 1);
 					FGeneratedTileInfo* GeneratedTile = TilesByNeighborCount[i][RandomIndex];
 					TilesByNeighborCount[i].RemoveAt(RandomIndex);
-					GeneratedTile->ShouldGenerate = false;
+					GeneratedTile->IsLand = false;
 					--FilledCounter;
 					break;
 				}
@@ -295,14 +295,14 @@ void ATileMap::GenerateTiles(int32 TileCount)
 		// check for non-main islands again
 		for (auto& GeneratedTile : GeneratedTiles)
 		{
-			GeneratedTile.ConnectedToMainIsland = false;
+			GeneratedTile.IsLandConnectedToMainIsland = false;
 		}
 		FlagConnectionToMainIsland(GetGeneratedTile(FHexCoords(MiddlePoint.X, MiddlePoint.Y)));
 		for (auto& GeneratedTile : GeneratedTiles)
 		{
-			if (GeneratedTile.ShouldGenerate && !GeneratedTile.ConnectedToMainIsland)
+			if (GeneratedTile.IsLand && !GeneratedTile.IsLandConnectedToMainIsland)
 			{
-				GeneratedTile.ShouldGenerate = false;
+				GeneratedTile.IsLand = false;
 				--FilledCounter;
 			}
 		}
@@ -311,44 +311,70 @@ void ATileMap::GenerateTiles(int32 TileCount)
 	if (Tries == MaxTries) UE_LOG(LogTemp, Warning, TEXT("Shape generation failed"))
 	// Generate Height
 	// Calculate distance to ocean
-	bool TilesHaveChanged = false;
-	do
+	// Search Coast
+	TArray<FGeneratedTileInfo*> Frontier;
+	for (FGeneratedTileInfo& GeneratedTile : GeneratedTiles)
 	{
-		TilesHaveChanged = false;
-		for (FGeneratedTileInfo& GeneratedTile : GeneratedTiles)
+		if (GeneratedTile.IsLand)
 		{
-			if (GeneratedTile.ShouldGenerate && !GeneratedTile.DistanceFromOceanWasCalculated)
+			// go through every neighbor
+			for (int i = 0; i < 6; ++i)
 			{
-				// go through every neighbor
-				for (int i = 0; i < 6; ++i)
+				// is bordering to water
+				if (!GeneratedTile.Neighbors[i] || !GeneratedTile.Neighbors[i]->IsLand)
 				{
-					// is bordering to water
-					if (!GeneratedTile.Neighbors[i] || !GeneratedTile.Neighbors[i]->ShouldGenerate)
-					{
-						GeneratedTile.DistanceFromOcean = 1;
-						GeneratedTile.DistanceFromOceanWasCalculated = true;
-						break; // No need to check other neighbors if bordering water
-					}
-					// see if there's a neighbor that has a closer connection to water than previous ones
-					else if (GeneratedTile.Neighbors[i]->DistanceFromOceanWasCalculated && GeneratedTile.Neighbors[i]->
-						DistanceFromOcean + 1 < GeneratedTile.DistanceFromOcean)
-					{
-						GeneratedTile.DistanceFromOcean = GeneratedTile.Neighbors[i]->DistanceFromOcean + 1;
-						GeneratedTile.DistanceFromOceanWasCalculated = true;
-					}
+					GeneratedTile.DistanceFromOcean = 1;
+					Frontier.Add(&GeneratedTile);
+					break; // No need to check other neighbors if bordering water
 				}
-				if (GeneratedTile.DistanceFromOceanWasCalculated) TilesHaveChanged = true;
 			}
 		}
 	}
-	while (TilesHaveChanged);
+	// Flood fill
+	int8 DistanceFromOcean = 2;
+	while (!Frontier.IsEmpty())
+	{
+		TArray<FGeneratedTileInfo*> NewFrontier;
+		for (FGeneratedTileInfo* FrontierTile : Frontier)
+		{
+			for (int i = 0; i < 6; ++i)
+			{
+				if (FrontierTile->Neighbors[i] && FrontierTile->Neighbors[i]->DistanceFromOcean == -1 && FrontierTile->
+					Neighbors[i]->IsLand)
+				{
+					NewFrontier.Add(FrontierTile->Neighbors[i]);
+					FrontierTile->Neighbors[i]->DistanceFromOcean = DistanceFromOcean;
+				}
+			}
+		}
+		++DistanceFromOcean;
+		Frontier = NewFrontier;
+	}
+	const int8 MaxDistanceFromOcean = DistanceFromOcean - 1;
+	// determine volcano tile
+	// calculate tiles that are eligible for being the volcano tile
+	TArray<FGeneratedTileInfo*> TilesEligibleForVolcano;
+	for (FGeneratedTileInfo& GeneratedTile : GeneratedTiles)
+	{
+		if (GeneratedTile.IsLand && static_cast<float>(GeneratedTile.DistanceFromOcean) / MaxDistanceFromOcean >=
+			TerrainGenData->VolcanoSpawnOceanDistancePercentageThreshold)
+		{
+			TilesEligibleForVolcano.Add(&GeneratedTile);
+		}
+	}
+	// Choose volcano tile
+	if (!TilesEligibleForVolcano.IsEmpty())
+	{
+		const int32 RandomIndex = FMath::RandRange(0, TilesEligibleForVolcano.Num() - 1);
+		TilesEligibleForVolcano[RandomIndex]->Biome = EBiome::Volcano;
+	}
 	// Calculate Height
 	SetupNoise(FastNoiseWrapper, TerrainGenData->HeightNoiseParameter);
 	for (int32 Q = 0; Q < GenSizeQ; ++Q)
 	{
 		for (int32 R = 0; R < GenSizeR; ++R)
 		{
-			FGeneratedTileInfo* GeneratedTile = GetGeneratedTile(FHexCoords(Q,R));
+			FGeneratedTileInfo* GeneratedTile = GetGeneratedTile(FHexCoords(Q, R));
 			/*
 			const float DistanceToMiddlePointHeight = TerrainGenData->DistanceToMiddlePointMaxHeightFactor /
 				FMath::Pow(
@@ -359,7 +385,7 @@ void ATileMap::GenerateTiles(int32 TileCount)
 				GetNoise2D(Q, R);
 			float Height = NoiseHeight + DistanceToMiddlePointHeight + TerrainGenData->HeightOffset;
 			*/
-			
+
 			// set height
 			GeneratedTile->Height = 200 * GeneratedTile->DistanceFromOcean;
 		}
@@ -370,9 +396,10 @@ void ATileMap::GenerateTiles(int32 TileCount)
 	int32 SpawnCounter = 0;
 	for (FGeneratedTileInfo GeneratedTile : GeneratedTiles)
 	{
-		if (GeneratedTile.ShouldGenerate)
+		if (GeneratedTile.IsLand)
 		{
-			SpawnNewTile(GeneratedTile.HexCoords, GeneratedTile.Height);
+			ATile* NewTile = SpawnNewTile(GeneratedTile.HexCoords, GeneratedTile.Height);
+			NewTile->SetBiome(GeneratedTile.Biome);
 			++SpawnCounter;
 		}
 	}
@@ -381,25 +408,25 @@ void ATileMap::GenerateTiles(int32 TileCount)
 
 void ATileMap::FlagConnectionToMainIsland(FGeneratedTileInfo* TileGeneratedInfo)
 {
-	if (!TileGeneratedInfo->ShouldGenerate) return;
+	if (!TileGeneratedInfo->IsLand) return;
 
-	TileGeneratedInfo->ConnectedToMainIsland = true;
+	TileGeneratedInfo->IsLandConnectedToMainIsland = true;
 	// Go through neighbors recursively
 	for (FGeneratedTileInfo* Neighbor : TileGeneratedInfo->Neighbors)
 	{
-		if (Neighbor && !Neighbor->ConnectedToMainIsland) FlagConnectionToMainIsland(Neighbor);
+		if (Neighbor && !Neighbor->IsLandConnectedToMainIsland) FlagConnectionToMainIsland(Neighbor);
 	}
 }
 
 void ATileMap::FlagConnectionToOcean(FGeneratedTileInfo* TileGeneratedInfo)
 {
-	if (TileGeneratedInfo->ShouldGenerate) return;
+	if (TileGeneratedInfo->IsLand) return;
 
-	TileGeneratedInfo->ConnectedToOcean = true;
+	TileGeneratedInfo->IsWaterConnectedToOcean = true;
 	// Go through neighbors recursively
 	for (FGeneratedTileInfo* Neighbor : TileGeneratedInfo->Neighbors)
 	{
-		if (Neighbor && !Neighbor->ConnectedToOcean) FlagConnectionToOcean(Neighbor);
+		if (Neighbor && !Neighbor->IsWaterConnectedToOcean) FlagConnectionToOcean(Neighbor);
 	}
 }
 

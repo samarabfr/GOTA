@@ -45,4 +45,7 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
 	float HeightOffset = -1000;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="BiomeGen")
+	float VolcanoSpawnOceanDistancePercentageThreshold = 0.8;
 };

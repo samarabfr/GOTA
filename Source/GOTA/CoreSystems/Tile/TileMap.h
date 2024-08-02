@@ -43,7 +43,7 @@ private:
 	
 	void InitializeBothArrays(FHexCoords SizeInit);
 
-	void SpawnNewTile(FHexCoords Coords, float Height);
+	ATile* SpawnNewTile(FHexCoords Coords, float Height);
 	
 	bool TryAddTile(FHexCoords HexCoords, ATile* Tile);
 	

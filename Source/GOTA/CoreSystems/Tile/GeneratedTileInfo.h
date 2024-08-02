@@ -13,18 +13,16 @@ struct FGeneratedTileInfo
 	FGeneratedTileInfo* Neighbors[6];
 
 	// shape generation
-	bool ShouldGenerate = true;
+	bool IsLand = true;
 
-	bool ConnectedToMainIsland = false;
+	bool IsLandConnectedToMainIsland = false;
 
-	bool ConnectedToOcean = false;
+	bool IsWaterConnectedToOcean = false;
 
 	// Height generation
 	float Height = 0;
-
-	bool DistanceFromOceanWasCalculated = false;
 	
-	int8 DistanceFromOcean = MAX_int8;
+	int8 DistanceFromOcean = -1;
 	
 	// Details
 	bool HasRiver = false;
