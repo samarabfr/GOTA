@@ -20,9 +20,11 @@ struct FGeneratedTileInfo
 	bool IsWaterConnectedToOcean = false;
 
 	// Height generation
-	float Height = 0;
+	float Height = 1;
 	
-	int8 DistanceFromOcean = -1;
+	int8 OceanDistance = -1;
+	
+	int8 VolcanoDistance = -1;
 	
 	// Details
 	bool HasRiver = false;

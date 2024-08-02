@@ -238,9 +238,8 @@ void ATileMap::GenerateTiles(int32 TileCount)
 				ShapeHeight += TerrainGenData->DistanceToMiddlePointCurve.GetRichCurveConst()->Eval(NormalizedDistance)
 					* TerrainGenData->ShapeDistanceToMiddlePointFactor;
 				ShapeHeight += TerrainGenData->ShapeHeightOffset;
-				GeneratedTiles[Q * GenSizeR + R].Height = 1;
-				if (ShapeHeight < TerrainGenData->ShouldGenerateThreshhold)
-					GeneratedTiles[Q * GenSizeR + R].IsLand = false;
+				if (ShapeHeight < TerrainGenData->IsLandThreshold)
+					GetGeneratedTile(FHexCoords(Q, R))->IsLand = false;
 			}
 		}
 		// cut away non-main islands
@@ -312,7 +311,7 @@ void ATileMap::GenerateTiles(int32 TileCount)
 	// Generate Height
 	// Calculate distance to ocean
 	// Search Coast
-	TArray<FGeneratedTileInfo*> Frontier;
+	TArray<FGeneratedTileInfo*> OceanFrontier;
 	for (FGeneratedTileInfo& GeneratedTile : GeneratedTiles)
 	{
 		if (GeneratedTile.IsLand)
@@ -323,51 +322,79 @@ void ATileMap::GenerateTiles(int32 TileCount)
 				// is bordering to water
 				if (!GeneratedTile.Neighbors[i] || !GeneratedTile.Neighbors[i]->IsLand)
 				{
-					GeneratedTile.DistanceFromOcean = 1;
-					Frontier.Add(&GeneratedTile);
+					GeneratedTile.OceanDistance = 1;
+					OceanFrontier.Add(&GeneratedTile);
 					break; // No need to check other neighbors if bordering water
 				}
 			}
 		}
 	}
 	// Flood fill
-	int8 DistanceFromOcean = 2;
-	while (!Frontier.IsEmpty())
+	int8 OceanDistance = 2;
+	while (!OceanFrontier.IsEmpty())
 	{
 		TArray<FGeneratedTileInfo*> NewFrontier;
-		for (FGeneratedTileInfo* FrontierTile : Frontier)
+		for (FGeneratedTileInfo* FrontierTile : OceanFrontier)
 		{
 			for (int i = 0; i < 6; ++i)
 			{
-				if (FrontierTile->Neighbors[i] && FrontierTile->Neighbors[i]->DistanceFromOcean == -1 && FrontierTile->
+				if (FrontierTile->Neighbors[i] && FrontierTile->Neighbors[i]->OceanDistance == -1 && FrontierTile->
 					Neighbors[i]->IsLand)
 				{
 					NewFrontier.Add(FrontierTile->Neighbors[i]);
-					FrontierTile->Neighbors[i]->DistanceFromOcean = DistanceFromOcean;
+					FrontierTile->Neighbors[i]->OceanDistance = OceanDistance;
 				}
 			}
 		}
-		++DistanceFromOcean;
-		Frontier = NewFrontier;
+		++OceanDistance;
+		OceanFrontier = NewFrontier;
 	}
-	const int8 MaxDistanceFromOcean = DistanceFromOcean - 1;
+	const int8 MaxOceanDistance = OceanDistance - 1;
 	// determine volcano tile
 	// calculate tiles that are eligible for being the volcano tile
 	TArray<FGeneratedTileInfo*> TilesEligibleForVolcano;
 	for (FGeneratedTileInfo& GeneratedTile : GeneratedTiles)
 	{
-		if (GeneratedTile.IsLand && static_cast<float>(GeneratedTile.DistanceFromOcean) / MaxDistanceFromOcean >=
+		if (GeneratedTile.IsLand && static_cast<float>(GeneratedTile.OceanDistance) / MaxOceanDistance >=
 			TerrainGenData->VolcanoSpawnOceanDistancePercentageThreshold)
 		{
 			TilesEligibleForVolcano.Add(&GeneratedTile);
 		}
 	}
 	// Choose volcano tile
+	FGeneratedTileInfo* VolcanoTile;
 	if (!TilesEligibleForVolcano.IsEmpty())
 	{
 		const int32 RandomIndex = FMath::RandRange(0, TilesEligibleForVolcano.Num() - 1);
-		TilesEligibleForVolcano[RandomIndex]->Biome = EBiome::Volcano;
+		VolcanoTile = TilesEligibleForVolcano[RandomIndex];
+		VolcanoTile->Biome = EBiome::Volcano;
 	}
+	// Generate Height
+	// Calculate distance to ocean
+	TArray<FGeneratedTileInfo*> VolcanoFrontier;
+	VolcanoFrontier.Add(VolcanoTile);
+	VolcanoTile->VolcanoDistance = 0;
+	// Flood fill
+	int8 VolcanoDistance = 1;
+	while (!VolcanoFrontier.IsEmpty())
+	{
+		TArray<FGeneratedTileInfo*> NewFrontier;
+		for (FGeneratedTileInfo* FrontierTile : VolcanoFrontier)
+		{
+			for (int i = 0; i < 6; ++i)
+			{
+				if (FrontierTile->Neighbors[i] && FrontierTile->Neighbors[i]->VolcanoDistance == -1 && FrontierTile
+					->Neighbors[i]->IsLand)
+				{
+					NewFrontier.Add(FrontierTile->Neighbors[i]);
+					FrontierTile->Neighbors[i]->VolcanoDistance = VolcanoDistance;
+				}
+			}
+		}
+		++VolcanoDistance;
+		VolcanoFrontier = NewFrontier;
+	}
+	const int8 MaxVolcanoDistance = VolcanoDistance - 1;
 	// Calculate Height
 	SetupNoise(FastNoiseWrapper, TerrainGenData->HeightNoiseParameter);
 	for (int32 Q = 0; Q < GenSizeQ; ++Q)
@@ -375,19 +402,24 @@ void ATileMap::GenerateTiles(int32 TileCount)
 		for (int32 R = 0; R < GenSizeR; ++R)
 		{
 			FGeneratedTileInfo* GeneratedTile = GetGeneratedTile(FHexCoords(Q, R));
-			/*
-			const float DistanceToMiddlePointHeight = TerrainGenData->DistanceToMiddlePointMaxHeightFactor /
-				FMath::Pow(
-					EULERS_NUMBER,
-					TerrainGenData->DistanceToMiddlePointGradientFactor * UE::Geometry::Distance(
-						FVector2d(Q, R), MiddlePoint));
-			const float NoiseHeight = TerrainGenData->HeightNoiseParameter.NoiseFactor * FastNoiseWrapper->
-				GetNoise2D(Q, R);
-			float Height = NoiseHeight + DistanceToMiddlePointHeight + TerrainGenData->HeightOffset;
-			*/
+			if (!GeneratedTile->IsLand) continue;
 
+			float Height = 1;
+			// Ocean distance
+			const float NormalizedOceanDistance = static_cast<float>(GeneratedTile->OceanDistance) / MaxOceanDistance;
+			Height += TerrainGenData->OceanDistanceCurve.GetRichCurveConst()->Eval(NormalizedOceanDistance)
+				* TerrainGenData->OceanDistanceFactor;
+			// volcano distance
+			const float NormalizedVolcanoDistance = static_cast<float>(GeneratedTile->VolcanoDistance) /
+				MaxVolcanoDistance;
+			Height += TerrainGenData->VolcanoDistanceCurve.GetRichCurveConst()->Eval(NormalizedVolcanoDistance)
+				* TerrainGenData->VolcanoDistanceFactor;
+			// Noise map
+			Height += (FastNoiseWrapper->GetNoise2D(Q, R) +1) / 2 * TerrainGenData->HeightNoiseParameter.NoiseFactor;
 			// set height
-			GeneratedTile->Height = 200 * GeneratedTile->DistanceFromOcean;
+			// Ocean distance as factor
+			Height *= TerrainGenData->OceanDistanceCurve.GetRichCurveConst()->Eval(NormalizedOceanDistance);
+			GeneratedTile->Height = Height;
 		}
 	}
 	// Initialize Tile Arrays to fit the island just right

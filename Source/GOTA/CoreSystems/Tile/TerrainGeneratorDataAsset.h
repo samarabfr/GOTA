@@ -32,20 +32,23 @@ public:
 	float ShapeHeightOffset = -1000;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="ShapeGen")
-	float ShouldGenerateThreshhold;
+	float IsLandThreshold;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="ShapeGen")
+	float VolcanoSpawnOceanDistancePercentageThreshold = 0.8;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
+	FRuntimeFloatCurve OceanDistanceCurve;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
+	float OceanDistanceFactor = 1;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
+	FRuntimeFloatCurve VolcanoDistanceCurve;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
+	float VolcanoDistanceFactor = 1;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
 	FNoiseParameter HeightNoiseParameter;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
-	float DistanceToMiddlePointMaxHeightFactor = 4000;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
-	float DistanceToMiddlePointGradientFactor = 0.2;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
-	float HeightOffset = -1000;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="BiomeGen")
-	float VolcanoSpawnOceanDistancePercentageThreshold = 0.8;
 };
