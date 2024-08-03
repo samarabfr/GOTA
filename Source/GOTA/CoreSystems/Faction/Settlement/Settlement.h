@@ -72,6 +72,9 @@ public:
 
 	FPrimitiveInstanceId AddClaimMeshInstance(FTransform& Transform);
 	void RemoveClaimMeshInstance(FPrimitiveInstanceId InstanceId);
+
+	UFUNCTION(BlueprintCallable)
+	bool ClaimRandomTile();
 	
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void LostClaim(const ATile* Tile);
