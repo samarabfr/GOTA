@@ -8,6 +8,10 @@ enum class EProductionType : uint8
 	Hunting UMETA(DisplayName = "Hunting"),
 	Converting UMETA(DisplayName = "Converting"),
 	Expansion UMETA(DisplayName = "Expansion"),
+	Stonecutting UMETA(DisplayName = "Stonecutting"),
+	Musketmaking UMETA(DisplayName = "Musketmaking"),
+	Shieldmaking UMETA(DisplayName = "Shieldmaking"),
+	Bowmaking UMETA(DisplayName = "Bowmaking"),
 	MAX UMETA(Hidden) // Sentinel value for enum size
 };
 

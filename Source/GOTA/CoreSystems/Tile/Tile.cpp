@@ -260,7 +260,7 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 		Claimant->OnBuildingAdded(Building);
 	}
 	// Add Building related GameplayTags
-	GameplayTags.AppendTags(BuildingDataAsset->GameplayTags);
+	GameplayTags.AppendTags(BuildingDataAsset->TierOne.GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
 	AddBuildingToReplication();
 	// Set Graphics
@@ -280,7 +280,7 @@ void ATile::Unbuild()
 		Claimant->OnBuildingRemoved(Building);
 	}
 	// Remove Building related GameplayTags
-	GameplayTags.RemoveTags(Building->DataAsset->GameplayTags);
+	GameplayTags.RemoveTag(FGameplayTag::RequestGameplayTag(FName("Building")));
 	OnGameplayTagsChanged.Broadcast();
 	// Destroy the Object
 	Building = nullptr;

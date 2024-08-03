@@ -18,9 +18,6 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	FText Description;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	FGameplayTagContainer GameplayTags;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	TSubclassOf<class UBuilding> BuildingClass;
