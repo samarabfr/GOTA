@@ -89,6 +89,8 @@ void ASettlement::RemoveClaimMeshInstance(FPrimitiveInstanceId InstanceId)
 	ISM_ClaimFlags->RemoveInstanceById(InstanceId);
 }
 
+
+
 void ASettlement::OnBuildingAdded(UBuilding* Building)
 {
 	if (Building)
@@ -134,7 +136,6 @@ void ASettlement::SetCurrentBuildingProject(UBuildingProject* NewCurrentBuilding
 		RemoveReplicatedSubObject(CurrentBuildingProject);
 	}
 	CurrentBuildingProject = NewCurrentBuildingProject;
-	OnCurrentBuildingProjectChanged.Broadcast();
 	if (CurrentBuildingProject)
 	{
 		AddReplicatedSubObject(CurrentBuildingProject);
