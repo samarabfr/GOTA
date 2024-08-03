@@ -31,6 +31,7 @@ UBuilding::UBuilding()
 bool UBuilding::Upgrade()
 {
 	FBuildingTierData* NewTierData = DataAsset->GetTierData(Tier + 1);
+	if (!NewTierData) return false;
 	if (NewTierData->Housing < 0) return false;
 	Production->SetupWithTierData(NewTierData);
 	int32 EC = 0;
