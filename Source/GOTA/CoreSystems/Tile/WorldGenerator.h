@@ -1,0 +1,80 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+
+#include "TerrainGeneratorDataAsset.h"
+#include "NoiseParameter.h"
+#include "CoreMinimal.h"
+#include "TileMap.h"
+#include "WorldGenerator.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class GOTA_API UWorldGenerator : public UObject
+{
+	GENERATED_BODY()
+
+public:
+	void Init(ATileMap* TileMap_, int32 TileCount_);
+
+	void GenerateWorld();
+
+private:
+	UPROPERTY()
+	ATileMap* TileMap;
+	
+	int32 TileCount;
+
+	FHexCoords Size;
+	
+	UPROPERTY()
+	UTerrainGeneratorDataAsset* TerrainGenData;
+
+	FGeneratedTileInfo* Middle;
+
+	FGeneratedTileInfo* Origin;
+	
+	FGeneratedTileInfo* Volcano;
+
+	UPROPERTY()
+	UFastNoiseWrapper* FastNoiseWrapper;
+
+	TArray<FGeneratedTileInfo> GTiles;
+
+	int8 MaxOceanDistance;
+
+	int8 MaxVolcanoDistance;
+
+	FGeneratedTileInfo* GetTile(const FHexCoords& Coords);
+	
+	FGeneratedTileInfo* GetTile(int32 Q, int32 R);
+
+	void GenerateShape();
+
+	void GenerateHeight();
+
+	void CalculateOceanDistances();
+
+	void CalculateVolcanoDistances();
+
+	void ChooseVolcanoTile();
+
+	void GenerateBeaches();
+
+	void GenerateMountains();
+
+	void SpawnTiles();
+
+	void CutAndInitializeArrays();
+
+	void SetupNoise(FNoiseParameter& Parameter);
+	
+	void FlagConnectionToMainIsland(FGeneratedTileInfo* TileGeneratedInfo);
+	
+	void FlagConnectionToOcean(FGeneratedTileInfo* TileGeneratedInfo);
+	
+	void PlaceBeach(FGeneratedTileInfo* GeneratedTile, int32& BeachTileCounter);
+};

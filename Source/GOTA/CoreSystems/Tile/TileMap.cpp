@@ -168,7 +168,6 @@ ATile* ATileMap::GetRandomTile()
 
 void ATileMap::GenerateTiles(int32 TileCount)
 {
-	// calculating Generation size. HAS TO BE CHANGED WHEN PARAMETERS CHANGE
 	const float Approx = TerrainGenData->LandToArraySizeRatio;
 	const int32 GenSizeQ = FMath::Sqrt(TileCount / (Approx * 1.5));
 	const int32 GenSizeR = GenSizeQ * 1.5;
@@ -370,7 +369,7 @@ void ATileMap::GenerateTiles(int32 TileCount)
 		VolcanoTile->Biome = EBiome::Volcano;
 	}
 	// Generate Height
-	// Calculate distance to ocean
+	// Calculate distance to volcano
 	TArray<FGeneratedTileInfo*> VolcanoFrontier;
 	VolcanoFrontier.Add(VolcanoTile);
 	VolcanoTile->VolcanoDistance = 0;

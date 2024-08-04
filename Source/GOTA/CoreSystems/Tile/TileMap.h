@@ -25,9 +25,6 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ATile> TileClass;
 	
-	UPROPERTY(EditDefaultsOnly)
-	UTerrainGeneratorDataAsset* TerrainGenData;
-	
 private:
 	AGS_Ingame* GameState;
 	
@@ -41,10 +38,6 @@ private:
 	// Array for fast access on server
 	ATile** TilesArray;
 	
-	void InitializeBothArrays(FHexCoords SizeInit);
-
-	ATile* SpawnNewTile(FHexCoords Coords, float Height);
-	
 	bool TryAddTile(FHexCoords HexCoords, ATile* Tile);
 	
 	void SetupNoise(UFastNoiseWrapper* FastNoiseWrapper, FNoiseParameter& Parameter);
@@ -56,6 +49,13 @@ private:
 	void PlaceBeach(FGeneratedTileInfo* GeneratedTile, int32& BeachTileCounter);
 	
 public:
+	UPROPERTY(EditDefaultsOnly)
+	UTerrainGeneratorDataAsset* TerrainGenData;
+	
+	void InitializeBothArrays(FHexCoords SizeInit);
+
+	ATile* SpawnNewTile(FHexCoords Coords, float Height);
+	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	ATile* GetTile(FHexCoords HexCoords);
 
