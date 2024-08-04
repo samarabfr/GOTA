@@ -24,7 +24,7 @@ public:
 	UPROPERTY(BlueprintAssignable, Category="Building")
 	FOnAnythingChangedSignature OnChanged;
 	
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	TMap<EProductionType, int32> ProductionMap;
 
 	UFUNCTION()
