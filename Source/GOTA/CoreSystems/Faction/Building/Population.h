@@ -58,6 +58,7 @@ public:
 	int32 GrowthChange = 0;
 
 	// TODO: DataAsset
+	UPROPERTY(BlueprintReadOnly)
 	int32 GrowthThreshold = 30;
 
 	UFUNCTION()
