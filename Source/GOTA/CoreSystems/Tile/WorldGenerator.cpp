@@ -73,12 +73,12 @@ void UWorldGenerator::GenerateShape()
 		FilledCounter = 0;
 		++Tries;
 		// reset every tile
-		for (FGeneratedTileInfo& GeneratedTile : GTiles)
+		for (FGeneratedTileInfo& Tile : GTiles)
 		{
-			GeneratedTile.IsLand = true;
-			GeneratedTile.IsLandConnectedToMainIsland = false;
-			GeneratedTile.IsWaterConnectedToOcean = false;
-			GeneratedTile.Height = 0;
+			Tile.IsLand = true;
+			Tile.IsLandConnectedToMainIsland = false;
+			Tile.IsWaterConnectedToOcean = false;
+			Tile.Height = 0;
 		}
 		const float MaxDistanceToMiddle = UE::Geometry::Distance(
 			FVector2d(0, 0),

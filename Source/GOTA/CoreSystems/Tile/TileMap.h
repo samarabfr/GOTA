@@ -3,12 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "FastNoiseWrapper.h"
 #include "HexCoords.h"
-#include "NoiseParameter.h"
 #include "TerrainGeneratorDataAsset.h"
 #include "Tile.h"
-#include "GeneratedTileInfo.h"
 #include "GameFramework/Actor.h"
 #include "TileMap.generated.h"
 
@@ -40,14 +37,6 @@ private:
 	
 	bool TryAddTile(FHexCoords HexCoords, ATile* Tile);
 	
-	void SetupNoise(UFastNoiseWrapper* FastNoiseWrapper, FNoiseParameter& Parameter);
-	
-	void FlagConnectionToMainIsland(FGeneratedTileInfo* TileGeneratedInfo);
-	
-	void FlagConnectionToOcean(FGeneratedTileInfo* TileGeneratedInfo);
-	
-	void PlaceBeach(FGeneratedTileInfo* GeneratedTile, int32& BeachTileCounter);
-	
 public:
 	UPROPERTY(EditDefaultsOnly)
 	UTerrainGeneratorDataAsset* TerrainGenData;
@@ -67,9 +56,6 @@ public:
 	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	ATile* GetRandomTile();
-	
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
-	void GenerateTiles(int32 TileCount);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	void CalculateTurn();

@@ -6,6 +6,7 @@
 #include "TerrainGeneratorDataAsset.h"
 #include "NoiseParameter.h"
 #include "CoreMinimal.h"
+#include "GeneratedTileInfo.h"
 #include "TileMap.h"
 #include "WorldGenerator.generated.h"
 
