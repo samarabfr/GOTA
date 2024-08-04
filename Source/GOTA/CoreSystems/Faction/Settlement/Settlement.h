@@ -109,19 +109,19 @@ public:
 	// ---------------------------------------------------------
 	// Resources and Building
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category="Attribute")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
 	UGOTAAttribute* Food;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category="Attribute")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
 	UGOTAAttribute* Wood;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category="Attribute")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
 	UGOTAAttribute* Stone;
 	
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Settlement")
 	TArray<UBuildingDataAsset*> PossibleBuildings;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Replicated, Category="Attribute")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
 	UBuildingProductionSummary* ProductionSummary;
 	
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, BlueprintSetter=SetCurrentBuildingProject, Replicated,

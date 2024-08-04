@@ -51,16 +51,16 @@ public:
 	FOnMoodChangedSignature OnMoodChanged;
 
 public:
-	UPROPERTY(ReplicatedUsing=OnRep_Current, BlueprintReadOnly, Category = "Population")
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Current, BlueprintReadOnly, Category = "Population")
 	int32 Current = 0;
 
-	UPROPERTY(ReplicatedUsing=OnRep_Maximum, BlueprintReadOnly, Category = "Population")
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Maximum, BlueprintReadOnly, Category = "Population")
 	int32 Maximum = 0;
 
-	UPROPERTY(ReplicatedUsing=OnRep_Follower)
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Follower)
 	TArray<int32> Follower;
 
-	UPROPERTY(ReplicatedUsing=OnRep_Moods)
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Moods)
 	TArray<int32> Moods;
 
 	UFUNCTION()

@@ -104,7 +104,7 @@ void UPopulation::ChangeMaximum(int32 Change, int32& Effective_Change)
 
 	if (Effective_Change == 0) return; // nothing happened
 
-	if (Maximum > Current) // Maximum is smaller than pop so we have to reduce Pop
+	if (Maximum < Current) // Maximum is smaller than pop so we have to reduce Pop
 	{
 		int32 E_C;
 		ChangePopulation(Maximum - Change, E_C);

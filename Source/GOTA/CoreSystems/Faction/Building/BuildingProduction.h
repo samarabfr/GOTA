@@ -33,16 +33,16 @@ public:
 	UPROPERTY(BlueprintAssignable, Category="Building")
 	FOnProductionChangedSignature OnProductionChanged;
 
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="Building")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Replicated, Category="Building")
 	int32 PopulationThreshold = 0;
 
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="Building")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Replicated, Category="Building")
 	int32 ProductionPerThreshold = 0;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Building")
 	int32 Production = 0;
 
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="Building")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Replicated, Category="Building")
 	EProductionType ProductionType = EProductionType::MAX;
 
 	UFUNCTION(BlueprintCallable)

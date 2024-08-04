@@ -17,12 +17,12 @@ class GOTA_API UBuilding : public UObject
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
 	UBuilding();
-	
+
 	//====================================================================
 	//--------------------Overrideable Events
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
-public:	
+public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
 	void OnBuild(const ATile* Tile);
 
@@ -45,13 +45,13 @@ public:
 	UPROPERTY(BlueprintReadOnly, Replicated, EditDefaultsOnly, Category="Building")
 	UBuildingDataAsset* DataAsset;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
+	UPROPERTY(VisibleInstanceOnly, Instanced, BlueprintReadOnly, Replicated, Category="Building")
 	UPopulation* Population;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
+	UPROPERTY(VisibleInstanceOnly, Instanced, BlueprintReadOnly, Replicated, Category="Building")
 	UBuildingProduction* Production;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Building")
 	int32 Tier = 1;
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Building")
