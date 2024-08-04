@@ -415,7 +415,7 @@ void ATileMap::GenerateTiles(int32 TileCount)
 			Height += TerrainGenData->VolcanoDistanceCurve.GetRichCurveConst()->Eval(NormalizedVolcanoDistance)
 				* TerrainGenData->VolcanoDistanceFactor;
 			// Noise map
-			Height += (FastNoiseWrapper->GetNoise2D(Q, R) +1) / 2 * TerrainGenData->HeightNoiseParameter.NoiseFactor;
+			Height += (FastNoiseWrapper->GetNoise2D(Q, R) + 1) / 2 * TerrainGenData->HeightNoiseParameter.NoiseFactor;
 			// set height
 			// Ocean distance as factor
 			Height *= TerrainGenData->OceanDistanceCurve.GetRichCurveConst()->Eval(NormalizedOceanDistance);
@@ -430,7 +430,9 @@ void ATileMap::GenerateTiles(int32 TileCount)
 	{
 		if (GeneratedTile.IsLand)
 		{
-			ATile* NewTile = SpawnNewTile(GeneratedTile.HexCoords, GeneratedTile.Height);
+			float Height = FMath::TruncToFloat(GeneratedTile.Height
+				/ TerrainGenData->HeightStepFactor) * TerrainGenData->HeightStepFactor + TerrainGenData->HeightOffset;
+			ATile* NewTile = SpawnNewTile(GeneratedTile.HexCoords, Height);;
 			NewTile->SetBiome(GeneratedTile.Biome);
 			++SpawnCounter;
 		}

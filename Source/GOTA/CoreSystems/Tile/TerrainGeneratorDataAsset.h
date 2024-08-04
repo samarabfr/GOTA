@@ -36,6 +36,12 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="ShapeGen")
 	float VolcanoSpawnOceanDistancePercentageThreshold = 0.8;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
+	float HeightStepFactor = 100;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
+	float HeightOffset = 1;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
 	FRuntimeFloatCurve OceanDistanceCurve;
