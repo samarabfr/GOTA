@@ -51,7 +51,7 @@ public:
 	UPROPERTY()
 	FOnChangedSignature OnGameplayTagsChanged;
 
-	UPROPERTY(Replicated, BlueprintReadOnly)
+	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly)
 	FHexCoords HexCoords;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
