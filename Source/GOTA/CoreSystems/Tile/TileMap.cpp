@@ -472,6 +472,16 @@ void ATileMap::GenerateTiles(int32 TileCount)
 		int32 BeachCounter = 0;
 		PlaceBeach(Coast[RandomIndex], BeachCounter);
 		TotalBeachCounter += BeachCounter;
+		// Check if there are still free slots for beaches to impede infinite loops
+		bool HasOpenSlots = false;
+		for (FGeneratedTileInfo* CoastTile : Coast)
+		{
+			if(CoastTile->OceanDistance == 1 && CoastTile->Height == TerrainGenData->HeightOffset && CoastTile->Biome != EBiome::Beach)
+			{
+				HasOpenSlots = true;
+			}
+		}
+		if(!HasOpenSlots) break;
 	}
 	// Generate mountain
 	for (FGeneratedTileInfo& GeneratedTile : GeneratedTiles)
