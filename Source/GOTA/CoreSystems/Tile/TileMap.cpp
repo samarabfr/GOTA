@@ -418,10 +418,6 @@ void ATileMap::GenerateTiles(int32 TileCount)
 			Height += (FastNoiseWrapper->GetNoise2D(Q, R) + 1) / 2 * TerrainGenData->HeightNoiseParameter.NoiseFactor;
 			// Ocean distance as factor
 			Height *= TerrainGenData->OceanDistanceCurve.GetRichCurveConst()->Eval(NormalizedOceanDistance);
-			// round to height steps
-			Height = FMath::TruncToFloat(Height / TerrainGenData->HeightStepFactor) * TerrainGenData->HeightStepFactor;
-			// apply offset
-			Height += TerrainGenData->HeightOffset;
 			GeneratedTile->Height = Height;
 		}
 	}
@@ -476,20 +472,36 @@ void ATileMap::GenerateTiles(int32 TileCount)
 		bool HasOpenSlots = false;
 		for (FGeneratedTileInfo* CoastTile : Coast)
 		{
-			if(CoastTile->OceanDistance == 1 && CoastTile->Height == TerrainGenData->HeightOffset && CoastTile->Biome != EBiome::Beach)
+			if (CoastTile->OceanDistance == 1 && CoastTile->Height < TerrainGenData->HeightStep && CoastTile->Biome !=
+				EBiome::Beach)
 			{
 				HasOpenSlots = true;
 			}
 		}
-		if(!HasOpenSlots) break;
+		if (!HasOpenSlots) break;
 	}
 	// Generate mountain
+	// Copy GeneratedTiles array
+	TArray<FGeneratedTileInfo*> GeneratedTilesHeightSorted;
 	for (FGeneratedTileInfo& GeneratedTile : GeneratedTiles)
 	{
-		if (GeneratedTile.Biome != EBiome::Volcano
-			&& GeneratedTile.Height / VolcanoTile->Height >= TerrainGenData->MountainMinPercentageToVolcanoHeight)
+		GeneratedTilesHeightSorted.Add(&GeneratedTile);
+	}
+	// Sort array
+	GeneratedTilesHeightSorted.Sort([](const FGeneratedTileInfo& A, const FGeneratedTileInfo& B)
+	{
+		return A.Height > B.Height;
+	});
+	// set mountain biomes
+	int32 MountainCounter = 0;
+	int32 MountainCounterGoal = TerrainGenData->MountainMinPercentage * TileCount;
+	for (FGeneratedTileInfo* GeneratedTile : GeneratedTilesHeightSorted)
+	{
+		if (GeneratedTile->Biome != EBiome::Volcano
+			&& MountainCounter < MountainCounterGoal)
 		{
-			GeneratedTile.Biome = EBiome::Mountain;
+			GeneratedTile->Biome = EBiome::Mountain;
+			++MountainCounter;
 		}
 	}
 	// Initialize Tile Arrays to fit the island just right
@@ -500,7 +512,10 @@ void ATileMap::GenerateTiles(int32 TileCount)
 	{
 		if (GeneratedTile.IsLand)
 		{
-			ATile* NewTile = SpawnNewTile(GeneratedTile.HexCoords, GeneratedTile.Height);;
+			// round to height steps
+			float Height = FMath::TruncToFloat(GeneratedTile.Height  / TerrainGenData->HeightStep) * TerrainGenData->HeightStep;
+			Height += TerrainGenData->HeightOffset;
+			ATile* NewTile = SpawnNewTile(GeneratedTile.HexCoords, Height);
 			NewTile->SetBiome(GeneratedTile.Biome);
 			++SpawnCounter;
 		}
@@ -538,7 +553,7 @@ void ATileMap::PlaceBeach(FGeneratedTileInfo* GeneratedTile, int32& BeachTileCou
 		|| !GeneratedTile
 		|| GeneratedTile->OceanDistance != 1
 		|| GeneratedTile->Biome == EBiome::Beach
-		|| GeneratedTile->Height != TerrainGenData->HeightOffset)
+		|| GeneratedTile->Height >= TerrainGenData->HeightStep)
 		return;
 
 	GeneratedTile->Biome = EBiome::Beach;

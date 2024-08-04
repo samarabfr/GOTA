@@ -41,7 +41,7 @@ public:
 	float MaxHeightDifference = 1000;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
-	float HeightStepFactor = 100;
+	float HeightStep = 100;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
 	float HeightOffset = 1;
@@ -71,5 +71,5 @@ public:
 	float MinTotalBeachPercentage = 0.5;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="BiomeGen")
-	float MountainMinPercentageToVolcanoHeight = 0.7;
+	float MountainMinPercentage = 0.1;
 };
