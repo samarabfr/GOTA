@@ -416,13 +416,15 @@ void ATileMap::GenerateTiles(int32 TileCount)
 				* TerrainGenData->VolcanoDistanceFactor;
 			// Noise map
 			Height += (FastNoiseWrapper->GetNoise2D(Q, R) + 1) / 2 * TerrainGenData->HeightNoiseParameter.NoiseFactor;
-			// set height
 			// Ocean distance as factor
 			Height *= TerrainGenData->OceanDistanceCurve.GetRichCurveConst()->Eval(NormalizedOceanDistance);
+			// round to height steps
+			Height = FMath::TruncToFloat(Height / TerrainGenData->HeightStepFactor) * TerrainGenData->HeightStepFactor;
+			// apply offset
+			Height += TerrainGenData->HeightOffset;
 			GeneratedTile->Height = Height;
 		}
 	}
-
 	// Apply max height difference and volcano height offset
 	bool HeightChanged = true;
 	// absolute value against user error
@@ -453,6 +455,33 @@ void ATileMap::GenerateTiles(int32 TileCount)
 			}
 		}
 	}
+	// Generate Beach
+	// Find coast
+	TArray<FGeneratedTileInfo*> Coast;
+	for (FGeneratedTileInfo& GeneratedTile : GeneratedTiles)
+	{
+		if (GeneratedTile.OceanDistance == 1)
+			Coast.Add(&GeneratedTile);
+	}
+	// Place beaches
+	int32 TotalBeachCounter = 0;
+	while (!Coast.IsEmpty() && TotalBeachCounter / static_cast<float>(Coast.Num()) < TerrainGenData->
+		MinTotalBeachPercentage)
+	{
+		const int32 RandomIndex = FMath::RandRange(0, Coast.Num() - 1);
+		int32 BeachCounter = 0;
+		PlaceBeach(Coast[RandomIndex], BeachCounter);
+		TotalBeachCounter += BeachCounter;
+	}
+	// Generate mountain
+	for (FGeneratedTileInfo& GeneratedTile : GeneratedTiles)
+	{
+		if (GeneratedTile.Biome != EBiome::Volcano
+			&& GeneratedTile.Height / VolcanoTile->Height >= TerrainGenData->MountainMinPercentageToVolcanoHeight)
+		{
+			GeneratedTile.Biome = EBiome::Mountain;
+		}
+	}
 	// Initialize Tile Arrays to fit the island just right
 	InitializeBothArrays(FHexCoords(GenSizeR, GenSizeR));
 	// Spawn Tiles
@@ -461,9 +490,7 @@ void ATileMap::GenerateTiles(int32 TileCount)
 	{
 		if (GeneratedTile.IsLand)
 		{
-			float Height = FMath::TruncToFloat(GeneratedTile.Height
-				/ TerrainGenData->HeightStepFactor) * TerrainGenData->HeightStepFactor + TerrainGenData->HeightOffset;
-			ATile* NewTile = SpawnNewTile(GeneratedTile.HexCoords, Height);;
+			ATile* NewTile = SpawnNewTile(GeneratedTile.HexCoords, GeneratedTile.Height);;
 			NewTile->SetBiome(GeneratedTile.Biome);
 			++SpawnCounter;
 		}
@@ -492,6 +519,23 @@ void ATileMap::FlagConnectionToOcean(FGeneratedTileInfo* TileGeneratedInfo)
 	for (FGeneratedTileInfo* Neighbor : TileGeneratedInfo->Neighbors)
 	{
 		if (Neighbor && !Neighbor->IsWaterConnectedToOcean) FlagConnectionToOcean(Neighbor);
+	}
+}
+
+void ATileMap::PlaceBeach(FGeneratedTileInfo* GeneratedTile, int32& BeachTileCounter)
+{
+	if (BeachTileCounter >= TerrainGenData->BeachSize
+		|| !GeneratedTile
+		|| GeneratedTile->OceanDistance != 1
+		|| GeneratedTile->Biome == EBiome::Beach
+		|| GeneratedTile->Height != TerrainGenData->HeightOffset)
+		return;
+
+	GeneratedTile->Biome = EBiome::Beach;
+	++BeachTileCounter;
+	for (FGeneratedTileInfo* Neighbor : GeneratedTile->Neighbors)
+	{
+		PlaceBeach(Neighbor, BeachTileCounter);
 	}
 }
 

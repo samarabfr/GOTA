@@ -63,4 +63,13 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
 	FNoiseParameter HeightNoiseParameter;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="BiomeGen")
+	int32 BeachSize = 5;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="BiomeGen")
+	float MinTotalBeachPercentage = 0.5;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="BiomeGen")
+	float MountainMinPercentageToVolcanoHeight = 0.7;
 };

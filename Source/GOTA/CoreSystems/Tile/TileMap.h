@@ -53,6 +53,8 @@ private:
 	
 	void FlagConnectionToOcean(FGeneratedTileInfo* TileGeneratedInfo);
 	
+	void PlaceBeach(FGeneratedTileInfo* GeneratedTile, int32& BeachTileCounter);
+	
 public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	ATile* GetTile(FHexCoords HexCoords);
