@@ -422,21 +422,34 @@ void ATileMap::GenerateTiles(int32 TileCount)
 			GeneratedTile->Height = Height;
 		}
 	}
-	// Apply max height difference
+
+	// Apply max height difference and volcano height offset
 	bool HeightChanged = true;
+	// absolute value against user error
+	float AbsoluteVolcanoOffsetToLowestNeighbor = FMath::Abs(TerrainGenData->VolcanoOffsetToLowestNeighbor);
 	while (HeightChanged)
 	{
 		HeightChanged = false;
 		for (FGeneratedTileInfo& GeneratedTile : GeneratedTiles)
 		{
+			// look for lowest neighbor and apply max height difference
 			for (FGeneratedTileInfo* Neighbor : GeneratedTile.Neighbors)
 			{
-				if(Neighbor && GeneratedTile.Height - Neighbor->Height > TerrainGenData->MaxHeightDifference)
+				if (GeneratedTile.VolcanoDistance > 0 && Neighbor && GeneratedTile.Height - Neighbor->Height >
+					TerrainGenData->MaxHeightDifference)
 				{
 					// adjust to Maxheightdifference. -1 extra to avoid infinite loops because of floating point errors
 					GeneratedTile.Height = Neighbor->Height + TerrainGenData->MaxHeightDifference - 1;
 					HeightChanged = true;
 				}
+			}
+		}
+		// look for lowest neighbor and apply offset
+		for (FGeneratedTileInfo* Neighbor : VolcanoTile->Neighbors)
+		{
+			if (Neighbor && Neighbor->Height - VolcanoTile->Height < AbsoluteVolcanoOffsetToLowestNeighbor)
+			{
+				VolcanoTile->Height = Neighbor->Height - AbsoluteVolcanoOffsetToLowestNeighbor;
 			}
 		}
 	}

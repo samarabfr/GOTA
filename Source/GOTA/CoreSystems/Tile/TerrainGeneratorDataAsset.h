@@ -59,5 +59,8 @@ public:
 	float VolcanoDistanceFactor = 1;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
+	float VolcanoOffsetToLowestNeighbor = -500;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
 	FNoiseParameter HeightNoiseParameter;
 };
