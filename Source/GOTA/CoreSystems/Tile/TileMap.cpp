@@ -422,6 +422,24 @@ void ATileMap::GenerateTiles(int32 TileCount)
 			GeneratedTile->Height = Height;
 		}
 	}
+	// Apply max height difference
+	bool HeightChanged = true;
+	while (HeightChanged)
+	{
+		HeightChanged = false;
+		for (FGeneratedTileInfo& GeneratedTile : GeneratedTiles)
+		{
+			for (FGeneratedTileInfo* Neighbor : GeneratedTile.Neighbors)
+			{
+				if(Neighbor && GeneratedTile.Height - Neighbor->Height > TerrainGenData->MaxHeightDifference)
+				{
+					// adjust to Maxheightdifference. -1 extra to avoid infinite loops because of floating point errors
+					GeneratedTile.Height = Neighbor->Height + TerrainGenData->MaxHeightDifference - 1;
+					HeightChanged = true;
+				}
+			}
+		}
+	}
 	// Initialize Tile Arrays to fit the island just right
 	InitializeBothArrays(FHexCoords(GenSizeR, GenSizeR));
 	// Spawn Tiles

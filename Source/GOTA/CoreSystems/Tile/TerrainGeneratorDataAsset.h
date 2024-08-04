@@ -38,6 +38,9 @@ public:
 	float VolcanoSpawnOceanDistancePercentageThreshold = 0.8;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
+	float MaxHeightDifference = 1000;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
 	float HeightStepFactor = 100;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="HeightGen")
