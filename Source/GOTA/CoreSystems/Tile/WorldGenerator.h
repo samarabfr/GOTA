@@ -71,6 +71,10 @@ private:
 
 	void GenerateMountains();
 
+	void GenerateRivers();
+
+	void GenerateRiver(FGeneratedTileInfo* Tile, FGeneratedTileInfo* PrecedingTile, int32& Counter, int32 MaxRiverLength);
+
 	void SpawnTiles();
 
 	void GenerateSpawnArray();

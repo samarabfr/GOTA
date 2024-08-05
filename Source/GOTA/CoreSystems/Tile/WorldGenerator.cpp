@@ -44,6 +44,7 @@ void UWorldGenerator::GenerateWorld()
 	GenerateHeight();
 	GenerateBeaches();
 	GenerateMountains();
+	GenerateRivers();
 	GenerateSpawnArray();
 	SpawnTiles();
 }
@@ -371,6 +372,44 @@ void UWorldGenerator::GenerateMountains()
 	}
 }
 
+void UWorldGenerator::GenerateRivers()
+{
+	int32 MaxRiverLength = 20;
+	TArray<FGeneratedTileInfo*> MountainTiles;
+	for (FGeneratedTileInfo& Tile : GTiles)
+	{
+		if(Tile.Biome == EBiome::Mountain) MountainTiles.Add(&Tile);
+	}
+	// Determine start location
+	const int32 RandomIndex = FMath::RandRange(0, MountainTiles.Num() - 1);
+	// Make river
+	int32 Counter = 0;
+	GenerateRiver(MountainTiles[RandomIndex], nullptr, Counter, MaxRiverLength);
+}
+
+void UWorldGenerator::GenerateRiver(FGeneratedTileInfo* Tile, FGeneratedTileInfo* PrecedingTile, int32& Counter, int32 MaxRiverLength)
+{
+	if(!Tile) return;
+	
+	Tile->HasRiver = true;
+	++Counter;
+	if (Counter >= MaxRiverLength) return;
+	// determine lowestneighbor
+	FGeneratedTileInfo* LowestNeighbor = nullptr;
+	for (FGeneratedTileInfo* Neighbor : Tile->Neighbors)
+	{
+		if(Neighbor
+			&& (!PrecedingTile || Neighbor != PrecedingTile)
+			&& Neighbor->Height < Tile->Height
+			&& (!LowestNeighbor || Neighbor->Height < LowestNeighbor->Height)
+			&& Neighbor->Biome != EBiome::Volcano)
+		{
+			LowestNeighbor = Neighbor;
+		}
+	}
+	GenerateRiver(LowestNeighbor, Tile, Counter, MaxRiverLength);
+}
+
 void UWorldGenerator::SpawnTiles()
 {
 	TileMap->InitializeBothArrays(SizeSpawn);
@@ -383,6 +422,7 @@ void UWorldGenerator::SpawnTiles()
 			Height += TerrainGenData->HeightOffset;
 			ATile* NewTile = TileMap->SpawnNewTile(Tile.HexCoords, Height);
 			NewTile->SetBiome(Tile.Biome);
+			NewTile->SetIsRiver(Tile.HasRiver);
 		}
 	}
 }
