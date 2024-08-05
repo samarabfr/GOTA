@@ -51,13 +51,13 @@ public:
 	UPROPERTY()
 	FOnChangedSignature OnGameplayTagsChanged;
 
-	UPROPERTY(Replicated, BlueprintReadOnly)
+	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly)
 	FHexCoords HexCoords;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	TArray<ATile*> Neighbors; // 0 = North, 1 = NorthEast, 2 = SouthEast, 3 = South, 4 = SouthWest, 5 = NorthWest
 
-	UPROPERTY(BlueprintReadwrite, BlueprintSetter=SetIsRiver, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetIsRiver, Replicated, Category="Tile")
 	bool bIsRiver;
 
 	UFUNCTION(BlueprintSetter)
@@ -72,10 +72,10 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetBiome(EBiome NewBiome);
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	AEntity* AlliedTileEntity;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	AEntity* EnemyTileEntity;
 
 	UFUNCTION(BlueprintCallable, Category="Tile")
@@ -85,7 +85,7 @@ public:
 	// Claimant and claiming
 
 private:
-	UPROPERTY(BlueprintSetter=SetClaimant, BlueprintGetter=GetClaimant, ReplicatedUsing=OnRep_Claimant, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintSetter=SetClaimant, BlueprintGetter=GetClaimant, ReplicatedUsing=OnRep_Claimant, Category="Tile")
 	ASettlement* Claimant;
 
 	TMap<uint8, FPrimitiveInstanceId> ClaimFlagInstanceIds;
@@ -117,7 +117,7 @@ public:
 	// ---------------------------------------------------------
 	// Building
 
-	UPROPERTY(BlueprintReadWrite, ReplicatedUsing=OnRep_Building, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, Instanced, BlueprintReadWrite, ReplicatedUsing=OnRep_Building, Category="Tile")
 	UBuilding* Building;
 
 	UFUNCTION()
@@ -176,34 +176,34 @@ protected:
 public:
 	static bool bFreezeGrowthChanges;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttributeLimited* Trees;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttribute* TreeGrowth;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttribute* TreeGrowthChange;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttributeLimited* Forage;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttribute* ForageChange;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttributeLimited* Wildlife;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttribute* WildlifeGrowth;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttribute* WildlifeGrowthChange;
 
 	// ---------------------------------------------------------
 	// TileLayout & TileContent and graphics relevant
 
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category="Tile Graphics")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Graphics")
 	UStaticMeshComponent* SM_Hexagon;
 
 	UPROPERTY(BlueprintReadWrite, Category="Tile Graphics")
@@ -212,10 +212,10 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Graphics")
 	UTileGraphicsDataAsset* DA_TileGraphics;
 
-	UPROPERTY(BlueprintReadOnly, Category="Tile Graphics")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Tile Graphics")
 	FTileLayout TileLayout;
 
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_SpawnPointLayout, Category="Tile Graphics")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, ReplicatedUsing=OnRep_SpawnPointLayout, Category="Tile Graphics")
 	FSpawnPointLayout SpawnPointLayout;
 
 	UFUNCTION()

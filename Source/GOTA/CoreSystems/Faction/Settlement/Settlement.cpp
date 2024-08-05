@@ -89,6 +89,55 @@ void ASettlement::RemoveClaimMeshInstance(FPrimitiveInstanceId InstanceId)
 	ISM_ClaimFlags->RemoveInstanceById(InstanceId);
 }
 
+bool ASettlement::ClaimRandomTile()
+{
+	// All Neighboring tiles that have 3 or more neighbors already claimed by this settlement
+	TArray<ATile*> BorderingTilesHighPrio;
+	// All other claimable neighbors
+	TArray<ATile*> BorderingTilesLowPrio;
+	// Fill Bordering Arrays
+	for (ATile* ClaimedTile : ClaimedTiles)
+	{
+		for (int32 NeighborIndex = 0; NeighborIndex < 6; ++NeighborIndex)
+		{
+			// ignore this tile if its null or not claimable
+			if (!ClaimedTile->Neighbors[NeighborIndex] || !ClaimedTile->Neighbors[NeighborIndex]->IsClaimable())
+				continue;
+			// check how many of this neighbor neighbors are claimed by this settlement
+			int32 NeighborClaimedNeighbors = 0;
+			for (int32 i = 0; i < 6; ++i)
+			{
+				if (ClaimedTile->Neighbors[NeighborIndex]->Neighbors[i]
+					&& ClaimedTile->Neighbors[NeighborIndex]->Neighbors[i]->GetClaimant() == this)
+				{
+					NeighborClaimedNeighbors++;
+				}
+			}
+			if (NeighborClaimedNeighbors >= 3)
+			{
+				BorderingTilesHighPrio.Add(ClaimedTile->Neighbors[NeighborIndex]);
+			}
+			else
+			{
+				BorderingTilesLowPrio.Add(ClaimedTile->Neighbors[NeighborIndex]);
+			}
+		}
+	}
+	if (!BorderingTilesHighPrio.IsEmpty())
+	{
+		// we have at least one High Prio claimable neighbor lets go
+		ClaimTile(BorderingTilesHighPrio[FMath::RandRange(0, BorderingTilesHighPrio.Num() - 1)]);
+		return true;
+	}
+	if (!BorderingTilesLowPrio.IsEmpty())
+	{
+		// well we at least have a low prio tile to claim, good enough
+		ClaimTile(BorderingTilesLowPrio[FMath::RandRange(0, BorderingTilesLowPrio.Num() - 1)]);
+		return true;
+	}
+	return false;
+}
+
 void ASettlement::OnBuildingAdded(UBuilding* Building)
 {
 	if (Building)
@@ -134,7 +183,6 @@ void ASettlement::SetCurrentBuildingProject(UBuildingProject* NewCurrentBuilding
 		RemoveReplicatedSubObject(CurrentBuildingProject);
 	}
 	CurrentBuildingProject = NewCurrentBuildingProject;
-	OnCurrentBuildingProjectChanged.Broadcast();
 	if (CurrentBuildingProject)
 	{
 		AddReplicatedSubObject(CurrentBuildingProject);

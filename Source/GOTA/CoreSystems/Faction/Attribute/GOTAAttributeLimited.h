@@ -19,7 +19,7 @@ public:
 	virtual bool IsSupportedForNetworking() const override;
 	
 protected:
-	UPROPERTY(BlueprintGetter=GetMaximum, BlueprintSetter=SetMaximum, ReplicatedUsing=OnRep_Maximum, Category = "Attribute")
+	UPROPERTY(VisibleInstanceOnly, BlueprintGetter=GetMaximum, BlueprintSetter=SetMaximum, ReplicatedUsing=OnRep_Maximum, Category = "Attribute")
 	int32 Maximum;
 	
 public:

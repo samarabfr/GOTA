@@ -25,7 +25,7 @@ public:
 	FOnAttributeChangedSignature OnChanged;
 	
 	// Current Value of this Attribute
-	UPROPERTY(BlueprintGetter=GetCurrent, BlueprintSetter=SetCurrent, ReplicatedUsing=OnRep_Current, Category = "Attribute")
+	UPROPERTY(VisibleInstanceOnly, BlueprintGetter=GetCurrent, BlueprintSetter=SetCurrent, ReplicatedUsing=OnRep_Current, Category = "Attribute")
 	int32 Current;
 	
 	UFUNCTION(BlueprintGetter, BlueprintPure, Category = "Attribute")

@@ -259,8 +259,11 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 		Building->OnClaim(Claimant);
 		Claimant->OnBuildingAdded(Building);
 	}
+	int32 _;
+	Building->Population->ChangeMaximum(BuildingDataAsset->TierOne.Housing, _);
+	Building->Production->SetupWithTierData(&BuildingDataAsset->TierOne);
 	// Add Building related GameplayTags
-	GameplayTags.AppendTags(BuildingDataAsset->GameplayTags);
+	GameplayTags.AppendTags(BuildingDataAsset->TierOne.GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
 	AddBuildingToReplication();
 	// Set Graphics
@@ -280,7 +283,7 @@ void ATile::Unbuild()
 		Claimant->OnBuildingRemoved(Building);
 	}
 	// Remove Building related GameplayTags
-	GameplayTags.RemoveTags(Building->DataAsset->GameplayTags);
+	GameplayTags.RemoveTag(FGameplayTag::RequestGameplayTag(FName("Building")));
 	OnGameplayTagsChanged.Broadcast();
 	// Destroy the Object
 	Building = nullptr;
@@ -297,6 +300,7 @@ void ATile::AddBuildingToReplication()
 
 	// TODO: Not Here
 	Building->Population->OnChanged.AddDynamic(this, &ATile::CalculatePopulationGrowthChangeWithNeighbors);
+	CalculatePopulationGrowthChangeWithNeighbors();
 }
 
 // ---------------------------------------------------------
@@ -334,11 +338,11 @@ void ATile::CalculateTurn()
 	if (!Building) return;
 	// apply PopulationGrowthChange
 	Building->Population->Growth += Building->Population->GrowthChange;
-	// grow Wildlife
+	// grow Population
 	if (Building->Population->Growth > Building->Population->GrowthThreshold)
 	{
 		const int32 PopulationGrowCount = Building->Population->Growth / Building->Population->GrowthThreshold;
-		Building->Population += PopulationGrowCount;
+		Building->Population->ChangePopulation(PopulationGrowCount, _);
 		Building->Population->Growth -= PopulationGrowCount * Building->Population->GrowthThreshold;
 	}
 }
@@ -425,15 +429,15 @@ void ATile::CalculatePopulationGrowthChange()
 {
 	if (!Building) return;
 
-	Building->Population->Growth = 0;
+	Building->Population->GrowthChange = 0;
 	for (int i = 0; i < 6; ++i)
 	{
 		if (Neighbors[i] && Neighbors[i]->Building)
 		{
-			Building->Population->Growth += Neighbors[i]->Building->Population->Current;
+			Building->Population->GrowthChange += Neighbors[i]->Building->Population->Current;
 		}
 	}
-	Building->Population->Growth += Building->Population->Current;
+	Building->Population->GrowthChange += Building->Population->Current;
 }
 
 void ATile::CalculatePopulationGrowthChangeWithNeighbors()

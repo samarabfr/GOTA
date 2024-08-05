@@ -14,6 +14,9 @@ struct GOTA_API FBuildingTierData
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	FTileAsset MainBuildingAsset;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	FGameplayTagContainer GameplayTags;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	int32 WoodCost = -1;

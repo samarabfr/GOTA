@@ -48,16 +48,17 @@ public:
 	FOnMoodChangedSignature OnMoodChanged;
 
 public:
-	UPROPERTY(ReplicatedUsing=OnRep_Current, BlueprintGetter=GetCurrent, Category = "Population")
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Current, BlueprintGetter=GetCurrent, Category = "Population")
 	int32 Current = 0;
 	
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Population")
+	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Category = "Population")
 	int32 Growth = 0;
 	
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Population")
+	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Category = "Population")
 	int32 GrowthChange = 0;
 
 	// TODO: DataAsset
+	UPROPERTY(BlueprintReadOnly)
 	int32 GrowthThreshold = 30;
 
 	UFUNCTION()
@@ -66,7 +67,7 @@ public:
 	UFUNCTION(BlueprintGetter, BlueprintPure, Category = "Population")
 	int32 GetCurrent() const;
 
-	UPROPERTY(ReplicatedUsing=OnRep_Maximum, BlueprintReadOnly, Category = "Population")
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Maximum, BlueprintReadOnly, Category = "Population")
 	int32 Maximum = 0;
 
 	UFUNCTION()
@@ -82,7 +83,7 @@ public:
 	//                           Followers
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 private:
-	UPROPERTY(ReplicatedUsing=OnRep_Follower)
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Follower)
 	TArray<int32> Follower;
 	void AddOneFollowerWeightedRandom(ECultureLoyalty Exclude = ECultureLoyalty::MAX);
 	void SubtractOneFollowerWeightedRandom(ECultureLoyalty Exclude = ECultureLoyalty::MAX);
@@ -108,7 +109,7 @@ public:
 	//                            Mood
 	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 private:
-	UPROPERTY(ReplicatedUsing=OnRep_Moods)
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Moods)
 	TArray<int32> Moods;
 	void SubtractOneMoodWeightedRandom(EMood Exclude = EMood::MAX);
 
