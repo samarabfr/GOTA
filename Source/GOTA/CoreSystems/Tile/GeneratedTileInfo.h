@@ -29,5 +29,7 @@ struct FGeneratedTileInfo
 	// Details
 	bool HasRiver = false;
 
+	bool HasRiverSpring = false;
+
 	EBiome Biome = EBiome::Gras;
 };

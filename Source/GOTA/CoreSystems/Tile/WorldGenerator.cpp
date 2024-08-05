@@ -392,8 +392,15 @@ void UWorldGenerator::GenerateRivers()
 	{
 		// Determine start location
 		const int32 RandomIndex = FMath::RandRange(0, EligibleStartingTiles.Num() - 1);
+		FGeneratedTileInfo* StartingTile = EligibleStartingTiles[RandomIndex];
+		// Check if start location is valid
+		if(StartingTile && MakesTooManyRiverConnections(StartingTile))
+		{
+			EligibleStartingTiles.Remove(StartingTile);
+			continue;
+		}
 		// Make river
-		GenerateRiver(EligibleStartingTiles[RandomIndex], nullptr, TotalRiverCounter, EligibleStartingTiles);
+		GenerateRiver(StartingTile, nullptr, TotalRiverCounter, EligibleStartingTiles);
 	}
 }
 
@@ -404,15 +411,8 @@ void UWorldGenerator::GenerateRiver(FGeneratedTileInfo* Tile, FGeneratedTileInfo
 
 	Tile->HasRiver = true;
 	++Counter;
-	// Remove all starting tiles that are now not eligible anymore
+	if(!PrecedingTile) Tile->HasRiverSpring = true;
 	if (Tile->Biome == EBiome::Mountain) EligibleStartingTiles.Remove(Tile);
-	for (FGeneratedTileInfo* Neighbor : Tile->Neighbors)
-	{
-		if(Neighbor
-			&& Tile->Biome == EBiome::Mountain
-			&& MakesTooManyRiverConnections(Neighbor))
-			EligibleStartingTiles.Remove(Neighbor);
-	}
 	// determine all neighbors that are eligible for the next tile
 	TArray<FGeneratedTileInfo*> EligibleNextTiles;
 	for (FGeneratedTileInfo* Neighbor : Tile->Neighbors)
@@ -468,6 +468,7 @@ void UWorldGenerator::SpawnTiles()
 			ATile* NewTile = TileMap->SpawnNewTile(Tile.HexCoords, Height);
 			NewTile->SetBiome(Tile.Biome);
 			NewTile->SetIsRiver(Tile.HasRiver);
+			NewTile->SetIsRiverSpring(Tile.HasRiverSpring);
 		}
 	}
 }

@@ -32,6 +32,7 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME(ATile, AlliedTileEntity);
 	DOREPLIFETIME(ATile, EnemyTileEntity);
 	DOREPLIFETIME(ATile, bIsRiver);
+	DOREPLIFETIME(ATile, bIsRiverSpring);
 	DOREPLIFETIME(ATile, Biome);
 	DOREPLIFETIME(ATile, SpawnPointLayout);
 	DOREPLIFETIME(ATile, GameplayTags);
@@ -116,6 +117,11 @@ void ATile::SetIsRiver(bool IsRiver)
 	{
 		if (Tile) Tile->RecalculateTileLayout();
 	}
+}
+
+void ATile::SetIsRiverSpring(bool IsRiverSpring)
+{
+	bIsRiverSpring = IsRiverSpring;
 }
 
 void ATile::SetBiome(EBiome NewBiome)
