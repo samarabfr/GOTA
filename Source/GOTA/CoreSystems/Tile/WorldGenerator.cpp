@@ -385,7 +385,7 @@ void UWorldGenerator::GenerateRivers()
 	TArray<FGeneratedTileInfo*> EligibleStartingTiles;
 	for (FGeneratedTileInfo& Tile : GTiles)
 	{
-		if (Tile.Biome == EBiome::Mountain) EligibleStartingTiles.Add(&Tile);
+		if (Tile.Biome == EBiome::Mountain && Tile.VolcanoDistance > 1) EligibleStartingTiles.Add(&Tile);
 	}
 	// Make Rivers
 	while (EligibleStartingTiles.Num() > 0 && TotalRiverCounter < TotalRiverCounterGoal)
@@ -412,7 +412,7 @@ void UWorldGenerator::GenerateRiver(FGeneratedTileInfo* Tile, FGeneratedTileInfo
 	Tile->HasRiver = true;
 	++Counter;
 	if(!PrecedingTile) Tile->HasRiverSpring = true;
-	if (Tile->Biome == EBiome::Mountain) EligibleStartingTiles.Remove(Tile);
+	//if (Tile->Biome == EBiome::Mountain) EligibleStartingTiles.Remove(Tile);
 	// determine all neighbors that are eligible for the next tile
 	TArray<FGeneratedTileInfo*> EligibleNextTiles;
 	for (FGeneratedTileInfo* Neighbor : Tile->Neighbors)
@@ -420,7 +420,7 @@ void UWorldGenerator::GenerateRiver(FGeneratedTileInfo* Tile, FGeneratedTileInfo
 		if (Neighbor
 			&& (!PrecedingTile || Neighbor != PrecedingTile)
 			&& Neighbor->Height <= Tile->Height
-			&& Neighbor->Biome != EBiome::Volcano
+			&& Neighbor->VolcanoDistance > 1
 			&& !MakesTooManyRiverConnections(Neighbor))
 		{
 			EligibleNextTiles.Add(Neighbor);
@@ -457,6 +457,8 @@ bool UWorldGenerator::HasUsedUpAllRiverConnections(FGeneratedTileInfo* Tile)
 
 void UWorldGenerator::SpawnTiles()
 {
+	int32 RiverCounter = 0; //TEMP for testing
+	int32 Counter = 0; //TEMP for testing
 	TileMap->InitializeBothArrays(SizeSpawn);
 	for (FGeneratedTileInfo& Tile : GTilesSpawn)
 	{
@@ -469,8 +471,11 @@ void UWorldGenerator::SpawnTiles()
 			NewTile->SetBiome(Tile.Biome);
 			NewTile->SetIsRiver(Tile.HasRiver);
 			NewTile->SetIsRiverSpring(Tile.HasRiverSpring);
+			++Counter;
+			if(NewTile->bIsRiver) ++RiverCounter;
 		}
 	}
+	UE_LOG(LogTemp, Warning, TEXT("River tiles: %d/%d, %f"), RiverCounter, Counter, static_cast<float>(RiverCounter) / Counter)
 }
 
 void UWorldGenerator::GenerateSpawnArray()
