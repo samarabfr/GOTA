@@ -81,5 +81,5 @@ private:
 
 	void FlagConnectionToOcean(FGeneratedTileInfo* TileGeneratedInfo);
 
-	void PlaceBeach(FGeneratedTileInfo* GeneratedTile, int32& BeachTileCounter);
+	void PlaceBeach(FGeneratedTileInfo* Tile, int32& BeachTileCounter, TArray<FGeneratedTileInfo*>& EligibleForBeach);
 };

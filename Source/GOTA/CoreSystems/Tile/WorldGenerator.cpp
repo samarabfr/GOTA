@@ -325,26 +325,22 @@ void UWorldGenerator::GenerateBeaches()
 		if (Tile.OceanDistance == 1)
 			Coast.Add(&Tile);
 	}
+	// find only Eligible tiles
+	TArray<FGeneratedTileInfo*> EligibleForBeach;
+	for (FGeneratedTileInfo* Tile : Coast)
+	{
+		if (Tile->Height < TerrainGenData->HeightStep && Tile->Biome != EBiome::Beach)
+			EligibleForBeach.Add(Tile);
+	}
 	// Place beaches
 	int32 TotalBeachCounter = 0;
-	while (!Coast.IsEmpty() && TotalBeachCounter / static_cast<float>(Coast.Num()) < TerrainGenData->
-		MinTotalBeachPercentage)
+	int32 TotalBeachCounterGoal = Coast.Num() * TerrainGenData->MinTotalBeachPercentage;
+	while (!EligibleForBeach.IsEmpty() && TotalBeachCounter <= TotalBeachCounterGoal)
 	{
-		const int32 RandomIndex = FMath::RandRange(0, Coast.Num() - 1);
+		const int32 RandomIndex = FMath::RandRange(0, EligibleForBeach.Num() - 1);
 		int32 BeachCounter = 0;
-		PlaceBeach(Coast[RandomIndex], BeachCounter);
+		PlaceBeach(EligibleForBeach[RandomIndex], BeachCounter, EligibleForBeach);
 		TotalBeachCounter += BeachCounter;
-		// Check if there are still free slots for beaches to impede infinite loops
-		bool HasOpenSlots = false;
-		for (FGeneratedTileInfo* CoastTile : Coast)
-		{
-			if (CoastTile->OceanDistance == 1 && CoastTile->Height < TerrainGenData->HeightStep && CoastTile->Biome !=
-				EBiome::Beach)
-			{
-				HasOpenSlots = true;
-			}
-		}
-		if (!HasOpenSlots) break;
 	}
 }
 
@@ -455,19 +451,21 @@ void UWorldGenerator::FlagConnectionToOcean(FGeneratedTileInfo* TileGeneratedInf
 	}
 }
 
-void UWorldGenerator::PlaceBeach(FGeneratedTileInfo* GeneratedTile, int32& BeachTileCounter)
+void UWorldGenerator::PlaceBeach(FGeneratedTileInfo* Tile, int32& BeachTileCounter,
+                                 TArray<FGeneratedTileInfo*>& EligibleForBeach)
 {
 	if (BeachTileCounter >= TerrainGenData->BeachSize
-		|| !GeneratedTile
-		|| GeneratedTile->OceanDistance != 1
-		|| GeneratedTile->Biome == EBiome::Beach
-		|| GeneratedTile->Height >= TerrainGenData->HeightStep)
+		|| !Tile
+		|| Tile->OceanDistance != 1
+		|| Tile->Biome == EBiome::Beach
+		|| Tile->Height >= TerrainGenData->HeightStep)
 		return;
 
-	GeneratedTile->Biome = EBiome::Beach;
+	Tile->Biome = EBiome::Beach;
 	++BeachTileCounter;
-	for (FGeneratedTileInfo* Neighbor : GeneratedTile->Neighbors)
+	EligibleForBeach.Remove(Tile);
+	for (FGeneratedTileInfo* Neighbor : Tile->Neighbors)
 	{
-		PlaceBeach(Neighbor, BeachTileCounter);
+		PlaceBeach(Neighbor, BeachTileCounter, EligibleForBeach);
 	}
 }
