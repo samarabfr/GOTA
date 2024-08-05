@@ -73,12 +73,13 @@ private:
 
 	void GenerateRivers();
 
-	void GenerateRiver(FGeneratedTileInfo* Tile, FGeneratedTileInfo* PrecedingTile, int32& Counter, int32 MaxRiverLength);
+	void GenerateRiver(FGeneratedTileInfo* Tile, FGeneratedTileInfo* PrecedingTile, int32& Counter,
+	                   TArray<FGeneratedTileInfo*>& EligibleStartingTiles);
 
 	bool MakesTooManyRiverConnections(FGeneratedTileInfo* Tile);
 
 	bool HasUsedUpAllRiverConnections(FGeneratedTileInfo* Tile);
-	
+
 	void SpawnTiles();
 
 	void GenerateSpawnArray();

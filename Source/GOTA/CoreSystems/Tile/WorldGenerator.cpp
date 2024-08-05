@@ -360,7 +360,7 @@ void UWorldGenerator::GenerateMountains()
 	});
 	// set mountain biomes
 	int32 MountainCounter = 0;
-	int32 MountainCounterGoal = TerrainGenData->MountainMinPercentage * TileCount;
+	int32 MountainCounterGoal = TerrainGenData->MinTotalMountainPercentage * TileCount;
 	for (FGeneratedTileInfo* GeneratedTile : GeneratedTilesHeightSorted)
 	{
 		if (GeneratedTile->Biome != EBiome::Volcano
@@ -374,63 +374,83 @@ void UWorldGenerator::GenerateMountains()
 
 void UWorldGenerator::GenerateRivers()
 {
-	int32 MaxRiverLength = 20;
-	TArray<FGeneratedTileInfo*> MountainTiles;
+	int32 LandTileCount = 0;
 	for (FGeneratedTileInfo& Tile : GTiles)
 	{
-		if(Tile.Biome == EBiome::Mountain) MountainTiles.Add(&Tile);
+		if (Tile.IsLand) ++LandTileCount;
 	}
-	// Determine start location
-	const int32 RandomIndex = FMath::RandRange(0, MountainTiles.Num() - 1);
-	// Make river
-	int32 Counter = 0;
-	GenerateRiver(MountainTiles[RandomIndex], nullptr, Counter, MaxRiverLength);
+	int32 TotalRiverCounter = 0;
+	int32 TotalRiverCounterGoal = LandTileCount * TerrainGenData->MinTotalRiverPercentage;
+	// Find all possible starting locations
+	TArray<FGeneratedTileInfo*> EligibleStartingTiles;
+	for (FGeneratedTileInfo& Tile : GTiles)
+	{
+		if (Tile.Biome == EBiome::Mountain) EligibleStartingTiles.Add(&Tile);
+	}
+	// Make Rivers
+	while (EligibleStartingTiles.Num() > 0 && TotalRiverCounter < TotalRiverCounterGoal)
+	{
+		// Determine start location
+		const int32 RandomIndex = FMath::RandRange(0, EligibleStartingTiles.Num() - 1);
+		// Make river
+		GenerateRiver(EligibleStartingTiles[RandomIndex], nullptr, TotalRiverCounter, EligibleStartingTiles);
+	}
 }
 
-void UWorldGenerator::GenerateRiver(FGeneratedTileInfo* Tile, FGeneratedTileInfo* PrecedingTile, int32& Counter, int32 MaxRiverLength)
+void UWorldGenerator::GenerateRiver(FGeneratedTileInfo* Tile, FGeneratedTileInfo* PrecedingTile, int32& Counter,
+                                    TArray<FGeneratedTileInfo*>& EligibleStartingTiles)
 {
-	if(!Tile) return;
-	
+	if (!Tile) return;
+
 	Tile->HasRiver = true;
 	++Counter;
-	if (Counter >= MaxRiverLength) return;
-	// determine all eligible neighbors
-	TArray<FGeneratedTileInfo*> EligibleTiles;
+	// Remove all starting tiles that are now not eligible anymore
+	if (Tile->Biome == EBiome::Mountain) EligibleStartingTiles.Remove(Tile);
 	for (FGeneratedTileInfo* Neighbor : Tile->Neighbors)
 	{
 		if(Neighbor
+			&& Tile->Biome == EBiome::Mountain
+			&& MakesTooManyRiverConnections(Neighbor))
+			EligibleStartingTiles.Remove(Neighbor);
+	}
+	// determine all neighbors that are eligible for the next tile
+	TArray<FGeneratedTileInfo*> EligibleNextTiles;
+	for (FGeneratedTileInfo* Neighbor : Tile->Neighbors)
+	{
+		if (Neighbor
 			&& (!PrecedingTile || Neighbor != PrecedingTile)
 			&& Neighbor->Height <= Tile->Height
 			&& Neighbor->Biome != EBiome::Volcano
 			&& !MakesTooManyRiverConnections(Neighbor))
 		{
-			EligibleTiles.Add(Neighbor);
+			EligibleNextTiles.Add(Neighbor);
 		}
 	}
-	if(EligibleTiles.Num() == 0) return;
+	if (EligibleNextTiles.Num() == 0) return;
 	// determine next tile
-	const int32 RandomIndex = FMath::RandRange(0, EligibleTiles.Num() - 1);
-	FGeneratedTileInfo* ChosenTile = EligibleTiles[RandomIndex];
-	GenerateRiver(ChosenTile, Tile, Counter, MaxRiverLength);
+	const int32 RandomIndex = FMath::RandRange(0, EligibleNextTiles.Num() - 1);
+	FGeneratedTileInfo* ChosenTile = EligibleNextTiles[RandomIndex];
+	GenerateRiver(ChosenTile, Tile, Counter, EligibleStartingTiles);
 }
 
 bool UWorldGenerator::MakesTooManyRiverConnections(FGeneratedTileInfo* Tile)
 {
-	if(HasUsedUpAllRiverConnections(Tile)) return true;
+	if (HasUsedUpAllRiverConnections(Tile)) return true;
 	for (FGeneratedTileInfo* Neighbor : Tile->Neighbors)
 	{
-		if(HasUsedUpAllRiverConnections(Neighbor)) return true;
+		if (HasUsedUpAllRiverConnections(Neighbor)) return true;
 	}
 	return false;
 }
 
 bool UWorldGenerator::HasUsedUpAllRiverConnections(FGeneratedTileInfo* Tile)
 {
-	if(!Tile || Tile->Biome == EBiome::Volcano) return false;
+	if (!Tile || Tile->Biome == EBiome::Volcano) return false;
+	// count every neighbor with a river
 	int8 Counter = 0;
 	for (FGeneratedTileInfo* Neighbor : Tile->Neighbors)
 	{
-		if(Neighbor && Neighbor->HasRiver) ++Counter;
+		if (Neighbor && Neighbor->HasRiver) ++Counter;
 	}
 	return Counter >= TerrainGenData->MaximumRiverConnections;
 }
