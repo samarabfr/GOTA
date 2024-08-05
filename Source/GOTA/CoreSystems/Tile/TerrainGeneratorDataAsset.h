@@ -72,4 +72,7 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="BiomeGen")
 	float MountainMinPercentage = 0.1;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="RiverGen")
+	int32 MaximumRiverConnections = 3;
 };
