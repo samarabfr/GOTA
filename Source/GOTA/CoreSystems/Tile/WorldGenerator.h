@@ -26,31 +26,35 @@ public:
 private:
 	UPROPERTY()
 	ATileMap* TileMap;
-	
+
 	int32 TileCount;
 
 	FHexCoords Size;
-	
+
+	TArray<FGeneratedTileInfo> GTiles;
+
+	FHexCoords SizeSpawn;
+
+	TArray<FGeneratedTileInfo> GTilesSpawn;
+
 	UPROPERTY()
 	UTerrainGeneratorDataAsset* TerrainGenData;
 
 	FGeneratedTileInfo* Middle;
 
 	FGeneratedTileInfo* Origin;
-	
+
 	FGeneratedTileInfo* Volcano;
 
 	UPROPERTY()
 	UFastNoiseWrapper* FastNoiseWrapper;
-
-	TArray<FGeneratedTileInfo> GTiles;
 
 	int8 MaxOceanDistance;
 
 	int8 MaxVolcanoDistance;
 
 	FGeneratedTileInfo* GetTile(const FHexCoords& Coords);
-	
+
 	FGeneratedTileInfo* GetTile(int32 Q, int32 R);
 
 	void GenerateShape();
@@ -69,13 +73,13 @@ private:
 
 	void SpawnTiles();
 
-	void CutAndInitializeArrays();
+	void GenerateSpawnArray();
 
 	void SetupNoise(FNoiseParameter& Parameter);
-	
+
 	void FlagConnectionToMainIsland(FGeneratedTileInfo* TileGeneratedInfo);
-	
+
 	void FlagConnectionToOcean(FGeneratedTileInfo* TileGeneratedInfo);
-	
+
 	void PlaceBeach(FGeneratedTileInfo* GeneratedTile, int32& BeachTileCounter);
 };

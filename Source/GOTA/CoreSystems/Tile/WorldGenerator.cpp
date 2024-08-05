@@ -44,7 +44,7 @@ void UWorldGenerator::GenerateWorld()
 	GenerateHeight();
 	GenerateBeaches();
 	GenerateMountains();
-	CutAndInitializeArrays();
+	GenerateSpawnArray();
 	SpawnTiles();
 }
 
@@ -185,7 +185,8 @@ void UWorldGenerator::GenerateHeight()
 		Height += TerrainGenData->VolcanoDistanceCurve.GetRichCurveConst()->Eval(NormalizedVolcanoDistance)
 			* TerrainGenData->VolcanoDistanceFactor;
 		// Noise map
-		Height += (FastNoiseWrapper->GetNoise2D(Tile.HexCoords.Q, Tile.HexCoords.R) + 1) / 2 * TerrainGenData->HeightNoiseParameter.NoiseFactor;
+		Height += (FastNoiseWrapper->GetNoise2D(Tile.HexCoords.Q, Tile.HexCoords.R) + 1) / 2 * TerrainGenData->
+			HeightNoiseParameter.NoiseFactor;
 		// Ocean distance as factor
 		Height *= TerrainGenData->OceanDistanceCurve.GetRichCurveConst()->Eval(NormalizedOceanDistance);
 		Tile.Height = Height;
@@ -376,25 +377,49 @@ void UWorldGenerator::GenerateMountains()
 
 void UWorldGenerator::SpawnTiles()
 {
-	int32 SpawnCounter = 0;
-	for (FGeneratedTileInfo Tile : GTiles)
+	TileMap->InitializeBothArrays(SizeSpawn);
+	for (FGeneratedTileInfo& Tile : GTilesSpawn)
 	{
 		if (Tile.IsLand)
 		{
 			// round to height steps
-			float Height = FMath::TruncToFloat(Tile.Height  / TerrainGenData->HeightStep) * TerrainGenData->HeightStep;
+			float Height = FMath::TruncToFloat(Tile.Height / TerrainGenData->HeightStep) * TerrainGenData->HeightStep;
 			Height += TerrainGenData->HeightOffset;
 			ATile* NewTile = TileMap->SpawnNewTile(Tile.HexCoords, Height);
 			NewTile->SetBiome(Tile.Biome);
-			++SpawnCounter;
 		}
 	}
 }
 
-void UWorldGenerator::CutAndInitializeArrays()
+void UWorldGenerator::GenerateSpawnArray()
 {
-	// TODO: kleinstmöglichste Size berechnen
-	TileMap->InitializeBothArrays(Size);
+	// Find the occupied area of the island
+	int32 SmallestQ = Size.Q - 1;
+	int32 SmallestR = Size.R - 1;
+	int32 BiggestQ = 0;
+	int32 BiggestR = 0;
+	for (FGeneratedTileInfo& Tile : GTiles)
+	{
+		if (!Tile.IsLand) continue;
+		if (SmallestQ > Tile.HexCoords.Q) SmallestQ = Tile.HexCoords.Q;
+		if (SmallestR > Tile.HexCoords.R) SmallestR = Tile.HexCoords.R;
+		if (BiggestQ < Tile.HexCoords.Q) BiggestQ = Tile.HexCoords.Q;
+		if (BiggestR < Tile.HexCoords.R) BiggestR = Tile.HexCoords.R;
+	}
+	// Initialize new Spawn array
+	SizeSpawn = FHexCoords(BiggestQ - SmallestQ + 1, BiggestR - SmallestR + 1);
+	GTilesSpawn.SetNum(SizeSpawn.Q * SizeSpawn.R);
+	// Copy island into spawn array
+	for (int Q = SmallestQ; Q < BiggestQ + 1; ++Q)
+	{
+		for (int R = SmallestR; R < BiggestR + 1; ++R)
+		{
+			// copy Tiles because they have different HexCoords in the spawn array
+			FGeneratedTileInfo Tile = *GetTile(Q, R);
+			Tile.HexCoords = FHexCoords(Q - SmallestQ, R - SmallestR);
+			GTilesSpawn[Tile.HexCoords.Q * SizeSpawn.R + Tile.HexCoords.R] = Tile;
+		}
+	}
 }
 
 void UWorldGenerator::SetupNoise(FNoiseParameter& Parameter)
