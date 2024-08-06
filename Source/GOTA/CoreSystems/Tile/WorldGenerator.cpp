@@ -375,7 +375,6 @@ void UWorldGenerator::GenerateRivers()
 {
 	int32 FailedRiverOcean = 0;	//TEMP
 	int32 FailedRiverBranch = 0;	//TEMP
-	int32 MaxTriesForStartPositions = 3;
 	int32 LandTileCount = 0;
 	for (FGeneratedTileInfo& Tile : GTiles)
 	{
@@ -425,23 +424,41 @@ void UWorldGenerator::GenerateRivers()
 			}
 		}
 		// Check for too many tries
-		StartingTile->TriesAsStartPosition++;
-		if (StartingTile->TriesAsStartPosition >= MaxTriesForStartPositions)
+		if (StartingTile->TriesAsStartPosition >= TerrainGenData->MaxTriesForStartPositions)
 		{
 			if(EligibleOceanStartingTiles.Contains(StartingTile)) EligibleOceanStartingTiles.Remove(StartingTile);
 			if(EligibleRiverStartingTiles.Contains(StartingTile)) EligibleRiverStartingTiles.Remove(StartingTile);
 			continue;
 		}
+		StartingTile->TriesAsStartPosition++;
 		if (!StartingTile) continue;
 		// Make river path
 		TArray<FGeneratedTileInfo*> RiverPath;
 		FString DebugCompletionReason = "";
 		GenerateRiverPath(StartingTile, nullptr, RiverPath, DebugCompletionReason, !IsOceanStart);
 		// Check if path is not valid
-		if (RiverPath.IsEmpty()
-			|| (IsOceanStart && RiverPath.Num() < TerrainGenData->MinRiverLength)
-			|| (!IsOceanStart && RiverPath.Num() < TerrainGenData->MinBranchLength)
-			|| HasRiverNeighbors(RiverPath[RiverPath.Num() - 1]))
+		bool IsNotValid = false;
+		if (RiverPath.IsEmpty())
+		{
+			UE_LOG(LogTemp, Warning, TEXT("IsOcean: %hhd; Length: %d; failed because path is empty"), IsOceanStart, RiverPath.Num())
+			IsNotValid = true;
+		}
+		if (IsOceanStart && RiverPath.Num() < TerrainGenData->MinRiverLength)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("IsOcean: %hhd; Length: %d; did not reach river length"), IsOceanStart, RiverPath.Num())
+			IsNotValid = true;
+		}
+		if (!IsOceanStart && RiverPath.Num() < TerrainGenData->MinBranchLength)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("IsOcean: %hhd; Length: %d; did not reach river length"), IsOceanStart, RiverPath.Num())
+			IsNotValid = true;
+		}
+		if (HasRiverNeighbors(RiverPath[RiverPath.Num() - 1]))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("IsOcean: %hhd; Length: %d; End of the path had river neighbor"), IsOceanStart, RiverPath.Num())
+			IsNotValid = true;
+		}
+		if(IsNotValid)
 		{
 			if(IsOceanStart) ++FailedRiverOcean;
 			else ++FailedRiverBranch;
