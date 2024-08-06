@@ -207,7 +207,7 @@ public:
 	UStaticMeshComponent* SM_Hexagon;
 
 	UPROPERTY(BlueprintReadWrite, Category="Tile Graphics")
-	ATileContent* TileContent;
+	UTileContent* TileContent;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Graphics")
 	UTileGraphicsDataAsset* DA_TileGraphics;
