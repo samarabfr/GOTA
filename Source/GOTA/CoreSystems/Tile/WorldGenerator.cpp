@@ -396,7 +396,7 @@ void UWorldGenerator::GenerateRivers()
 		// ocean start
 		if (IsOceanStart)
 		{
-			if(EligibleOceanStartingTiles.IsEmpty()) continue;
+			if (EligibleOceanStartingTiles.IsEmpty()) continue;
 			// Determine start location
 			const int32 RandomIndex = FMath::RandRange(0, EligibleOceanStartingTiles.Num() - 1);
 			StartingTile = EligibleOceanStartingTiles[RandomIndex];
@@ -410,7 +410,7 @@ void UWorldGenerator::GenerateRivers()
 		// river branch start
 		else
 		{
-			if(EligibleRiverStartingTiles.IsEmpty()) continue;
+			if (EligibleRiverStartingTiles.IsEmpty()) continue;
 			// Determine start location
 			const int32 RandomIndex = FMath::RandRange(0, EligibleRiverStartingTiles.Num() - 1);
 			StartingTile = EligibleRiverStartingTiles[RandomIndex];
@@ -424,8 +424,8 @@ void UWorldGenerator::GenerateRivers()
 		// Check for too many tries
 		if (StartingTile->TriesAsStartPosition >= TerrainGenData->MaxTriesForStartPositions)
 		{
-			if(EligibleOceanStartingTiles.Contains(StartingTile)) EligibleOceanStartingTiles.Remove(StartingTile);
-			if(EligibleRiverStartingTiles.Contains(StartingTile)) EligibleRiverStartingTiles.Remove(StartingTile);
+			if (EligibleOceanStartingTiles.Contains(StartingTile)) EligibleOceanStartingTiles.Remove(StartingTile);
+			if (EligibleRiverStartingTiles.Contains(StartingTile)) EligibleRiverStartingTiles.Remove(StartingTile);
 			continue;
 		}
 		StartingTile->TriesAsStartPosition++;
@@ -434,7 +434,7 @@ void UWorldGenerator::GenerateRivers()
 		TArray<FGeneratedTileInfo*> RiverPath;
 		GenerateRiverPath(StartingTile, nullptr, RiverPath, !IsOceanStart);
 		// Check if path is not valid
-		if(RiverPath.IsEmpty()
+		if (RiverPath.IsEmpty()
 			|| (IsOceanStart && RiverPath.Num() < TerrainGenData->MinRiverLength)
 			|| (!IsOceanStart && RiverPath.Num() < TerrainGenData->MinBranchLength)
 			|| HasRiverNeighbors(RiverPath[RiverPath.Num() - 1]))
@@ -469,7 +469,7 @@ void UWorldGenerator::GenerateRiverPath(FGeneratedTileInfo* Tile, FGeneratedTile
 			&& Neighbor->VolcanoDistance > 1
 			&& !MakesTooManyRiverConnections(Neighbor, GeneratedPath)
 			&& !HasOceanNeighbors(Neighbor)
-			&& !HasSearchedForTileAsNeighbor(Neighbor,PrecedingTile)
+			&& !HasSearchedForTileAsNeighbor(Neighbor, PrecedingTile)
 			&& !HasRiverSpringNeighbors(Neighbor))
 		{
 			EligibleNextTiles.Add(Neighbor);

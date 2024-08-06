@@ -78,7 +78,8 @@ private:
 
 	bool MakesTooManyRiverConnections(FGeneratedTileInfo* Tile, TArray<FGeneratedTileInfo*>& GeneratedPath);
 
-	bool HasUsedUpAllRiverConnections(FGeneratedTileInfo* Tile, TArray<FGeneratedTileInfo*>& GeneratedPath, int8 MaxRiverConnections);
+	bool HasUsedUpAllRiverConnections(FGeneratedTileInfo* Tile, TArray<FGeneratedTileInfo*>& GeneratedPath,
+	                                  int8 MaxRiverConnections);
 
 	bool HasOceanNeighbors(FGeneratedTileInfo* Tile);
 
