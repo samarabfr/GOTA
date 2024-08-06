@@ -373,7 +373,7 @@ void UWorldGenerator::GenerateMountains()
 
 void UWorldGenerator::GenerateRivers()
 {
-	int32 MaxTriesForStartPositions = 10;
+	int32 MaxTriesForStartPositions = 5;
 	int32 LandTileCount = 0;
 	for (FGeneratedTileInfo& Tile : GTiles)
 	{
@@ -413,7 +413,7 @@ void UWorldGenerator::GenerateRivers()
 		// Check if path is valid
 		if (RiverPath.IsEmpty()
 			|| RiverPath.Num() < TerrainGenData->MinRiverLength
-			|| HasRiverSpringNeighbors(RiverPath[RiverPath.Num() - 1]))
+			|| HasRiverNeighbors(RiverPath[RiverPath.Num() - 1]))
 		{
 			EligibleStartingTiles.Remove(RiverPath[0]);
 			continue;
