@@ -73,12 +73,18 @@ private:
 
 	void GenerateRivers();
 
-	void GenerateRiver(FGeneratedTileInfo* Tile, FGeneratedTileInfo* PrecedingTile, int32& Counter,
-	                   TArray<FGeneratedTileInfo*>& EligibleStartingTiles);
+	void GenerateRiverPath(FGeneratedTileInfo* Tile, FGeneratedTileInfo* PrecedingTile,
+	                       TArray<FGeneratedTileInfo*>& GeneratedPath, FString& DebugCompletionReason);
 
 	bool MakesTooManyRiverConnections(FGeneratedTileInfo* Tile);
 
 	bool HasUsedUpAllRiverConnections(FGeneratedTileInfo* Tile);
+
+	bool HasOceanNeighbors(FGeneratedTileInfo* Tile);
+
+	bool HasSearchedForTileAsNeighbor(FGeneratedTileInfo* Tile, FGeneratedTileInfo* SearchedForTile);
+
+	bool HasRiverNeighbors(FGeneratedTileInfo* Tile);
 
 	void SpawnTiles();
 

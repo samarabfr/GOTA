@@ -61,13 +61,19 @@ public:
 	bool bIsRiver;
 
 	UFUNCTION(BlueprintSetter)
-	void SetIsRiver(bool IsRiver); // 0 = North, 1 = NorthEast, 2 = SouthEast, 3 = South, 4 = SouthWest, 5 = NorthWest
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetIsRiver, Replicated, Category="Tile")
+	void SetIsRiver(bool IsRiver);
+	
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetIsRiverSpring, Replicated, Category="Tile")
 	bool bIsRiverSpring;
 
 	UFUNCTION(BlueprintSetter)
 	void SetIsRiverSpring(bool IsRiverSpring);
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetRiverCompletionReason, Replicated, Category="Tile")
+	FString RiverCompletionReason;
+
+	UFUNCTION(BlueprintSetter)
+	void SetRiverCompletionReason(FString RiverCompletionReason_);
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
 	UBiomesDataAsset* DA_Biomes;

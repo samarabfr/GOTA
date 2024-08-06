@@ -32,4 +32,6 @@ struct FGeneratedTileInfo
 	bool HasRiverSpring = false;
 
 	EBiome Biome = EBiome::Gras;
+
+	FString RiverCompletionReason = "";
 };

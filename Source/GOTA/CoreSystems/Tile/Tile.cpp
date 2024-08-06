@@ -124,6 +124,11 @@ void ATile::SetIsRiverSpring(bool IsRiverSpring)
 	bIsRiverSpring = IsRiverSpring;
 }
 
+void ATile::SetRiverCompletionReason(FString RiverCompletionReason_)
+{
+	RiverCompletionReason = RiverCompletionReason_;
+}
+
 void ATile::SetBiome(EBiome NewBiome)
 {
 	GameplayTags.RemoveTag(DA_Biomes->AllBiomes);

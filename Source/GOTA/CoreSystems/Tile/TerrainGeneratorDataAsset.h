@@ -78,4 +78,7 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="RiverGen")
 	float MinTotalRiverPercentage = 0.3;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="RiverGen")
+	float MinRiverLength = 5;
 };
