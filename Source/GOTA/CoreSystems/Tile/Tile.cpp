@@ -73,12 +73,12 @@ void ATile::BeginPlay()
 	// Get the GameState
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
-	
+
 	TileContent = NewObject<UTileContent>();
 	TileContent->Init(this, GameState);
-	TileContent->SetRotation(FRotator(0,TileContentRotation,0));
+	TileContent->SetRotation(FRotator(0, TileContentRotation, 0));
 	UpdateHexagonMaterial();
-	
+
 	if (HasAuthority())
 	{
 		AddReplicatedSubObject(Trees);
@@ -166,7 +166,7 @@ void ATile::UpdateClaimFlagsWithNeighbors()
 {
 	for (ATile* Neighbor : Neighbors)
 	{
-		if(Neighbor) Neighbor->UpdateClaimFlags();
+		if (Neighbor) Neighbor->UpdateClaimFlags();
 	}
 	UpdateClaimFlags();
 }
@@ -180,12 +180,13 @@ void ATile::UpdateClaimFlags()
 			if (!Neighbors[i] || !Neighbors[i]->Claimant || Neighbors[i]->Claimant != Claimant)
 			{
 				// Should have flag in this direction
-				if(!ClaimFlagInstanceIds.Contains(i))
+				if (!ClaimFlagInstanceIds.Contains(i))
 				{
 					// doesn't have one yet, so we make one
 					FTransform Transform = FTransform();
 					Transform.SetLocation(DA_TileGraphics->ClaimFlagSpawnPoints[i].LocationOnTile + GetActorLocation());
-					Transform.SetRotation(FRotator(0, DA_TileGraphics->ClaimFlagSpawnPoints[i].Rotation, 0).Quaternion());
+					Transform.SetRotation(
+						FRotator(0, DA_TileGraphics->ClaimFlagSpawnPoints[i].Rotation, 0).Quaternion());
 					ClaimFlagInstanceIds.Add(i, Claimant->AddClaimMeshInstance(Transform));
 				}
 			}
@@ -477,7 +478,7 @@ void ATile::RefreshTileLayout()
 		int32 Rotation = 0;
 		if (bIsRiver)
 		{
-			Rotation = FindRiverConnectionRotation(TileLayout.RiverConnections);
+			Rotation = FindAValidRiverConnectionRotation(TileLayout.RiverConnections);
 		}
 		else
 		{
@@ -496,6 +497,7 @@ void ATile::RefreshTileLayout()
 
 void ATile::RecalculateTileLayout()
 {
+	UpdateRiverConnections();
 	if (IsValidTileLayout(&TileLayout))
 	{
 		RefreshTileLayout();
@@ -529,7 +531,7 @@ void ATile::ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints)
 	}
 }
 
-FTileLayout* ATile::FindNewValidTileLayout() const
+FTileLayout* ATile::FindNewValidTileLayout()
 {
 	FString ContextString;
 	TArray<FTileLayout*> AllRows;
@@ -563,26 +565,21 @@ bool ATile::IsValidTileLayout(const FTileLayout* Layout) const
 	// Row doesn't allow this biome
 	if (!Layout->AllowedBiomes.Contains(Biome)) return false;
 	// Is a river but can't find a working Rotation
-	if (bIsRiver && FindRiverConnectionRotation(Layout->RiverConnections) < 0) return false;
+	if (bIsRiver && FindAValidRiverConnectionRotation(Layout->RiverConnections) < 0) return false;
 	// This layout has no SpawnPointLayout
 	if (Layout->SpawnPointsLayouts.IsEmpty()) return false;
 	return true;
 }
 
-int32 ATile::FindRiverConnectionRotation(const TArray<bool> Connections) const
+int32 ATile::FindAValidRiverConnectionRotation(const TArray<bool> Connections) const
 {
 	if (Connections.Num() != 6) return -1;
-	TArray<bool> RealConnections;
-	for (int32 i = 0; i < 6; ++i)
-	{
-		RealConnections.Add(Neighbors[i] && Neighbors[i]->bIsRiver);
-	}
 	for (int32 Rotation = 0; Rotation < 6; ++Rotation)
 	{
 		bool ThisRotationWorks = true;
 		for (int i = 0; i < 6; ++i)
 		{
-			if (RealConnections[i] != Connections[(i + Rotation) % 6])
+			if (RiverConnections[i] != Connections[(i + Rotation) % 6])
 			{
 				ThisRotationWorks = false;
 				break;
@@ -591,4 +588,29 @@ int32 ATile::FindRiverConnectionRotation(const TArray<bool> Connections) const
 		if (ThisRotationWorks) return Rotation;
 	}
 	return -1;
+}
+
+void ATile::UpdateRiverConnections()
+{
+	// Reset The Array
+	RiverConnections.Empty();
+	RiverConnections.SetNum(6);
+	if (!bIsRiver) return;
+	TArray<int32> PossibleNullConnections;
+	int32 RealCount = 0;
+	for (int32 i = 0; i < 6; ++i)
+	{
+		RiverConnections[i] = Neighbors[i] && Neighbors[i]->bIsRiver;
+		if (RiverConnections[i]) ++RealCount;
+		if (!Neighbors[i]) PossibleNullConnections.Add(i);
+	}
+	if (RealCount == 0) return;
+	// we are under 3 connections and have possible null connects
+	while (RealCount < 3 && PossibleNullConnections.Num() > 0)
+	{
+		int32 NullConnection = PossibleNullConnections[FMath::RandRange(0, PossibleNullConnections.Num() - 1)];
+		PossibleNullConnections.Remove(NullConnection);
+		RiverConnections[NullConnection] = true;
+		RealCount++;
+	}
 }

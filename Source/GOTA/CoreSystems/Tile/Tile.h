@@ -85,10 +85,12 @@ public:
 	// Claimant and claiming
 
 private:
-	UPROPERTY(VisibleInstanceOnly, BlueprintSetter=SetClaimant, BlueprintGetter=GetClaimant, ReplicatedUsing=OnRep_Claimant, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintSetter=SetClaimant, BlueprintGetter=GetClaimant,
+		ReplicatedUsing=OnRep_Claimant, Category="Tile")
 	ASettlement* Claimant;
 
 	TMap<uint8, FPrimitiveInstanceId> ClaimFlagInstanceIds;
+
 public:
 	UFUNCTION(BlueprintGetter)
 	ASettlement* GetClaimant();
@@ -102,9 +104,9 @@ private:
 
 public:
 	void UpdateClaimFlagsWithNeighbors();
-	
+
 	void UpdateClaimFlags();
-	
+
 	UFUNCTION(BlueprintCallable, Category="Tile")
 	bool IsClaimable() const;
 
@@ -240,19 +242,19 @@ private:
 
 	void ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints);
 
-	FTileLayout* FindNewValidTileLayout() const;
+	FTileLayout* FindNewValidTileLayout();
 
 	bool IsValidTileLayout(const FTileLayout* Layout) const;
 
 	// Returns -1 when none found, returns rotation ID (0-5) if one is found
-	int32 FindRiverConnectionRotation(const TArray<bool> Connections) const;
+	int32 FindAValidRiverConnectionRotation(const TArray<bool> Connections) const;
 
-	void UpdateBuildingAssets();
+	void UpdateRiverConnections();
+
+	UPROPERTY(VisibleInstanceOnly)
+	TArray<bool> RiverConnections;
 
 public:
-	UFUNCTION(BlueprintImplementableEvent, Category="Tile Graphics")
-	void SpawnTileContent();
-
 	UFUNCTION(BlueprintImplementableEvent, Category="Tile Graphics")
 	void UpdateHexagonMaterial();
 };
