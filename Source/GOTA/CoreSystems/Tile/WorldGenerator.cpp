@@ -373,6 +373,7 @@ void UWorldGenerator::GenerateMountains()
 
 void UWorldGenerator::GenerateRivers()
 {
+	int32 MaxTriesForStartPositions = 10;
 	int32 LandTileCount = 0;
 	for (FGeneratedTileInfo& Tile : GTiles)
 	{
@@ -398,6 +399,13 @@ void UWorldGenerator::GenerateRivers()
 			EligibleStartingTiles.Remove(StartingTile);
 			continue;
 		}
+		// Check for too many tries
+		StartingTile->TriesAsStartPosition++;
+		if(StartingTile->TriesAsStartPosition >= MaxTriesForStartPositions)
+		{
+			EligibleStartingTiles.Remove(StartingTile);
+			continue;
+		}
 		// Make river path
 		TArray<FGeneratedTileInfo*> RiverPath;
 		FString DebugCompletionReason = "";
@@ -416,6 +424,7 @@ void UWorldGenerator::GenerateRivers()
 			++TotalRiverCounter;
 		}
 		RiverPath[RiverPath.Num() - 1]->HasRiverSpring = true;
+		RiverPath[0]->HasRiverEnd = true;
 		RiverPath[RiverPath.Num() - 1]->RiverCompletionReason = DebugCompletionReason;
 	}
 }
@@ -570,6 +579,7 @@ void UWorldGenerator::SpawnTiles()
 			NewTile->SetBiome(Tile.Biome);
 			NewTile->SetIsRiver(Tile.HasRiver);
 			NewTile->SetIsRiverSpring(Tile.HasRiverSpring);
+			NewTile->SetIsRiverEnd(Tile.HasRiverEnd);
 			++Counter;
 			if (NewTile->bIsRiver) ++RiverCounter;
 			NewTile->RiverCompletionReason = Tile.RiverCompletionReason;
