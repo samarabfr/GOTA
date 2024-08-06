@@ -81,4 +81,10 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="RiverGen")
 	float MinRiverLength = 5;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="RiverGen")
+	float MinBranchLength = 2;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="RiverGen")
+	float OceanStartingChance = 0.5;
 };

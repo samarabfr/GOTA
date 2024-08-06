@@ -74,7 +74,7 @@ private:
 	void GenerateRivers();
 
 	void GenerateRiverPath(FGeneratedTileInfo* Tile, FGeneratedTileInfo* PrecedingTile,
-	                       TArray<FGeneratedTileInfo*>& GeneratedPath, FString& DebugCompletionReason);
+	                       TArray<FGeneratedTileInfo*>& GeneratedPath, FString& DebugCompletionReason, bool IsRiverBranch);
 
 	bool MakesTooManyRiverConnections(FGeneratedTileInfo* Tile, TArray<FGeneratedTileInfo*>& GeneratedPath);
 
