@@ -124,6 +124,11 @@ void ATile::SetIsRiverSpring(bool IsRiverSpring)
 	bIsRiverSpring = IsRiverSpring;
 }
 
+void ATile::SetIsRiverEnd(bool IsRiverEnd)
+{
+	bIsRiverEnd = IsRiverEnd;
+}
+
 void ATile::SetRiverCompletionReason(FString RiverCompletionReason_)
 {
 	RiverCompletionReason = RiverCompletionReason_;

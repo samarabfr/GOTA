@@ -68,8 +68,14 @@ public:
 
 	UFUNCTION(BlueprintSetter)
 	void SetIsRiverSpring(bool IsRiverSpring);
+	
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetIsRiverEnd, Category="Tile")
+	bool bIsRiverEnd;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetRiverCompletionReason, Replicated, Category="Tile")
+	UFUNCTION(BlueprintSetter)
+	void SetIsRiverEnd(bool IsRiverEnd);
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetRiverCompletionReason, Category="Tile")
 	FString RiverCompletionReason;
 
 	UFUNCTION(BlueprintSetter)
