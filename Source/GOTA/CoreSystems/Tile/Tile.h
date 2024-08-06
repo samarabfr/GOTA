@@ -62,24 +62,6 @@ public:
 
 	UFUNCTION(BlueprintSetter)
 	void SetIsRiver(bool IsRiver);
-	
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetIsRiverSpring, Replicated, Category="Tile")
-	bool bIsRiverSpring;
-
-	UFUNCTION(BlueprintSetter)
-	void SetIsRiverSpring(bool IsRiverSpring);
-	
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetIsRiverEnd, Category="Tile")
-	bool bIsRiverEnd;
-
-	UFUNCTION(BlueprintSetter)
-	void SetIsRiverEnd(bool IsRiverEnd);
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetRiverCompletionReason, Category="Tile")
-	FString RiverCompletionReason;
-
-	UFUNCTION(BlueprintSetter)
-	void SetRiverCompletionReason(FString RiverCompletionReason_);
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
 	UBiomesDataAsset* DA_Biomes;

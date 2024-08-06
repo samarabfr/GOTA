@@ -36,6 +36,4 @@ struct FGeneratedTileInfo
 	int8 TriesAsStartPosition = 0;
 
 	EBiome Biome = EBiome::Gras;
-
-	FString RiverCompletionReason = "";
 };

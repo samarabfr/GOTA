@@ -373,8 +373,6 @@ void UWorldGenerator::GenerateMountains()
 
 void UWorldGenerator::GenerateRivers()
 {
-	int32 FailedRiverOcean = 0;	//TEMP
-	int32 FailedRiverBranch = 0;	//TEMP
 	int32 LandTileCount = 0;
 	for (FGeneratedTileInfo& Tile : GTiles)
 	{
@@ -434,34 +432,13 @@ void UWorldGenerator::GenerateRivers()
 		if (!StartingTile) continue;
 		// Make river path
 		TArray<FGeneratedTileInfo*> RiverPath;
-		FString DebugCompletionReason = "";
-		GenerateRiverPath(StartingTile, nullptr, RiverPath, DebugCompletionReason, !IsOceanStart);
+		GenerateRiverPath(StartingTile, nullptr, RiverPath, !IsOceanStart);
 		// Check if path is not valid
-		bool IsNotValid = false;
-		if (RiverPath.IsEmpty())
+		if(RiverPath.IsEmpty()
+			|| (IsOceanStart && RiverPath.Num() < TerrainGenData->MinRiverLength)
+			|| (!IsOceanStart && RiverPath.Num() < TerrainGenData->MinBranchLength)
+			|| HasRiverNeighbors(RiverPath[RiverPath.Num() - 1]))
 		{
-			UE_LOG(LogTemp, Warning, TEXT("IsOcean: %hhd; Length: %d; failed because path is empty"), IsOceanStart, RiverPath.Num())
-			IsNotValid = true;
-		}
-		if (IsOceanStart && RiverPath.Num() < TerrainGenData->MinRiverLength)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("IsOcean: %hhd; Length: %d; did not reach river length"), IsOceanStart, RiverPath.Num())
-			IsNotValid = true;
-		}
-		if (!IsOceanStart && RiverPath.Num() < TerrainGenData->MinBranchLength)
-		{
-			UE_LOG(LogTemp, Warning, TEXT("IsOcean: %hhd; Length: %d; did not reach river length"), IsOceanStart, RiverPath.Num())
-			IsNotValid = true;
-		}
-		if (HasRiverNeighbors(RiverPath[RiverPath.Num() - 1]))
-		{
-			UE_LOG(LogTemp, Warning, TEXT("IsOcean: %hhd; Length: %d; End of the path had river neighbor"), IsOceanStart, RiverPath.Num())
-			IsNotValid = true;
-		}
-		if(IsNotValid)
-		{
-			if(IsOceanStart) ++FailedRiverOcean;
-			else ++FailedRiverBranch;
 			continue;
 		}
 		// set river stuff on tile
@@ -473,91 +450,40 @@ void UWorldGenerator::GenerateRivers()
 		}
 		RiverPath[RiverPath.Num() - 1]->HasRiverSpring = true;
 		RiverPath[0]->HasRiverEnd = true;
-		RiverPath[RiverPath.Num() - 1]->RiverCompletionReason = DebugCompletionReason;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Failed river starting from ocean:%d. Failed river branches: %d"), FailedRiverOcean, FailedRiverBranch)
 }
 
 void UWorldGenerator::GenerateRiverPath(FGeneratedTileInfo* Tile, FGeneratedTileInfo* PrecedingTile,
-                                        TArray<FGeneratedTileInfo*>& GeneratedPath, FString& DebugCompletionReason, bool IsRiverBranch)
+                                        TArray<FGeneratedTileInfo*>& GeneratedPath, bool IsRiverBranch)
 {
 	if (!Tile) return;
 
 	GeneratedPath.Add(Tile);
 	// determine all neighbors that are eligible for the next tile
 	TArray<FGeneratedTileInfo*> EligibleNextTiles;
-	/*
 	for (FGeneratedTileInfo* Neighbor : Tile->Neighbors)
 	{
 		if (Neighbor
 			&& (!PrecedingTile || Neighbor != PrecedingTile)
 			&& Neighbor->Height >= Tile->Height
 			&& Neighbor->VolcanoDistance > 1
-			&& !MakesTooManyRiverConnections(Neighbor)
+			&& !MakesTooManyRiverConnections(Neighbor, GeneratedPath)
 			&& !HasOceanNeighbors(Neighbor)
-			&& !HasSearchedForTileAsNeighbor(Neighbor,PrecedingTile))
+			&& !HasSearchedForTileAsNeighbor(Neighbor,PrecedingTile)
+			&& !HasRiverSpringNeighbors(Neighbor))
 		{
 			EligibleNextTiles.Add(Neighbor);
 		}
 	}
-	*/
-	FString TempDebugCompletionReason = "";
-	for (int i = 0; i < 6; ++i)
-	{
-		FGeneratedTileInfo* Neighbor = Tile->Neighbors[i];
-		if (!Neighbor)
-		{
-			TempDebugCompletionReason += FString::Printf(TEXT("Neighbor %d is null\n"), i);
-			continue;
-		}
-		if (Neighbor->Height < Tile->Height)
-		{
-			TempDebugCompletionReason += FString::Printf(TEXT("Neighbor %d is too low\n"), i);
-			continue;
-		}
-		if (PrecedingTile && Neighbor == PrecedingTile)
-		{
-			TempDebugCompletionReason += FString::Printf(TEXT("Neighbor %d is preceding tile\n"), i);
-			continue;
-		}
-		if (HasSearchedForTileAsNeighbor(Neighbor, PrecedingTile))
-		{
-			TempDebugCompletionReason += FString::Printf(TEXT("Neighbor %d has PrecedingTile as neighbor\n"), i);
-			continue;
-		}
-		if (HasOceanNeighbors(Neighbor))
-		{
-			TempDebugCompletionReason += FString::Printf(TEXT("Neighbor %d has ocean neighbors\n"), i);
-			continue;
-		}
-		if (Neighbor->VolcanoDistance <= 1)
-		{
-			TempDebugCompletionReason += FString::Printf(TEXT("Neighbor %d is volcano crater\n"), i);
-			continue;
-		}
-		if (MakesTooManyRiverConnections(Neighbor, GeneratedPath))
-		{
-			TempDebugCompletionReason +=
-				FString::Printf(TEXT("Neighbor %d would make too many River connections\n"), i);
-			continue;
-		}
-		if (HasRiverSpringNeighbors(Neighbor))
-		{
-			TempDebugCompletionReason += FString::Printf(TEXT("Neighbor %d has river spring as a neighbor\n"), i);
-			continue;
-		}
-		EligibleNextTiles.Add(Neighbor);
-	}
 	// check if river generation is complete
 	if (EligibleNextTiles.Num() == 0 || (!IsRiverBranch && HasRiverNeighbors(Tile)))
 	{
-		DebugCompletionReason = TempDebugCompletionReason;
 		return;
 	}
 	// determine next tile
 	const int32 RandomIndex = FMath::RandRange(0, EligibleNextTiles.Num() - 1);
 	FGeneratedTileInfo* ChosenTile = EligibleNextTiles[RandomIndex];
-	GenerateRiverPath(ChosenTile, Tile, GeneratedPath, DebugCompletionReason, IsRiverBranch);
+	GenerateRiverPath(ChosenTile, Tile, GeneratedPath, IsRiverBranch);
 }
 
 bool UWorldGenerator::MakesTooManyRiverConnections(FGeneratedTileInfo* Tile, TArray<FGeneratedTileInfo*>& GeneratedPath)
@@ -633,11 +559,8 @@ void UWorldGenerator::SpawnTiles()
 			ATile* NewTile = TileMap->SpawnNewTile(Tile.HexCoords, Height);
 			NewTile->SetBiome(Tile.Biome);
 			NewTile->SetIsRiver(Tile.HasRiver);
-			NewTile->SetIsRiverSpring(Tile.HasRiverSpring);
-			NewTile->SetIsRiverEnd(Tile.HasRiverEnd);
 			++Counter;
 			if (NewTile->bIsRiver) ++RiverCounter;
-			NewTile->RiverCompletionReason = Tile.RiverCompletionReason;
 		}
 	}
 	UE_LOG(LogTemp, Warning, TEXT("River tiles: %d/%d, %f"), RiverCounter, Counter,
