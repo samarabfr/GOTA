@@ -89,7 +89,7 @@ private:
 		ReplicatedUsing=OnRep_Claimant, Category="Tile")
 	ASettlement* Claimant;
 
-	TMap<uint8, FPrimitiveInstanceId> ClaimFlagInstanceIds;
+	TMap<uint8, FPrimitiveInstanceId> ClaimWallsInstanceIds;
 
 public:
 	UFUNCTION(BlueprintGetter)
@@ -103,9 +103,9 @@ private:
 	void OnRep_Claimant(ASettlement* NewClaimant);
 
 public:
-	void UpdateClaimFlagsWithNeighbors();
+	void UpdateClaimWallsWithNeighbors();
 
-	void UpdateClaimFlags();
+	void UpdateClaimWalls();
 
 	UFUNCTION(BlueprintCallable, Category="Tile")
 	bool IsClaimable() const;
