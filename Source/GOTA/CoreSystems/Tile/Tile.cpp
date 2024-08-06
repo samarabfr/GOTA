@@ -154,24 +154,24 @@ ASettlement* ATile::GetClaimant()
 void ATile::SetClaimant(ASettlement* NewClaimant)
 {
 	Claimant = NewClaimant;
-	UpdateClaimFlagsWithNeighbors();
+	UpdateClaimWallsWithNeighbors();
 }
 
 void ATile::OnRep_Claimant(ASettlement* NewClaimant)
 {
-	UpdateClaimFlagsWithNeighbors();
+	UpdateClaimWallsWithNeighbors();
 }
 
-void ATile::UpdateClaimFlagsWithNeighbors()
+void ATile::UpdateClaimWallsWithNeighbors()
 {
 	for (ATile* Neighbor : Neighbors)
 	{
-		if (Neighbor) Neighbor->UpdateClaimFlags();
+		if (Neighbor) Neighbor->UpdateClaimWalls();
 	}
-	UpdateClaimFlags();
+	UpdateClaimWalls();
 }
 
-void ATile::UpdateClaimFlags()
+void ATile::UpdateClaimWalls()
 {
 	if (Claimant)
 	{
@@ -180,32 +180,32 @@ void ATile::UpdateClaimFlags()
 			if (!Neighbors[i] || !Neighbors[i]->Claimant || Neighbors[i]->Claimant != Claimant)
 			{
 				// Should have flag in this direction
-				if (!ClaimFlagInstanceIds.Contains(i))
+				if (!ClaimWallsInstanceIds.Contains(i))
 				{
 					// doesn't have one yet, so we make one
 					FTransform Transform = FTransform();
-					Transform.SetLocation(DA_TileGraphics->ClaimFlagSpawnPoints[i].LocationOnTile + GetActorLocation());
+					Transform.SetLocation(GetActorLocation());
 					Transform.SetRotation(
-						FRotator(0, DA_TileGraphics->ClaimFlagSpawnPoints[i].Rotation, 0).Quaternion());
-					ClaimFlagInstanceIds.Add(i, Claimant->AddClaimMeshInstance(Transform));
+						FRotator(0, 60 * i, 0).Quaternion());
+					ClaimWallsInstanceIds.Add(i, Claimant->AddClaimMeshInstance(Transform));
 				}
 			}
-			else if (ClaimFlagInstanceIds.Contains(i))
+			else if (ClaimWallsInstanceIds.Contains(i))
 			{
 				// Should NOT have flag in this direction
-				Claimant->RemoveClaimMeshInstance(*ClaimFlagInstanceIds.Find(i));
-				ClaimFlagInstanceIds.Remove(i);
+				Claimant->RemoveClaimMeshInstance(*ClaimWallsInstanceIds.Find(i));
+				ClaimWallsInstanceIds.Remove(i);
 			}
 		}
 	}
 	else
 	{
 		// remove all flags
-		for (TTuple<uint8, FPrimitiveInstanceId> Tuple : ClaimFlagInstanceIds)
+		for (TTuple<uint8, FPrimitiveInstanceId> Tuple : ClaimWallsInstanceIds)
 		{
 			Claimant->RemoveClaimMeshInstance(Tuple.Value);
 		}
-		ClaimFlagInstanceIds.Empty();
+		ClaimWallsInstanceIds.Empty();
 	}
 }
 
@@ -224,7 +224,7 @@ bool ATile::TryClaim(ASettlement* PotentialClaimant)
 		Claimant->OnBuildingAdded(Building);
 	}
 	GameplayTags.AppendTags(Claimant->GameplayTags);
-	UpdateClaimFlagsWithNeighbors();
+	UpdateClaimWallsWithNeighbors();
 	OnGameplayTagsChanged.Broadcast();
 	return true;
 }

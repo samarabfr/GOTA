@@ -16,7 +16,7 @@ class ASettlement : public AActor
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	ASettlement();
-	
+
 	// ---------------------------------------------------------
 	// Setup
 	virtual void BeginPlay() override;
@@ -24,30 +24,33 @@ class ASettlement : public AActor
 public:
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Settlement")
 	USettlementBalance* SettlementBalance;
-	
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category="Settlement")
 	ECultureLoyalty PrimaryCulture = ECultureLoyalty::MAX;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category="Settlement")
 	EAffiliation Affiliation;
-	
+
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
 	FGameplayTagContainer GameplayTags;
-	
+
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
 	UPopulationSummary* PopulationSummary;
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void Init();
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void InitialStartingSetup(ATile* SpawnTile);
-	
+
 	// ---------------------------------------------------------
 	// Claiming
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMesh* ClaimMesh;
+
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* ClaimMeshRiver;
 
 	UPROPERTY(EditDefaultsOnly)
 	UMaterial* ClaimMaterial;
@@ -60,31 +63,34 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, ReplicatedUsing=OnRep_ClaimColor, Category="Settlement")
 	FLinearColor ClaimColor;
-	
+
 	UFUNCTION()
 	void OnRep_ClaimColor();
-	
+
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
 	UGOTAAttributeLimited* Expansion;
-	
+
 	UPROPERTY()
-	UInstancedStaticMeshComponent* ISM_ClaimFlags;
+	UInstancedStaticMeshComponent* ISM_ClaimWalls;
+
+	UPROPERTY()
+	UInstancedStaticMeshComponent* ISM_ClaimWallsRiver;
 
 	FPrimitiveInstanceId AddClaimMeshInstance(FTransform& Transform);
 	void RemoveClaimMeshInstance(FPrimitiveInstanceId InstanceId);
 
 	UFUNCTION(BlueprintCallable)
 	bool ClaimRandomTile();
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void LostClaim(const ATile* Tile);
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void ClaimTile(const ATile* Tile);
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void RefreshBorderingTiles();
-	
+
 	// ---------------------------------------------------------
 	// Turn Calculation
 
@@ -108,7 +114,7 @@ public:
 
 	// ---------------------------------------------------------
 	// Resources and Building
-	
+
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
 	UGOTAAttribute* Food;
 
@@ -117,20 +123,20 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
 	UGOTAAttribute* Stone;
-	
+
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Settlement")
 	TArray<UBuildingDataAsset*> PossibleBuildings;
-	
+
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
 	UBuildingProductionSummary* ProductionSummary;
-	
+
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, BlueprintSetter=SetCurrentBuildingProject, Replicated,
-	Category="Settlement")
+		Category="Settlement")
 	UBuildingProject* CurrentBuildingProject;
-	
+
 	UFUNCTION(BlueprintSetter)
 	void SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject);
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
 	void OnBuildingAdded(UBuilding* Building);
 

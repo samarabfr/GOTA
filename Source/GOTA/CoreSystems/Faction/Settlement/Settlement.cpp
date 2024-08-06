@@ -29,9 +29,12 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 ASettlement::ASettlement()
 {
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
-	ISM_ClaimFlags = CreateDefaultSubobject<UInstancedStaticMeshComponent>("Claim Flags");
-	ISM_ClaimFlags->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	ISM_ClaimFlags->SetupAttachment(RootComponent);
+	ISM_ClaimWalls = CreateDefaultSubobject<UInstancedStaticMeshComponent>("Claim Walls");
+	ISM_ClaimWalls->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ISM_ClaimWalls->SetupAttachment(RootComponent);
+	ISM_ClaimWallsRiver = CreateDefaultSubobject<UInstancedStaticMeshComponent>("Claim Walls River");
+	ISM_ClaimWallsRiver->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ISM_ClaimWallsRiver->SetupAttachment(RootComponent);
 
 	// Replication stuff
 	bReplicates = true;
@@ -47,10 +50,10 @@ ASettlement::ASettlement()
 
 void ASettlement::OnRep_ClaimColor()
 {
-	ISM_ClaimFlags->SetStaticMesh(ClaimMesh);
+	ISM_ClaimWalls->SetStaticMesh(ClaimMesh);
 	UMaterialInstanceDynamic* DynMaterial = UMaterialInstanceDynamic::Create(ClaimMaterial, this);
 	DynMaterial->SetVectorParameterValue(EName::Color, ClaimColor);
-	ISM_ClaimFlags->SetMaterialByName(FName("Flag"), DynMaterial);
+	ISM_ClaimWalls->SetMaterialByName(FName("Flag"), DynMaterial);
 }
 
 void ASettlement::BeginPlay()
@@ -63,11 +66,11 @@ void ASettlement::BeginPlay()
 
 	if (HasAuthority())
 	{
-		ISM_ClaimFlags->SetStaticMesh(ClaimMesh);
+		ISM_ClaimWalls->SetStaticMesh(ClaimMesh);
 		ClaimColor = FLinearColor(FMath::FRand(), FMath::FRand(), FMath::FRand());
 		UMaterialInstanceDynamic* DynMaterial = UMaterialInstanceDynamic::Create(ClaimMaterial, this);
 		DynMaterial->SetVectorParameterValue(EName::Color, ClaimColor);
-		ISM_ClaimFlags->SetMaterialByName(FName("Flag"), DynMaterial);
+		ISM_ClaimWalls->SetMaterialByName(FName("Flag"), DynMaterial);
 
 		AddReplicatedSubObject(Food);
 		AddReplicatedSubObject(Wood);
@@ -81,12 +84,12 @@ void ASettlement::BeginPlay()
 
 FPrimitiveInstanceId ASettlement::AddClaimMeshInstance(FTransform& Transform)
 {
-	return ISM_ClaimFlags->AddInstanceById(Transform);
+	return ISM_ClaimWalls->AddInstanceById(Transform);
 }
 
 void ASettlement::RemoveClaimMeshInstance(FPrimitiveInstanceId InstanceId)
 {
-	ISM_ClaimFlags->RemoveInstanceById(InstanceId);
+	ISM_ClaimWalls->RemoveInstanceById(InstanceId);
 }
 
 bool ASettlement::ClaimRandomTile()
