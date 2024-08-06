@@ -5,25 +5,48 @@
 #include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 
-ATileContent::ATileContent()
+void UTileContent::Init(ATile* Tile_, AGS_Ingame* GameState_)
 {
-	RootComponent = CreateDefaultSubobject<USceneComponent>("Root");
-}
-
-void ATileContent::Init(ATile* Tile_)
-{
-	GameState = GetWorld()->GetGameState<AGS_Ingame>();
+	GameState = GameState_;
 	Tile = Tile_;
-	Tile->OnSpawnPointLayoutChanged.AddDynamic(this, &ATileContent::OnSpawnPointLayoutChanged);
-	Tile->OnGameplayTagsChanged.AddDynamic(this, &ATileContent::ValidateAllTileAssets);
-	Tile->Trees->OnChanged.AddDynamic(this, &ATileContent::UpdateTrees);
-	Tile->Forage->OnChanged.AddDynamic(this, &ATileContent::UpdateForage);
-	Tile->OnBuildingChanged.AddDynamic(this, &ATileContent::ValidateBuildings);
-	Tile->OnBuildingChanged.AddDynamic(this, &ATileContent::ValidateMainBuilding);
+	Tile->OnSpawnPointLayoutChanged.AddDynamic(this, &UTileContent::OnSpawnPointLayoutChanged);
+	Tile->OnGameplayTagsChanged.AddDynamic(this, &UTileContent::ValidateEverything);
+	Tile->Trees->OnChanged.AddDynamic(this, &UTileContent::UpdateTrees);
+	Tile->Forage->OnChanged.AddDynamic(this, &UTileContent::UpdateForage);
+	Tile->OnBuildingChanged.AddDynamic(this, &UTileContent::ValidateBuildings);
+	Tile->OnBuildingChanged.AddDynamic(this, &UTileContent::ValidateMainBuilding);
 	OnSpawnPointLayoutChanged();
 }
 
-void ATileContent::UpdateTrees(int32 Change)
+void UTileContent::SetRotation(FRotator Rotator)
+{
+	Rotation = Rotator;
+	DespawnEverything();
+	ValidateEverything();
+}
+
+void UTileContent::DespawnEverything()
+{
+	for (FTileAssetSpawn& TileAsset : TreeTileAssetSpawns)
+	{
+		DespawnTileAsset(TileAsset);
+	}
+	for (FTileAssetSpawn& TileAsset : PropTileAssetSpawns)
+	{
+		DespawnTileAsset(TileAsset);
+	}
+	for (FTileAssetSpawn& TileAsset : BuildingTileAssetSpawns)
+	{
+		DespawnTileAsset(TileAsset);
+	}
+	for (FTileAssetSpawn& TileAsset : ForageTileAssetSpawns)
+	{
+		DespawnTileAsset(TileAsset);
+	}
+	DespawnTileAsset(MainBuilding);
+}
+
+void UTileContent::UpdateTrees(int32 Change)
 {
 	int8 CountHowManyAreSpawned = 0;
 	for (FTileAssetSpawn TileAssetSpawn : TreeTileAssetSpawns)
@@ -58,7 +81,7 @@ void ATileContent::UpdateTrees(int32 Change)
 	}
 }
 
-void ATileContent::UpdateForage(int32 Change)
+void UTileContent::UpdateForage(int32 Change)
 {
 	int8 CountHowManyAreSpawned = 0;
 	for (FTileAssetSpawn TileAssetSpawn : ForageTileAssetSpawns)
@@ -93,7 +116,7 @@ void ATileContent::UpdateForage(int32 Change)
 	}
 }
 
-void ATileContent::OnSpawnPointLayoutChanged()
+void UTileContent::OnSpawnPointLayoutChanged()
 {
 	BringArrayToCorrectSize(TreeTileAssetSpawns, Tile->SpawnPointLayout.Trees.Num());
 	SetSpawnPointsOnArray(TreeTileAssetSpawns, Tile->SpawnPointLayout.Trees);
@@ -122,16 +145,16 @@ void ATileContent::OnSpawnPointLayoutChanged()
 	if (MainBuilding.bIsSpawned)
 	{
 		FTransform Transform = FTransform();
-		Transform.SetLocation(MainBuilding.SpawnPoint.LocationOnTile + GetActorLocation());
+		Transform.SetLocation(MainBuilding.SpawnPoint.LocationOnTile + Tile->GetActorLocation());
 		Transform.SetRotation(FRotator(0, MainBuilding.SpawnPoint.Rotation, 0).Quaternion());
 		GameState->StaticMeshBatcher->UpdateStaticMeshTransform(
 			MainBuilding.TileAsset->StaticMesh, MainBuilding.InstanceId, Transform);
 	}
 
-	ValidateAllTileAssets();
+	ValidateEverything();
 }
 
-void ATileContent::BringArrayToCorrectSize(TArray<FTileAssetSpawn>& Array, int32 Size)
+void UTileContent::BringArrayToCorrectSize(TArray<FTileAssetSpawn>& Array, int32 Size)
 {
 	if (Array.Num() < Size)
 	{
@@ -146,7 +169,7 @@ void ATileContent::BringArrayToCorrectSize(TArray<FTileAssetSpawn>& Array, int32
 	}
 }
 
-void ATileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<FSpawnPoint> SpawnPoints)
+void UTileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<FSpawnPoint> SpawnPoints)
 {
 	ShuffleTArray(SpawnPoints);
 	for (int i = 0; i < Array.Num(); ++i)
@@ -166,7 +189,7 @@ void ATileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<
 		if (Array[i].bIsSpawned)
 		{
 			FTransform Transform = FTransform();
-			Transform.SetLocation(Array[i].SpawnPoint.LocationOnTile + GetActorLocation());
+			Transform.SetLocation(Array[i].SpawnPoint.LocationOnTile + Tile->GetActorLocation());
 			Transform.SetRotation(FRotator(0, Array[i].SpawnPoint.Rotation, 0).Quaternion());
 			GameState->StaticMeshBatcher->UpdateStaticMeshTransform(
 				Array[i].TileAsset->StaticMesh, Array[i].InstanceId, Transform);
@@ -174,7 +197,7 @@ void ATileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<
 	}
 }
 
-void ATileContent::ValidateAllTileAssets()
+void UTileContent::ValidateEverything()
 {
 	ValidateTileAssets(TreeTileAssetSpawns, Tile->DA_TileGraphics->TreeAssets);
 	UpdateTrees(0);
@@ -187,7 +210,7 @@ void ATileContent::ValidateAllTileAssets()
 	ValidateMainBuilding();
 }
 
-void ATileContent::ValidateMainBuilding()
+void UTileContent::ValidateMainBuilding()
 {
 	if (Tile->Building)
 	{
@@ -200,7 +223,7 @@ void ATileContent::ValidateMainBuilding()
 	}
 }
 
-void ATileContent::SpawnProps()
+void UTileContent::SpawnProps()
 {
 	for (FTileAssetSpawn& TileAssetSpawn : PropTileAssetSpawns)
 	{
@@ -208,7 +231,7 @@ void ATileContent::SpawnProps()
 	}
 }
 
-void ATileContent::ValidateBuildings()
+void UTileContent::ValidateBuildings()
 {
 	if (Tile->Building)
 	{
@@ -226,7 +249,7 @@ void ATileContent::ValidateBuildings()
 	}
 }
 
-void ATileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets)
+void UTileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets)
 {
 	// Remove Invalid and count how many new Assets we need
 	int32 NewAssetsNeeded = 0;
@@ -266,19 +289,21 @@ void ATileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDat
 	}
 }
 
-void ATileContent::SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
+void UTileContent::SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
 {
 	// already spawned
 	if (FTileAssetSpawn.bIsSpawned) return;
-	FTransform Transform = FTransform();
-	Transform.SetLocation(FTileAssetSpawn.SpawnPoint.LocationOnTile + GetActorLocation());
+	FTransform Transform;
+	FVector RotatedSpawnPointLocation = Rotation.RotateVector(FTileAssetSpawn.SpawnPoint.LocationOnTile);
+
+	Transform.SetLocation(RotatedSpawnPointLocation + Tile->GetActorLocation());
 	Transform.SetRotation(FRotator(0, FTileAssetSpawn.SpawnPoint.Rotation, 0).Quaternion());
 	FTileAssetSpawn.InstanceId = GameState->StaticMeshBatcher->AddStaticMeshInstance(
 		FTileAssetSpawn.TileAsset->StaticMesh, Transform);
 	FTileAssetSpawn.bIsSpawned = true;
 }
 
-void ATileContent::DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
+void UTileContent::DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
 {
 	// not spawned
 	if (!FTileAssetSpawn.bIsSpawned) return;
@@ -287,7 +312,7 @@ void ATileContent::DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
 	FTileAssetSpawn.bIsSpawned = false;
 }
 
-void ATileContent::FindRandomValidAssets(const int32 Amount, const UDataTable* DataTable,
+void UTileContent::FindRandomValidAssets(const int32 Amount, const UDataTable* DataTable,
                                          TArray<FTileAsset*>& OutFoundAssets) const
 {
 	FString _;
@@ -337,7 +362,7 @@ void ATileContent::FindRandomValidAssets(const int32 Amount, const UDataTable* D
 }
 
 template <typename T>
-void ATileContent::ShuffleTArray(TArray<T>& Array)
+void UTileContent::ShuffleTArray(TArray<T>& Array)
 {
 	if (Array.Num() <= 1)
 	{

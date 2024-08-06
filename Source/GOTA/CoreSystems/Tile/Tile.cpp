@@ -54,6 +54,8 @@ ATile::ATile()
 	bReplicates = true;
 	bReplicateUsingRegisteredSubObjectList = true;
 	bAlwaysRelevant = true;
+
+	// Subobjects
 	Trees = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Trees"));
 	TreeGrowth = CreateDefaultSubobject<UGOTAAttribute>(TEXT("TreeGrowth"));
 	TreeGrowthChange = CreateDefaultSubobject<UGOTAAttribute>(TEXT("TreeGrowthChange"));
@@ -71,11 +73,12 @@ void ATile::BeginPlay()
 	// Get the GameState
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
-
-	SpawnTileContent();
-	TileContent->Init(this);
+	
+	TileContent = NewObject<UTileContent>();
+	TileContent->Init(this, GameState);
+	TileContent->SetRotation(FRotator(0,TileContentRotation,0));
 	UpdateHexagonMaterial();
-
+	
 	if (HasAuthority())
 	{
 		AddReplicatedSubObject(Trees);
@@ -461,7 +464,7 @@ void ATile::OnRep_SpawnPointLayout()
 
 void ATile::OnRep_TileContentRotation()
 {
-	if (TileContent) TileContent->SetActorRotation(FRotator(0, TileContentRotation, 0));
+	if (TileContent) TileContent->SetRotation(FRotator(0, TileContentRotation, 0));
 }
 
 void ATile::RefreshTileLayout()
@@ -481,7 +484,7 @@ void ATile::RefreshTileLayout()
 			Rotation = FMath::RandRange(0, 5);
 		}
 		SM_Hexagon->SetRelativeRotation(FRotator(0, Rotation * -60, 0));
-		TileContent->SetActorRotation(FRotator(0, Rotation * -60, 0));
+		TileContent->SetRotation(FRotator(0, Rotation * -60, 0));
 		TileContentRotation = Rotation * -60;
 	}
 	if (MaterialBiome != Biome)
