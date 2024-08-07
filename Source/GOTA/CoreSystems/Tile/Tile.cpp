@@ -269,7 +269,13 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 	// Add Building related GameplayTags
 	GameplayTags.AppendTags(BuildingDataAsset->TierOne.GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
-	AddBuildingToReplication();
+	// Replication stuff
+	AddReplicatedSubObject(Building);
+	AddReplicatedSubObject(Building->Population);
+	AddReplicatedSubObject(Building->Production);
+	// Population stuff
+	Building->Population->OnChanged.AddDynamic(this, &ATile::CalculatePopulationGrowthChangeWithNeighbors);
+	CalculatePopulationGrowthChangeWithNeighbors();
 	// Set Graphics
 	OnBuildingChanged.Broadcast();
 	RecalculateTileLayout();
@@ -294,17 +300,6 @@ void ATile::Unbuild()
 	// Set Graphics
 	OnBuildingChanged.Broadcast();
 	RecalculateTileLayout();
-}
-
-void ATile::AddBuildingToReplication()
-{
-	AddReplicatedSubObject(Building);
-	AddReplicatedSubObject(Building->Population);
-	AddReplicatedSubObject(Building->Production);
-
-	// TODO: Not Here
-	Building->Population->OnChanged.AddDynamic(this, &ATile::CalculatePopulationGrowthChangeWithNeighbors);
-	CalculatePopulationGrowthChangeWithNeighbors();
 }
 
 // ---------------------------------------------------------

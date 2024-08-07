@@ -50,3 +50,11 @@ enum class EBiome : uint8
 	Mountain UMETA(DisplayName = "Mountain"),
 	Volcano UMETA(DisplayName = "Volcano")
 };
+
+UENUM(BlueprintType)
+enum class EEcoValue : uint8
+{
+	Tree UMETA(DisplayName = "Tree"),
+	Wildlife UMETA(DisplayName = "Wildlife"),
+	Forage UMETA(DisplayName = "Forage")
+};
