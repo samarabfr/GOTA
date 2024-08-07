@@ -4,10 +4,12 @@
 #include "WorldGenerator.h"
 #include "VectorTypes.h"
 
-void UWorldGenerator::Init(ATileMap* TileMap_, int32 TileCount_)
+void UWorldGenerator::Init(ATileMap* TileMap_, int32 TileCount_, int32 ColonistsCount_, int32 NativesCount_)
 {
 	TileMap = TileMap_;
 	TileCount = TileCount_;
+	ColonistsCount = ColonistsCount_;
+	NativesCount = NativesCount_;
 	TerrainGenData = TileMap->TerrainGenData;
 	Size.Q = FMath::Sqrt(TileCount / (TerrainGenData->LandToArraySizeRatio * 1.5));
 	Size.R = Size.Q * 1.5;
@@ -44,6 +46,7 @@ void UWorldGenerator::GenerateWorld()
 	GenerateBeaches();
 	GenerateMountains();
 	GenerateRivers();
+	GenerateStartingPosition();
 	GenerateSpawnArray();
 	SpawnTiles();
 }
@@ -207,7 +210,8 @@ void UWorldGenerator::GenerateHeight()
 					TerrainGenData->MaxHeightStepDifference * TerrainGenData->HeightStep)
 				{
 					// adjust to Maxheightdifference. -1 extra to avoid infinite loops because of floating point errors
-					GeneratedTile.Height = Neighbor->Height + TerrainGenData->MaxHeightStepDifference * TerrainGenData->HeightStep - 1;
+					GeneratedTile.Height = Neighbor->Height + TerrainGenData->MaxHeightStepDifference * TerrainGenData->
+						HeightStep - 1;
 					HeightChanged = true;
 				}
 			}
@@ -422,7 +426,7 @@ void UWorldGenerator::GenerateRivers()
 			}
 		}
 		// Check for too many tries
-		if (StartingTile->TriesAsStartPosition >= TerrainGenData->MaxTriesForStartPositions)
+		if (StartingTile->TriesAsStartPosition >= TerrainGenData->MaxTriesForRiverStartPositions)
 		{
 			if (EligibleOceanStartingTiles.Contains(StartingTile)) EligibleOceanStartingTiles.Remove(StartingTile);
 			if (EligibleRiverStartingTiles.Contains(StartingTile)) EligibleRiverStartingTiles.Remove(StartingTile);
@@ -556,6 +560,8 @@ void UWorldGenerator::SpawnTiles()
 			// round to height steps
 			float Height = FMath::TruncToFloat(Tile.Height / TerrainGenData->HeightStep) * TerrainGenData->HeightStep;
 			Height += TerrainGenData->HeightOffset;
+			Height = Tile.ColonistsDistance * 100;
+			if (Tile.ColonistsDistance == 0) Height = 2000; // TEMP here
 			ATile* NewTile = TileMap->SpawnNewTile(Tile.HexCoords, Height);
 			NewTile->SetBiome(Tile.Biome);
 			NewTile->SetIsRiver(Tile.HasRiver);
@@ -648,4 +654,73 @@ void UWorldGenerator::PlaceBeach(FGeneratedTileInfo* Tile, int32& BeachTileCount
 	{
 		PlaceBeach(Neighbor, BeachTileCounter, EligibleForBeach);
 	}
+}
+
+void UWorldGenerator::GenerateStartingPosition()
+{
+	GenerateColonistsStartingPosition();
+	GenerateNativesStartingPosition();
+}
+
+void UWorldGenerator::GenerateColonistsStartingPosition()
+{
+	// Find all coast tiles
+	TArray<FGeneratedTileInfo*> CoastSorted;
+	for (FGeneratedTileInfo& Tile : GTiles)
+	{
+		if (Tile.OceanDistance == 1) CoastSorted.Add(&Tile);
+	}
+	// Pick first colonist spawn randomly
+	const int32 RandomIndex = FMath::RandRange(0, CoastSorted.Num() - 1);
+	ColonistsStartingPositions.Add(CoastSorted[RandomIndex]);
+	// flood fill with distances
+	FloodFillEveryTileWithColonistsDistances(CoastSorted[RandomIndex]);
+	// Sort array
+	CoastSorted.Sort([](const FGeneratedTileInfo& A, const FGeneratedTileInfo& B)
+	{
+		return A.ColonistsDistance > B.ColonistsDistance;
+	});
+	// pick all colonists spawns
+	for (int i = 1; i < ColonistsCount; ++i)
+	{
+		// Pick best spot
+		ColonistsStartingPositions.Add(CoastSorted[0]);
+		// flood fill with distances
+		FloodFillEveryTileWithColonistsDistances(CoastSorted[0]);
+		// Sort array
+		CoastSorted.Sort([](const FGeneratedTileInfo& A, const FGeneratedTileInfo& B)
+		{
+			return A.ColonistsDistance > B.ColonistsDistance;
+		});
+	}
+}
+
+void UWorldGenerator::FloodFillEveryTileWithColonistsDistances(FGeneratedTileInfo* Colonist)
+{
+	if (!Colonist) return;
+	TArray<FGeneratedTileInfo*> Frontier;
+	Frontier.Add(Colonist);
+	Colonist->ColonistsDistance = 0;
+	int8 ColonistsDistance = 1;
+	while (!Frontier.IsEmpty())
+	{
+		TArray<FGeneratedTileInfo*> NewFrontier;
+		for (FGeneratedTileInfo* FrontierTile : Frontier)
+		{
+			for (int i = 0; i < 6; ++i)
+			{
+				if (FrontierTile->Neighbors[i] && FrontierTile->Neighbors[i]->IsLand && FrontierTile->Neighbors[i]->ColonistsDistance > ColonistsDistance)
+				{
+					NewFrontier.Add(FrontierTile->Neighbors[i]);
+					FrontierTile->Neighbors[i]->ColonistsDistance = ColonistsDistance;
+				}
+			}
+		}
+		++ColonistsDistance;
+		Frontier = NewFrontier;
+	}
+}
+
+void UWorldGenerator::GenerateNativesStartingPosition()
+{
 }

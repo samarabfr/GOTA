@@ -19,7 +19,7 @@ class GOTA_API UWorldGenerator : public UObject
 	GENERATED_BODY()
 
 public:
-	void Init(ATileMap* TileMap_, int32 TileCount_);
+	void Init(ATileMap* TileMap_, int32 TileCount_, int32 ColonistsCount_, int32 NativesCount_);
 
 	void GenerateWorld();
 
@@ -52,6 +52,14 @@ private:
 	int8 MaxOceanDistance;
 
 	int8 MaxVolcanoDistance;
+
+	int32 ColonistsCount = 0;
+
+	int32 NativesCount = 0;
+
+	TArray<FGeneratedTileInfo*> ColonistsStartingPositions;
+
+	TArray<FGeneratedTileInfo*> NativesStartingPositions;
 
 	FGeneratedTileInfo* GetTile(const FHexCoords& Coords);
 
@@ -100,4 +108,12 @@ private:
 	void FlagConnectionToOcean(FGeneratedTileInfo* TileGeneratedInfo);
 
 	void PlaceBeach(FGeneratedTileInfo* Tile, int32& BeachTileCounter, TArray<FGeneratedTileInfo*>& EligibleForBeach);
+
+	void GenerateStartingPosition();
+
+	void GenerateColonistsStartingPosition();
+
+	void FloodFillEveryTileWithColonistsDistances(FGeneratedTileInfo* Colonist);
+
+	void GenerateNativesStartingPosition();
 };

@@ -8,6 +8,7 @@
 
 struct FGeneratedTileInfo
 {
+	// general stuff
 	FHexCoords HexCoords = FHexCoords(0,0);
 
 	FGeneratedTileInfo* Neighbors[6];
@@ -26,7 +27,7 @@ struct FGeneratedTileInfo
 	
 	int8 VolcanoDistance = -1;
 	
-	// Details
+	// River
 	bool HasRiver = false;
 
 	bool HasRiverSpring = false;
@@ -34,6 +35,10 @@ struct FGeneratedTileInfo
 	bool HasRiverEnd = false;
 
 	int8 TriesAsStartPosition = 0;
-
+	
+	//Biome
 	EBiome Biome = EBiome::Gras;
+
+	// starting Positions
+	int32 ColonistsDistance = MAX_int32;
 };

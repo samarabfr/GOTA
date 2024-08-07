@@ -17,6 +17,6 @@ void AGM_Ingame::PostLogin(APlayerController* NewPlayer)
 void AGM_Ingame::CreateWorld()
 {
 	UWorldGenerator* WorldGen = NewObject<UWorldGenerator>();
-	WorldGen->Init(GOTAGameState->TileMap, 600);
+	WorldGen->Init(GOTAGameState->TileMap, 600, 6, 4);
 	WorldGen->GenerateWorld();
 }

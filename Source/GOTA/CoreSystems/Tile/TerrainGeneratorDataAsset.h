@@ -89,5 +89,8 @@ public:
 	float OceanStartingChance = 0.5;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="RiverGen")
-	int32 MaxTriesForStartPositions = 10;
+	int32 MaxTriesForRiverStartPositions = 10;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
+	float VelocityStoppingThreshold = 1;
 };
