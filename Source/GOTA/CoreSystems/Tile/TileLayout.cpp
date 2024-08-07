@@ -3,7 +3,8 @@
 FTileLayout::FTileLayout()
 {
 	HexagonMesh = nullptr;
-	AllowBuilding = false;
+	AllowNativesBuilding = false;
+	AllowColonistBuilding = false;
 	AllowNoBuilding = false;
 	HasRiver = false;
 	RiverConnections.SetNum(6);

@@ -11,19 +11,24 @@ USTRUCT(BlueprintType)
 struct FSpawnPointLayout
 {
 	GENERATED_BODY()
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	FName Name;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	int32 SpawnBias = 100;
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	FSpawnPoint MainBuilding;
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	TArray<FSpawnPoint> Trees;
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	TArray<FSpawnPoint> Buildings;
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	TArray<FSpawnPoint> Props;
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	TArray<FSpawnPoint> Forage;
 };

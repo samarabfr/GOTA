@@ -22,8 +22,11 @@ struct FTileLayout : public FTableRowBase
 	TArray<EBiome> AllowedBiomes;
 	
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
-	bool AllowBuilding;
+	bool AllowNativesBuilding;
 
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	bool AllowColonistBuilding;
+	
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
 	bool AllowNoBuilding;
 	

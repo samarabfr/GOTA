@@ -211,7 +211,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Graphics")
 	UTileGraphicsDataAsset* DA_TileGraphics;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Tile Graphics")
+	UPROPERTY(BlueprintReadOnly, Category="Tile Graphics")
 	FTileLayout TileLayout;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, ReplicatedUsing=OnRep_SpawnPointLayout, Category="Tile Graphics")
