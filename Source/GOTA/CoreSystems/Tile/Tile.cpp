@@ -502,7 +502,25 @@ void ATile::RecalculateTileLayout()
 	if (!NewLayout) return;
 	TileLayout = *NewLayout;
 	// Select random SpawnPointLayout
-	FSpawnPointLayout SPL = TileLayout.SpawnPointsLayouts[FMath::RandRange(0, TileLayout.SpawnPointsLayouts.Num() - 1)];
+	FSpawnPointLayout SPL;
+	// weighted random to figure out which one to take
+	// Calculate TotalBias for the weighted random selection
+	int32 TotalBias = 0;
+	for (FSpawnPointLayout SpawnPointsLayout : TileLayout.SpawnPointsLayouts)
+	{
+		TotalBias += SpawnPointsLayout.SpawnBias;
+	}
+	// Randomly select the TileLayout based on their spawn bias
+	int Count = FMath::RandRange(0, TotalBias - 1);
+	for (FSpawnPointLayout SpawnPointsLayout : TileLayout.SpawnPointsLayouts)
+	{
+		if (Count < SpawnPointsLayout.SpawnBias)
+		{
+			SPL = SpawnPointsLayout;
+			break;
+		}
+		Count -= SpawnPointsLayout.SpawnBias;
+	}
 	ApplySpawnChances(SPL.Trees);
 	ApplySpawnChances(SPL.Forage);
 	ApplySpawnChances(SPL.Props);
@@ -546,7 +564,30 @@ FTileLayout* ATile::FindNewValidTileLayout()
 		UE_LOG(LogTemp, Warning, TEXT("Had to Default TileLayout on (%d:%d)"), HexCoords.Q, HexCoords.R);
 		return DA_TileGraphics->TileLayouts->FindRow<FTileLayout>(DefaultName, ContextString);
 	}
-	return PossibleLayouts[FMath::RandRange(0, PossibleLayouts.Num() - 1)];
+	// weighted random to figure out which one to take
+	// Calculate TotalBias for the weighted random selection
+	int32 TotalBias = 0;
+	for (FTileLayout* TL : PossibleLayouts)
+	{
+		for (FSpawnPointLayout SpawnPointsLayout : TL->SpawnPointsLayouts)
+		{
+			TotalBias += SpawnPointsLayout.SpawnBias;
+		}
+	}
+	// Randomly select the TileLayout based on their spawn bias
+	int Count = FMath::RandRange(0, TotalBias - 1);
+	for (FTileLayout* TL : PossibleLayouts)
+	{
+		for (FSpawnPointLayout SpawnPointsLayout : TL->SpawnPointsLayouts)
+		{
+			if (Count < SpawnPointsLayout.SpawnBias)
+			{
+				return TL;
+			}
+			Count -= SpawnPointsLayout.SpawnBias;
+		}
+	}
+	return nullptr;
 }
 
 bool ATile::IsValidTileLayout(const FTileLayout* Layout) const
@@ -555,8 +596,16 @@ bool ATile::IsValidTileLayout(const FTileLayout* Layout) const
 	if (bIsRiver != Layout->HasRiver) return false;
 	// Tile has no Building but Row doesn't allow that
 	if (!Building && !Layout->AllowNoBuilding) return false;
-	// Tile has Building but Row doesn't allow that
-	if (Building && !Layout->AllowBuilding) return false;
+	// Tile has Native Building but Row doesn't allow that
+	if (Building
+		&& Building->DataAsset->FactionStyle == EFaction::Natives
+		&& !Layout->AllowNativesBuilding)
+		return false;
+	// Tile has Colonists Building but Row doesn't allow that
+	if (Building
+		&& Building->DataAsset->FactionStyle == EFaction::Colonists
+		&& !Layout->AllowColonistBuilding)
+		return false;
 	// Row doesn't allow this biome
 	if (!Layout->AllowedBiomes.Contains(Biome)) return false;
 	// Is a river but can't find a working Rotation

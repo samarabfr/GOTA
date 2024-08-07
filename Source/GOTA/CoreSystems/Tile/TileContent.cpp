@@ -347,8 +347,7 @@ void UTileContent::FindRandomValidAssets(const int32 Amount, const UDataTable* D
 	// Randomly select the assets based on their spawn bias
 	for (int32 i = 0; i < Amount; i++)
 	{
-		int Random = FMath::RandRange(0, TotalBias - 1);
-		int Count = Random;
+		int Count = FMath::RandRange(0, TotalBias - 1);
 		for (FTileAsset* Asset : PossibleAssets)
 		{
 			if (Count < Asset->SpawnBias)
