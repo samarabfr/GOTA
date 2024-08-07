@@ -204,10 +204,10 @@ void UWorldGenerator::GenerateHeight()
 			for (FGeneratedTileInfo* Neighbor : GeneratedTile.Neighbors)
 			{
 				if (GeneratedTile.VolcanoDistance > 0 && Neighbor && GeneratedTile.Height - Neighbor->Height >
-					TerrainGenData->MaxHeightDifference)
+					TerrainGenData->MaxHeightStepDifference * TerrainGenData->HeightStep)
 				{
 					// adjust to Maxheightdifference. -1 extra to avoid infinite loops because of floating point errors
-					GeneratedTile.Height = Neighbor->Height + TerrainGenData->MaxHeightDifference - 1;
+					GeneratedTile.Height = Neighbor->Height + TerrainGenData->MaxHeightStepDifference * TerrainGenData->HeightStep - 1;
 					HeightChanged = true;
 				}
 			}
