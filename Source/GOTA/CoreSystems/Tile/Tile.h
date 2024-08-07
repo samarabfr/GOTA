@@ -134,9 +134,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	void Unbuild();
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
-	void AddBuildingToReplication();
-
 	// ---------------------------------------------------------
 	// Weird solution for the Guardian is in X range for animation performance
 

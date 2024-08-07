@@ -88,18 +88,18 @@ void UTileContent::UpdateForage(int32 Change)
 	{
 		if (TileAssetSpawn.bIsSpawned) ++CountHowManyAreSpawned;
 	}
-	uint8 ForageSpawnAssetChange = Tile->Forage->Current / 4 - CountHowManyAreSpawned;
-	if (ForageSpawnAssetChange == 0) return;
+	int8 RealChange = Tile->Forage->Current / 4 - CountHowManyAreSpawned;
+	if (RealChange == 0) return;
 	int32 Counter = 0;
 	// increase the amount of visible forage
-	if (ForageSpawnAssetChange > 0)
+	if (RealChange > 0)
 	{
 		for (FTileAssetSpawn& TileAssetSpawn : ForageTileAssetSpawns)
 		{
 			if (!TileAssetSpawn.bIsSpawned)
 			{
 				SpawnTileAsset(TileAssetSpawn);
-				if (++Counter >= ForageSpawnAssetChange) return;
+				if (++Counter >= RealChange) return;
 			}
 		}
 	}
@@ -110,7 +110,7 @@ void UTileContent::UpdateForage(int32 Change)
 			if (TileAssetSpawn.bIsSpawned)
 			{
 				DespawnTileAsset(TileAssetSpawn);
-				if (--Counter <= ForageSpawnAssetChange) return;
+				if (--Counter <= RealChange) return;
 			}
 		}
 	}
