@@ -120,6 +120,4 @@ private:
 	void FloodFillEveryTileWithColonistsDistances(FGeneratedTileInfo* Colonist);
 
 	void GenerateNativesStartingPositions();
-
-	float DistanceBetween(FHexCoords& Coords1, FHexCoords Coords2);
 };

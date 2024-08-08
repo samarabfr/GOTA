@@ -2,6 +2,7 @@
 
 
 #include "WorldGenerator.h"
+#include "HexCoordsFunctions.h"
 #include "VectorTypes.h"
 
 void UWorldGenerator::Init(ATileMap* TileMap_, int32 TileCount_, int32 ColonistsCount_, int32 NativesCount_)
@@ -562,7 +563,6 @@ void UWorldGenerator::SpawnTiles()
 			Height += TerrainGenData->HeightOffset;
 			ATile* NewTile = TileMap->SpawnNewTile(Tile.HexCoords, Height);
 			NewTile->SetBiome(Tile.Biome);
-			if (Tile.IsColonistStart) NewTile->SetBiome(EBiome::Volcano); // TEMP here
 			NewTile->SetIsRiver(Tile.HasRiver);
 			++Counter;
 			if (NewTile->bIsRiver) ++RiverCounter;
@@ -703,6 +703,11 @@ void UWorldGenerator::GenerateColonistsInitialStartingPositions()
 			return A.ColonistsDistance > B.ColonistsDistance;
 		});
 	}
+	// TEMP FOR TESTING
+	for (FGeneratedTileInfo* Tile : ColonistsStarts)
+	{
+		Tile->Biome = EBiome::Mountain;
+	}
 }
 
 void UWorldGenerator::GenerateColonistsFinalStartingPositions()
@@ -717,24 +722,21 @@ void UWorldGenerator::GenerateColonistsFinalStartingPositions()
 	for (int _ = 0; _ < TerrainGenData->IterationsForceCalc; ++_)
 	{
 		// Compute forces
-		TArray<FHexCoords> Forces;
+		TArray<FVector2D> Forces;
 		Forces.SetNum(ColonistsCount);
 		for (int i = 0; i < ColonistsCount; ++i)
 		{
 			for (int j = i + 1; j < ColonistsCount; ++j)
 			{
-				float Distance = DistanceBetween(ColonistsStarts[i]->HexCoords, ColonistsStarts[j]->HexCoords);
+				FVector2D Delta = UHexCoordsFunctions::HexCoordsToVector2D(ColonistsStarts[j]->HexCoords)
+					- UHexCoordsFunctions::HexCoordsToVector2D(ColonistsStarts[i]->HexCoords);
+				float Distance = UE::Geometry::Distance(FVector2D(0, 0), Delta);
 				if (Distance > 0)
 				{
 					float ForceMagnitude = TerrainGenData->KConstantForceCalc / (Distance * Distance);
-					float DeltaQ = ColonistsStarts[j]->HexCoords.Q - ColonistsStarts[i]->HexCoords.Q;
-					float DeltaR = ColonistsStarts[j]->HexCoords.R - ColonistsStarts[i]->HexCoords.R;
-					float ForceVectorQ = ForceMagnitude * (DeltaQ / Distance);
-					float ForceVectorR = ForceMagnitude * (DeltaR / Distance);
-					Forces[i].Q -= ForceVectorQ;
-					Forces[i].R -= ForceVectorR;
-					Forces[j].Q += ForceVectorQ;
-					Forces[j].R += ForceVectorR;
+					FVector2D ForceVector = ForceMagnitude * (Delta / Distance);
+					Forces[i] -= ForceVector;
+					Forces[j] += ForceVector;
 				}
 			}
 		}
@@ -742,24 +744,31 @@ void UWorldGenerator::GenerateColonistsFinalStartingPositions()
 		for (int i = 0; i < ColonistsCount; ++i)
 		{
 			// Calculate unrestrained Position
-			float UnrestrainedQ = ColonistsStarts[i]->HexCoords.Q + Forces[i].Q * TerrainGenData->DeltaTimeForceCalc;
-			float UnrestrainedR = ColonistsStarts[i]->HexCoords.R + Forces[i].R * TerrainGenData->DeltaTimeForceCalc;
-			FHexCoords UnrestrainedPosition = FHexCoords(UnrestrainedQ, UnrestrainedR);
+			FVector2D UnrestrainedPosition =
+				UHexCoordsFunctions::HexCoordsToVector2D(ColonistsStarts[i]->HexCoords)
+				+ Forces[i] * TerrainGenData->DeltaTimeForceCalc;
 			// find the closest allowed Tile
 			FGeneratedTileInfo* ClosestTile = nullptr;
 			float ClosestDistance = MAX_FLT;
 			for (int j = 0; j < Coast.Num(); ++j)
 			{
-				float Distance = DistanceBetween(UnrestrainedPosition, Coast[j]->HexCoords);
-				if(Distance < ClosestDistance)
+				FHexCoords Coords = Coast[j]->HexCoords;
+				float Distance = UE::Geometry::Distance(UnrestrainedPosition,
+				                                        UHexCoordsFunctions::HexCoordsToVector2D(Coords));
+				if (Distance < ClosestDistance)
 				{
 					ClosestDistance = Distance;
 					ClosestTile = Coast[j];
 				}
 			}
-			// switch tiles between arrays
-			ColonistsStarts[i] = ClosestTile;
+			if (ClosestTile != nullptr)
+				ColonistsStarts[i] = ClosestTile;
 		}
+	}
+	// TEMP FOR TESTING
+	for (FGeneratedTileInfo* Tile : ColonistsStarts)
+	{
+		Tile->Biome = EBiome::Volcano;
 	}
 }
 
@@ -777,7 +786,8 @@ void UWorldGenerator::FloodFillEveryTileWithColonistsDistances(FGeneratedTileInf
 		{
 			for (int i = 0; i < 6; ++i)
 			{
-				if (FrontierTile->Neighbors[i] && FrontierTile->Neighbors[i]->IsLand && FrontierTile->Neighbors[i]->ColonistsDistance > ColonistsDistance)
+				if (FrontierTile->Neighbors[i] && FrontierTile->Neighbors[i]->IsLand && FrontierTile->Neighbors[i]->
+					ColonistsDistance > ColonistsDistance)
 				{
 					NewFrontier.Add(FrontierTile->Neighbors[i]);
 					FrontierTile->Neighbors[i]->ColonistsDistance = ColonistsDistance;
@@ -791,11 +801,4 @@ void UWorldGenerator::FloodFillEveryTileWithColonistsDistances(FGeneratedTileInf
 
 void UWorldGenerator::GenerateNativesStartingPositions()
 {
-}
-
-float UWorldGenerator::DistanceBetween(FHexCoords& Coords1, FHexCoords Coords2)
-{
-	float DeltaQ = Coords2.Q - Coords1.Q;
-	float DeltaR = Coords2.R - Coords1.R;
-	return sqrt(DeltaQ * DeltaQ + DeltaR * DeltaR);
 }
