@@ -144,11 +144,10 @@ void UTileContent::OnSpawnPointLayoutChanged()
 	}
 	if (MainBuilding.bIsSpawned)
 	{
-		FTransform Transform = FTransform();
-		Transform.SetLocation(MainBuilding.SpawnPoint.LocationOnTile + Tile->GetActorLocation());
-		Transform.SetRotation(FRotator(0, MainBuilding.SpawnPoint.Rotation, 0).Quaternion());
+		FTransform T = FTransform();
+		CalculateTransform(MainBuilding.SpawnPoint, T);
 		GameState->StaticMeshBatcher->UpdateStaticMeshTransform(
-			MainBuilding.TileAsset->StaticMesh, MainBuilding.InstanceId, Transform);
+			MainBuilding.TileAsset->StaticMesh, MainBuilding.InstanceId, T);
 	}
 
 	ValidateEverything();
@@ -188,11 +187,10 @@ void UTileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<
 		}
 		if (Array[i].bIsSpawned)
 		{
-			FTransform Transform = FTransform();
-			Transform.SetLocation(Array[i].SpawnPoint.LocationOnTile + Tile->GetActorLocation());
-			Transform.SetRotation(FRotator(0, Array[i].SpawnPoint.Rotation, 0).Quaternion());
+			FTransform T = FTransform();
+			CalculateTransform(Array[i].SpawnPoint, T);
 			GameState->StaticMeshBatcher->UpdateStaticMeshTransform(
-				Array[i].TileAsset->StaticMesh, Array[i].InstanceId, Transform);
+				Array[i].TileAsset->StaticMesh, Array[i].InstanceId, T);
 		}
 	}
 }
@@ -293,13 +291,10 @@ void UTileContent::SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
 {
 	// already spawned
 	if (FTileAssetSpawn.bIsSpawned) return;
-	FTransform Transform;
-	FVector RotatedSpawnPointLocation = Rotation.RotateVector(FTileAssetSpawn.SpawnPoint.LocationOnTile);
-	Transform.SetLocation(RotatedSpawnPointLocation + Tile->GetActorLocation());
-	FRotator Rot = FRotator(0, FTileAssetSpawn.SpawnPoint.Rotation, 0) + Rotation;
-	Transform.SetRotation(Rot.Quaternion());
+	FTransform T = FTransform();
+	CalculateTransform(FTileAssetSpawn.SpawnPoint, T);
 	FTileAssetSpawn.InstanceId = GameState->StaticMeshBatcher->AddStaticMeshInstance(
-		FTileAssetSpawn.TileAsset->StaticMesh, Transform);
+		FTileAssetSpawn.TileAsset->StaticMesh, T);
 	FTileAssetSpawn.bIsSpawned = true;
 }
 
@@ -358,6 +353,14 @@ void UTileContent::FindRandomValidAssets(const int32 Amount, const UDataTable* D
 			Count -= Asset->SpawnBias;
 		}
 	}
+}
+
+void UTileContent::CalculateTransform(const FSpawnPoint& SpawnPoint, FTransform& Transform)
+{
+	FVector RotatedSpawnPointLocation = Rotation.RotateVector(SpawnPoint.LocationOnTile);
+	Transform.SetLocation(RotatedSpawnPointLocation + Tile->GetActorLocation());
+	FRotator Rot = FRotator(0, SpawnPoint.Rotation, 0) + Rotation;
+	Transform.SetRotation(Rot.Quaternion());
 }
 
 template <typename T>
