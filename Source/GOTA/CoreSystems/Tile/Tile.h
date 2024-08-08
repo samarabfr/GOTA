@@ -42,7 +42,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	void Init();
 
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_GameplayTags, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, ReplicatedUsing=OnRep_GameplayTags, Category="Tile")
 	FGameplayTagContainer GameplayTags;
 
 	UFUNCTION()

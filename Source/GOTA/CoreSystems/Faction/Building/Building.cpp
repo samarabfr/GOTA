@@ -38,6 +38,7 @@ void UBuilding::Upgrade()
 	SetupProduction(NewTierData);
 	int32 EC = 0;
 	Population->ChangeMaximum(NewTierData->Housing - Population->Maximum, EC);
+	++Tier;
 }
 
 void UBuilding::UpdateProduction(int32 Change)

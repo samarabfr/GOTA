@@ -63,7 +63,6 @@ bool UBuildingProject::TryBuilding()
 		int32 EC = 0;
 		if (Cost.Wood > 0) Builder->Wood->Subtract(Cost.Wood, EC);
 		if (Cost.Stone > 0) Builder->Stone->Subtract(Cost.Stone, EC);
-		Tile->Building->Tier++;
 		return true;
 	}
 	return false;

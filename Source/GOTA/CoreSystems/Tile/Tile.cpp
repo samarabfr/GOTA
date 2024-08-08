@@ -291,8 +291,8 @@ bool ATile::CanUpgrade()
 bool ATile::TryUpgrade()
 {
 	if(!Building || !Building->CanUpgrade()) return false;
+	GameplayTags.RemoveTags(Building->DataAsset->GetTierData(Building->Tier)->GameplayTags);
 	Building->Upgrade();
-	GameplayTags.RemoveTag(FGameplayTag::RequestGameplayTag(FName("Building")));
 	GameplayTags.AppendTags(Building->DataAsset->GetTierData(Building->Tier)->GameplayTags);
 	OnBuildingChanged.Broadcast();
 	return true;
