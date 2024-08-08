@@ -220,7 +220,6 @@ bool ATile::TryClaim(ASettlement* PotentialClaimant)
 	Claimant = PotentialClaimant;
 	if (Building)
 	{
-		Building->OnClaim(Claimant);
 		Claimant->OnBuildingAdded(Building);
 	}
 	GameplayTags.AppendTags(Claimant->GameplayTags);
@@ -234,7 +233,6 @@ void ATile::Unclaim()
 	if (!Claimant) return;
 	if (Building)
 	{
-		Building->OnUnclaim(Claimant);
 		Claimant->OnBuildingRemoved(Building);
 	}
 	Claimant->LostClaim(this);
@@ -243,36 +241,39 @@ void ATile::Unclaim()
 	Claimant = nullptr;
 }
 
+// ---------------------------------------------------------
+// Building
+
 void ATile::OnRep_Building()
 {
 	OnBuildingChanged.Broadcast();
 }
 
-// ---------------------------------------------------------
-// Building
+bool ATile::CanBuild()
+{
+	return !Building;
+}
 
 bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 {
 	// There is already a Building, can't build here
 	if (Building) return false;
 	// Create Building Object
-	Building = NewObject<UBuilding>(this, BuildingDataAsset->BuildingClass);
-	Building->OnBuild(this);
+	Building = NewObject<UBuilding>();
+	Building->DataAsset = BuildingDataAsset;
 	if (Claimant)
 	{
-		Building->OnClaim(Claimant);
 		Claimant->OnBuildingAdded(Building);
 	}
 	int32 _;
 	Building->Population->ChangeMaximum(BuildingDataAsset->TierOne.Housing, _);
-	Building->Production->SetupWithTierData(&BuildingDataAsset->TierOne);
+	Building->SetupProduction(&BuildingDataAsset->TierOne);
 	// Add Building related GameplayTags
 	GameplayTags.AppendTags(BuildingDataAsset->TierOne.GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
 	// Replication stuff
 	AddReplicatedSubObject(Building);
 	AddReplicatedSubObject(Building->Population);
-	AddReplicatedSubObject(Building->Production);
 	// Population stuff
 	Building->Population->OnChanged.AddDynamic(this, &ATile::CalculatePopulationGrowthChangeWithNeighbors);
 	CalculatePopulationGrowthChangeWithNeighbors();
@@ -282,14 +283,28 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 	return true;
 }
 
+bool ATile::CanUpgrade()
+{
+	return Building->CanUpgrade();
+}
+
+bool ATile::TryUpgrade()
+{
+	if(!Building || !Building->CanUpgrade()) return false;
+	Building->Upgrade();
+	GameplayTags.RemoveTag(FGameplayTag::RequestGameplayTag(FName("Building")));
+	GameplayTags.AppendTags(Building->DataAsset->GetTierData(Building->Tier)->GameplayTags);
+	OnBuildingChanged.Broadcast();
+	return true;
+}
+
+
 void ATile::Unbuild()
 {
 	// there is no Building
 	if (!Building) return;
-	Building->OnUnbuild(this);
 	if (Claimant)
 	{
-		Building->OnUnclaim(Claimant);
 		Claimant->OnBuildingRemoved(Building);
 	}
 	// Remove Building related GameplayTags

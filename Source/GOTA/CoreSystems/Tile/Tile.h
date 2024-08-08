@@ -129,7 +129,16 @@ public:
 	FOnChangedSignature OnBuildingChanged;
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
+	bool CanBuild();
+	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	bool TryBuild(UBuildingDataAsset* BuildingDataAsset);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
+	bool CanUpgrade();
+	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
+	bool TryUpgrade();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	void Unbuild();

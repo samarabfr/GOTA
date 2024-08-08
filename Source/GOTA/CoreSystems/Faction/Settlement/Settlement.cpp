@@ -16,7 +16,7 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 	DOREPLIFETIME(ASettlement, ClaimColor);
 	DOREPLIFETIME(ASettlement, PopulationSummary);
-	DOREPLIFETIME(ASettlement, ProductionSummary);
+	DOREPLIFETIME(ASettlement, BuildingSummary);
 	DOREPLIFETIME(ASettlement, CurrentBuildingProject);
 	DOREPLIFETIME(ASettlement, Food);
 	DOREPLIFETIME(ASettlement, Wood);
@@ -43,7 +43,7 @@ ASettlement::ASettlement()
 	Wood = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Wood"));
 	Stone = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Stone"));
 	PopulationSummary = CreateDefaultSubobject<UPopulationSummary>(TEXT("Population"));
-	ProductionSummary = CreateDefaultSubobject<UBuildingProductionSummary>(TEXT("Production"));
+	BuildingSummary = CreateDefaultSubobject<UBuildingSummary>(TEXT("Production"));
 	Expansion = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Expansion"));
 	CurrentBuildingProject = CreateDefaultSubobject<UBuildingProject>(TEXT("Current Building Project"));
 }
@@ -76,7 +76,7 @@ void ASettlement::BeginPlay()
 		AddReplicatedSubObject(Wood);
 		AddReplicatedSubObject(Stone);
 		AddReplicatedSubObject(PopulationSummary);
-		AddReplicatedSubObject(ProductionSummary);
+		AddReplicatedSubObject(BuildingSummary);
 		AddReplicatedSubObject(Expansion);
 		AddReplicatedSubObject(CurrentBuildingProject);
 	}
@@ -143,24 +143,13 @@ bool ASettlement::ClaimRandomTile()
 
 void ASettlement::OnBuildingAdded(UBuilding* Building)
 {
-	if (Building)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Building exist"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("Building doesn't exist wtf"));
-	}
-	if (Building->Population)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Building Population exist"));
-	}
 	PopulationSummary->RegisterPopulation(Building->Population);
-	ProductionSummary->RegisterBuildingProduction(Building->Production);
+	BuildingSummary->RegisterBuildingProduction(Building);
 }
 
 void ASettlement::OnBuildingRemoved(UBuilding* Building)
 {
+	BuildingSummary->UnregisterBuildingProduction(Building);
 }
 
 bool ASettlement::SpawnArmy()
