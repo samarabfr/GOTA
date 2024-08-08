@@ -295,9 +295,9 @@ void UTileContent::SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
 	if (FTileAssetSpawn.bIsSpawned) return;
 	FTransform Transform;
 	FVector RotatedSpawnPointLocation = Rotation.RotateVector(FTileAssetSpawn.SpawnPoint.LocationOnTile);
-
 	Transform.SetLocation(RotatedSpawnPointLocation + Tile->GetActorLocation());
-	Transform.SetRotation(FRotator(0, FTileAssetSpawn.SpawnPoint.Rotation, 0).Quaternion());
+	FRotator Rot = FRotator(0, FTileAssetSpawn.SpawnPoint.Rotation, 0) + Rotation;
+	Transform.SetRotation(Rot.Quaternion());
 	FTileAssetSpawn.InstanceId = GameState->StaticMeshBatcher->AddStaticMeshInstance(
 		FTileAssetSpawn.TileAsset->StaticMesh, Transform);
 	FTileAssetSpawn.bIsSpawned = true;
