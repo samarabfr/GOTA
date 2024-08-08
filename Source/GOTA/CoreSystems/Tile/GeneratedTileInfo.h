@@ -43,4 +43,6 @@ struct FGeneratedTileInfo
 	bool IsColonistStart = false;
 
 	bool IsNativeStart = false;
+	
+	int32 ColonistsDistance = MAX_int32;
 };

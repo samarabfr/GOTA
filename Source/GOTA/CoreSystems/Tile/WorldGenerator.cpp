@@ -46,7 +46,7 @@ void UWorldGenerator::GenerateWorld()
 	GenerateBeaches();
 	GenerateMountains();
 	GenerateRivers();
-	GenerateStartingPosition();
+	GenerateStartingPositions();
 	GenerateSpawnArray();
 	SpawnTiles();
 }
@@ -655,33 +655,63 @@ void UWorldGenerator::PlaceBeach(FGeneratedTileInfo* Tile, int32& BeachTileCount
 	}
 }
 
-void UWorldGenerator::GenerateStartingPosition()
+void UWorldGenerator::GenerateStartingPositions()
 {
-	GenerateColonistsStartingPosition();
-	GenerateNativesStartingPosition();
+	GenerateColonistsStartingPositions();
+	GenerateNativesStartingPositions();
 }
 
-void UWorldGenerator::GenerateColonistsStartingPosition()
+void UWorldGenerator::GenerateColonistsStartingPositions()
 {
-	// Find all ccoast tiles
+	GenerateColonistsInitialStartingPositions();
+	GenerateColonistsFinalStartingPositions();
+	// Apply to tiles
+	for (FGeneratedTileInfo* Tile : ColonistsStarts)
+	{
+		Tile->IsColonistStart = true;
+	}
+}
+
+void UWorldGenerator::GenerateColonistsInitialStartingPositions()
+{
+	// Find all coast tiles
+	TArray<FGeneratedTileInfo*> CoastSorted;
+	for (FGeneratedTileInfo& Tile : GTiles)
+	{
+		if (Tile.OceanDistance == 1) CoastSorted.Add(&Tile);
+	}
+	// Pick first colonist spawn randomly
+	const int32 RandomIndex = FMath::RandRange(0, CoastSorted.Num() - 1);
+	ColonistsStarts.Add(CoastSorted[RandomIndex]);
+	// flood fill with distances
+	FloodFillEveryTileWithColonistsDistances(CoastSorted[RandomIndex]);
+	// Sort array
+	CoastSorted.Sort([](const FGeneratedTileInfo& A, const FGeneratedTileInfo& B)
+	{
+		return A.ColonistsDistance > B.ColonistsDistance;
+	});
+	// pick all colonists spawns
+	for (int i = 1; i < ColonistsCount; ++i)
+	{
+		// Pick best spot
+		ColonistsStarts.Add(CoastSorted[0]);
+		// flood fill with distances
+		FloodFillEveryTileWithColonistsDistances(CoastSorted[0]);
+		// Sort array
+		CoastSorted.Sort([](const FGeneratedTileInfo& A, const FGeneratedTileInfo& B)
+		{
+			return A.ColonistsDistance > B.ColonistsDistance;
+		});
+	}
+}
+
+void UWorldGenerator::GenerateColonistsFinalStartingPositions()
+{
+	// Find all coast tiles
 	TArray<FGeneratedTileInfo*> Coast;
 	for (FGeneratedTileInfo& Tile : GTiles)
 	{
 		if (Tile.OceanDistance == 1) Coast.Add(&Tile);
-	}
-	// Initialize all starting points
-	TArray<FGeneratedTileInfo*> PossibleStartingPoints = Coast;
-	for (int i = 0; i < ColonistsCount; ++i)
-	{
-		const int32 RandomIndex = FMath::RandRange(0, PossibleStartingPoints.Num() - 1);
-		ColonistsStarts.Add(PossibleStartingPoints[RandomIndex]);
-		PossibleStartingPoints.RemoveAt(RandomIndex);
-	}
-	// Find all Land tiles
-	TArray<FGeneratedTileInfo*> Land;
-	for (FGeneratedTileInfo& Tile : GTiles)
-	{
-		if (Tile.IsLand) Land.Add(&Tile);
 	}
 	// Determine the positions through force calculations
 	for (int _ = 0; _ < TerrainGenData->IterationsForceCalc; ++_)
@@ -728,20 +758,38 @@ void UWorldGenerator::GenerateColonistsStartingPosition()
 				}
 			}
 			// switch tiles between arrays
-			FGeneratedTileInfo* TempTile = ColonistsStarts[i];
 			ColonistsStarts[i] = ClosestTile;
-			PossibleStartingPoints.Remove(ClosestTile);
-			PossibleStartingPoints.Add(TempTile);
 		}
-	}
-	// Apply to tiles
-	for (FGeneratedTileInfo* Tile : ColonistsStarts)
-	{
-		Tile->IsColonistStart = true;
 	}
 }
 
-void UWorldGenerator::GenerateNativesStartingPosition()
+void UWorldGenerator::FloodFillEveryTileWithColonistsDistances(FGeneratedTileInfo* Colonist)
+{
+	if (!Colonist) return;
+	TArray<FGeneratedTileInfo*> Frontier;
+	Frontier.Add(Colonist);
+	Colonist->ColonistsDistance = 0;
+	int8 ColonistsDistance = 1;
+	while (!Frontier.IsEmpty())
+	{
+		TArray<FGeneratedTileInfo*> NewFrontier;
+		for (FGeneratedTileInfo* FrontierTile : Frontier)
+		{
+			for (int i = 0; i < 6; ++i)
+			{
+				if (FrontierTile->Neighbors[i] && FrontierTile->Neighbors[i]->IsLand && FrontierTile->Neighbors[i]->ColonistsDistance > ColonistsDistance)
+				{
+					NewFrontier.Add(FrontierTile->Neighbors[i]);
+					FrontierTile->Neighbors[i]->ColonistsDistance = ColonistsDistance;
+				}
+			}
+		}
+		++ColonistsDistance;
+		Frontier = NewFrontier;
+	}
+}
+
+void UWorldGenerator::GenerateNativesStartingPositions()
 {
 }
 

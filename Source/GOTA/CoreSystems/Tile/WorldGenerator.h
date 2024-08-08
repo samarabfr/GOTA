@@ -109,13 +109,17 @@ private:
 
 	void PlaceBeach(FGeneratedTileInfo* Tile, int32& BeachTileCounter, TArray<FGeneratedTileInfo*>& EligibleForBeach);
 
-	void GenerateStartingPosition();
+	void GenerateStartingPositions();
 
-	void GenerateColonistsStartingPosition();
+	void GenerateColonistsStartingPositions();
+
+	void GenerateColonistsInitialStartingPositions();
+
+	void GenerateColonistsFinalStartingPositions();
 
 	void FloodFillEveryTileWithColonistsDistances(FGeneratedTileInfo* Colonist);
 
-	void GenerateNativesStartingPosition();
+	void GenerateNativesStartingPositions();
 
 	float DistanceBetween(FHexCoords& Coords1, FHexCoords Coords2);
 };
