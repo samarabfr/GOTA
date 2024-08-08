@@ -241,13 +241,18 @@ void ATile::Unclaim()
 	Claimant = nullptr;
 }
 
+// ---------------------------------------------------------
+// Building
+
 void ATile::OnRep_Building()
 {
 	OnBuildingChanged.Broadcast();
 }
 
-// ---------------------------------------------------------
-// Building
+bool ATile::CanBuild()
+{
+	return !Building;
+}
 
 bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 {
@@ -277,6 +282,22 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 	RecalculateTileLayout();
 	return true;
 }
+
+bool ATile::CanUpgrade()
+{
+	return Building->CanUpgrade();
+}
+
+bool ATile::TryUpgrade()
+{
+	if(!Building || !Building->CanUpgrade()) return false;
+	Building->Upgrade();
+	GameplayTags.RemoveTag(FGameplayTag::RequestGameplayTag(FName("Building")));
+	GameplayTags.AppendTags(Building->DataAsset->GetTierData(Building->Tier)->GameplayTags);
+	OnBuildingChanged.Broadcast();
+	return true;
+}
+
 
 void ATile::Unbuild()
 {

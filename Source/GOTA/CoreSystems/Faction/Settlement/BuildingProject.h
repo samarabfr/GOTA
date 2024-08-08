@@ -17,27 +17,30 @@ class GOTA_API UBuildingProject : public UObject
 	virtual bool IsSupportedForNetworking() const override;
 
 public:
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
+	UPROPERTY( BlueprintReadOnly, Replicated, Category="Building Project")
 	ASettlement* Builder;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Building Project")
 	UBuildingDataAsset* Data;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Building Project")
 	int32 Tier = -1;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Building")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Building Project")
 	ATile* Tile;
 
-	UFUNCTION(BlueprintCallable, Category="Building")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Building Project")
+	FGameResources Cost;
+	
+	UFUNCTION(BlueprintCallable, Category="Building Project")
 	bool IsPossible() const;
 
-	UFUNCTION(BlueprintCallable, Category="Building")
+	UFUNCTION(BlueprintCallable, Category="Building Project")
 	bool CanAfford() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Building")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Building Project")
 	bool TryBuilding();
 
-	UFUNCTION(BlueprintCallable, Category="Building")
+	UFUNCTION(BlueprintCallable, Category="Building Project")
 	void Init(ASettlement* Builder_, UBuildingDataAsset* Data_, int32 Tier_, ATile* Tile_);
 };

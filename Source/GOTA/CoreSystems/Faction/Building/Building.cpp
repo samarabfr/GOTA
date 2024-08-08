@@ -26,15 +26,18 @@ UBuilding::UBuilding()
 	Population->OnPopulationChanged.AddDynamic(this, &UBuilding::UpdateProduction);
 }
 
-bool UBuilding::Upgrade()
+bool UBuilding::CanUpgrade()
 {
 	FBuildingTierData* NewTierData = DataAsset->GetTierData(Tier + 1);
-	if (!NewTierData) return false;
-	if (NewTierData->Housing < 0) return false;
+	return NewTierData && NewTierData->Housing > 0;
+}
+
+void UBuilding::Upgrade()
+{
+	FBuildingTierData* NewTierData = DataAsset->GetTierData(Tier + 1);
 	SetupProduction(NewTierData);
 	int32 EC = 0;
 	Population->ChangeMaximum(NewTierData->Housing - Population->Maximum, EC);
-	return true;
 }
 
 void UBuilding::UpdateProduction(int32 Change)

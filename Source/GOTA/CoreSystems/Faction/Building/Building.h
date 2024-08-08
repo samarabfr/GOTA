@@ -32,7 +32,9 @@ public:
 	int32 Tier = 1;
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Building")
-	bool Upgrade();
+	bool CanUpgrade();
+	
+	void Upgrade();
 
 	// ---------------------------------------------------------
 	// Production

@@ -130,7 +130,7 @@ public:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
 	UBuildingSummary* BuildingSummary;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, BlueprintSetter=SetCurrentBuildingProject, Replicated,
+	UPROPERTY(VisibleInstanceOnly, Instanced, BlueprintReadWrite, BlueprintSetter=SetCurrentBuildingProject, Replicated,
 		Category="Settlement")
 	UBuildingProject* CurrentBuildingProject;
 

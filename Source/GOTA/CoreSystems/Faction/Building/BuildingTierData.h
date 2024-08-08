@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GOTA/CoreSystems/Faction/Settlement/GameResources.h"
 #include "GOTA/CoreSystems/Tile/TileAsset.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "BuildingTierData.generated.h"
@@ -11,7 +12,9 @@ USTRUCT(BlueprintType)
 struct GOTA_API FBuildingTierData
 {
 	GENERATED_BODY()
-
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	bool TierEnabled = false;
+	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	FTileAsset MainBuildingAsset;
 
@@ -19,10 +22,7 @@ struct GOTA_API FBuildingTierData
 	FGameplayTagContainer GameplayTags;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	int32 WoodCost = -1;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	int32 StoneCost = -1;
+	FGameResources Cost;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	int32 Housing = -1;

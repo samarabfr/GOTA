@@ -14,6 +14,7 @@ void UBuildingProject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	DOREPLIFETIME(UBuildingProject, Data);
 	DOREPLIFETIME(UBuildingProject, Tier);
 	DOREPLIFETIME(UBuildingProject, Tile);
+	DOREPLIFETIME(UBuildingProject, Cost);
 }
 
 bool UBuildingProject::IsSupportedForNetworking() const
@@ -44,8 +45,8 @@ bool UBuildingProject::IsPossible() const
 
 bool UBuildingProject::CanAfford() const
 {
-	if (Data->GetTierData(Tier)->WoodCost > Builder->Wood->Current) return false;
-	if (Data->GetTierData(Tier)->StoneCost > Builder->Stone->Current) return false;
+	if (Cost.Wood > Builder->Wood->Current) return false;
+	if (Cost.Stone > Builder->Stone->Current) return false;
 	return true;
 }
 
@@ -57,12 +58,11 @@ bool UBuildingProject::TryBuilding()
 		return Tile->TryBuild(Data);
 	}
 	// Trying to upgrade a Building
-	if (Tile->Building->Upgrade())
+	if (Tile->TryUpgrade())
 	{
-		FBuildingTierData* TierData = Data->GetTierData(Tier);
 		int32 EC = 0;
-		if (TierData->WoodCost > 0) Builder->Wood->Subtract(TierData->WoodCost, EC);
-		if (TierData->StoneCost > 0) Builder->Stone->Subtract(TierData->StoneCost, EC);
+		if (Cost.Wood > 0) Builder->Wood->Subtract(Cost.Wood, EC);
+		if (Cost.Stone > 0) Builder->Stone->Subtract(Cost.Stone, EC);
 		Tile->Building->Tier++;
 		return true;
 	}
@@ -75,4 +75,5 @@ void UBuildingProject::Init(ASettlement* Builder_, UBuildingDataAsset* Data_, in
 	Data = Data_;
 	Tier = Tier_;
 	Tile = Tile_;
+	Cost = Data->GetTierData(Tier)->Cost;
 }
