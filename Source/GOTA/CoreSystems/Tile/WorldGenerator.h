@@ -57,7 +57,7 @@ private:
 
 	int32 NativesCount = 0;
 
-	TArray<FGeneratedTileInfo*> ColonistsStartingPositions;
+	TArray<FGeneratedTileInfo*> ColonistsStarts;
 
 	TArray<FGeneratedTileInfo*> NativesStartingPositions;
 
@@ -116,4 +116,6 @@ private:
 	void FloodFillEveryTileWithColonistsDistances(FGeneratedTileInfo* Colonist);
 
 	void GenerateNativesStartingPosition();
+
+	float DistanceBetween(FHexCoords& Coords1, FHexCoords Coords2);
 };

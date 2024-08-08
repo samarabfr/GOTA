@@ -92,5 +92,11 @@ public:
 	int32 MaxTriesForRiverStartPositions = 10;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
-	float VelocityStoppingThreshold = 1;
+	int32 IterationsForceCalc = 1000;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
+	float KConstantForceCalc = 1;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
+	float DeltaTimeForceCalc = 0.01;
 };

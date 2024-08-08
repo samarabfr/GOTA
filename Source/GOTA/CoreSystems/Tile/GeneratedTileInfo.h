@@ -40,5 +40,7 @@ struct FGeneratedTileInfo
 	EBiome Biome = EBiome::Gras;
 
 	// starting Positions
-	int32 ColonistsDistance = MAX_int32;
+	bool IsColonistStart = false;
+
+	bool IsNativeStart = false;
 };
