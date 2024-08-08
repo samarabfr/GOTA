@@ -14,6 +14,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Claim")
 	FRuntimeFloatCurve ClaimPrice;
 
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Population")
+	int32 PopulationGrowthThreshold;
+	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="EcoValues")
 	int32 NativeTreeThreshold;
 	
