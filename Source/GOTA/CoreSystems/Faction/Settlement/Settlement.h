@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BuildingProductionSummary.h"
+#include "BuildingSummary.h"
 #include "BuildingProject.h"
 #include "SettlementBalance.h"
 #include "PopulationSummary.h"
@@ -128,7 +128,7 @@ public:
 	TArray<UBuildingDataAsset*> PossibleBuildings;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
-	UBuildingProductionSummary* ProductionSummary;
+	UBuildingSummary* BuildingSummary;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, BlueprintSetter=SetCurrentBuildingProject, Replicated,
 		Category="Settlement")

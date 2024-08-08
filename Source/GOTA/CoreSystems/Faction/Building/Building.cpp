@@ -2,7 +2,6 @@
 
 
 #include "Building.h"
-
 #include "BuildingDataAsset.h"
 #include "Net/UnrealNetwork.h"
 
@@ -24,8 +23,7 @@ bool UBuilding::IsSupportedForNetworking() const
 UBuilding::UBuilding()
 {
 	Population = CreateDefaultSubobject<UPopulation>(TEXT("Population"));
-	Production = CreateDefaultSubobject<UBuildingProduction>(TEXT("Production"));
-	Production->BindToPopulation(Population);
+	Population->OnPopulationChanged.AddDynamic(this, &UBuilding::UpdateProduction);
 }
 
 bool UBuilding::Upgrade()
@@ -33,8 +31,29 @@ bool UBuilding::Upgrade()
 	FBuildingTierData* NewTierData = DataAsset->GetTierData(Tier + 1);
 	if (!NewTierData) return false;
 	if (NewTierData->Housing < 0) return false;
-	Production->SetupWithTierData(NewTierData);
+	SetupProduction(NewTierData);
 	int32 EC = 0;
 	Population->ChangeMaximum(NewTierData->Housing - Population->Maximum, EC);
 	return true;
+}
+
+void UBuilding::UpdateProduction(int32 Change)
+{
+	int32 OldProduction = Production;
+	Production = ProductionPerThreshold * (Population->Current / PopulationThreshold);
+	if (OldProduction != Production)
+	{
+		OnProductionChanged.Broadcast(Production - OldProduction, ProductionType);
+	}
+}
+
+void UBuilding::SetupProduction(const FBuildingTierData* TierData)
+{
+	PopulationThreshold = TierData->PopulationThreshold;
+	ProductionPerThreshold = TierData->ProductionPerThreshold;
+	ProductionType = TierData->ProductionType;
+	// can't use UpdateProduction() because it should always call the delegate in this case
+	int32 OldProduction = Production;
+	Production = ProductionPerThreshold * (Population->Current / PopulationThreshold);
+	OnProductionChanged.Broadcast(Production - OldProduction, ProductionType);
 }
