@@ -13,7 +13,6 @@ class GOTA_API UTileContent : public UObject
 	GENERATED_BODY()
 
 public:
-
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="TileContent")
 	void OnEnteringActiveRangeOfGuardian();
 
@@ -26,7 +25,7 @@ public:
 
 private:
 	void DespawnEverything();
-	
+
 	UFUNCTION()
 	void UpdateTrees(int32 Change);
 
@@ -77,6 +76,9 @@ private:
 	UPROPERTY()
 	AGS_Ingame* GameState;
 
+private:
 	template <typename T>
 	static void ShuffleTArray(TArray<T>& Array);
+
+	void CalculateTransform(const FSpawnPoint& SpawnPoint, FTransform& Transform);
 };
