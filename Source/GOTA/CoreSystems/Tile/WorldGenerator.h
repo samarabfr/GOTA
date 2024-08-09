@@ -59,7 +59,7 @@ private:
 
 	TArray<FGeneratedTileInfo*> ColonistsStarts;
 
-	TArray<FGeneratedTileInfo*> NativesStartingPositions;
+	TArray<FGeneratedTileInfo*> NativesStarts;
 
 	FGeneratedTileInfo* GetTile(const FHexCoords& Coords);
 
@@ -115,11 +115,17 @@ private:
 
 	void GenerateColonistsInitialStartingPositions();
 
+	void FloodFillEveryTileWithColonistsDistances(FGeneratedTileInfo* Colonist);
+
 	void GenerateColonistsFinalStartingPositions();
 
 	float CalculateColonistStartScoreForTile(FGeneratedTileInfo* ColonistStart, FGeneratedTileInfo* Tile);
 
-	void FloodFillEveryTileWithColonistsDistances(FGeneratedTileInfo* Colonist);
-
 	void GenerateNativesStartingPositions();
+
+	void GenerateNativesInitialStartingPositions();
+
+	void GenerateNativesFinalStartingPositions();
+
+	float CalculateNativesStartScoreForTile(FGeneratedTileInfo* NativesStart, FGeneratedTileInfo* Tile);
 };

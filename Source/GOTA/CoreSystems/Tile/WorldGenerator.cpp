@@ -703,62 +703,6 @@ void UWorldGenerator::GenerateColonistsInitialStartingPositions()
 			return A.ColonistsDistance > B.ColonistsDistance;
 		});
 	}
-	// TEMP FOR TESTING
-	for (FGeneratedTileInfo* Tile : ColonistsStarts)
-	{
-		Tile->Biome = EBiome::Mountain;
-	}
-}
-
-void UWorldGenerator::GenerateColonistsFinalStartingPositions()
-{
-	// Find all coast tiles
-	TArray<FGeneratedTileInfo*> Coast;
-	for (FGeneratedTileInfo& Tile : GTiles)
-	{
-		if (Tile.OceanDistance == 1) Coast.Add(&Tile);
-	}
-	// Determine the positions through score calculations
-	for (int _ = 0; _ < TerrainGenData->IterationsColonistsStarts; ++_)
-	{
-		// randomly choose tile to wiggle
-		const int32 RandomWiggleIndex = FMath::RandRange(0, ColonistsCount - 1);
-		FGeneratedTileInfo* ColonistStartToChange = ColonistsStarts[RandomWiggleIndex];
-		// calculate score for tile itself
-		float WiggleTileScore = CalculateColonistStartScoreForTile(ColonistStartToChange, ColonistStartToChange);
-		// Choose random other coast tile
-		const int32 RandomTestIndex = FMath::RandRange(0, Coast.Num() - 1);
-		FGeneratedTileInfo* TestTile = Coast[RandomTestIndex];
-		if(ColonistsStarts.Contains(TestTile)) continue;
-		float TestScore = CalculateColonistStartScoreForTile(ColonistStartToChange, TestTile);
-		if(TestScore > WiggleTileScore)
-			ColonistsStarts[RandomWiggleIndex] = TestTile;
-	}
-	// TEMP FOR TESTING
-	for (FGeneratedTileInfo* Tile : ColonistsStarts)
-	{
-		Tile->Biome = EBiome::Volcano;
-	}
-}
-
-float UWorldGenerator::CalculateColonistStartScoreForTile(FGeneratedTileInfo* ColonistStart, FGeneratedTileInfo* Tile)
-{
-	if(!ColonistStart || !Tile || Tile == nullptr) return 0;
-	float TileScore = 0;
-	float SmallestDistance = MAX_FLT;
-	for (FGeneratedTileInfo* OtherColonistsStart : ColonistsStarts)
-	{
-		if (OtherColonistsStart == ColonistStart) continue;
-			
-		float Distance = UE::Geometry::Distance(UHexCoordsFunctions::HexCoordsToVector2D(OtherColonistsStart->HexCoords),
-												UHexCoordsFunctions::HexCoordsToVector2D(Tile->HexCoords));
-		if(Distance < SmallestDistance)
-		{
-			SmallestDistance = Distance;
-			TileScore = Distance * TerrainGenData->ColonistStartsColonistFactor;
-		}
-	}
-	return TileScore;
 }
 
 void UWorldGenerator::FloodFillEveryTileWithColonistsDistances(FGeneratedTileInfo* Colonist)
@@ -788,6 +732,150 @@ void UWorldGenerator::FloodFillEveryTileWithColonistsDistances(FGeneratedTileInf
 	}
 }
 
+void UWorldGenerator::GenerateColonistsFinalStartingPositions()
+{
+	// Find all coast tiles
+	TArray<FGeneratedTileInfo*> Coast;
+	for (FGeneratedTileInfo& Tile : GTiles)
+	{
+		if (Tile.OceanDistance == 1) Coast.Add(&Tile);
+	}
+	// Determine the positions through score calculations
+	for (int _ = 0; _ < TerrainGenData->IterationsStarts; ++_)
+	{
+		// randomly choose tile to wiggle
+		const int32 RandomWiggleIndex = FMath::RandRange(0, ColonistsCount - 1);
+		FGeneratedTileInfo* ColonistStartToChange = ColonistsStarts[RandomWiggleIndex];
+		// calculate score for tile itself
+		float WiggleTileScore = CalculateColonistStartScoreForTile(ColonistStartToChange, ColonistStartToChange);
+		// Choose random other coast tile
+		const int32 RandomTestIndex = FMath::RandRange(0, Coast.Num() - 1);
+		FGeneratedTileInfo* TestTile = Coast[RandomTestIndex];
+		if(ColonistsStarts.Contains(TestTile)) continue;
+		float TestScore = CalculateColonistStartScoreForTile(ColonistStartToChange, TestTile);
+		if(TestScore > WiggleTileScore)
+			ColonistsStarts[RandomWiggleIndex] = TestTile;
+	}
+	// TEMP FOR TESTING
+	for (FGeneratedTileInfo* Tile : ColonistsStarts)
+	{
+		Tile->Biome = EBiome::Mountain;
+	}
+}
+
+float UWorldGenerator::CalculateColonistStartScoreForTile(FGeneratedTileInfo* ColonistStart, FGeneratedTileInfo* Tile)
+{
+	if(!ColonistStart || !Tile || Tile == nullptr) return 0;
+	float TileScore = 0;
+	float SmallestDistance = MAX_FLT;
+	for (FGeneratedTileInfo* OtherColonistsStart : ColonistsStarts)
+	{
+		if (OtherColonistsStart == ColonistStart) continue;
+			
+		float Distance = UE::Geometry::Distance(UHexCoordsFunctions::HexCoordsToVector2D(OtherColonistsStart->HexCoords),
+												UHexCoordsFunctions::HexCoordsToVector2D(Tile->HexCoords));
+		if(Distance < SmallestDistance)
+		{
+			SmallestDistance = Distance;
+			TileScore = Distance * TerrainGenData->ColonistStartsColonistFactor;
+		}
+	}
+	return TileScore;
+}
+
 void UWorldGenerator::GenerateNativesStartingPositions()
 {
+	GenerateNativesInitialStartingPositions();
+	GenerateNativesFinalStartingPositions();
+	// Apply to tiles
+	for (FGeneratedTileInfo* Tile : NativesStarts)
+	{
+		Tile->IsNativeStart = true;
+	}
+}
+
+void UWorldGenerator::GenerateNativesInitialStartingPositions()
+{
+	// Find all inland tiles
+	TArray<FGeneratedTileInfo*> InlandWithoutVolcano;
+	for (FGeneratedTileInfo& Tile : GTiles)
+	{
+		if (Tile.IsLand
+			&& Tile.Biome != EBiome::Volcano)
+			InlandWithoutVolcano.Add(&Tile);
+	}
+	// randomly choose tile for natives starts
+	for (int i = 0; i < NativesCount; ++i)
+	{
+		const int32 RandomIndex = FMath::RandRange(0, InlandWithoutVolcano.Num() - 1);
+		NativesStarts.Add(InlandWithoutVolcano[RandomIndex]);
+	}
+}
+
+void UWorldGenerator::GenerateNativesFinalStartingPositions()
+{
+	// Find all inland tiles
+	TArray<FGeneratedTileInfo*> InlandWithoutVolcano;
+	for (FGeneratedTileInfo& Tile : GTiles)
+	{
+		if (Tile.OceanDistance > 1
+			&& Tile.Biome != EBiome::Volcano)
+			InlandWithoutVolcano.Add(&Tile);
+	}
+	// Determine the positions through score calculations
+	for (int _ = 0; _ < TerrainGenData->IterationsStarts; ++_)
+	{
+		// randomly choose tile to wiggle
+		const int32 RandomWiggleIndex = FMath::RandRange(0, NativesCount - 1);
+		FGeneratedTileInfo* NativesStartToChange = NativesStarts[RandomWiggleIndex];
+		// calculate score for tile itself
+		float WiggleTileScore = CalculateNativesStartScoreForTile(NativesStartToChange, NativesStartToChange);
+		// Choose random other coast tile
+		const int32 RandomTestIndex = FMath::RandRange(0, InlandWithoutVolcano.Num() - 1);
+		FGeneratedTileInfo* TestTile = InlandWithoutVolcano[RandomTestIndex];
+		if(NativesStarts.Contains(TestTile)) continue;
+		float TestScore = CalculateNativesStartScoreForTile(NativesStartToChange, TestTile);
+		if(TestScore > WiggleTileScore)
+			NativesStarts[RandomWiggleIndex] = TestTile;
+	}
+	// TEMP FOR TESTING
+	for (FGeneratedTileInfo* Tile : NativesStarts)
+	{
+		Tile->Biome = EBiome::Volcano;
+	}
+}
+
+float UWorldGenerator::CalculateNativesStartScoreForTile(FGeneratedTileInfo* NativesStart, FGeneratedTileInfo* Tile)
+{
+	if(!NativesStart || !Tile || Tile == nullptr) return 0;
+	// natives distances first
+	float SmallestNativesTileScore = 0;
+	float SmallestNativesDistance = MAX_FLT;
+	for (FGeneratedTileInfo* OtherNativesStart : NativesStarts)
+	{
+		if (OtherNativesStart == NativesStart) continue;
+			
+		float Distance = UE::Geometry::Distance(UHexCoordsFunctions::HexCoordsToVector2D(OtherNativesStart->HexCoords),
+												UHexCoordsFunctions::HexCoordsToVector2D(Tile->HexCoords));
+		if(Distance < SmallestNativesDistance)
+		{
+			SmallestNativesDistance = Distance;
+			SmallestNativesTileScore = Distance * TerrainGenData->NativesStartsNativesFactor;
+		}
+	}
+	// colonists distances second
+	float SmallestColonistsTileScore = 0;
+	float SmallestColonistsDistance = MAX_FLT;
+	for (FGeneratedTileInfo* ColonistsStart : ColonistsStarts)
+	{			
+		float Distance = UE::Geometry::Distance(UHexCoordsFunctions::HexCoordsToVector2D(ColonistsStart->HexCoords),
+												UHexCoordsFunctions::HexCoordsToVector2D(Tile->HexCoords));
+		if(Distance < SmallestColonistsDistance)
+		{
+			SmallestColonistsDistance = Distance;
+			SmallestColonistsTileScore = Distance * TerrainGenData->NativesStartsColonistFactor;
+		}
+	}
+	// solution
+	return SmallestNativesTileScore + SmallestColonistsTileScore;
 }
