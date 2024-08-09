@@ -72,7 +72,7 @@ void UPopulationContainer::IncreaseSize(int32 Change)
 
 	for (int32 i = 0; i < Effective_Change; ++i)
 	{
-		AddOneFollowerWeightedRandom();
+		ChangeFollowerWeightedRandomBy(1);
 	}
 	OnPopulationChanged.Broadcast(Population - OldPop);
 }
@@ -88,7 +88,7 @@ void UPopulationContainer::DecreaseSize(int32 Change)
 
 	for (int i = Effective_Change; i < 0; ++i)
 	{
-		SubtractOneFollowerWeightedRandom();
+		ChangeFollowerWeightedRandomBy(-1);
 		SubtractOneMoodWeightedRandom();
 	}
 	OnPopulationChanged.Broadcast(Population - OldPop);
@@ -149,10 +149,7 @@ void UPopulationContainer::IncreaseFollower(ECultureLoyalty Culture, int32 Chang
 	FPopulation OldPop = Population;
 	int32 OldValue = GetFollower(Culture);
 	int32 NewValue = OldValue + Change;
-
-	// Everyone follow Target Culture now
 	if (NewValue > Population.Size) NewValue = Population.Size;
-
 	int32 Effective_Change = NewValue - OldValue;
 	if (Effective_Change == 0) return;
 	Population.SetFollower(Culture, NewValue);
@@ -169,7 +166,7 @@ void UPopulationContainer::IncreaseFollower(ECultureLoyalty Culture, int32 Chang
 	}
 	for (int32 i = 0; i < Effective_Change; i++)
 	{
-		SubtractOneFollowerWeightedRandom(Culture);
+		ChangeFollowerWeightedRandomBy(-1, Culture);
 	}
 	OnPopulationChanged.Broadcast(Population - OldPop);
 }
@@ -207,224 +204,183 @@ void UPopulationContainer::DecreaseFollower(ECultureLoyalty Culture, int32 Chang
 		{
 			for (int32 i = Effective_Change; i < 0; ++i)
 			{
-				AddOneFollowerWeightedRandom(Culture);
+				ChangeFollowerWeightedRandomBy(1, Culture);
 			}
 		}
 	}
 	OnPopulationChanged.Broadcast(Population - OldPop);
 }
 
-void UPopulationContainer::ChangeFollower(ECultureLoyalty Religion, int32 Change, int32& Effective_Change)
+void UPopulationContainer::ChangeMood(EMood Mood, int32 Change)
 {
-	// We need to distinguish if Target Religion is Colonist or not
-	if (Religion == ECultureLoyalty::Colonists)
+	if (Change > 0)
 	{
-		// Calculate how many Followers native religions have
-		int32 OtherReligionTotal = 0;
-		for (int i = 0; i < static_cast<int32>(ECultureLoyalty::MAX); i++)
-		{
-			if (SelectedIndex != i)
-			{
-				OtherReligionTotal += Follower[i];
-			}
-		}
-		// If Nobody follows Guardians, Weighted Random doesn't work, so we use Full Random
-		int32 AbsoluteChange = FMath::Abs(Effective_Change);
-		if (OtherReligionTotal == 0)
-		{
-			for (int i = 0; i < AbsoluteChange; i++)
-			{
-				AddOneFollowerToGuardiansFullRandom();
-			}
-		}
-		else // Otherwise Weighted Random works
-		{
-			for (int i = 0; i < AbsoluteChange; i++)
-			{
-				AddOneFollowerWeightedRandom(Religion);
-			}
-		}
+		IncreaseMood(Mood, Change);
 	}
-	else // Guardian gets reduced, so colonist gets increased
+	else if (Change < 0)
 	{
-		Follower[static_cast<int32>(ECultureLoyalty::Colonists)] += Effective_Change;
+		DecreaseMood(Mood, -Change);
 	}
 }
 
-void UPopulationContainer::ChangeMood(EMood Mood, int32 Change, int32& Effective_Change)
+void UPopulationContainer::IncreaseMood(EMood Mood, int32 Change)
 {
-	int32 MoodIndex = static_cast<int32>(Mood);
-	TArray<int32> OldMoods = Moods;
-	Moods[MoodIndex] += Change;
-
-	// Mood can't be changed below 0
-	if (Moods[MoodIndex] < 0) Moods[MoodIndex] = 0;
-	// Mood can't be changed above current Population
-	if (Moods[MoodIndex] > Current) Moods[MoodIndex] = Current;
-
-	Effective_Change = Moods[MoodIndex] - OldMoods[MoodIndex];
-	int32 AbsoluteChange = FMath::Abs(Effective_Change);
-
-	if (Mood == EMood::Angry && Effective_Change > 0)
+	if (Change <= 0) return;
+	FPopulation OldPop = Population;
+	int32 OldValue = GetMood(Mood);
+	int32 NewValue = OldValue + Change;
+	if (NewValue > Population.Size) NewValue = Population.Size;
+	int32 Effective_Change = NewValue - OldValue;
+	if (Effective_Change == 0) return;
+	Population.SetMood(Mood, NewValue);
+	// If Aggressive gets Increased, first decrease Neutral, then Fearful pops
+	if (Mood == EMood::Angry)
 	{
-		// If Aggressive gets Increased, first decrease Neutral, then Fearful pops
-		if (Moods[0] >= AbsoluteChange)
+		if (Population.MoodContent >= Effective_Change)
 		{
-			Moods[0] -= AbsoluteChange;
+			Population.MoodContent -= Effective_Change;
 		}
 		else
 		{
-			AbsoluteChange -= Moods[0];
-			Moods[0] = 0;
-			Moods[1] -= AbsoluteChange;
+			Population.MoodFear -= Effective_Change - Population.MoodContent;
+			Population.MoodContent = 0;
 		}
 	}
-	else if (Mood == EMood::Angry && Effective_Change < 0)
+	// If Fearful gets Increased, first decrease Neutral, then Aggressive pops
+	else if (Mood == EMood::Fear)
 	{
-		// If Aggressive gets reduced, increase Neutral
-		Moods[0] += AbsoluteChange;
-	}
-	else if (Mood == EMood::Fear && Effective_Change > 0)
-	{
-		// If Fearful gets Increased, first use Neutral, then Aggressive pops
-		if (Moods[0] >= AbsoluteChange)
+		if (Population.MoodContent >= Effective_Change)
 		{
-			Moods[0] -= AbsoluteChange;
+			Population.MoodContent -= Effective_Change;
 		}
 		else
 		{
-			AbsoluteChange -= Moods[0];
-			Moods[0] = 0;
-			Moods[2] -= AbsoluteChange;
+			Population.MoodAngry -= Effective_Change - Population.MoodContent;
+			Population.MoodContent = 0;
 		}
 	}
-	else if (Mood == EMood::Fear && Effective_Change < 0)
+	// If Neutral gets increased, use Random to decrease Fearful and Aggressive pops
+	else if (Mood == EMood::Content)
 	{
-		// If Fearful gets reduced, increase Neutral
-		Moods[0] += AbsoluteChange;
-	}
-	else if (Mood == EMood::Content && Effective_Change > 0)
-	{
-		// If Neutral gets increased, use Random to reduce Fearful and Aggressive pops
-		int32 Random = FMath::RandRange(0, AbsoluteChange);
-		if (Random > Moods[1])
+		int32 FearReduce = FMath::RandRange(0, Effective_Change);
+		if (FearReduce > Population.MoodFear)
 		{
-			Random = Moods[1];
+			FearReduce = Population.MoodFear;
 		}
-		AbsoluteChange -= Random;
-		Moods[1] -= Random;
-		Moods[2] -= AbsoluteChange;
+		Population.MoodFear -= FearReduce;
+		Population.MoodAngry -= Effective_Change - FearReduce;
 	}
-	else if (Mood == EMood::Content && Effective_Change > 0)
-	{
-		// If Neutral gets reduced, use Random to increase Fearful and Aggressive pops
-		int32 Random = FMath::RandRange(0, AbsoluteChange);
-		AbsoluteChange -= Random;
-		Moods[1] += Random;
-		Moods[2] += AbsoluteChange;
-	}
-	OnMoodChanged.Broadcast(
-		Moods[0] - OldMoods[0],
-		Moods[1] - OldMoods[1],
-		Moods[2] - OldMoods[2]);
+	OnPopulationChanged.Broadcast(Population - OldPop);
 }
 
-void UPopulationContainer::AddOneFollowerWeightedRandom(ECultureLoyalty Exclude)
+void UPopulationContainer::DecreaseMood(EMood Mood, int32 Change)
 {
-	int32 ExcludeIndex = static_cast<int32>(Exclude);
-	int32 TotalBelievers = 0;
-	// Calculate TotalBelievers in the selection pool
-	for (int i = 0; i < static_cast<int32>(ECultureLoyalty::MAX); i++)
+	if (Change <= 0) return;
+	FPopulation OldPop = Population;
+	int32 OldValue = GetMood(Mood);
+	int32 NewValue = OldValue - Change;
+	if (NewValue < 0) NewValue = 0;
+	int32 Effective_Change = NewValue - OldValue;
+	if (Effective_Change == 0) return;
+	Population.SetMood(Mood, NewValue);
+	// If Neutral gets reduced, use Random to increase Fearful and Aggressive pops
+	if (Mood == EMood::Content)
 	{
-		if (i != ExcludeIndex)
-		{
-			TotalBelievers += Follower[i];
-		}
+		int32 Random = FMath::RandRange(0, Effective_Change);
+		Population.MoodAngry += Effective_Change - Random;
+		Population.MoodFear += Random;
 	}
-	if (TotalBelievers == 0) return; // No Weights so this doesn't make sense
-
-	// Select a random Believer
-	int32 cursor = FMath::RandRange(0, TotalBelievers);
-	// Find Selected Religion
-	for (int i = 0; i < static_cast<int32>(ECultureLoyalty::MAX); i++)
+	else
 	{
-		if (i != ExcludeIndex && Follower[i] > 0)
-		{
-			cursor -= Follower[i];
-			if (cursor <= 0)
-			{
-				// This Religion is selected
-				Follower[i]++;
-				return;
-			}
-		}
+		Population.MoodContent += Effective_Change;
 	}
+	OnPopulationChanged.Broadcast(Population - OldPop);
 }
 
-void UPopulationContainer::SubtractOneFollowerWeightedRandom(ECultureLoyalty Exclude)
+void UPopulationContainer::ChangeFollowerWeightedRandomBy(int32 Change, ECultureLoyalty Exclude)
 {
-	int32 ExcludeIndex = static_cast<int32>(Exclude);
-	int32 TotalBelievers = 0;
-	// Calculate TotalBelievers in the selection pool
-	for (int i = 0; i < static_cast<int32>(ECultureLoyalty::MAX); i++)
+	TArray<ECultureLoyalty> Cultures;
+	TArray<int32> Values;
+	int32 TotalFollower = 0;
+	if (Population.FollowerColonists > 0 && ECultureLoyalty::Colonists != Exclude)
 	{
-		if (i != ExcludeIndex)
-		{
-			TotalBelievers += Follower[i];
-		}
+		Cultures.Add(ECultureLoyalty::Colonists);
+		Values.Add(Population.FollowerColonists);
+		TotalFollower += Population.FollowerColonists;
 	}
-	// Select a random Believer
-	int32 cursor = FMath::RandRange(0, TotalBelievers);
-	// Find Selected Religion
-	for (int i = 0; i < static_cast<int32>(ECultureLoyalty::MAX); i++)
+	if (Population.FollowerGuardian1 > 0 && ECultureLoyalty::Guardian1 != Exclude)
 	{
-		// Exclude and don't use 0 Weight Religions
-		if (i != ExcludeIndex && Follower[i] > 0)
+		Cultures.Add(ECultureLoyalty::Guardian1);
+		Values.Add(Population.FollowerGuardian1);
+		TotalFollower += Population.FollowerGuardian1;
+	}
+	if (Population.FollowerGuardian2 > 0 && ECultureLoyalty::Guardian2 != Exclude)
+	{
+		Cultures.Add(ECultureLoyalty::Guardian2);
+		Values.Add(Population.FollowerGuardian2);
+		TotalFollower += Population.FollowerGuardian2;
+	}
+	if (Population.FollowerGuardian3 > 0 && ECultureLoyalty::Guardian3 != Exclude)
+	{
+		Cultures.Add(ECultureLoyalty::Guardian3);
+		Values.Add(Population.FollowerGuardian3);
+		TotalFollower += Population.FollowerGuardian3;
+	}
+	if (Population.FollowerGuardian4 > 0 && ECultureLoyalty::Guardian4 != Exclude)
+	{
+		Cultures.Add(ECultureLoyalty::Guardian4);
+		Values.Add(Population.FollowerGuardian4);
+		TotalFollower += Population.FollowerGuardian4;
+	}
+	// No Weights so this doesn't make sense
+	if (TotalFollower == 0) return;
+	// Select a random Believer
+	int32 cursor = FMath::RandRange(0, TotalFollower - 1);
+	// Find Selected Religion
+	for (int i = 0; i < Values.Num(); i++)
+	{
+		cursor -= Values[i];
+		if (cursor < 0)
 		{
-			cursor -= Follower[i];
-			if (cursor <= 0)
-			{
-				// This Religion is selected
-				Follower[i]--;
-				return;
-			}
+			// This Religion is selected
+			Population.SetFollower(Cultures[i], Values[i] + Change);
+			return;
 		}
 	}
 }
 
 void UPopulationContainer::AddOneFollowerToGuardiansFullRandom()
 {
-	Follower[FMath::RandRange(0, 3)]++;
+	switch (FMath::RandRange(0, 3))
+	{
+	case 0:
+		++Population.FollowerGuardian1;
+	case 1:
+		++Population.FollowerGuardian2;
+	case 2:
+		++Population.FollowerGuardian3;
+	case 3:
+		++Population.FollowerGuardian4;
+	default: ;
+	}
 }
 
-void UPopulationContainer::SubtractOneMoodWeightedRandom(EMood Exclude)
+void UPopulationContainer::SubtractOneMoodWeightedRandom()
 {
-	int32 ExcludeIndex = static_cast<int32>(Exclude);
-	int32 TotalMood = 0;
-	// Calculate TotalMood in the selection pool
-	for (int i = 0; i < static_cast<int32>(EMood::MAX); i++)
-	{
-		if (i != ExcludeIndex)
-		{
-			TotalMood += Moods[i];
-		}
-	}
+	int32 TotalMood = Population.MoodContent + Population.MoodAngry + Population.MoodFear;
 	// Select a random dude with mood
-	int32 cursor = FMath::RandRange(0, TotalMood);
+	int32 Cursor = FMath::RandRange(0, TotalMood);
 	// Find Selected mood
-	for (int i = 0; i < static_cast<int32>(EMood::MAX); i++)
+	if(Cursor < Population.MoodContent)
 	{
-		// Exclude and don't use 0 Weight mood
-		if (i != ExcludeIndex && Moods[i] > 0)
-		{
-			cursor -= Moods[i];
-			if (cursor <= 0)
-			{
-				// This mood is selected
-				Moods[i]--;
-				return;
-			}
-		}
+		--Population.MoodContent;
+	}
+	else if(Cursor < Population.MoodContent + Population.MoodAngry)
+	{
+		--Population.MoodAngry;
+	} else
+	{
+		--Population.MoodFear;
 	}
 }
 
@@ -435,7 +391,6 @@ FPopulation UPopulationContainer::GetPopulation()
 {
 	return Population;
 }
-
 
 
 int32 UPopulationContainer::GetFollower(ECultureLoyalty Culture) const

@@ -15,7 +15,8 @@ class GOTA_API UPopulationContainer : public UObject
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
 	UPopulationContainer();
-
+	
+public:
 	UPROPERTY(BlueprintAssignable, Category="Population")
 	FOnFPopulationChangedSig OnPopulationChanged;
 	UPROPERTY(BlueprintAssignable, Category="Population")
@@ -61,13 +62,18 @@ class GOTA_API UPopulationContainer : public UObject
 	void DecreaseFollower(ECultureLoyalty Culture, int32 Change);
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ChangeMood(EMood Mood, int32 Change, int32& Effective_Change);
+	void ChangeMood(EMood Mood, int32 Change);
+
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void IncreaseMood(EMood Mood, int32 Change);
+
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void DecreaseMood(EMood Mood, int32 Change);
 
 private:
-	void AddOneFollowerWeightedRandom(ECultureLoyalty Exclude = ECultureLoyalty::MAX);
-	void SubtractOneFollowerWeightedRandom(ECultureLoyalty Exclude = ECultureLoyalty::MAX);
+	void ChangeFollowerWeightedRandomBy(int32 Change, ECultureLoyalty Exclude = ECultureLoyalty::MAX);
 	void AddOneFollowerToGuardiansFullRandom();
-	void SubtractOneMoodWeightedRandom(EMood Exclude = EMood::MAX);
+	void SubtractOneMoodWeightedRandom();
 
 	// ---------------------------------------------------------
 	// Population Growth Stuff
@@ -83,7 +89,7 @@ public:
 
 	// ---------------------------------------------------------
 	// Getters and Setters
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintGetter, Category = "Population")
 	FPopulation GetPopulation();
 

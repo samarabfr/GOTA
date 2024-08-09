@@ -42,6 +42,8 @@ struct FPopulation : public FTableRowBase
 	int32 MoodFear;
 
 	void SetFollower(ECultureLoyalty Culture, int32 Value);
+
+	void SetMood(EMood Mood, int32 Value);
 	
 	int32 GetNativeFollowers() const;
 

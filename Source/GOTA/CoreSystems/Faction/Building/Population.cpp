@@ -23,6 +23,22 @@ void FPopulation::SetFollower(ECultureLoyalty Culture, int32 Value)
 	}
 }
 
+void FPopulation::SetMood(EMood Mood, int32 Value)
+{
+	switch (Mood) {
+	case EMood::Content:
+		MoodContent = Value;
+		return;
+	case EMood::Angry:
+		MoodAngry = Value;
+		return;
+	case EMood::Fear:
+		MoodFear = Value;
+		return;
+	default:;
+	}
+}
+
 FPopulation FPopulation::operator+(const FPopulation& Other) const
 {
 	FPopulation Result;
