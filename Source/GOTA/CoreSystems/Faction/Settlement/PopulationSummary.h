@@ -4,82 +4,52 @@
 
 #include "CoreMinimal.h"
 #include "GOTA/CoreSystems/Faction/Building/PopulationContainer.h"
+#include "GOTA/CoreSystems/Utility/DelegateTypes.h"
 #include "PopulationSummary.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class GOTA_API UPopulationSummary : public UObject
 {
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
-	UPopulationSummary();
-
-	// Delegate
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAnythingChangedSignature);
-
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangedSignature, int32, ChangedBy);
-
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnMoodChangedSignature,
-	                                               int32, NeutralChange,
-	                                               int32, FearfulChange,
-	                                               int32, AggressiveChange);
-
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FOnFollowerChangedSignature,
-	                                              int32, CFollowerChange,
-	                                              int32, G1FollowerChange,
-	                                              int32, G2FollowerChange,
-	                                              int32, G3FollowerChange,
-	                                              int32, G4FollowerChange);
 
 public:
 	UPROPERTY(BlueprintAssignable, Category="Population")
-	FOnAnythingChangedSignature OnChanged;
-	UPROPERTY(BlueprintAssignable, Category="Population")
-	FOnChangedSignature OnPopulationChanged;
-	UPROPERTY(BlueprintAssignable, Category="Population")
-	FOnChangedSignature OnMaximumChanged;
-	UPROPERTY(BlueprintAssignable, Category="Population")
-	FOnFollowerChangedSignature OnFollowerChanged;
-	UPROPERTY(BlueprintAssignable, Category="Population")
-	FOnMoodChangedSignature OnMoodChanged;
+	FOnFPopulationChangedSig OnPopulationChanged;
 
-public:
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Current, BlueprintReadOnly, Category = "Population")
-	int32 Current = 0;
-
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Maximum, BlueprintReadOnly, Category = "Population")
-	int32 Maximum = 0;
-
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Follower)
-	TArray<int32> Follower;
-
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Moods)
-	TArray<int32> Moods;
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Population, BlueprintReadOnly, Category = "Population")
+	FPopulation Population;
 
 	UFUNCTION()
-	void OnRep_Current();
+	void OnRep_Population(const FPopulation& OldPopulation);
+
+	// ---------------------------------------------------------
+	// Keeping Track of Population Changes
+
+	UFUNCTION(BlueprintCallable)
+	void RegisterPopulationContainer(UPopulationContainer* PopulationContainer);
+
+	UFUNCTION(BlueprintCallable)
+	void RegisterPopulationSummary(UPopulationSummary* PopulationSummary);
+
+	UFUNCTION(BlueprintCallable)
+	void UnregisterPopulationContainer(UPopulationContainer* PopulationContainer);
+
+	UFUNCTION(BlueprintCallable)
+	void UnregisterPopulationSummary(UPopulationSummary* PopulationSummary);
 
 	UFUNCTION()
-	void OnRep_Maximum();
+	void UpdatePopulation(FPopulation Change);
 
-	UFUNCTION()
-	void OnRep_Follower();
-	
-	UFUNCTION()
-	void OnRep_Moods();
-	
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Population")
-	int32 GetFollower(ECultureLoyalty Religion) const;
+	// ---------------------------------------------------------
+	// Getters
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Population")
-	int32 GetFollowerNatives();
+	int32 GetFollower(ECultureLoyalty Culture) const;
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Population")
+	int32 GetNativeFollowers();
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void GetAllFollower(int32& Guardian1, int32& Guardian2, int32& Guardian3, int32& Guardian4, int32& Colonists);
@@ -88,23 +58,5 @@ public:
 	int32 GetMood(EMood Mood);
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
-	void GetAllMood(int32& Neutral, int32& Fearful, int32& Aggressive);
-
-	UFUNCTION(BlueprintCallable)
-	void RegisterPopulation(UPopulationContainer* Population);
-
-	UFUNCTION(BlueprintCallable)
-	void RegisterPopulationSummary(UPopulationSummary* PopulationSummary);
-
-	UFUNCTION()
-	void UpdatePopulation(int32 Change);
-
-	UFUNCTION()
-	void UpdateMaximum(int32 Change);
-
-	UFUNCTION()
-	void UpdateFollower(int32 ChangeC, int32 ChangeG1, int32 ChangeG2, int32 ChangeG3, int32 ChangeG4);
-
-	UFUNCTION()
-	void UpdateMood(int32 NeutralChange, int32 FearfulChange, int32 AggressiveChange);
+	void GetAllMood(int32& Content, int32& Angry, int32& Fear);
 };

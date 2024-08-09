@@ -34,7 +34,7 @@ struct FPopulation : public FTableRowBase
 
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
 	int32 MoodContent;
-	
+
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
 	int32 MoodAngry;
 
@@ -44,8 +44,12 @@ struct FPopulation : public FTableRowBase
 	void SetFollower(ECultureLoyalty Culture, int32 Value);
 
 	void SetMood(EMood Mood, int32 Value);
-	
+
+	int32 GetFollower(ECultureLoyalty Culture) const;
+
 	int32 GetNativeFollowers() const;
+
+	int32 GetMood(EMood Mood) const;
 
 	FPopulation operator+(const FPopulation& Other) const;
 

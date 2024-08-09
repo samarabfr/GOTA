@@ -395,21 +395,7 @@ FPopulation UPopulationContainer::GetPopulation()
 
 int32 UPopulationContainer::GetFollower(ECultureLoyalty Culture) const
 {
-	switch (Culture)
-	{
-	case ECultureLoyalty::Colonists:
-		return Population.FollowerColonists;
-	case ECultureLoyalty::Guardian1:
-		return Population.FollowerGuardian1;
-	case ECultureLoyalty::Guardian2:
-		return Population.FollowerGuardian2;
-	case ECultureLoyalty::Guardian3:
-		return Population.FollowerGuardian3;
-	case ECultureLoyalty::Guardian4:
-		return Population.FollowerGuardian4;
-	default:
-		return -1;
-	}
+	return Population.GetFollower(Culture);
 }
 
 int32 UPopulationContainer::GetNativeFollowers()
@@ -430,17 +416,7 @@ void UPopulationContainer::GetAllFollower(int32& Colonists, int32& Guardian1, in
 
 int32 UPopulationContainer::GetMood(EMood Mood)
 {
-	switch (Mood)
-	{
-	case EMood::Content:
-		return Population.MoodContent;
-	case EMood::Angry:
-		return Population.MoodAngry;
-	case EMood::Fear:
-		return Population.MoodFear;
-	default:
-		return -1;
-	}
+	return Population.GetMood(Mood);
 }
 
 void UPopulationContainer::GetAllMood(int32& Content, int32& Angry, int32& Fear)

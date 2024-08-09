@@ -1,9 +1,5 @@
 ﻿#include "Population.h"
 
-int32 FPopulation::GetNativeFollowers() const
-{
-	return FollowerGuardian1 + FollowerGuardian2 + FollowerGuardian3 + FollowerGuardian4;
-}
 
 void FPopulation::SetFollower(ECultureLoyalty Culture, int32 Value)
 {
@@ -36,6 +32,46 @@ void FPopulation::SetMood(EMood Mood, int32 Value)
 		MoodFear = Value;
 		return;
 	default:;
+	}
+}
+
+int32 FPopulation::GetFollower(ECultureLoyalty Culture) const
+{
+	switch (Culture)
+	{
+	case ECultureLoyalty::Colonists:
+		return FollowerColonists;
+	case ECultureLoyalty::Guardian1:
+		return FollowerGuardian1;
+	case ECultureLoyalty::Guardian2:
+		return FollowerGuardian2;
+	case ECultureLoyalty::Guardian3:
+		return FollowerGuardian3;
+	case ECultureLoyalty::Guardian4:
+		return FollowerGuardian4;
+	default:
+		return -1;
+	}
+}
+
+int32 FPopulation::GetNativeFollowers() const
+{
+	return FollowerGuardian1 + FollowerGuardian2 + FollowerGuardian3 + FollowerGuardian4;
+}
+
+
+int32 FPopulation::GetMood(EMood Mood) const
+{
+	switch (Mood)
+	{
+	case EMood::Content:
+		return MoodContent;
+	case EMood::Angry:
+		return MoodAngry;
+	case EMood::Fear:
+		return MoodFear;
+	default:
+		return -1;
 	}
 }
 
