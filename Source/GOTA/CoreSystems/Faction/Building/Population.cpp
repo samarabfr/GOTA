@@ -122,6 +122,22 @@ FPopulation FPopulation::operator-(const FPopulation& Other) const
 	return Result;
 }
 
+FPopulation FPopulation::operator-() const
+{
+	FPopulation Result;
+	Result.Size = -this->Size;
+	Result.MaxSize = -this->MaxSize;
+	Result.FollowerColonists = -this->FollowerColonists;
+	Result.FollowerGuardian1 = -this->FollowerGuardian1;
+	Result.FollowerGuardian2 = -this->FollowerGuardian2;
+	Result.FollowerGuardian3 = -this->FollowerGuardian3;
+	Result.FollowerGuardian4 = -this->FollowerGuardian4;
+	Result.MoodContent = -this->MoodContent;
+	Result.MoodAngry = -this->MoodAngry;
+	Result.MoodFear = -this->MoodFear;
+	return Result;
+}
+
 FPopulation FPopulation::operator-=(const FPopulation& Other)
 {
 	this->Size -= Other.Size;

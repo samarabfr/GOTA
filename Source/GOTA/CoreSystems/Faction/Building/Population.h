@@ -57,5 +57,7 @@ struct FPopulation : public FTableRowBase
 
 	FPopulation operator-(const FPopulation& Other) const;
 
+	FPopulation operator-() const;
+	
 	FPopulation operator-=(const FPopulation& Other);
 };

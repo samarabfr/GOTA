@@ -149,6 +149,7 @@ void ASettlement::OnBuildingAdded(UBuilding* Building)
 
 void ASettlement::OnBuildingRemoved(UBuilding* Building)
 {
+	PopulationSummary->UnregisterPopulationContainer(Building->PopContainer);
 	BuildingSummary->UnregisterBuildingProduction(Building);
 }
 

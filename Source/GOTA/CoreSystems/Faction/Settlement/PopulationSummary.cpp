@@ -27,24 +27,28 @@ void UPopulationSummary::OnRep_Population(const FPopulation& OldPopulation)
 void UPopulationSummary::RegisterPopulationContainer(UPopulationContainer* PopulationContainer)
 {
 	PopulationContainer->OnPopulationChanged.AddDynamic(this, &UPopulationSummary::UpdatePopulation);
+	OnPopulationChanged.Broadcast(PopulationContainer->Population);
 	Population += PopulationContainer->Population;
 }
 
 void UPopulationSummary::RegisterPopulationSummary(UPopulationSummary* PopulationSummary)
 {
 	PopulationSummary->OnPopulationChanged.AddDynamic(this, &UPopulationSummary::UpdatePopulation);
+	OnPopulationChanged.Broadcast(PopulationSummary->Population);
 	Population += PopulationSummary->Population;
 }
 
 void UPopulationSummary::UnregisterPopulationContainer(UPopulationContainer* PopulationContainer)
 {
 	PopulationContainer->OnPopulationChanged.RemoveDynamic(this, &UPopulationSummary::UpdatePopulation);
+	OnPopulationChanged.Broadcast(-PopulationContainer->Population);
 	Population -= PopulationContainer->Population;
 }
 
 void UPopulationSummary::UnregisterPopulationSummary(UPopulationSummary* PopulationSummary)
 {
 	PopulationSummary->OnPopulationChanged.RemoveDynamic(this, &UPopulationSummary::UpdatePopulation);
+	OnPopulationChanged.Broadcast(-PopulationSummary->Population);
 	Population -= PopulationSummary->Population;
 }
 
