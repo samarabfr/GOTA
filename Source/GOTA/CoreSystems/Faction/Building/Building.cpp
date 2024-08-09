@@ -22,7 +22,7 @@ bool UBuilding::IsSupportedForNetworking() const
 
 UBuilding::UBuilding()
 {
-	Population = CreateDefaultSubobject<UPopulation>(TEXT("Population"));
+	Population = CreateDefaultSubobject<UPopulationContainer>(TEXT("Population"));
 	Population->OnPopulationChanged.AddDynamic(this, &UBuilding::UpdateProduction);
 }
 

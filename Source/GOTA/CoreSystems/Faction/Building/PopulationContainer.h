@@ -3,19 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GOTA/CoreSystems/Faction/Building/PopulationContainer.h"
-#include "PopulationSummary.generated.h"
+#include "GOTA/CoreSystems/Utility/Enums.h"
+#include "PopulationContainer.generated.h"
 
-/**
- * 
- */
-UCLASS()
-class GOTA_API UPopulationSummary : public UObject
+UCLASS(Blueprintable)
+class GOTA_API UPopulationContainer : public UObject
 {
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
-	UPopulationSummary();
+	UPopulationContainer();
 
 	// Delegate
 	UDELEGATE()
@@ -51,30 +48,54 @@ public:
 	FOnMoodChangedSignature OnMoodChanged;
 
 public:
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Current, BlueprintReadOnly, Category = "Population")
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Current, BlueprintGetter=GetCurrent, Category = "Population")
 	int32 Current = 0;
+	
+	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Category = "Population")
+	int32 Growth = 0;
+	
+	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Category = "Population")
+	int32 GrowthChange = 0;
+
+	// TODO: DataAsset
+	UPROPERTY(BlueprintReadOnly)
+	int32 GrowthThreshold = 30;
+
+	UFUNCTION()
+	void OnRep_Current(int32 Change);
+	
+	UFUNCTION(BlueprintGetter, BlueprintPure, Category = "Population")
+	int32 GetCurrent() const;
 
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Maximum, BlueprintReadOnly, Category = "Population")
 	int32 Maximum = 0;
 
+	UFUNCTION()
+	void OnRep_Maximum(int32 Change);
+
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void ChangePopulation(int32 Change, int32& Effective_Change);
+
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void ChangeMaximum(int32 Change, int32& Effective_Change);	
+
+	//====================================================================
+	//                           Followers
+	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+private:
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Follower)
 	TArray<int32> Follower;
+	void AddOneFollowerWeightedRandom(ECultureLoyalty Exclude = ECultureLoyalty::MAX);
+	void SubtractOneFollowerWeightedRandom(ECultureLoyalty Exclude = ECultureLoyalty::MAX);
+	void AddOneFollowerToGuardiansFullRandom();
 
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Moods)
-	TArray<int32> Moods;
-
-	UFUNCTION()
-	void OnRep_Current();
-
-	UFUNCTION()
-	void OnRep_Maximum();
-
+public:
 	UFUNCTION()
 	void OnRep_Follower();
 	
-	UFUNCTION()
-	void OnRep_Moods();
-	
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void ChangeFollower(ECultureLoyalty Religion, int32 Change, int32& Effective_Change);
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Population")
 	int32 GetFollower(ECultureLoyalty Religion) const;
 
@@ -84,27 +105,24 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void GetAllFollower(int32& Guardian1, int32& Guardian2, int32& Guardian3, int32& Guardian4, int32& Colonists);
 
+	//====================================================================
+	//                            Mood
+	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+private:
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Moods)
+	TArray<int32> Moods;
+	void SubtractOneMoodWeightedRandom(EMood Exclude = EMood::MAX);
+
+public:
+	UFUNCTION()
+	void OnRep_Moods();
+	
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void ChangeMood(EMood Mood, int32 Change, int32& Effective_Change);
+
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	int32 GetMood(EMood Mood);
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void GetAllMood(int32& Neutral, int32& Fearful, int32& Aggressive);
-
-	UFUNCTION(BlueprintCallable)
-	void RegisterPopulation(UPopulationContainer* Population);
-
-	UFUNCTION(BlueprintCallable)
-	void RegisterPopulationSummary(UPopulationSummary* PopulationSummary);
-
-	UFUNCTION()
-	void UpdatePopulation(int32 Change);
-
-	UFUNCTION()
-	void UpdateMaximum(int32 Change);
-
-	UFUNCTION()
-	void UpdateFollower(int32 ChangeC, int32 ChangeG1, int32 ChangeG2, int32 ChangeG3, int32 ChangeG4);
-
-	UFUNCTION()
-	void UpdateMood(int32 NeutralChange, int32 FearfulChange, int32 AggressiveChange);
 };

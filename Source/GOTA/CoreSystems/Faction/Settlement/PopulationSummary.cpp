@@ -86,7 +86,7 @@ void UPopulationSummary::GetAllMood(int32& Neutral, int32& Fearful, int32& Aggre
 	Aggressive = Moods[2];
 }
 
-void UPopulationSummary::RegisterPopulation(UPopulation* Population)
+void UPopulationSummary::RegisterPopulation(UPopulationContainer* Population)
 {
 	Population->OnPopulationChanged.AddDynamic(this, &UPopulationSummary::UpdatePopulation);
 	Current += Population->Current;
