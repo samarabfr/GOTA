@@ -12,34 +12,34 @@ struct FPopulation : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 Size;
+	int32 Size = 0;
 
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 MaxSize;
+	int32 MaxSize = 0;
 
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 FollowerColonists;
+	int32 FollowerColonists = 0;
 
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 FollowerGuardian1;
+	int32 FollowerGuardian1 = 0;
 
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 FollowerGuardian2;
+	int32 FollowerGuardian2 = 0;
 
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 FollowerGuardian3;
+	int32 FollowerGuardian3 = 0;
 
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 FollowerGuardian4;
+	int32 FollowerGuardian4 = 0;
 
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 MoodContent;
+	int32 MoodContent = 0;
 
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 MoodAngry;
+	int32 MoodAngry = 0;
 
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 MoodFear;
+	int32 MoodFear = 0;
 
 	void SetFollower(ECultureLoyalty Culture, int32 Value);
 

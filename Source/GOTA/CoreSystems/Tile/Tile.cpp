@@ -265,18 +265,17 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 	{
 		Claimant->OnBuildingAdded(Building);
 	}
-	int32 _;
-	Building->Population->ChangeMaximum(BuildingDataAsset->TierOne.Housing, _);
+	Building->PopContainer->ChangeMaxSize(BuildingDataAsset->TierOne.Housing);
 	Building->SetupProduction(&BuildingDataAsset->TierOne);
 	// Add Building related GameplayTags
 	GameplayTags.AppendTags(BuildingDataAsset->TierOne.GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
 	// Replication stuff
 	AddReplicatedSubObject(Building);
-	AddReplicatedSubObject(Building->Population);
+	AddReplicatedSubObject(Building->PopContainer);
 	// Population stuff
-	Building->Population->OnChanged.AddDynamic(this, &ATile::CalculatePopulationGrowthChangeWithNeighbors);
-	CalculatePopulationGrowthChangeWithNeighbors();
+	Building->PopContainer->OnPopulationChanged.AddDynamic(this, &ATile::CalculatePopulationGrowthChangeWithNeighbors);
+	CalculatePopulationGrowthChangeWithNeighbors(FPopulation());
 	// Set Graphics
 	OnBuildingChanged.Broadcast();
 	RecalculateTileLayout();
@@ -351,13 +350,13 @@ void ATile::CalculateTurn()
 	}
 	if (!Building) return;
 	// apply PopulationGrowthChange
-	Building->Population->Growth += Building->Population->GrowthChange;
+	Building->PopContainer->Growth += Building->PopContainer->GrowthChange;
 	// grow Population
-	if (Building->Population->Growth > Building->Population->GrowthThreshold)
+	if (Building->PopContainer->Growth > Building->PopContainer->GrowthThreshold)
 	{
-		const int32 PopulationGrowCount = Building->Population->Growth / Building->Population->GrowthThreshold;
-		Building->Population->ChangePopulation(PopulationGrowCount, _);
-		Building->Population->Growth -= PopulationGrowCount * Building->Population->GrowthThreshold;
+		const int32 PopulationGrowCount = Building->PopContainer->Growth / Building->PopContainer->GrowthThreshold;
+		Building->PopContainer->IncreaseSize(PopulationGrowCount);
+		Building->PopContainer->Growth -= PopulationGrowCount * Building->PopContainer->GrowthThreshold;
 	}
 }
 
@@ -443,18 +442,18 @@ void ATile::CalculatePopulationGrowthChange()
 {
 	if (!Building) return;
 
-	Building->Population->GrowthChange = 0;
+	Building->PopContainer->GrowthChange = 0;
 	for (int i = 0; i < 6; ++i)
 	{
 		if (Neighbors[i] && Neighbors[i]->Building)
 		{
-			Building->Population->GrowthChange += Neighbors[i]->Building->Population->Current;
+			Building->PopContainer->GrowthChange += Neighbors[i]->Building->PopContainer->Population.Size;
 		}
 	}
-	Building->Population->GrowthChange += Building->Population->Current;
+	Building->PopContainer->GrowthChange += Building->PopContainer->Population.Size;
 }
 
-void ATile::CalculatePopulationGrowthChangeWithNeighbors()
+void ATile::CalculatePopulationGrowthChangeWithNeighbors(FPopulation Change)
 {
 	if (bFreezeGrowthChanges) return;
 

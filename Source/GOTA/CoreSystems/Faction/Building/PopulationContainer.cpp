@@ -86,7 +86,7 @@ void UPopulationContainer::DecreaseSize(int32 Change)
 	int32 Effective_Change = Population.Size - OldPop.Size;
 	if (Effective_Change == 0) return; // nothing happened
 
-	for (int i = Effective_Change; i < 0; ++i)
+	for (int32 i = Effective_Change; i < 0; ++i)
 	{
 		ChangeFollowerWeightedRandomBy(-1);
 		SubtractOneMoodWeightedRandom();
@@ -337,7 +337,7 @@ void UPopulationContainer::ChangeFollowerWeightedRandomBy(int32 Change, ECulture
 	// Select a random Believer
 	int32 cursor = FMath::RandRange(0, TotalFollower - 1);
 	// Find Selected Religion
-	for (int i = 0; i < Values.Num(); i++)
+	for (int32 i = 0; i < Values.Num(); i++)
 	{
 		cursor -= Values[i];
 		if (cursor < 0)

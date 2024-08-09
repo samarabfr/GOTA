@@ -26,7 +26,7 @@ public:
 	UBuildingDataAsset* DataAsset;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Instanced, Category="Building")
-	UPopulationContainer* Population;
+	UPopulationContainer* PopContainer;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Category="Building")
 	int32 Tier = 1;
@@ -55,7 +55,7 @@ public:
 	EProductionType ProductionType = EProductionType::MAX;
 	
 	UFUNCTION()
-	void UpdateProduction(int32 Change);
+	void UpdateProduction(FPopulation Change);
 	
 	void SetupProduction(const FBuildingTierData* TierData);
 };

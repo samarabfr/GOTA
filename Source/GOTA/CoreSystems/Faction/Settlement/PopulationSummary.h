@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GOTA/CoreSystems/Faction/Building/PopulationContainer.h"
-#include "GOTA/CoreSystems/Utility/DelegateTypes.h"
 #include "PopulationSummary.generated.h"
 
 UCLASS()
@@ -13,7 +12,10 @@ class GOTA_API UPopulationSummary : public UObject
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
-
+	
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFPopulationChangedSig, FPopulation, ChangedBy);
+	
 public:
 	UPROPERTY(BlueprintAssignable, Category="Population")
 	FOnFPopulationChangedSig OnPopulationChanged;

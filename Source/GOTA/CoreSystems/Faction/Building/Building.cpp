@@ -9,7 +9,7 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UBuilding, Population);
+	DOREPLIFETIME(UBuilding, PopContainer);
 	DOREPLIFETIME(UBuilding, Production);
 	DOREPLIFETIME(UBuilding, Tier);
 	DOREPLIFETIME(UBuilding, DataAsset);
@@ -22,8 +22,8 @@ bool UBuilding::IsSupportedForNetworking() const
 
 UBuilding::UBuilding()
 {
-	Population = CreateDefaultSubobject<UPopulationContainer>(TEXT("Population"));
-	Population->OnPopulationChanged.AddDynamic(this, &UBuilding::UpdateProduction);
+	PopContainer = CreateDefaultSubobject<UPopulationContainer>(TEXT("Population"));
+	PopContainer->OnPopulationChanged.AddDynamic(this, &UBuilding::UpdateProduction);
 }
 
 bool UBuilding::CanUpgrade()
@@ -36,15 +36,15 @@ void UBuilding::Upgrade()
 {
 	FBuildingTierData* NewTierData = DataAsset->GetTierData(Tier + 1);
 	SetupProduction(NewTierData);
-	int32 EC = 0;
-	Population->ChangeMaximum(NewTierData->Housing - Population->Maximum, EC);
+	PopContainer->ChangeMaxSize(NewTierData->Housing - PopContainer->Population.MaxSize);
 	++Tier;
 }
 
-void UBuilding::UpdateProduction(int32 Change)
+void UBuilding::UpdateProduction(FPopulation Change)
 {
+	if(PopulationThreshold <= 0) return;
 	int32 OldProduction = Production;
-	Production = ProductionPerThreshold * (Population->Current / PopulationThreshold);
+	Production = ProductionPerThreshold * (PopContainer->Population.Size / PopulationThreshold);
 	if (OldProduction != Production)
 	{
 		OnProductionChanged.Broadcast(Production - OldProduction, ProductionType);
@@ -58,6 +58,6 @@ void UBuilding::SetupProduction(const FBuildingTierData* TierData)
 	ProductionType = TierData->ProductionType;
 	// can't use UpdateProduction() because it should always call the delegate in this case
 	int32 OldProduction = Production;
-	Production = ProductionPerThreshold * (Population->Current / PopulationThreshold);
+	Production = ProductionPerThreshold * (PopContainer->Population.Size / PopulationThreshold);
 	OnProductionChanged.Broadcast(Production - OldProduction, ProductionType);
 }

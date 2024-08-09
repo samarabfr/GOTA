@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Population.h"
-#include "GOTA/CoreSystems/Utility/DelegateTypes.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "PopulationContainer.generated.h"
 
@@ -15,7 +14,16 @@ class GOTA_API UPopulationContainer : public UObject
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
 	UPopulationContainer();
-	
+
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnGrowthChangedSig,
+	                                               int32, GrowthChangedBy,
+	                                               int32, GrowthChangeChangedBy,
+	                                               int32, GrowthThresholdChangedBy);
+
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFPopulationChangedSig, FPopulation, ChangedBy);
+
 public:
 	UPROPERTY(BlueprintAssignable, Category="Population")
 	FOnFPopulationChangedSig OnPopulationChanged;
