@@ -99,9 +99,9 @@ void UPopulationSummary::RegisterPopulation(UPopulationContainer* Population)
 	Follower[3] += Population->GetFollower(ECultureLoyalty::Guardian3);
 	Follower[4] += Population->GetFollower(ECultureLoyalty::Guardian4);
 	Population->OnMoodChanged.AddDynamic(this, &UPopulationSummary::UpdateMood);
-	Moods[0] += Population->GetMood(EMood::Neutral);
-	Moods[1] += Population->GetMood(EMood::Fearful);
-	Moods[2] += Population->GetMood(EMood::Aggressive);
+	Moods[0] += Population->GetMood(EMood::Content);
+	Moods[1] += Population->GetMood(EMood::Fear);
+	Moods[2] += Population->GetMood(EMood::Angry);
 }
 
 void UPopulationSummary::RegisterPopulationSummary(UPopulationSummary* PopulationSummary)
@@ -117,9 +117,9 @@ void UPopulationSummary::RegisterPopulationSummary(UPopulationSummary* Populatio
 	Follower[3] += PopulationSummary->GetFollower(ECultureLoyalty::Guardian3);
 	Follower[4] += PopulationSummary->GetFollower(ECultureLoyalty::Guardian4);
 	PopulationSummary->OnMoodChanged.AddDynamic(this, &UPopulationSummary::UpdateMood);
-	Moods[0] += PopulationSummary->GetMood(EMood::Neutral);
-	Moods[1] += PopulationSummary->GetMood(EMood::Fearful);
-	Moods[2] += PopulationSummary->GetMood(EMood::Aggressive);
+	Moods[0] += PopulationSummary->GetMood(EMood::Content);
+	Moods[1] += PopulationSummary->GetMood(EMood::Fear);
+	Moods[2] += PopulationSummary->GetMood(EMood::Angry);
 }
 
 void UPopulationSummary::UpdatePopulation(int32 Change)

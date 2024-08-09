@@ -29,9 +29,9 @@ enum class ECultureLoyalty : uint8
 UENUM(BlueprintType)
 enum class EMood : uint8
 {
-	Neutral UMETA(DisplayName = "Neutral"),
-	Fearful UMETA(DisplayName = "Fearful"),
-	Aggressive UMETA(DisplayName = "Aggressive"),
+	Content UMETA(DisplayName = "Neutral"),
+	Angry UMETA(DisplayName = "Aggressive"),
+	Fear UMETA(DisplayName = "Fearful"),
 	MAX UMETA(Hidden) // Sentinel value for enum size
 };
 

@@ -1,5 +1,15 @@
 ﻿#include "Population.h"
 
+int32 FPopulation::GetNativeFollowers() const
+{
+	return FollowerGuardian1 + FollowerGuardian2 + FollowerGuardian3 + FollowerGuardian4;
+}
+
+int32 FPopulation::GetContentMood() const
+{
+	return Size - MoodFear - MoodAngry;
+}
+
 FPopulation FPopulation::operator+(const FPopulation& Other) const
 {
 	FPopulation Result;
