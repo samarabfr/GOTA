@@ -733,26 +733,6 @@ void UWorldGenerator::GenerateColonistsFinalStartingPositions()
 		float TestScore = CalculateColonistStartScoreForTile(ColonistStartToChange, TestTile);
 		if(TestScore > WiggleTileScore)
 			ColonistsStarts[RandomWiggleIndex] = TestTile;
-		/*
-		// calculate score for every coastal neighbor and choose the highest score
-		FGeneratedTileInfo* HighestScoredNeighbor = WiggleTile;
-		float HighestScore = WiggleTileScore;
-		for (FGeneratedTileInfo* Neighbor : WiggleTile->Neighbors)
-		{
-			if(!Neighbor
-				|| !Neighbor->IsLand
-				|| Neighbor->OceanDistance != 1)
-				continue;
-			float NeighborScore = CalculateColonistStartScoreForTile(WiggleTile, Neighbor);
-			if(NeighborScore > HighestScore)
-			{
-				HighestScore = NeighborScore;
-				HighestScoredNeighbor = Neighbor;
-			}
-		}
-		// Change to new position
-		ColonistsStarts[RandomIndex] = HighestScoredNeighbor;
-		*/
 	}
 	// TEMP FOR TESTING
 	for (FGeneratedTileInfo* Tile : ColonistsStarts)
@@ -765,13 +745,18 @@ float UWorldGenerator::CalculateColonistStartScoreForTile(FGeneratedTileInfo* Co
 {
 	if(!ColonistStart || !Tile || Tile == nullptr) return 0;
 	float TileScore = 0;
+	float SmallestDistance = MAX_FLT;
 	for (FGeneratedTileInfo* OtherColonistsStart : ColonistsStarts)
 	{
 		if (OtherColonistsStart == ColonistStart) continue;
 			
 		float Distance = UE::Geometry::Distance(UHexCoordsFunctions::HexCoordsToVector2D(OtherColonistsStart->HexCoords),
 												UHexCoordsFunctions::HexCoordsToVector2D(Tile->HexCoords));
-		TileScore += Distance * TerrainGenData->ColonistStartsColonistFactor;
+		if(Distance < SmallestDistance)
+		{
+			SmallestDistance = Distance;
+			TileScore = Distance * TerrainGenData->ColonistStartsColonistFactor;
+		}
 	}
 	return TileScore;
 }
