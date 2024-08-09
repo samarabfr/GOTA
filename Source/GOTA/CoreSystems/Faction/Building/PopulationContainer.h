@@ -32,21 +32,33 @@ class GOTA_API UPopulationContainer : public UObject
 
 	// ---------------------------------------------------------
 	// Changing Population Values
-	
-	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ChangePopulationSize(int32 Change);
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
-	void IncreasePopulationSize(int32 Change);
-	
-	UFUNCTION(BlueprintCallable, Category = "Population")
-	void DecreasePopulationSize(int32 Change);
-	
-	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ChangeMaximum(int32 Change, int32& Effective_Change);
+	void ChangeSize(int32 Change);
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ChangeFollower(ECultureLoyalty Religion, int32 Change, int32& Effective_Change);
+	void IncreaseSize(int32 Change);
+
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void DecreaseSize(int32 Change);
+
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void ChangeMaxSize(int32 Change);
+
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void IncreaseMaxSize(int32 Change);
+
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void DecreaseMaxSize(int32 Change);
+
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void ChangeFollower(ECultureLoyalty Culture, int32 Change);
+
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void IncreaseFollower(ECultureLoyalty Culture, int32 Change);
+
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void DecreaseFollower(ECultureLoyalty Culture, int32 Change);
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void ChangeMood(EMood Mood, int32 Change, int32& Effective_Change);
@@ -70,15 +82,16 @@ public:
 	int32 GrowthThreshold = 0;
 
 	// ---------------------------------------------------------
-	// Getters
+	// Getters and Setters
+	
 	UFUNCTION(BlueprintCallable, BlueprintGetter, Category = "Population")
 	FPopulation GetPopulation();
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Population")
-	int32 GetFollower(ECultureLoyalty Religion) const;
+	int32 GetFollower(ECultureLoyalty Culture) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Population")
-	int32 GetFollowerNatives();
+	int32 GetNativeFollowers();
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void GetAllFollower(int32& Colonists, int32& Guardian1, int32& Guardian2, int32& Guardian3, int32& Guardian4);

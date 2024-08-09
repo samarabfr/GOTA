@@ -43,25 +43,25 @@ UPopulationContainer::UPopulationContainer()
 
 void UPopulationContainer::OnRep_Population(const FPopulation& OldPopulation)
 {
-	// TODO
+	OnPopulationChanged.Broadcast(Population - OldPopulation);
 }
 
 // ---------------------------------------------------------
 // Changing Population Values
 
-void UPopulationContainer::ChangePopulationSize(int32 Change)
+void UPopulationContainer::ChangeSize(int32 Change)
 {
-	if (Change > 0) // wants to increase pop
+	if (Change > 0)
 	{
-		IncreasePopulationSize(Change);
+		IncreaseSize(Change);
 	}
-	else if (Change < 0) // wants to decrease pop
+	else if (Change < 0)
 	{
-		DecreasePopulationSize(FMath::Abs(Change));
+		DecreaseSize(-Change);
 	}
 }
 
-void UPopulationContainer::IncreasePopulationSize(int32 Change)
+void UPopulationContainer::IncreaseSize(int32 Change)
 {
 	if (Change <= 0) return; // invalid input
 	FPopulation OldPop = Population;
@@ -77,7 +77,7 @@ void UPopulationContainer::IncreasePopulationSize(int32 Change)
 	OnPopulationChanged.Broadcast(Population - OldPop);
 }
 
-void UPopulationContainer::DecreasePopulationSize(int32 Change)
+void UPopulationContainer::DecreaseSize(int32 Change)
 {
 	if (Change <= 0) return; // invalid input
 	FPopulation OldPop = Population;
@@ -94,106 +94,161 @@ void UPopulationContainer::DecreasePopulationSize(int32 Change)
 	OnPopulationChanged.Broadcast(Population - OldPop);
 }
 
-void UPopulationContainer::ChangeMaximum(int32 Change, int32& Effective_Change)
+void UPopulationContainer::ChangeMaxSize(int32 Change)
 {
-	int32 OldValue = Maximum;
-	Maximum += Change;
-	if (Maximum < 0) Maximum = 0;
-	Effective_Change = Maximum - OldValue;
-
-	if (Effective_Change == 0) return; // nothing happened
-
-	if (Maximum < Current) // Maximum is smaller than pop so we have to reduce Pop
+	if (Change > 0)
 	{
-		int32 E_C;
-		ChangePopulation(Maximum - Change, E_C);
+		IncreaseMaxSize(Change);
 	}
-	OnMaximumChanged.Broadcast(Effective_Change);
+	else if (Change < 0)
+	{
+		DecreaseMaxSize(-Change);
+	}
+}
+
+void UPopulationContainer::IncreaseMaxSize(int32 Change)
+{
+	if (Change <= 0) return;
+	FPopulation OldPop = Population;
+	Population.MaxSize += Change;
+	OnPopulationChanged.Broadcast(Population - OldPop);
+}
+
+void UPopulationContainer::DecreaseMaxSize(int32 Change)
+{
+	if (Change <= 0) return;
+	FPopulation OldPop = Population;
+	int32 Effective_Change = Change > Population.MaxSize ? Population.MaxSize : Change;
+	Population.MaxSize -= Effective_Change;
+	// In case that max size is smaller than size, DecreaseSize will call the delegate
+	if (Population.MaxSize < Population.Size)
+	{
+		DecreaseSize(Population.Size - Population.MaxSize);
+	}
+	else
+	{
+		OnPopulationChanged.Broadcast(Population - OldPop);
+	}
+}
+
+void UPopulationContainer::ChangeFollower(ECultureLoyalty Culture, int32 Change)
+{
+	if (Change > 0)
+	{
+		IncreaseFollower(Culture, Change);
+	}
+	else if (Change < 0)
+	{
+		DecreaseFollower(Culture, -Change);
+	}
+}
+
+void UPopulationContainer::IncreaseFollower(ECultureLoyalty Culture, int32 Change)
+{
+	if (Change <= 0) return;
+	FPopulation OldPop = Population;
+	int32 OldValue = GetFollower(Culture);
+	int32 NewValue = OldValue + Change;
+
+	// Everyone follow Target Culture now
+	if (NewValue > Population.Size) NewValue = Population.Size;
+
+	int32 Effective_Change = NewValue - OldValue;
+	if (Effective_Change == 0) return;
+	Population.SetFollower(Culture, NewValue);
+
+	// If everyone follows Target Culture
+	if (NewValue == Population.Size)
+	{
+		// all other Cultures have 0 follower now
+		if (Culture != ECultureLoyalty::Colonists) Population.FollowerColonists = 0;
+		if (Culture != ECultureLoyalty::Guardian1) Population.FollowerGuardian1 = 0;
+		if (Culture != ECultureLoyalty::Guardian2) Population.FollowerGuardian2 = 0;
+		if (Culture != ECultureLoyalty::Guardian3) Population.FollowerGuardian3 = 0;
+		if (Culture != ECultureLoyalty::Guardian4) Population.FollowerGuardian4 = 0;
+	}
+	for (int32 i = 0; i < Effective_Change; i++)
+	{
+		SubtractOneFollowerWeightedRandom(Culture);
+	}
+	OnPopulationChanged.Broadcast(Population - OldPop);
+}
+
+void UPopulationContainer::DecreaseFollower(ECultureLoyalty Culture, int32 Change)
+{
+	if (Change <= 0) return;
+	FPopulation OldPop = Population;
+	int32 OldValue = GetFollower(Culture);
+	int32 NewValue = OldValue - Change;
+
+	// Target Religion has no followers now
+	if (NewValue < 0) NewValue = 0;
+
+	int32 Effective_Change = NewValue - OldValue;
+	if (Effective_Change == 0) return;
+	Population.SetFollower(Culture, NewValue);
+
+	// if Guardian gets reduced, Colonist gets increased
+	if (Culture != ECultureLoyalty::Colonists)
+	{
+		Population.FollowerColonists -= Effective_Change;
+	}
+	else
+	{
+		// If Nobody follows Guardians, Weighted Random doesn't work, so we use Full Random
+		if (Population.GetNativeFollowers() == 0)
+		{
+			for (int32 i = Effective_Change; i < 0; ++i)
+			{
+				AddOneFollowerToGuardiansFullRandom();
+			}
+		}
+		else // Otherwise Weighted Random works
+		{
+			for (int32 i = Effective_Change; i < 0; ++i)
+			{
+				AddOneFollowerWeightedRandom(Culture);
+			}
+		}
+	}
+	OnPopulationChanged.Broadcast(Population - OldPop);
 }
 
 void UPopulationContainer::ChangeFollower(ECultureLoyalty Religion, int32 Change, int32& Effective_Change)
 {
-	if (Change == 0) return; // nothing happens...
-	int32 SelectedIndex = static_cast<int32>(Religion);
-
-	TArray<int32> OldFollower = Follower;
-	Follower[SelectedIndex] = Follower[SelectedIndex] + Change;
-
-	// Everyone follow Target religion now
-	if (Follower[SelectedIndex] >= Current) Follower[SelectedIndex] = Current;
-
-	// Target Religion has no followers now
-	if (Follower[SelectedIndex] < 0) Follower[SelectedIndex] = 0;
-
-	// Calculate how much Target Religion really changed
-	Effective_Change = Follower[SelectedIndex] - OldFollower[SelectedIndex];
-	if (Effective_Change == 0) return; // nothing happened...
-
-	// Now we have to figure out what has to happen to the other Religions
-
-	// If everyone follows Target Religion
-	if (Follower[SelectedIndex] == Current)
+	// We need to distinguish if Target Religion is Colonist or not
+	if (Religion == ECultureLoyalty::Colonists)
 	{
-		// all other Religions have 0 follower now
+		// Calculate how many Followers native religions have
+		int32 OtherReligionTotal = 0;
 		for (int i = 0; i < static_cast<int32>(ECultureLoyalty::MAX); i++)
 		{
-			if (i != SelectedIndex)
+			if (SelectedIndex != i)
 			{
-				Follower[i] = 0;
+				OtherReligionTotal += Follower[i];
+			}
+		}
+		// If Nobody follows Guardians, Weighted Random doesn't work, so we use Full Random
+		int32 AbsoluteChange = FMath::Abs(Effective_Change);
+		if (OtherReligionTotal == 0)
+		{
+			for (int i = 0; i < AbsoluteChange; i++)
+			{
+				AddOneFollowerToGuardiansFullRandom();
+			}
+		}
+		else // Otherwise Weighted Random works
+		{
+			for (int i = 0; i < AbsoluteChange; i++)
+			{
+				AddOneFollowerWeightedRandom(Religion);
 			}
 		}
 	}
-	// Target Religion Followers Increased
-	else if (Effective_Change > 0)
+	else // Guardian gets reduced, so colonist gets increased
 	{
-		for (int i = 0; i < Effective_Change; i++)
-		{
-			SubtractOneFollowerWeightedRandom(Religion);
-		}
+		Follower[static_cast<int32>(ECultureLoyalty::Colonists)] += Effective_Change;
 	}
-	// Target Religion Followers Decreased
-	else
-	{
-		// We need to distinguish if Target Religion is Colonist or not
-		if (Religion == ECultureLoyalty::Colonists)
-		{
-			// Calculate how many Followers native religions have
-			int32 OtherReligionTotal = 0;
-			for (int i = 0; i < static_cast<int32>(ECultureLoyalty::MAX); i++)
-			{
-				if (SelectedIndex != i)
-				{
-					OtherReligionTotal += Follower[i];
-				}
-			}
-			// If Nobody follows Guardians, Weighted Random doesn't work, so we use Full Random
-			int32 AbsoluteChange = FMath::Abs(Effective_Change);
-			if (OtherReligionTotal == 0)
-			{
-				for (int i = 0; i < AbsoluteChange; i++)
-				{
-					AddOneFollowerToGuardiansFullRandom();
-				}
-			}
-			else // Otherwise Weighted Random works
-			{
-				for (int i = 0; i < AbsoluteChange; i++)
-				{
-					AddOneFollowerWeightedRandom(Religion);
-				}
-			}
-		}
-		else // Guardian gets reduced, so colonist gets increased
-		{
-			Follower[static_cast<int32>(ECultureLoyalty::Colonists)] += Effective_Change;
-		}
-	}
-	OnFollowerChanged.Broadcast(
-		Follower[0] - OldFollower[0],
-		Follower[1] - OldFollower[1],
-		Follower[2] - OldFollower[2],
-		Follower[3] - OldFollower[3],
-		Follower[4] - OldFollower[4]);
 }
 
 void UPopulationContainer::ChangeMood(EMood Mood, int32 Change, int32& Effective_Change)
@@ -374,16 +429,18 @@ void UPopulationContainer::SubtractOneMoodWeightedRandom(EMood Exclude)
 }
 
 // ---------------------------------------------------------
-// Getters
+// Getters and Setters
 
 FPopulation UPopulationContainer::GetPopulation()
 {
 	return Population;
 }
 
-int32 UPopulationContainer::GetFollower(ECultureLoyalty Religion) const
+
+
+int32 UPopulationContainer::GetFollower(ECultureLoyalty Culture) const
 {
-	switch (Religion)
+	switch (Culture)
 	{
 	case ECultureLoyalty::Colonists:
 		return Population.FollowerColonists;
@@ -400,7 +457,7 @@ int32 UPopulationContainer::GetFollower(ECultureLoyalty Religion) const
 	}
 }
 
-int32 UPopulationContainer::GetFollowerNatives()
+int32 UPopulationContainer::GetNativeFollowers()
 {
 	return Population.GetNativeFollowers();
 }
@@ -421,7 +478,7 @@ int32 UPopulationContainer::GetMood(EMood Mood)
 	switch (Mood)
 	{
 	case EMood::Content:
-		return Population.GetContentMood();
+		return Population.MoodContent;
 	case EMood::Angry:
 		return Population.MoodAngry;
 	case EMood::Fear:
@@ -433,7 +490,7 @@ int32 UPopulationContainer::GetMood(EMood Mood)
 
 void UPopulationContainer::GetAllMood(int32& Content, int32& Angry, int32& Fear)
 {
-	Content = Population.GetContentMood();
+	Content = Population.MoodContent;
 	Fear = Population.MoodFear;
 	Angry = Population.MoodAngry;
 }

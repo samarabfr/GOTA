@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "CoreMinimal.h"
 #include "Population.generated.h"
 
@@ -32,14 +33,17 @@ struct FPopulation : public FTableRowBase
 	int32 FollowerGuardian4;
 
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
+	int32 MoodContent;
+	
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
 	int32 MoodAngry;
 
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
 	int32 MoodFear;
 
+	void SetFollower(ECultureLoyalty Culture, int32 Value);
+	
 	int32 GetNativeFollowers() const;
-
-	int32 GetContentMood() const;
 
 	FPopulation operator+(const FPopulation& Other) const;
 
