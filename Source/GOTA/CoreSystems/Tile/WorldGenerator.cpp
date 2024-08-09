@@ -564,6 +564,7 @@ void UWorldGenerator::SpawnTiles()
 			ATile* NewTile = TileMap->SpawnNewTile(Tile.HexCoords, Height);
 			NewTile->SetBiome(Tile.Biome);
 			NewTile->SetIsRiver(Tile.HasRiver);
+			NewTile->SetOceanDistance(Tile.OceanDistance);
 			++Counter;
 			if (NewTile->bIsRiver) ++RiverCounter;
 		}

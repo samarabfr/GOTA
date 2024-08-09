@@ -72,6 +72,12 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetBiome(EBiome NewBiome);
 
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetOceanDistance, Replicated, Category="Tile")
+	int32 OceanDistance = -1;
+
+	UFUNCTION(BlueprintSetter)
+	void SetOceanDistance(int32 NewOceanDistance);
+
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	AEntity* AlliedTileEntity;
 
