@@ -802,8 +802,8 @@ void UWorldGenerator::GenerateNativesInitialStartingPositions()
 	TArray<FGeneratedTileInfo*> InlandWithoutVolcano;
 	for (FGeneratedTileInfo& Tile : GTiles)
 	{
-		if (Tile.IsLand
-			&& Tile.Biome != EBiome::Volcano)
+		if (Tile.OceanDistance > 1
+			&& Tile.VolcanoDistance > 2)
 			InlandWithoutVolcano.Add(&Tile);
 	}
 	// randomly choose tile for natives starts
@@ -821,7 +821,7 @@ void UWorldGenerator::GenerateNativesFinalStartingPositions()
 	for (FGeneratedTileInfo& Tile : GTiles)
 	{
 		if (Tile.OceanDistance > 1
-			&& Tile.Biome != EBiome::Volcano)
+			&& Tile.VolcanoDistance > 2)
 			InlandWithoutVolcano.Add(&Tile);
 	}
 	// Determine the positions through score calculations
@@ -875,11 +875,12 @@ float UWorldGenerator::CalculateNativesStartScoreForTile(FGeneratedTileInfo* Nat
 		if (Distance < SmallestColonistsDistance)
 		{
 			SmallestColonistsDistance = Distance;
-			SmallestColonistsTileScore = Distance * Distance * TerrainGenData->NativesStartsColonistFactor;
+			SmallestColonistsTileScore = Distance * TerrainGenData->NativesStartsColonistFactor;
 		}
 	}
 	// ocean distance
-	float OceanDistanceScore = Tile->OceanDistance * Tile->OceanDistance * TerrainGenData->NativesStartsOceanDistanceFactor;
+	float OceanDistanceScore = Tile->OceanDistance * TerrainGenData->
+		NativesStartsOceanDistanceFactor;
 	// solution
-	return SmallestNativesTileScore + SmallestColonistsTileScore + OceanDistanceScore;
+	return SmallestNativesTileScore * SmallestColonistsTileScore * OceanDistanceScore;
 }
