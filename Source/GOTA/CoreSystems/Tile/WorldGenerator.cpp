@@ -718,64 +718,62 @@ void UWorldGenerator::GenerateColonistsFinalStartingPositions()
 	{
 		if (Tile.OceanDistance == 1) Coast.Add(&Tile);
 	}
-	// Determine the positions through force calculations
-	for (int _ = 0; _ < TerrainGenData->IterationsForceCalc; ++_)
+	// Determine the positions through score calculations
+	for (int _ = 0; _ < TerrainGenData->IterationsColonistsStarts; ++_)
 	{
-		// Compute forces
-		TArray<FVector2D> Forces;
-		Forces.SetNumZeroed(ColonistsCount);
-		for (int i = 0; i < ColonistsCount; ++i)
+		// randomly choose tile to wiggle
+		const int32 RandomWiggleIndex = FMath::RandRange(0, ColonistsCount - 1);
+		FGeneratedTileInfo* ColonistStartToChange = ColonistsStarts[RandomWiggleIndex];
+		// calculate score for tile itself
+		float WiggleTileScore = CalculateColonistStartScoreForTile(ColonistStartToChange, ColonistStartToChange);
+		// Choose random other coast tile
+		const int32 RandomTestIndex = FMath::RandRange(0, Coast.Num() - 1);
+		FGeneratedTileInfo* TestTile = Coast[RandomTestIndex];
+		if(ColonistsStarts.Contains(TestTile)) continue;
+		float TestScore = CalculateColonistStartScoreForTile(ColonistStartToChange, TestTile);
+		if(TestScore > WiggleTileScore)
+			ColonistsStarts[RandomWiggleIndex] = TestTile;
+		/*
+		// calculate score for every coastal neighbor and choose the highest score
+		FGeneratedTileInfo* HighestScoredNeighbor = WiggleTile;
+		float HighestScore = WiggleTileScore;
+		for (FGeneratedTileInfo* Neighbor : WiggleTile->Neighbors)
 		{
-			for (int j = i + 1; j < ColonistsCount; ++j)
+			if(!Neighbor
+				|| !Neighbor->IsLand
+				|| Neighbor->OceanDistance != 1)
+				continue;
+			float NeighborScore = CalculateColonistStartScoreForTile(WiggleTile, Neighbor);
+			if(NeighborScore > HighestScore)
 			{
-				FVector2D Delta = UHexCoordsFunctions::HexCoordsToVector2D(ColonistsStarts[j]->HexCoords)
-					- UHexCoordsFunctions::HexCoordsToVector2D(ColonistsStarts[i]->HexCoords);
-				float Distance = UE::Geometry::Distance(FVector2D(0, 0), Delta);
-				if (Distance > 0)
-				{
-					float ForceMagnitude = TerrainGenData->KConstantForceCalc / (Distance * Distance);
-					FVector2D ForceVector = ForceMagnitude * (Delta / Distance);
-					Forces[i] -= ForceVector;
-					Forces[j] += ForceVector;
-				}
+				HighestScore = NeighborScore;
+				HighestScoredNeighbor = Neighbor;
 			}
 		}
-		// apply forces
-		for (int i = 0; i < ColonistsCount; ++i)
-		{
-			// Calculate unrestrained Position
-			FVector2D UnrestrainedPosition =
-				UHexCoordsFunctions::HexCoordsToVector2D(ColonistsStarts[i]->HexCoords)
-				+ Forces[i] * TerrainGenData->DeltaTimeForceCalc;
-			// find the closest allowed Tile
-			FGeneratedTileInfo* ClosestTile = nullptr;
-			float ClosestDistance = MAX_FLT;
-			for (int j = 0; j < Coast.Num(); ++j)
-			{
-				FHexCoords Coords = Coast[j]->HexCoords;
-				float Distance = UE::Geometry::Distance(UnrestrainedPosition,
-				                                        UHexCoordsFunctions::HexCoordsToVector2D(Coords));
-				if (Distance < ClosestDistance || ClosestDistance == MAX_FLT)
-				{
-					ClosestDistance = Distance;
-					ClosestTile = Coast[j];
-				}
-			}
-			if (ClosestTile != nullptr)
-			{
-				ColonistsStarts[i] = ClosestTile;
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("NULL"))
-		}
-		}
+		// Change to new position
+		ColonistsStarts[RandomIndex] = HighestScoredNeighbor;
+		*/
 	}
 	// TEMP FOR TESTING
 	for (FGeneratedTileInfo* Tile : ColonistsStarts)
 	{
 		Tile->Biome = EBiome::Volcano;
 	}
+}
+
+float UWorldGenerator::CalculateColonistStartScoreForTile(FGeneratedTileInfo* ColonistStart, FGeneratedTileInfo* Tile)
+{
+	if(!ColonistStart || !Tile || Tile == nullptr) return 0;
+	float TileScore = 0;
+	for (FGeneratedTileInfo* OtherColonistsStart : ColonistsStarts)
+	{
+		if (OtherColonistsStart == ColonistStart) continue;
+			
+		float Distance = UE::Geometry::Distance(UHexCoordsFunctions::HexCoordsToVector2D(OtherColonistsStart->HexCoords),
+												UHexCoordsFunctions::HexCoordsToVector2D(Tile->HexCoords));
+		TileScore += Distance * TerrainGenData->ColonistStartsColonistFactor;
+	}
+	return TileScore;
 }
 
 void UWorldGenerator::FloodFillEveryTileWithColonistsDistances(FGeneratedTileInfo* Colonist)

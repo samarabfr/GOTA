@@ -117,6 +117,8 @@ private:
 
 	void GenerateColonistsFinalStartingPositions();
 
+	float CalculateColonistStartScoreForTile(FGeneratedTileInfo* ColonistStart, FGeneratedTileInfo* Tile);
+
 	void FloodFillEveryTileWithColonistsDistances(FGeneratedTileInfo* Colonist);
 
 	void GenerateNativesStartingPositions();

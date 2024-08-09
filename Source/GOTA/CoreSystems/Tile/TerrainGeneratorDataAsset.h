@@ -92,11 +92,8 @@ public:
 	int32 MaxTriesForRiverStartPositions = 10;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
-	int32 IterationsForceCalc = 1000;
+	int32 IterationsColonistsStarts = 1000;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
-	float KConstantForceCalc = 1;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
-	float DeltaTimeForceCalc = 0.01;
+	float ColonistStartsColonistFactor = 1;
 };
