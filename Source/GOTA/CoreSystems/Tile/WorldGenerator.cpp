@@ -862,7 +862,7 @@ float UWorldGenerator::CalculateNativesStartScoreForTile(FGeneratedTileInfo* Nat
 		if (Distance < SmallestNativesDistance)
 		{
 			SmallestNativesDistance = Distance;
-			SmallestNativesTileScore = Distance * Distance * TerrainGenData->NativesStartsNativesFactor;
+			SmallestNativesTileScore = FMath::Pow(Distance, TerrainGenData->NativesStartsNativesFactor);
 		}
 	}
 	// colonists distances
@@ -875,12 +875,11 @@ float UWorldGenerator::CalculateNativesStartScoreForTile(FGeneratedTileInfo* Nat
 		if (Distance < SmallestColonistsDistance)
 		{
 			SmallestColonistsDistance = Distance;
-			SmallestColonistsTileScore = Distance * TerrainGenData->NativesStartsColonistFactor;
+			SmallestColonistsTileScore = FMath::Pow(Distance, TerrainGenData->NativesStartsColonistFactor);
 		}
 	}
 	// ocean distance
-	float OceanDistanceScore = Tile->OceanDistance * TerrainGenData->
-		NativesStartsOceanDistanceFactor;
+	float OceanDistanceScore = FMath::Pow(Tile->OceanDistance, TerrainGenData->NativesStartsOceanDistanceFactor);
 	// solution
 	return SmallestNativesTileScore * SmallestColonistsTileScore * OceanDistanceScore;
 }
