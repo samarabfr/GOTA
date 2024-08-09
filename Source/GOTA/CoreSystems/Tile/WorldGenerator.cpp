@@ -751,9 +751,9 @@ void UWorldGenerator::GenerateColonistsFinalStartingPositions()
 		// Choose random other coast tile
 		const int32 RandomTestIndex = FMath::RandRange(0, Coast.Num() - 1);
 		FGeneratedTileInfo* TestTile = Coast[RandomTestIndex];
-		if(ColonistsStarts.Contains(TestTile)) continue;
+		if (ColonistsStarts.Contains(TestTile)) continue;
 		float TestScore = CalculateColonistStartScoreForTile(ColonistStartToChange, TestTile);
-		if(TestScore > WiggleTileScore)
+		if (TestScore > WiggleTileScore)
 			ColonistsStarts[RandomWiggleIndex] = TestTile;
 	}
 	// TEMP FOR TESTING
@@ -765,16 +765,17 @@ void UWorldGenerator::GenerateColonistsFinalStartingPositions()
 
 float UWorldGenerator::CalculateColonistStartScoreForTile(FGeneratedTileInfo* ColonistStart, FGeneratedTileInfo* Tile)
 {
-	if(!ColonistStart || !Tile || Tile == nullptr) return 0;
+	if (!ColonistStart || !Tile || Tile == nullptr) return 0;
 	float TileScore = 0;
 	float SmallestDistance = MAX_FLT;
 	for (FGeneratedTileInfo* OtherColonistsStart : ColonistsStarts)
 	{
 		if (OtherColonistsStart == ColonistStart) continue;
-			
-		float Distance = UE::Geometry::Distance(UHexCoordsFunctions::HexCoordsToVector2D(OtherColonistsStart->HexCoords),
-												UHexCoordsFunctions::HexCoordsToVector2D(Tile->HexCoords));
-		if(Distance < SmallestDistance)
+
+		float Distance = UE::Geometry::Distance(
+			UHexCoordsFunctions::HexCoordsToVector2D(OtherColonistsStart->HexCoords),
+			UHexCoordsFunctions::HexCoordsToVector2D(Tile->HexCoords));
+		if (Distance < SmallestDistance)
 		{
 			SmallestDistance = Distance;
 			TileScore = Distance * TerrainGenData->ColonistStartsColonistFactor;
@@ -833,9 +834,9 @@ void UWorldGenerator::GenerateNativesFinalStartingPositions()
 		// Choose random other coast tile
 		const int32 RandomTestIndex = FMath::RandRange(0, InlandWithoutVolcano.Num() - 1);
 		FGeneratedTileInfo* TestTile = InlandWithoutVolcano[RandomTestIndex];
-		if(NativesStarts.Contains(TestTile)) continue;
+		if (NativesStarts.Contains(TestTile)) continue;
 		float TestScore = CalculateNativesStartScoreForTile(NativesStartToChange, TestTile);
-		if(TestScore > WiggleTileScore)
+		if (TestScore > WiggleTileScore)
 			NativesStarts[RandomWiggleIndex] = TestTile;
 	}
 	// TEMP FOR TESTING
@@ -847,35 +848,37 @@ void UWorldGenerator::GenerateNativesFinalStartingPositions()
 
 float UWorldGenerator::CalculateNativesStartScoreForTile(FGeneratedTileInfo* NativesStart, FGeneratedTileInfo* Tile)
 {
-	if(!NativesStart || !Tile || Tile == nullptr) return 0;
-	// natives distances first
+	if (!NativesStart || !Tile || Tile == nullptr) return 0;
+	// natives distances
 	float SmallestNativesTileScore = 0;
 	float SmallestNativesDistance = MAX_FLT;
 	for (FGeneratedTileInfo* OtherNativesStart : NativesStarts)
 	{
 		if (OtherNativesStart == NativesStart) continue;
-			
+
 		float Distance = UE::Geometry::Distance(UHexCoordsFunctions::HexCoordsToVector2D(OtherNativesStart->HexCoords),
-												UHexCoordsFunctions::HexCoordsToVector2D(Tile->HexCoords));
-		if(Distance < SmallestNativesDistance)
+		                                        UHexCoordsFunctions::HexCoordsToVector2D(Tile->HexCoords));
+		if (Distance < SmallestNativesDistance)
 		{
 			SmallestNativesDistance = Distance;
-			SmallestNativesTileScore = Distance * TerrainGenData->NativesStartsNativesFactor;
+			SmallestNativesTileScore = Distance * Distance * TerrainGenData->NativesStartsNativesFactor;
 		}
 	}
-	// colonists distances second
+	// colonists distances
 	float SmallestColonistsTileScore = 0;
 	float SmallestColonistsDistance = MAX_FLT;
 	for (FGeneratedTileInfo* ColonistsStart : ColonistsStarts)
-	{			
+	{
 		float Distance = UE::Geometry::Distance(UHexCoordsFunctions::HexCoordsToVector2D(ColonistsStart->HexCoords),
-												UHexCoordsFunctions::HexCoordsToVector2D(Tile->HexCoords));
-		if(Distance < SmallestColonistsDistance)
+		                                        UHexCoordsFunctions::HexCoordsToVector2D(Tile->HexCoords));
+		if (Distance < SmallestColonistsDistance)
 		{
 			SmallestColonistsDistance = Distance;
-			SmallestColonistsTileScore = Distance * TerrainGenData->NativesStartsColonistFactor;
+			SmallestColonistsTileScore = Distance * Distance * TerrainGenData->NativesStartsColonistFactor;
 		}
 	}
+	// ocean distance
+	float OceanDistanceScore = Tile->OceanDistance * Tile->OceanDistance * TerrainGenData->NativesStartsOceanDistanceFactor;
 	// solution
-	return SmallestNativesTileScore + SmallestColonistsTileScore;
+	return SmallestNativesTileScore + SmallestColonistsTileScore + OceanDistanceScore;
 }

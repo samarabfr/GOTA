@@ -102,4 +102,7 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
 	float NativesStartsNativesFactor = 1;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
+	float NativesStartsOceanDistanceFactor = 1;
 };
