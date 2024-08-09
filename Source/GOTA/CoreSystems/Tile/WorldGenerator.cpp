@@ -723,7 +723,7 @@ void UWorldGenerator::GenerateColonistsFinalStartingPositions()
 	{
 		// Compute forces
 		TArray<FVector2D> Forces;
-		Forces.SetNum(ColonistsCount);
+		Forces.SetNumZeroed(ColonistsCount);
 		for (int i = 0; i < ColonistsCount; ++i)
 		{
 			for (int j = i + 1; j < ColonistsCount; ++j)
@@ -755,14 +755,20 @@ void UWorldGenerator::GenerateColonistsFinalStartingPositions()
 				FHexCoords Coords = Coast[j]->HexCoords;
 				float Distance = UE::Geometry::Distance(UnrestrainedPosition,
 				                                        UHexCoordsFunctions::HexCoordsToVector2D(Coords));
-				if (Distance < ClosestDistance)
+				if (Distance < ClosestDistance || ClosestDistance == MAX_FLT)
 				{
 					ClosestDistance = Distance;
 					ClosestTile = Coast[j];
 				}
 			}
 			if (ClosestTile != nullptr)
+			{
 				ColonistsStarts[i] = ClosestTile;
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("NULL"))
+		}
 		}
 	}
 	// TEMP FOR TESTING
