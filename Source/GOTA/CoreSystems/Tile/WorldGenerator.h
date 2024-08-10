@@ -57,11 +57,17 @@ private:
 
 	TArray<FGeneratedTileInfo*> NativesStarts;
 
+	TArray<FGeneratedTileInfo*> Coast;
+
+	TArray<FGeneratedTileInfo*> Land;
+
 	FGeneratedTileInfo* GetTile(const FHexCoords& Coords);
 
 	FGeneratedTileInfo* GetTile(int32 Q, int32 R);
 
 	void GenerateShape();
+
+	void FillArrays();
 
 	void ReduceArraySizeToIslandSize();
 

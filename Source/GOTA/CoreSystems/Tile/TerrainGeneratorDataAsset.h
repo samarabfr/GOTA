@@ -107,5 +107,11 @@ public:
 	float NativesStartsNativesFactor = 1;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
-	float NativesStartsOceanDistanceFactor = 1;
+	float NativesStartsCoastFactor = 1;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
+	float NativesStartsVolcanoFactor = 1;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
+	float MaxForce = 500;
 };

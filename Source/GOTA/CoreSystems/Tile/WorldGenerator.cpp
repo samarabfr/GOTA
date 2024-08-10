@@ -42,6 +42,7 @@ void UWorldGenerator::GenerateWorld()
 	GenerateShape();
 	ReduceArraySizeToIslandSize();
 	CalculateOceanDistances();
+	FillArrays();
 	ChooseVolcanoTile();
 	CalculateVolcanoDistances();
 	GenerateHeight();
@@ -55,7 +56,7 @@ void UWorldGenerator::GenerateWorld()
 FGeneratedTileInfo* UWorldGenerator::GetTile(const FHexCoords& Coords)
 {
 	// out of bound check
-	if (Coords.Q >= Size.Q && Coords.R >= Size.R && Coords.Q < 0 && Coords.R < 0) return nullptr;
+	if (Coords.Q >= Size.Q || Coords.R >= Size.R || Coords.Q < 0 || Coords.R < 0) return nullptr;
 	return &GTiles[Coords.Q * Size.R + Coords.R];
 }
 
@@ -167,6 +168,15 @@ void UWorldGenerator::GenerateShape()
 				--FilledCounter;
 			}
 		}
+	}
+}
+
+void UWorldGenerator::FillArrays()
+{
+	for (FGeneratedTileInfo& Tile : GTiles)
+	{
+		if(Tile.IsLand) Land.Add(&Tile);
+		if(Tile.IsLand && Tile.OceanDistance == 1) Coast.Add(&Tile);
 	}
 }
 
@@ -378,13 +388,6 @@ void UWorldGenerator::ChooseVolcanoTile()
 
 void UWorldGenerator::GenerateBeaches()
 {
-	// Find coast
-	TArray<FGeneratedTileInfo*> Coast;
-	for (FGeneratedTileInfo& Tile : GTiles)
-	{
-		if (Tile.OceanDistance == 1)
-			Coast.Add(&Tile);
-	}
 	// find only Eligible tiles
 	TArray<FGeneratedTileInfo*> EligibleForBeach;
 	for (FGeneratedTileInfo* Tile : Coast)
@@ -802,12 +805,6 @@ void UWorldGenerator::FloodFillEveryTileWithColonistsDistances(FGeneratedTileInf
 
 void UWorldGenerator::GenerateColonistsFinalStartingPositions()
 {
-	// Find all coast tiles
-	TArray<FGeneratedTileInfo*> Coast;
-	for (FGeneratedTileInfo& Tile : GTiles)
-	{
-		if (Tile.OceanDistance == 1) Coast.Add(&Tile);
-	}
 	// Determine the positions through score calculations
 	for (int32 _ = 0; _ < TerrainGenData->IterationsStarts; ++_)
 	{
@@ -854,6 +851,7 @@ void UWorldGenerator::GenerateNativesStartingPositions()
 	// Apply to tiles
 	for (FGeneratedTileInfo* Tile : NativesStarts)
 	{
+		if(!Tile) continue;
 		Tile->IsNativeStart = true;
 		// TEMP
 		Tile->Biome = EBiome::Volcano;
@@ -863,24 +861,6 @@ void UWorldGenerator::GenerateNativesStartingPositions()
 void UWorldGenerator::GenerateNativesInitialStartingPositions()
 {
 	// Find all inland tiles
-	TArray<FGeneratedTileInfo*> InlandWithoutVolcano;
-	for (FGeneratedTileInfo& Tile : GTiles)
-	{
-		if (Tile.OceanDistance > 1
-			&& Tile.VolcanoDistance > 2
-			&& Tile.ColonistsDistance >= TerrainGenData->NativesMinColonistDistance)
-			InlandWithoutVolcano.Add(&Tile);
-	}
-	// randomly choose tile for natives starts
-	for (int32 i = 0; i < NativesCount; ++i)
-	{
-		const int32 RandomIndex = FMath::RandRange(0, InlandWithoutVolcano.Num() - 1);
-		NativesStarts.Add(InlandWithoutVolcano[RandomIndex]);
-	}
-}
-
-void UWorldGenerator::GenerateNativesFinalStartingPositions()
-{
 	TArray<FGeneratedTileInfo*> EligibleTiles;
 	for (FGeneratedTileInfo& Tile : GTiles)
 	{
@@ -889,39 +869,109 @@ void UWorldGenerator::GenerateNativesFinalStartingPositions()
 			&& Tile.ColonistsDistance >= TerrainGenData->NativesMinColonistDistance)
 			EligibleTiles.Add(&Tile);
 	}
-	// Determine the positions through score calculations
-	float CurrentMinScore = 0;
+	// randomly choose tile for natives starts
+	for (int32 i = 0; i < NativesCount; ++i)
+	{
+		const int32 RandomIndex = FMath::RandRange(0, EligibleTiles.Num() - 1);
+		NativesStarts.Add(EligibleTiles[RandomIndex]);
+		EligibleTiles.RemoveAt(RandomIndex);
+	}
+}
+
+void UWorldGenerator::GenerateNativesFinalStartingPositions()
+{
+	TArray<FVector2D> CurrentStartPositions;
+	for (FGeneratedTileInfo* NativeStart : NativesStarts)
+	{
+		CurrentStartPositions.Add(UHexCoordsFunctions::HexCoordsToVector2D(NativeStart->HexCoords));
+	}
+	TArray<FVector2D> CoastPositions;
+	for (FGeneratedTileInfo* CoastTile : Coast)
+	{
+		CoastPositions.Add(UHexCoordsFunctions::HexCoordsToVector2D(CoastTile->HexCoords));
+	}
+	TArray<FVector2D> ColonistStartPositions;
+	for (FGeneratedTileInfo* ColonistStart : ColonistsStarts)
+	{
+		ColonistStartPositions.Add(UHexCoordsFunctions::HexCoordsToVector2D(ColonistStart->HexCoords));
+	}
+	// Determine the positions through force calculations
 	for (int32 _ = 0; _ < TerrainGenData->IterationsStarts; ++_)
 	{
-		TArray<FGeneratedTileInfo*> NewNativeStarts;
-		NewNativeStarts.SetNumZeroed(NativesCount);
-		TArray<float> NewScores;
-		NewScores.SetNumZeroed(NativesCount);
-		// find random eligible tiles, that isnt another settlement
-		for (int i = 0; i < NativesCount; ++i)
+		TArray<FVector2D> Forces;
+		Forces.SetNumZeroed(NativesCount);
+		for (int32 i = 0; i < NativesCount; ++i)
 		{
-			const int32 RandomIndex = FMath::RandRange(0, EligibleTiles.Num() - 1);
-			FGeneratedTileInfo* NewTile = EligibleTiles[RandomIndex];
-			if (NewNativeStarts.Contains(NewTile)) NewTile = NativesStarts[i];
-			NewNativeStarts[i] = NewTile;
+			// Natives
+			for (int32 j = i + 1; j < NativesCount; ++j)
+			{
+				FVector2D Delta = CurrentStartPositions[j] - CurrentStartPositions[i];
+				float Distance = Delta.Length() * 0.01f; // factor because of cm
+				if (Distance > 0)
+				{
+					float ForceMagnitude = TerrainGenData->NativesStartsNativesFactor / (Distance * Distance);
+					FVector2D ForceVector = ForceMagnitude * (Delta / Distance);
+					// minus because we want to repulse
+					Forces[i] -= ForceVector;
+					Forces[j] += ForceVector;
+				}
+			}
+			// Colonists
+			for (FVector2D Colonist : ColonistStartPositions)
+			{
+				FVector2D Delta = Colonist - CurrentStartPositions[i];
+				float Distance = Delta.Length() * 0.01f; // factor because of cm
+				if (Distance > 0)
+				{
+					float ForceMagnitude = TerrainGenData->NativesStartsColonistFactor / (Distance * Distance);
+					FVector2D ForceVector = ForceMagnitude * (Delta / Distance);
+					Forces[i] -= ForceVector;
+				}
+			}
+			// Coast
+			for (FVector2D CoastPosition : CoastPositions)
+			{
+				FVector2D Delta = CoastPosition - CurrentStartPositions[i];
+				float Distance = Delta.Length() * 0.01f; // factor because of cm
+				if (Distance > 0)
+				{
+					float ForceMagnitude = TerrainGenData->NativesStartsCoastFactor / (Distance * Distance);
+					FVector2D ForceVector = ForceMagnitude * (Delta / Distance);
+					Forces[i] -= ForceVector;
+				}
+			}
+			// Volcano
+			FVector2D Delta = UHexCoordsFunctions::HexCoordsToVector2D(Volcano->HexCoords) - CurrentStartPositions[i];
+			float Distance = Delta.Length() * 0.01f; // factor because of cm
+			if (Distance > 0)
+			{
+				float ForceMagnitude = TerrainGenData->NativesStartsVolcanoFactor / (Distance * Distance);
+				FVector2D ForceVector = ForceMagnitude * (Delta / Distance);
+				Forces[i] -= ForceVector;
+			}
 		}
-		for (int i = 0; i < NativesCount; ++i)
+		// Apply max force
+		for (int32 i = 0; i < NativesCount; ++i)
 		{
-			// Calc score
-			NewScores[i] = CalculateNativesStartScoreForTile(NewNativeStarts[i], NewNativeStarts);
+			if(Forces[i].Length() > TerrainGenData->MaxForce)
+			{
+				Forces[i].Normalize();
+				Forces[i] *= TerrainGenData->MaxForce;
+			}
 		}
-		// calc min individual score
-		float MinScore = MAX_FLT;
-		for (float NewScore : NewScores)
+		// apply forces
+		for (int32 i = 0; i < NativesCount; ++i)
 		{
-			if (MinScore > NewScore) MinScore = NewScore;
+			CurrentStartPositions[i] += Forces[i];
 		}
-		if (MinScore > CurrentMinScore)
-		{
-			// apply stuff
-			CurrentMinScore = MinScore;
-			NativesStarts = NewNativeStarts;
-		}
+		UE_LOG(LogTemp, Warning, TEXT("Forces: %f"), Forces[0].Length())
+	}
+	// Apply position to Tiles
+	for (int32 i = 0; i < NativesCount; ++i)
+	{
+		NativesStarts[i] = GetTile(UHexCoordsFunctions::Vector2DToHexCoords(CurrentStartPositions[i]));
+		UE_LOG(LogTemp, Warning, TEXT("Position: (%f,%f)"), CurrentStartPositions[i].X, CurrentStartPositions[i].Y)
+		if(!NativesStarts[i]) UE_LOG(LogTemp, Warning, TEXT("Is null"))
 	}
 }
 
@@ -959,7 +1009,7 @@ float UWorldGenerator::CalculateNativesStartScoreForTile(FGeneratedTileInfo* New
 	}
 	// ocean distance
 	float OceanDistanceScore = FMath::Log2(static_cast<float>(NewNativesStart->OceanDistance)) * TerrainGenData->
-		NativesStartsOceanDistanceFactor;
+		NativesStartsCoastFactor;
 	//UE_LOG(LogTemp, Warning, TEXT("Natives score: %f; Colonists score: %f; Ocean score: %f;"), SmallestNativesTileScore,SmallestColonistsTileScore, OceanDistanceScore)
 	// solution
 	return SmallestNativesTileScore + SmallestColonistsTileScore + OceanDistanceScore;
