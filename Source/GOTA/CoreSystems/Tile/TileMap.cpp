@@ -156,18 +156,20 @@ ATile* ATileMap::GetRandomTile()
 
 void ATileMap::CalculateTurn()
 {
-	ATile::bFreezeGrowthChanges = false;
+	ATile::bFreezeGrowthChanges = true;
 	for (ATile* Tile : Tiles)
 	{
 		if (Tile) Tile->CalculateTurn();
 	}
-	ATile::bFreezeGrowthChanges = true;
+	ATile::bFreezeGrowthChanges = false;
 	for (ATile* Tile : Tiles)
 	{
 		if (Tile)
 		{
 			Tile->CalculateTreeGrowthChange();
 			Tile->CalculateWildlifeGrowthChange();
+			Tile->CalculateForageChange();
+			Tile->CalculatePopulationGrowthChange();
 		}
 	}
 }
@@ -259,4 +261,183 @@ TArray<ATile*> ATileMap::GetPathToNearestAffiliatedBuilding(ATile* Start, EAffil
 		Current = CameFrom[Current];
 	}
 	return Path;
+}
+
+int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, int32 Amount, int32 Threshold,
+                                  int32 MaxRange)
+{
+	int32 _;
+	int32 AmountReduced = 0;
+	TArray<ATile*> Border;
+	TArray<bool> AlreadyChecked;
+	AlreadyChecked.SetNum(Tiles.Num());
+	int32 ReducableCount = 0;
+	int8 HighestCount = 0;
+	int8 Range = 1;
+	// fill Border initially
+	for (ATile* ClaimedTile : Initiator->ClaimedTiles)
+	{
+		for (int32 i = 0; i < 6; ++i)
+		{
+			ATile* NeighborTile = ClaimedTile->Neighbors[i];
+			bool Checked = NeighborTile
+				               ? AlreadyChecked[ClaimedTile->Neighbors[i]->HexCoords.Q * MapSize
+					               + ClaimedTile->Neighbors[i]->HexCoords.R]
+				               : true;
+			if (!Checked && !NeighborTile->Building)
+			{
+				Border.Add(NeighborTile);
+				AlreadyChecked[ClaimedTile->Neighbors[i]->HexCoords.Q * MapSize
+					+ ClaimedTile->Neighbors[i]->HexCoords.R] = true;
+				int8 NeighborValue = 0;
+				switch (EcoValue)
+				{
+				case EEcoValue::Tree:
+					NeighborValue = NeighborTile->Trees->Current;
+					break;
+				case EEcoValue::Wildlife:
+					NeighborValue = NeighborTile->Wildlife->Current;
+					break;
+				case EEcoValue::Forage:
+					NeighborValue = NeighborTile->Forage->Current;
+					break;
+				}
+				if (NeighborValue > Threshold)
+					ReducableCount += NeighborValue - Threshold;
+				if (NeighborValue > HighestCount)
+					HighestCount = NeighborValue;
+			}
+		}
+	}
+	// loop through borders and reduce EcoValue in range until we are done
+	while (Range < MaxRange && AmountReduced < Amount && !Border.IsEmpty())
+	{
+		int32 MissingCount = Amount - AmountReduced;
+		// if Border has enough Trees to fill the request we have to reduce them equally on the border
+		if (ReducableCount > MissingCount)
+		{
+			TArray<int8> TileValueReducedCount;
+			TileValueReducedCount.SetNum(Border.Num());
+			int8 TempThreshold = HighestCount;
+			// figure out how much each tile has to be reduced
+			// im not doing it every EcoValue one by one because it would trigger all OnEcoValueChange delegates
+			// for every individual EcoValue, even though we probably reduce a bunch of them
+			while (MissingCount > 0)
+			{
+				--TempThreshold;
+				for (int32 i = 0; i < Border.Num(); ++i)
+				{
+					int8 BorderTileEcoValue = 0;
+					switch (EcoValue)
+					{
+					case EEcoValue::Tree:
+						BorderTileEcoValue = Border[i]->Trees->Current;
+						break;
+					case EEcoValue::Wildlife:
+						BorderTileEcoValue = Border[i]->Wildlife->Current;
+						break;
+					case EEcoValue::Forage:
+						BorderTileEcoValue = Border[i]->Forage->Current;
+						break;
+					}
+					if (BorderTileEcoValue > TempThreshold)
+					{
+						++TileValueReducedCount[i];
+						--MissingCount;
+						if (MissingCount <= 0) break;
+					}
+				}
+			}
+			// Apply the EcoValue reduction
+			for (int32 i = 0; i < Border.Num(); ++i)
+			{
+				switch (EcoValue)
+				{
+				case EEcoValue::Tree:
+					Border[i]->Trees->Subtract(TileValueReducedCount[i], _);
+					break;
+				case EEcoValue::Wildlife:
+					Border[i]->Wildlife->Subtract(TileValueReducedCount[i], _);
+					break;
+				case EEcoValue::Forage:
+					Border[i]->Forage->Subtract(TileValueReducedCount[i], _);
+					break;
+				}
+				AmountReduced += TileValueReducedCount[i];
+			}
+			return AmountReduced;
+		}
+		// Border has not enough EcoValue so we reduce all of the Border down to the Threshold
+		for (ATile* BorderTile : Border)
+		{
+			int32 Value = 0;
+			switch (EcoValue)
+			{
+			case EEcoValue::Tree:
+				Value = BorderTile->Trees->Current;
+				break;
+			case EEcoValue::Wildlife:
+				Value = BorderTile->Wildlife->Current;
+				break;
+			case EEcoValue::Forage:
+				Value = BorderTile->Forage->Current;
+				break;
+			}
+			if (Value > Threshold)
+			{
+				switch (EcoValue)
+				{
+				case EEcoValue::Tree:
+					BorderTile->Trees->Subtract(Value - Threshold, _);
+					break;
+				case EEcoValue::Wildlife:
+					BorderTile->Wildlife->Subtract(Value - Threshold, _);
+					break;
+				case EEcoValue::Forage:
+					BorderTile->Forage->Subtract(Value - Threshold, _);
+					break;
+				}
+				AmountReduced += Value - Threshold;
+			}
+		}
+		// Refill Border with the next Range
+		TArray<ATile*> NewBorder;
+		for (ATile* BorderTile : Border)
+		{
+			for (int32 i = 0; i < 6; ++i)
+			{
+				ATile* NeighborTile = BorderTile->Neighbors[i];
+				bool Checked = NeighborTile
+					               ? AlreadyChecked[BorderTile->Neighbors[i]->HexCoords.Q * MapSize
+						               + BorderTile->Neighbors[i]->HexCoords.R]
+					               : true;
+				if (!Checked && !NeighborTile->Building)
+				{
+					NewBorder.Add(NeighborTile);
+					AlreadyChecked[BorderTile->Neighbors[i]->HexCoords.Q * MapSize
+						+ BorderTile->Neighbors[i]->HexCoords.R] = true;
+					int8 NeighborValue = 0;
+					switch (EcoValue)
+					{
+					case EEcoValue::Tree:
+						NeighborValue = NeighborTile->Trees->Current;
+						break;
+					case EEcoValue::Wildlife:
+						NeighborValue = NeighborTile->Wildlife->Current;
+						break;
+					case EEcoValue::Forage:
+						NeighborValue = NeighborTile->Forage->Current;
+						break;
+					}
+					if (NeighborValue > Threshold)
+						ReducableCount += NeighborValue - Threshold;
+					if (NeighborValue > HighestCount)
+						HighestCount = NeighborValue;
+				}
+			}
+		}
+		Border = NewBorder;
+		++Range;
+	}
+	return AmountReduced;
 }

@@ -43,10 +43,26 @@ enum class EAffiliation : uint8
 };
 
 UENUM(BlueprintType)
+enum class EFaction : uint8
+{
+	Colonists UMETA(DisplayName = "Colonists"),
+	Natives UMETA(DisplayName = "Natives"),
+	Guardians UMETA(DisplayName = "Guardians")
+};
+
+UENUM(BlueprintType)
 enum class EBiome : uint8
 {
 	Gras UMETA(DisplayName = "Gras"),
 	Beach UMETA(DisplayName = "Beach"),
 	Mountain UMETA(DisplayName = "Mountain"),
 	Volcano UMETA(DisplayName = "Volcano")
+};
+
+UENUM(BlueprintType)
+enum class EEcoValue : uint8
+{
+	Tree UMETA(DisplayName = "Tree"),
+	Wildlife UMETA(DisplayName = "Wildlife"),
+	Forage UMETA(DisplayName = "Forage")
 };

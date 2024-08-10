@@ -36,7 +36,7 @@ private:
 	ATile** TilesArray;
 	
 	bool TryAddTile(FHexCoords HexCoords, ATile* Tile);
-	
+
 public:
 	UPROPERTY(EditDefaultsOnly)
 	UTerrainGeneratorDataAsset* TerrainGenData;
@@ -50,10 +50,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, BlueprintAuthorityOnly, Category="TileMap")
 	ATile* GetTileFast(FHexCoords HexCoords);
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	bool DoesTileExist(FHexCoords HexCoords);
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	ATile* GetRandomTile();
 
@@ -65,4 +65,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	TArray<ATile*> GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation Affiliation);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
+	int32 TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, int32 Amount, int32 Threshold, int32 MaxRange);
 };

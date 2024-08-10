@@ -18,9 +18,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	FText Description;
-	
+
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	TSubclassOf<class UBuilding> BuildingClass;
+	EFaction FactionStyle;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	FBuildingTierData TierOne;

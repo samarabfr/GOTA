@@ -159,24 +159,24 @@ ASettlement* ATile::GetClaimant()
 void ATile::SetClaimant(ASettlement* NewClaimant)
 {
 	Claimant = NewClaimant;
-	UpdateClaimFlagsWithNeighbors();
+	UpdateClaimWallsWithNeighbors();
 }
 
 void ATile::OnRep_Claimant(ASettlement* NewClaimant)
 {
-	UpdateClaimFlagsWithNeighbors();
+	UpdateClaimWallsWithNeighbors();
 }
 
-void ATile::UpdateClaimFlagsWithNeighbors()
+void ATile::UpdateClaimWallsWithNeighbors()
 {
 	for (ATile* Neighbor : Neighbors)
 	{
-		if (Neighbor) Neighbor->UpdateClaimFlags();
+		if (Neighbor) Neighbor->UpdateClaimWalls();
 	}
-	UpdateClaimFlags();
+	UpdateClaimWalls();
 }
 
-void ATile::UpdateClaimFlags()
+void ATile::UpdateClaimWalls()
 {
 	if (Claimant)
 	{
@@ -185,32 +185,32 @@ void ATile::UpdateClaimFlags()
 			if (!Neighbors[i] || !Neighbors[i]->Claimant || Neighbors[i]->Claimant != Claimant)
 			{
 				// Should have flag in this direction
-				if (!ClaimFlagInstanceIds.Contains(i))
+				if (!ClaimWallsInstanceIds.Contains(i))
 				{
 					// doesn't have one yet, so we make one
 					FTransform Transform = FTransform();
-					Transform.SetLocation(DA_TileGraphics->ClaimFlagSpawnPoints[i].LocationOnTile + GetActorLocation());
+					Transform.SetLocation(GetActorLocation());
 					Transform.SetRotation(
-						FRotator(0, DA_TileGraphics->ClaimFlagSpawnPoints[i].Rotation, 0).Quaternion());
-					ClaimFlagInstanceIds.Add(i, Claimant->AddClaimMeshInstance(Transform));
+						FRotator(0, 60 * i, 0).Quaternion());
+					ClaimWallsInstanceIds.Add(i, Claimant->AddClaimMeshInstance(Transform));
 				}
 			}
-			else if (ClaimFlagInstanceIds.Contains(i))
+			else if (ClaimWallsInstanceIds.Contains(i))
 			{
 				// Should NOT have flag in this direction
-				Claimant->RemoveClaimMeshInstance(*ClaimFlagInstanceIds.Find(i));
-				ClaimFlagInstanceIds.Remove(i);
+				Claimant->RemoveClaimMeshInstance(*ClaimWallsInstanceIds.Find(i));
+				ClaimWallsInstanceIds.Remove(i);
 			}
 		}
 	}
 	else
 	{
 		// remove all flags
-		for (TTuple<uint8, FPrimitiveInstanceId> Tuple : ClaimFlagInstanceIds)
+		for (TTuple<uint8, FPrimitiveInstanceId> Tuple : ClaimWallsInstanceIds)
 		{
 			Claimant->RemoveClaimMeshInstance(Tuple.Value);
 		}
-		ClaimFlagInstanceIds.Empty();
+		ClaimWallsInstanceIds.Empty();
 	}
 }
 
@@ -225,11 +225,10 @@ bool ATile::TryClaim(ASettlement* PotentialClaimant)
 	Claimant = PotentialClaimant;
 	if (Building)
 	{
-		Building->OnClaim(Claimant);
 		Claimant->OnBuildingAdded(Building);
 	}
 	GameplayTags.AppendTags(Claimant->GameplayTags);
-	UpdateClaimFlagsWithNeighbors();
+	UpdateClaimWallsWithNeighbors();
 	OnGameplayTagsChanged.Broadcast();
 	return true;
 }
@@ -239,7 +238,6 @@ void ATile::Unclaim()
 	if (!Claimant) return;
 	if (Building)
 	{
-		Building->OnUnclaim(Claimant);
 		Claimant->OnBuildingRemoved(Building);
 	}
 	Claimant->LostClaim(this);
@@ -248,47 +246,70 @@ void ATile::Unclaim()
 	Claimant = nullptr;
 }
 
+// ---------------------------------------------------------
+// Building
+
 void ATile::OnRep_Building()
 {
 	OnBuildingChanged.Broadcast();
 }
 
-// ---------------------------------------------------------
-// Building
+bool ATile::CanBuild()
+{
+	return !Building;
+}
 
 bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 {
 	// There is already a Building, can't build here
 	if (Building) return false;
 	// Create Building Object
-	Building = NewObject<UBuilding>(this, BuildingDataAsset->BuildingClass);
-	Building->OnBuild(this);
+	Building = NewObject<UBuilding>();
+	Building->DataAsset = BuildingDataAsset;
 	if (Claimant)
 	{
-		Building->OnClaim(Claimant);
 		Claimant->OnBuildingAdded(Building);
 	}
 	int32 _;
 	Building->Population->ChangeMaximum(BuildingDataAsset->TierOne.Housing, _);
-	Building->Production->SetupWithTierData(&BuildingDataAsset->TierOne);
+	Building->SetupProduction(&BuildingDataAsset->TierOne);
 	// Add Building related GameplayTags
 	GameplayTags.AppendTags(BuildingDataAsset->TierOne.GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
-	AddBuildingToReplication();
+	// Replication stuff
+	AddReplicatedSubObject(Building);
+	AddReplicatedSubObject(Building->Population);
+	// Population stuff
+	Building->Population->OnChanged.AddDynamic(this, &ATile::CalculatePopulationGrowthChangeWithNeighbors);
+	CalculatePopulationGrowthChangeWithNeighbors();
 	// Set Graphics
 	OnBuildingChanged.Broadcast();
 	RecalculateTileLayout();
 	return true;
 }
 
+bool ATile::CanUpgrade()
+{
+	return Building->CanUpgrade();
+}
+
+bool ATile::TryUpgrade()
+{
+	if(!Building || !Building->CanUpgrade()) return false;
+	GameplayTags.RemoveTags(Building->DataAsset->GetTierData(Building->Tier)->GameplayTags);
+	Building->Upgrade();
+	GameplayTags.AppendTags(Building->DataAsset->GetTierData(Building->Tier)->GameplayTags);
+	OnBuildingChanged.Broadcast();
+	return true;
+}
+
+
 void ATile::Unbuild()
 {
 	// there is no Building
 	if (!Building) return;
-	Building->OnUnbuild(this);
 	if (Claimant)
 	{
-		Building->OnUnclaim(Claimant);
 		Claimant->OnBuildingRemoved(Building);
 	}
 	// Remove Building related GameplayTags
@@ -299,17 +320,6 @@ void ATile::Unbuild()
 	// Set Graphics
 	OnBuildingChanged.Broadcast();
 	RecalculateTileLayout();
-}
-
-void ATile::AddBuildingToReplication()
-{
-	AddReplicatedSubObject(Building);
-	AddReplicatedSubObject(Building->Population);
-	AddReplicatedSubObject(Building->Production);
-
-	// TODO: Not Here
-	Building->Population->OnChanged.AddDynamic(this, &ATile::CalculatePopulationGrowthChangeWithNeighbors);
-	CalculatePopulationGrowthChangeWithNeighbors();
 }
 
 // ---------------------------------------------------------
@@ -512,7 +522,25 @@ void ATile::RecalculateTileLayout()
 	if (!NewLayout) return;
 	TileLayout = *NewLayout;
 	// Select random SpawnPointLayout
-	FSpawnPointLayout SPL = TileLayout.SpawnPointsLayouts[FMath::RandRange(0, TileLayout.SpawnPointsLayouts.Num() - 1)];
+	FSpawnPointLayout SPL;
+	// weighted random to figure out which one to take
+	// Calculate TotalBias for the weighted random selection
+	int32 TotalBias = 0;
+	for (FSpawnPointLayout SpawnPointsLayout : TileLayout.SpawnPointsLayouts)
+	{
+		TotalBias += SpawnPointsLayout.SpawnBias;
+	}
+	// Randomly select the TileLayout based on their spawn bias
+	int Count = FMath::RandRange(0, TotalBias - 1);
+	for (FSpawnPointLayout SpawnPointsLayout : TileLayout.SpawnPointsLayouts)
+	{
+		if (Count < SpawnPointsLayout.SpawnBias)
+		{
+			SPL = SpawnPointsLayout;
+			break;
+		}
+		Count -= SpawnPointsLayout.SpawnBias;
+	}
 	ApplySpawnChances(SPL.Trees);
 	ApplySpawnChances(SPL.Forage);
 	ApplySpawnChances(SPL.Props);
@@ -556,7 +584,30 @@ FTileLayout* ATile::FindNewValidTileLayout()
 		UE_LOG(LogTemp, Warning, TEXT("Had to Default TileLayout on (%d:%d)"), HexCoords.Q, HexCoords.R);
 		return DA_TileGraphics->TileLayouts->FindRow<FTileLayout>(DefaultName, ContextString);
 	}
-	return PossibleLayouts[FMath::RandRange(0, PossibleLayouts.Num() - 1)];
+	// weighted random to figure out which one to take
+	// Calculate TotalBias for the weighted random selection
+	int32 TotalBias = 0;
+	for (FTileLayout* TL : PossibleLayouts)
+	{
+		for (FSpawnPointLayout SpawnPointsLayout : TL->SpawnPointsLayouts)
+		{
+			TotalBias += SpawnPointsLayout.SpawnBias;
+		}
+	}
+	// Randomly select the TileLayout based on their spawn bias
+	int Count = FMath::RandRange(0, TotalBias - 1);
+	for (FTileLayout* TL : PossibleLayouts)
+	{
+		for (FSpawnPointLayout SpawnPointsLayout : TL->SpawnPointsLayouts)
+		{
+			if (Count < SpawnPointsLayout.SpawnBias)
+			{
+				return TL;
+			}
+			Count -= SpawnPointsLayout.SpawnBias;
+		}
+	}
+	return nullptr;
 }
 
 bool ATile::IsValidTileLayout(const FTileLayout* Layout) const
@@ -565,8 +616,16 @@ bool ATile::IsValidTileLayout(const FTileLayout* Layout) const
 	if (bIsRiver != Layout->HasRiver) return false;
 	// Tile has no Building but Row doesn't allow that
 	if (!Building && !Layout->AllowNoBuilding) return false;
-	// Tile has Building but Row doesn't allow that
-	if (Building && !Layout->AllowBuilding) return false;
+	// Tile has Native Building but Row doesn't allow that
+	if (Building
+		&& Building->DataAsset->FactionStyle == EFaction::Natives
+		&& !Layout->AllowNativesBuilding)
+		return false;
+	// Tile has Colonists Building but Row doesn't allow that
+	if (Building
+		&& Building->DataAsset->FactionStyle == EFaction::Colonists
+		&& !Layout->AllowColonistBuilding)
+		return false;
 	// Row doesn't allow this biome
 	if (!Layout->AllowedBiomes.Contains(Biome)) return false;
 	// Is a river but can't find a working Rotation

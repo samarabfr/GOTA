@@ -16,7 +16,7 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 	DOREPLIFETIME(ASettlement, ClaimColor);
 	DOREPLIFETIME(ASettlement, PopulationSummary);
-	DOREPLIFETIME(ASettlement, ProductionSummary);
+	DOREPLIFETIME(ASettlement, BuildingSummary);
 	DOREPLIFETIME(ASettlement, CurrentBuildingProject);
 	DOREPLIFETIME(ASettlement, Food);
 	DOREPLIFETIME(ASettlement, Wood);
@@ -29,9 +29,12 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 ASettlement::ASettlement()
 {
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
-	ISM_ClaimFlags = CreateDefaultSubobject<UInstancedStaticMeshComponent>("Claim Flags");
-	ISM_ClaimFlags->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	ISM_ClaimFlags->SetupAttachment(RootComponent);
+	ISM_ClaimWalls = CreateDefaultSubobject<UInstancedStaticMeshComponent>("Claim Walls");
+	ISM_ClaimWalls->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ISM_ClaimWalls->SetupAttachment(RootComponent);
+	ISM_ClaimWallsRiver = CreateDefaultSubobject<UInstancedStaticMeshComponent>("Claim Walls River");
+	ISM_ClaimWallsRiver->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ISM_ClaimWallsRiver->SetupAttachment(RootComponent);
 
 	// Replication stuff
 	bReplicates = true;
@@ -40,17 +43,17 @@ ASettlement::ASettlement()
 	Wood = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Wood"));
 	Stone = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Stone"));
 	PopulationSummary = CreateDefaultSubobject<UPopulationSummary>(TEXT("Population"));
-	ProductionSummary = CreateDefaultSubobject<UBuildingProductionSummary>(TEXT("Production"));
+	BuildingSummary = CreateDefaultSubobject<UBuildingSummary>(TEXT("Production"));
 	Expansion = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Expansion"));
 	CurrentBuildingProject = CreateDefaultSubobject<UBuildingProject>(TEXT("Current Building Project"));
 }
 
 void ASettlement::OnRep_ClaimColor()
 {
-	ISM_ClaimFlags->SetStaticMesh(ClaimMesh);
+	ISM_ClaimWalls->SetStaticMesh(ClaimMesh);
 	UMaterialInstanceDynamic* DynMaterial = UMaterialInstanceDynamic::Create(ClaimMaterial, this);
 	DynMaterial->SetVectorParameterValue(EName::Color, ClaimColor);
-	ISM_ClaimFlags->SetMaterialByName(FName("Flag"), DynMaterial);
+	ISM_ClaimWalls->SetMaterialByName(FName("Flag"), DynMaterial);
 }
 
 void ASettlement::BeginPlay()
@@ -63,17 +66,17 @@ void ASettlement::BeginPlay()
 
 	if (HasAuthority())
 	{
-		ISM_ClaimFlags->SetStaticMesh(ClaimMesh);
+		ISM_ClaimWalls->SetStaticMesh(ClaimMesh);
 		ClaimColor = FLinearColor(FMath::FRand(), FMath::FRand(), FMath::FRand());
 		UMaterialInstanceDynamic* DynMaterial = UMaterialInstanceDynamic::Create(ClaimMaterial, this);
 		DynMaterial->SetVectorParameterValue(EName::Color, ClaimColor);
-		ISM_ClaimFlags->SetMaterialByName(FName("Flag"), DynMaterial);
+		ISM_ClaimWalls->SetMaterialByName(FName("Flag"), DynMaterial);
 
 		AddReplicatedSubObject(Food);
 		AddReplicatedSubObject(Wood);
 		AddReplicatedSubObject(Stone);
 		AddReplicatedSubObject(PopulationSummary);
-		AddReplicatedSubObject(ProductionSummary);
+		AddReplicatedSubObject(BuildingSummary);
 		AddReplicatedSubObject(Expansion);
 		AddReplicatedSubObject(CurrentBuildingProject);
 	}
@@ -81,12 +84,12 @@ void ASettlement::BeginPlay()
 
 FPrimitiveInstanceId ASettlement::AddClaimMeshInstance(FTransform& Transform)
 {
-	return ISM_ClaimFlags->AddInstanceById(Transform);
+	return ISM_ClaimWalls->AddInstanceById(Transform);
 }
 
 void ASettlement::RemoveClaimMeshInstance(FPrimitiveInstanceId InstanceId)
 {
-	ISM_ClaimFlags->RemoveInstanceById(InstanceId);
+	ISM_ClaimWalls->RemoveInstanceById(InstanceId);
 }
 
 bool ASettlement::ClaimRandomTile()
@@ -140,24 +143,13 @@ bool ASettlement::ClaimRandomTile()
 
 void ASettlement::OnBuildingAdded(UBuilding* Building)
 {
-	if (Building)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Building exist"));
-	}
-	else
-	{
-		UE_LOG(LogTemp, Log, TEXT("Building doesn't exist wtf"));
-	}
-	if (Building->Population)
-	{
-		UE_LOG(LogTemp, Log, TEXT("Building Population exist"));
-	}
 	PopulationSummary->RegisterPopulation(Building->Population);
-	ProductionSummary->RegisterBuildingProduction(Building->Production);
+	BuildingSummary->RegisterBuildingProduction(Building);
 }
 
 void ASettlement::OnBuildingRemoved(UBuilding* Building)
 {
+	BuildingSummary->UnregisterBuildingProduction(Building);
 }
 
 bool ASettlement::SpawnArmy()

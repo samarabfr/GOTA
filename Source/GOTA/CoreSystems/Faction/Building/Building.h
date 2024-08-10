@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "BuildingTierData.h"
 #include "Population.h"
-#include "BuildingProduction.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Building.generated.h"
 
@@ -17,43 +17,45 @@ class GOTA_API UBuilding : public UObject
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
 	UBuilding();
-
-	//====================================================================
-	//--------------------Overrideable Events
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+	
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnProductionChangedSignature, int32, Changed, EProductionType, Type);
 
 public:
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
-	void OnBuild(const ATile* Tile);
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
-	void OnUnbuild(const ATile* Tile);
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
-	void OnClaim(const ASettlement* Claimant);
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
-	void OnUnclaim(const ASettlement* Claimant);
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Building")
-	void OnTurn(const ATile* Tile);
-
-	//====================================================================
-	//--------------------Simple Variables
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-
-	UPROPERTY(BlueprintReadOnly, Replicated, EditDefaultsOnly, Category="Building")
+	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Category="Building")
 	UBuildingDataAsset* DataAsset;
 
-	UPROPERTY(VisibleInstanceOnly, Instanced, BlueprintReadOnly, Replicated, Category="Building")
+	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Instanced, Category="Building")
 	UPopulation* Population;
 
-	UPROPERTY(VisibleInstanceOnly, Instanced, BlueprintReadOnly, Replicated, Category="Building")
-	UBuildingProduction* Production;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Building")
+	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Category="Building")
 	int32 Tier = 1;
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Building")
-	bool Upgrade();
+	bool CanUpgrade();
+	
+	void Upgrade();
+
+	// ---------------------------------------------------------
+	// Production
+	
+	UPROPERTY(BlueprintAssignable, Category="Building")
+	FOnProductionChangedSignature OnProductionChanged;
+	
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Building")
+	int32 Production = 0;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Building")
+	int32 PopulationThreshold = 0;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Building")
+	int32 ProductionPerThreshold = 0;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Replicated, Category="Building")
+	EProductionType ProductionType = EProductionType::MAX;
+	
+	UFUNCTION()
+	void UpdateProduction(int32 Change);
+	
+	void SetupProduction(const FBuildingTierData* TierData);
 };

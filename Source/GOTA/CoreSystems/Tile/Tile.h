@@ -42,7 +42,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	void Init();
 
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_GameplayTags, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, ReplicatedUsing=OnRep_GameplayTags, Category="Tile")
 	FGameplayTagContainer GameplayTags;
 
 	UFUNCTION()
@@ -95,7 +95,7 @@ private:
 		ReplicatedUsing=OnRep_Claimant, Category="Tile")
 	ASettlement* Claimant;
 
-	TMap<uint8, FPrimitiveInstanceId> ClaimFlagInstanceIds;
+	TMap<uint8, FPrimitiveInstanceId> ClaimWallsInstanceIds;
 
 public:
 	UFUNCTION(BlueprintGetter)
@@ -109,9 +109,9 @@ private:
 	void OnRep_Claimant(ASettlement* NewClaimant);
 
 public:
-	void UpdateClaimFlagsWithNeighbors();
+	void UpdateClaimWallsWithNeighbors();
 
-	void UpdateClaimFlags();
+	void UpdateClaimWalls();
 
 	UFUNCTION(BlueprintCallable, Category="Tile")
 	bool IsClaimable() const;
@@ -135,13 +135,19 @@ public:
 	FOnChangedSignature OnBuildingChanged;
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
+	bool CanBuild();
+	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	bool TryBuild(UBuildingDataAsset* BuildingDataAsset);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
-	void Unbuild();
+	bool CanUpgrade();
+	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
+	bool TryUpgrade();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
-	void AddBuildingToReplication();
+	void Unbuild();
 
 	// ---------------------------------------------------------
 	// Weird solution for the Guardian is in X range for animation performance
@@ -220,7 +226,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Graphics")
 	UTileGraphicsDataAsset* DA_TileGraphics;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Tile Graphics")
+	UPROPERTY(BlueprintReadOnly, Category="Tile Graphics")
 	FTileLayout TileLayout;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, ReplicatedUsing=OnRep_SpawnPointLayout, Category="Tile Graphics")
