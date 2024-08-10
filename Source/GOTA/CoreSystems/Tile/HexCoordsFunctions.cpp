@@ -6,8 +6,8 @@
 
 FVector2D UHexCoordsFunctions::HexCoordsToVector2D(FHexCoords HexCoords)
 {
-	const double X = (HexCoords.Q - ATileMap::MapOffset) * 1.5;
-	const double Y = (HexCoords.Q - ATileMap::MapOffset) * 0.866 + (HexCoords.R - ATileMap::MapOffset) * 1.732;
+	const double X = HexCoords.Q * 1.5;
+	const double Y = HexCoords.Q * 0.866 + HexCoords.R  * 1.732;
 	return FVector2D(X * FHexCoords::Gridsize, Y * FHexCoords::Gridsize);
 }
 
@@ -25,13 +25,13 @@ FHexCoords UHexCoordsFunctions::Vector2DToHexCoords(FVector2D Vector)
 	const int32 DiffS = abs(RoundS - FracS);
 	if (DiffQ > DiffR && DiffQ > DiffS)
 	{
-		return FHexCoords(-RoundR - RoundS - ATileMap::MapOffset, RoundR - ATileMap::MapOffset);
+		return FHexCoords(-RoundR - RoundS , RoundR );
 	}
 	if (DiffR > DiffS)
 	{
-		return FHexCoords(RoundQ - ATileMap::MapOffset, -RoundQ - RoundS - ATileMap::MapOffset);
+		return FHexCoords(RoundQ , -RoundQ - RoundS );
 	}
-	return FHexCoords(RoundQ - ATileMap::MapOffset, RoundR - ATileMap::MapOffset);
+	return FHexCoords(RoundQ, RoundR);
 }
 
 FHexCoords UHexCoordsFunctions::VectorToHexCoords(FVector Vector)
