@@ -657,6 +657,7 @@ void UWorldGenerator::SpawnTiles()
 			NewTile->RiverDistance = Tile.RiverDistance;
 			if(Tile.IsColonistStart) TileMap->ColonistsStarts.Add(NewTile);
 			else if(Tile.IsNativeStart) TileMap->NativesStarts.Add(NewTile);
+			NewTile->Score = CalculateNativesStartScoreForTile(NativesStarts[0], &Tile);
 		}
 	}
 }
@@ -727,6 +728,16 @@ void UWorldGenerator::GenerateColonistsStartingPositions()
 	for (FGeneratedTileInfo* Tile : ColonistsStarts)
 	{
 		Tile->IsColonistStart = true;
+	}
+	// set colonist distances
+	// reset tiles
+	for (FGeneratedTileInfo& Tile : GTiles)
+	{
+		Tile.ColonistsDistance = MAX_int32;
+	}
+	for (FGeneratedTileInfo* ColonistsStart : ColonistsStarts)
+	{
+		FloodFillEveryTileWithColonistsDistances(ColonistsStart);
 	}
 }
 
@@ -868,13 +879,13 @@ void UWorldGenerator::GenerateNativesInitialStartingPositions()
 
 void UWorldGenerator::GenerateNativesFinalStartingPositions()
 {
-	// Find all inland tiles
-	TArray<FGeneratedTileInfo*> InlandWithoutVolcano;
+	TArray<FGeneratedTileInfo*> EligibleTiles;
 	for (FGeneratedTileInfo& Tile : GTiles)
 	{
 		if (Tile.OceanDistance > 1
-			&& Tile.VolcanoDistance > 2)
-			InlandWithoutVolcano.Add(&Tile);
+			&& Tile.VolcanoDistance > 2
+			&& Tile.ColonistsDistance >= TerrainGenData->NativesMinColonistDistance)
+			EligibleTiles.Add(&Tile);
 	}
 	// Determine the positions through score calculations
 	for (int32 _ = 0; _ < TerrainGenData->IterationsStarts; ++_)
@@ -885,8 +896,8 @@ void UWorldGenerator::GenerateNativesFinalStartingPositions()
 		// calculate score for tile itself
 		float NativesStartToChangeScore = CalculateNativesStartScoreForTile(NativesStartToChange, NativesStartToChange);
 		// Choose random other coast tile
-		const int32 RandomTestIndex = FMath::RandRange(0, InlandWithoutVolcano.Num() - 1);
-		FGeneratedTileInfo* TestTile = InlandWithoutVolcano[RandomTestIndex];
+		const int32 RandomTestIndex = FMath::RandRange(0, EligibleTiles.Num() - 1);
+		FGeneratedTileInfo* TestTile = EligibleTiles[RandomTestIndex];
 		UE_LOG(LogTemp, Warning, TEXT("Trying new tile with score: %f"), NativesStartToChangeScore)
 		if (NativesStarts.Contains(TestTile)) continue;
 		float TestScore = CalculateNativesStartScoreForTile(NativesStartToChange, TestTile);

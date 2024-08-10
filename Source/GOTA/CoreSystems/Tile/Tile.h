@@ -81,6 +81,9 @@ public:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	int32 RiverDistance = -1;
 
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Tile")
+	float Score = 0;
+
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	AEntity* AlliedTileEntity;
 

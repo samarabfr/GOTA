@@ -98,6 +98,9 @@ public:
 	float ColonistStartsColonistFactor = 1;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
+	int32 NativesMinColonistDistance = 7;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
 	float NativesStartsColonistFactor = 1;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
