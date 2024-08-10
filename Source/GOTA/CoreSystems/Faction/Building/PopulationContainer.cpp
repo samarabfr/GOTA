@@ -387,6 +387,11 @@ void UPopulationContainer::SubtractOneMoodWeightedRandom()
 // ---------------------------------------------------------
 // Getters and Setters
 
+int32 UPopulationContainer::GetSize()
+{
+	return Population.Size;
+}
+
 FPopulation UPopulationContainer::GetPopulation()
 {
 	return Population;

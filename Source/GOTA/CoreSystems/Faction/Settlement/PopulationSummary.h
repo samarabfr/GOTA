@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SettlementBalance.h"
 #include "GOTA/CoreSystems/Faction/Building/PopulationContainer.h"
 #include "PopulationSummary.generated.h"
 
@@ -15,7 +16,9 @@ class GOTA_API UPopulationSummary : public UObject
 	
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFPopulationChangedSig, FPopulation, ChangedBy);
-	
+
+	UPROPERTY()
+	TArray<UPopulationContainer*> PopCons;
 public:
 	UPROPERTY(BlueprintAssignable, Category="Population")
 	FOnFPopulationChangedSig OnPopulationChanged;
@@ -26,6 +29,8 @@ public:
 	UFUNCTION()
 	void OnRep_Population(const FPopulation& OldPopulation);
 
+	FPopulation ExtractArmyPopulation(USettlementBalance* Balance);
+	
 	// ---------------------------------------------------------
 	// Keeping Track of Population Changes
 

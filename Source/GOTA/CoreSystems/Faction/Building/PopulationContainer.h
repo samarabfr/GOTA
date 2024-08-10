@@ -97,7 +97,9 @@ public:
 
 	// ---------------------------------------------------------
 	// Getters and Setters
-
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Population")
+	int32 GetSize();
+	
 	UFUNCTION(BlueprintCallable, BlueprintGetter, Category = "Population")
 	FPopulation GetPopulation();
 

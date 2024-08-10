@@ -35,21 +35,27 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="EcoValues")
 	int32 ColonistMaxRange;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army spawning")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning Condition")
 	int32 MinimumPopulationToSpawnArmy;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army spawning")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning Condition")
 	int32 HighPopulationThreshold;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army spawning")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning Condition")
 	float HighPopulationImpact;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army spawning")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning Condition")
 	float AggressiveMoodMaximumImpact;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army spawning")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning Condition")
 	float MinimumRatioOfPopulationJoiningArmy;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army spawning")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning Condition")
 	float MaximumRatioOfPopulationJoiningArmy;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
+	int MinBuildingPopToJoinArmy;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
+	int MinBuildingPopRemainingAfterJoining;
 };

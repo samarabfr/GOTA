@@ -21,6 +21,26 @@ void UPopulationSummary::OnRep_Population(const FPopulation& OldPopulation)
 	OnPopulationChanged.Broadcast(Population - OldPopulation);
 }
 
+FPopulation UPopulationSummary::ExtractArmyPopulation(USettlementBalance* Balance)
+{
+	FPopulation Return;
+	TArray<UPopulationContainer*> EligiblePopCons;
+	TArray<int32> EligiblePop;
+	int32 MaxArmySize = 0;
+	for (UPopulationContainer* PopCon : PopCons)
+	{
+		if (PopCon->GetSize() >= Balance->MinBuildingPopToJoinArmy)
+		{
+			EligiblePopCons.Add(PopCon);
+			int32 Eligible = PopCon->GetSize() - Balance->MinBuildingPopRemainingAfterJoining
+			EligiblePop.Add(Eligible);
+			MaxArmySize += Eligible;
+		}
+	}
+
+	return Return;
+}
+
 // ---------------------------------------------------------
 // Keeping Track of Population Changes
 
@@ -29,6 +49,7 @@ void UPopulationSummary::RegisterPopulationContainer(UPopulationContainer* Popul
 	PopulationContainer->OnPopulationChanged.AddDynamic(this, &UPopulationSummary::UpdatePopulation);
 	OnPopulationChanged.Broadcast(PopulationContainer->Population);
 	Population += PopulationContainer->Population;
+	PopCons.Add(PopulationContainer);
 }
 
 void UPopulationSummary::RegisterPopulationSummary(UPopulationSummary* PopulationSummary)
@@ -43,6 +64,7 @@ void UPopulationSummary::UnregisterPopulationContainer(UPopulationContainer* Pop
 	PopulationContainer->OnPopulationChanged.RemoveDynamic(this, &UPopulationSummary::UpdatePopulation);
 	OnPopulationChanged.Broadcast(-PopulationContainer->Population);
 	Population -= PopulationContainer->Population;
+	PopCons.Remove(PopulationContainer);
 }
 
 void UPopulationSummary::UnregisterPopulationSummary(UPopulationSummary* PopulationSummary)

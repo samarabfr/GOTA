@@ -41,6 +41,15 @@ struct FPopulation : public FTableRowBase
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
 	int32 MoodFear = 0;
 
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
+	int32 Bows = 0;
+
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
+	int32 Muskets = 0;
+
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
+	int32 Shields = 0;
+
 	void SetFollower(ECultureLoyalty Culture, int32 Value);
 
 	void SetMood(EMood Mood, int32 Value);
@@ -51,6 +60,12 @@ struct FPopulation : public FTableRowBase
 
 	int32 GetMood(EMood Mood) const;
 
+	int32 SumFollower() const;
+	
+	int32 SumMood() const;
+
+	bool AnyBiggerThan(const FPopulation& Other) const;
+	
 	FPopulation operator+(const FPopulation& Other) const;
 
 	FPopulation operator+=(const FPopulation& Other);

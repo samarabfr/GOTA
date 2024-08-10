@@ -21,7 +21,8 @@ void FPopulation::SetFollower(ECultureLoyalty Culture, int32 Value)
 
 void FPopulation::SetMood(EMood Mood, int32 Value)
 {
-	switch (Mood) {
+	switch (Mood)
+	{
 	case EMood::Content:
 		MoodContent = Value;
 		return;
@@ -31,7 +32,7 @@ void FPopulation::SetMood(EMood Mood, int32 Value)
 	case EMood::Fear:
 		MoodFear = Value;
 		return;
-	default:;
+	default: ;
 	}
 }
 
@@ -75,6 +76,33 @@ int32 FPopulation::GetMood(EMood Mood) const
 	}
 }
 
+int32 FPopulation::SumFollower() const
+{
+	return FollowerColonists + FollowerGuardian1 + FollowerGuardian2 + FollowerGuardian3 + FollowerGuardian4;
+}
+
+int32 FPopulation::SumMood() const
+{
+	return MoodContent + MoodAngry + MoodFear;
+}
+
+bool FPopulation::AnyBiggerThan(const FPopulation& Other) const
+{
+	return this->Size > Other.Size
+		|| this->MaxSize > Other.MaxSize
+		|| this->FollowerColonists > Other.FollowerColonists
+		|| this->FollowerGuardian1 > Other.FollowerGuardian1
+		|| this->FollowerGuardian2 > Other.FollowerGuardian2
+		|| this->FollowerGuardian3 > Other.FollowerGuardian3
+		|| this->FollowerGuardian4 > Other.FollowerGuardian4
+		|| this->MoodContent > Other.MoodContent
+		|| this->MoodAngry > Other.MoodAngry
+		|| this->MoodFear > Other.MoodFear
+		|| this->Bows > Other.Bows
+		|| this->Muskets > Other.Muskets
+		|| this->Shields > Other.Shields;
+}
+
 FPopulation FPopulation::operator+(const FPopulation& Other) const
 {
 	FPopulation Result;
@@ -88,6 +116,9 @@ FPopulation FPopulation::operator+(const FPopulation& Other) const
 	Result.MoodContent = this->MoodContent + Other.MoodContent;
 	Result.MoodAngry = this->MoodAngry + Other.MoodAngry;
 	Result.MoodFear = this->MoodFear + Other.MoodFear;
+	Result.Bows = this->Bows + Other.Bows;
+	Result.Muskets = this->Muskets + Other.Muskets;
+	Result.Shields = this->Shields + Other.Shields;
 	return Result;
 }
 
@@ -103,6 +134,9 @@ FPopulation FPopulation::operator+=(const FPopulation& Other)
 	this->MoodContent += Other.MoodContent;
 	this->MoodAngry += Other.MoodAngry;
 	this->MoodFear += Other.MoodFear;
+	this->Bows += Other.Bows;
+	this->Muskets += Other.Muskets;
+	this->Shields += Other.Shields;
 	return *this;
 }
 
@@ -119,6 +153,9 @@ FPopulation FPopulation::operator-(const FPopulation& Other) const
 	Result.MoodContent = this->MoodContent - Other.MoodContent;
 	Result.MoodAngry = this->MoodAngry - Other.MoodAngry;
 	Result.MoodFear = this->MoodFear - Other.MoodFear;
+	Result.Bows = this->Bows - Other.Bows;
+	Result.Muskets = this->Muskets - Other.Muskets;
+	Result.Shields = this->Shields - Other.Shields;
 	return Result;
 }
 
@@ -135,6 +172,9 @@ FPopulation FPopulation::operator-() const
 	Result.MoodContent = -this->MoodContent;
 	Result.MoodAngry = -this->MoodAngry;
 	Result.MoodFear = -this->MoodFear;
+	Result.Bows = -this->Bows;
+	Result.Muskets = -this->Muskets;
+	Result.Shields = -this->Shields;
 	return Result;
 }
 
@@ -150,5 +190,8 @@ FPopulation FPopulation::operator-=(const FPopulation& Other)
 	this->MoodContent -= Other.MoodContent;
 	this->MoodAngry -= Other.MoodAngry;
 	this->MoodFear -= Other.MoodFear;
+	this->Bows -= Other.Bows;
+	this->Muskets -= Other.Muskets;
+	this->Shields -= Other.Shields;
 	return *this;
 }
