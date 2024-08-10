@@ -33,10 +33,6 @@ private:
 
 	TArray<FGeneratedTileInfo> GTiles;
 
-	FHexCoords SizeSpawn;
-
-	TArray<FGeneratedTileInfo> GTilesSpawn;
-
 	UPROPERTY()
 	UTerrainGeneratorDataAsset* TerrainGenData;
 
@@ -66,6 +62,8 @@ private:
 	FGeneratedTileInfo* GetTile(int32 Q, int32 R);
 
 	void GenerateShape();
+
+	void ReduceArraySizeToIslandSize();
 
 	void GenerateHeight();
 
@@ -100,8 +98,6 @@ private:
 	bool HasRiverSpringNeighbors(FGeneratedTileInfo* Tile);
 
 	void SpawnTiles();
-
-	void GenerateSpawnArray();
 
 	void SetupNoise(FNoiseParameter& Parameter);
 

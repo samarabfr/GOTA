@@ -40,6 +40,7 @@ void UWorldGenerator::Init(ATileMap* TileMap_, int32 TileCount_, int32 Colonists
 void UWorldGenerator::GenerateWorld()
 {
 	GenerateShape();
+	ReduceArraySizeToIslandSize();
 	CalculateOceanDistances();
 	ChooseVolcanoTile();
 	CalculateVolcanoDistances();
@@ -48,7 +49,6 @@ void UWorldGenerator::GenerateWorld()
 	GenerateMountains();
 	GenerateRivers();
 	GenerateStartingPositions();
-	GenerateSpawnArray();
 	SpawnTiles();
 }
 
@@ -128,7 +128,7 @@ void UWorldGenerator::GenerateShape()
 		{
 			// count filled neighbors once before cutting and not while cutting
 			int32 FilledNeighborsCounter = 0;
-			for (int i = 0; i < 6; ++i)
+			for (int32 i = 0; i < 6; ++i)
 			{
 				if (Tile.Neighbors[i] && Tile.Neighbors[i]->IsLand) ++FilledNeighborsCounter;
 			}
@@ -139,7 +139,7 @@ void UWorldGenerator::GenerateShape()
 		while (FilledCounter > TileCount && TileCount != 0)
 		{
 			// cut from the fewest neighbors to most. neighbors wont be recalculated to not smoothen too much
-			for (int i = 0; i < 6; ++i)
+			for (int32 i = 0; i < 6; ++i)
 			{
 				if (TilesByNeighborCount[i].Num() > 0)
 				{
@@ -168,6 +168,60 @@ void UWorldGenerator::GenerateShape()
 			}
 		}
 	}
+}
+
+void UWorldGenerator::ReduceArraySizeToIslandSize()
+{
+	// Find the occupied area of the island
+	int32 SmallestQ = Size.Q - 1;
+	int32 SmallestR = Size.R - 1;
+	int32 BiggestQ = 0;
+	int32 BiggestR = 0;
+	for (FGeneratedTileInfo& Tile : GTiles)
+	{
+		if (!Tile.IsLand) continue;
+		if (SmallestQ > Tile.HexCoords.Q) SmallestQ = Tile.HexCoords.Q;
+		if (SmallestR > Tile.HexCoords.R) SmallestR = Tile.HexCoords.R;
+		if (BiggestQ < Tile.HexCoords.Q) BiggestQ = Tile.HexCoords.Q;
+		if (BiggestR < Tile.HexCoords.R) BiggestR = Tile.HexCoords.R;
+	}
+	// Initialize new Spawn array
+	FHexCoords NewSize = FHexCoords(BiggestQ - SmallestQ + 1, BiggestR - SmallestR + 1);
+	TArray<FGeneratedTileInfo> NewGTiles;
+	NewGTiles.SetNum(NewSize.Q * NewSize.R);
+	// Copy tiles into new array
+	for (int32 Q = SmallestQ; Q < BiggestQ + 1; ++Q)
+	{
+		for (int32 R = SmallestR; R < BiggestR + 1; ++R)
+		{
+			// copy Tiles because they have different HexCoords in the spawn array
+			FGeneratedTileInfo Tile = *GetTile(Q, R);
+			Tile.HexCoords = FHexCoords(Q - SmallestQ, R - SmallestR);
+			NewGTiles[Tile.HexCoords.Q * NewSize.R + Tile.HexCoords.R] = Tile;
+		}
+	}
+	// apply to GTiles
+	GTiles = NewGTiles;
+	Size = NewSize;
+	// refresh neighbors
+	for (int32 Q = 0; Q < Size.Q; ++Q)
+	{
+		for (int32 R = 0; R < Size.R; ++R)
+		{
+			FGeneratedTileInfo* GeneratedTile = GetTile(Q, R);
+			GeneratedTile->HexCoords = FHexCoords(Q, R);
+
+			// Set neighbors on the new tile
+			GeneratedTile->Neighbors[0] = GetTile(Q, R - 1);
+			GeneratedTile->Neighbors[1] = GetTile(Q + 1, R - 1);
+			GeneratedTile->Neighbors[2] = GetTile(Q + 1, R);
+			GeneratedTile->Neighbors[3] = GetTile(Q, R + 1);
+			GeneratedTile->Neighbors[4] = GetTile(Q - 1, R + 1);
+			GeneratedTile->Neighbors[5] = GetTile(Q - 1, R);
+		}
+	}
+	Middle = GetTile(Size.Q / 2, Size.R / 2);
+	Origin = GetTile(0, 0);
 }
 
 void UWorldGenerator::GenerateHeight()
@@ -236,8 +290,9 @@ void UWorldGenerator::CalculateOceanDistances()
 	{
 		if (Tile.IsLand)
 		{
+			// Check if Tile is coast
 			// go through every neighbor
-			for (int i = 0; i < 6; ++i)
+			for (int32 i = 0; i < 6; ++i)
 			{
 				// is bordering to water
 				if (!Tile.Neighbors[i] || !Tile.Neighbors[i]->IsLand)
@@ -256,7 +311,7 @@ void UWorldGenerator::CalculateOceanDistances()
 		TArray<FGeneratedTileInfo*> NewFrontier;
 		for (FGeneratedTileInfo* FrontierTile : OceanFrontier)
 		{
-			for (int i = 0; i < 6; ++i)
+			for (int32 i = 0; i < 6; ++i)
 			{
 				if (FrontierTile->Neighbors[i] && FrontierTile->Neighbors[i]->OceanDistance == -1 && FrontierTile->
 					Neighbors[i]->IsLand)
@@ -284,7 +339,7 @@ void UWorldGenerator::CalculateVolcanoDistances()
 		TArray<FGeneratedTileInfo*> NewFrontier;
 		for (FGeneratedTileInfo* FrontierTile : VolcanoFrontier)
 		{
-			for (int i = 0; i < 6; ++i)
+			for (int32 i = 0; i < 6; ++i)
 			{
 				if (FrontierTile->Neighbors[i] && FrontierTile->Neighbors[i]->VolcanoDistance == -1 && FrontierTile
 					->Neighbors[i]->IsLand)
@@ -533,7 +588,7 @@ void UWorldGenerator::CalculateRiverDistances()
 		TArray<FGeneratedTileInfo*> NewFrontier;
 		for (FGeneratedTileInfo* FrontierTile : Frontier)
 		{
-			for (int i = 0; i < 6; ++i)
+			for (int32 i = 0; i < 6; ++i)
 			{
 				if (FrontierTile->Neighbors[i] && FrontierTile->Neighbors[i]->RiverDistance == -1 && FrontierTile
 					->Neighbors[i]->IsLand)
@@ -586,8 +641,8 @@ bool UWorldGenerator::HasRiverSpringNeighbors(FGeneratedTileInfo* Tile)
 
 void UWorldGenerator::SpawnTiles()
 {
-	TileMap->InitializeBothArrays(SizeSpawn);
-	for (FGeneratedTileInfo& Tile : GTilesSpawn)
+	TileMap->InitializeBothArrays(Size);
+	for (FGeneratedTileInfo& Tile : GTiles)
 	{
 		if (Tile.IsLand)
 		{
@@ -602,37 +657,6 @@ void UWorldGenerator::SpawnTiles()
 			NewTile->RiverDistance = Tile.RiverDistance;
 			if(Tile.IsColonistStart) TileMap->ColonistsStarts.Add(NewTile);
 			else if(Tile.IsNativeStart) TileMap->NativesStarts.Add(NewTile);
-		}
-	}
-}
-
-void UWorldGenerator::GenerateSpawnArray()
-{
-	// Find the occupied area of the island
-	int32 SmallestQ = Size.Q - 1;
-	int32 SmallestR = Size.R - 1;
-	int32 BiggestQ = 0;
-	int32 BiggestR = 0;
-	for (FGeneratedTileInfo& Tile : GTiles)
-	{
-		if (!Tile.IsLand) continue;
-		if (SmallestQ > Tile.HexCoords.Q) SmallestQ = Tile.HexCoords.Q;
-		if (SmallestR > Tile.HexCoords.R) SmallestR = Tile.HexCoords.R;
-		if (BiggestQ < Tile.HexCoords.Q) BiggestQ = Tile.HexCoords.Q;
-		if (BiggestR < Tile.HexCoords.R) BiggestR = Tile.HexCoords.R;
-	}
-	// Initialize new Spawn array
-	SizeSpawn = FHexCoords(BiggestQ - SmallestQ + 1, BiggestR - SmallestR + 1);
-	GTilesSpawn.SetNum(SizeSpawn.Q * SizeSpawn.R);
-	// Copy island into spawn array
-	for (int Q = SmallestQ; Q < BiggestQ + 1; ++Q)
-	{
-		for (int R = SmallestR; R < BiggestR + 1; ++R)
-		{
-			// copy Tiles because they have different HexCoords in the spawn array
-			FGeneratedTileInfo Tile = *GetTile(Q, R);
-			Tile.HexCoords = FHexCoords(Q - SmallestQ, R - SmallestR);
-			GTilesSpawn[Tile.HexCoords.Q * SizeSpawn.R + Tile.HexCoords.R] = Tile;
 		}
 	}
 }
@@ -725,7 +749,7 @@ void UWorldGenerator::GenerateColonistsInitialStartingPositions()
 		return A.ColonistsDistance > B.ColonistsDistance;
 	});
 	// pick all colonists spawns
-	for (int i = 1; i < ColonistsCount; ++i)
+	for (int32 i = 1; i < ColonistsCount; ++i)
 	{
 		// Pick best spot
 		ColonistsStarts.Add(CoastSorted[0]);
@@ -751,7 +775,7 @@ void UWorldGenerator::FloodFillEveryTileWithColonistsDistances(FGeneratedTileInf
 		TArray<FGeneratedTileInfo*> NewFrontier;
 		for (FGeneratedTileInfo* FrontierTile : Frontier)
 		{
-			for (int i = 0; i < 6; ++i)
+			for (int32 i = 0; i < 6; ++i)
 			{
 				if (FrontierTile->Neighbors[i] && FrontierTile->Neighbors[i]->IsLand && FrontierTile->Neighbors[i]->
 					ColonistsDistance > ColonistsDistance)
@@ -775,7 +799,7 @@ void UWorldGenerator::GenerateColonistsFinalStartingPositions()
 		if (Tile.OceanDistance == 1) Coast.Add(&Tile);
 	}
 	// Determine the positions through score calculations
-	for (int _ = 0; _ < TerrainGenData->IterationsStarts; ++_)
+	for (int32 _ = 0; _ < TerrainGenData->IterationsStarts; ++_)
 	{
 		// randomly choose tile to wiggle
 		const int32 RandomWiggleIndex = FMath::RandRange(0, ColonistsCount - 1);
@@ -835,7 +859,7 @@ void UWorldGenerator::GenerateNativesInitialStartingPositions()
 			InlandWithoutVolcano.Add(&Tile);
 	}
 	// randomly choose tile for natives starts
-	for (int i = 0; i < NativesCount; ++i)
+	for (int32 i = 0; i < NativesCount; ++i)
 	{
 		const int32 RandomIndex = FMath::RandRange(0, InlandWithoutVolcano.Num() - 1);
 		NativesStarts.Add(InlandWithoutVolcano[RandomIndex]);
@@ -853,7 +877,7 @@ void UWorldGenerator::GenerateNativesFinalStartingPositions()
 			InlandWithoutVolcano.Add(&Tile);
 	}
 	// Determine the positions through score calculations
-	for (int _ = 0; _ < TerrainGenData->IterationsStarts; ++_)
+	for (int32 _ = 0; _ < TerrainGenData->IterationsStarts; ++_)
 	{
 		// randomly choose tile to wiggle
 		const int32 RandomWiggleIndex = FMath::RandRange(0, NativesCount - 1);
