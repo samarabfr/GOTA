@@ -551,8 +551,6 @@ bool UWorldGenerator::HasRiverSpringNeighbors(FGeneratedTileInfo* Tile)
 
 void UWorldGenerator::SpawnTiles()
 {
-	int32 RiverCounter = 0; //TEMP for testing
-	int32 Counter = 0; //TEMP for testing
 	TileMap->InitializeBothArrays(SizeSpawn);
 	for (FGeneratedTileInfo& Tile : GTilesSpawn)
 	{
@@ -565,12 +563,8 @@ void UWorldGenerator::SpawnTiles()
 			NewTile->SetBiome(Tile.Biome);
 			NewTile->SetIsRiver(Tile.HasRiver);
 			NewTile->SetOceanDistance(Tile.OceanDistance);
-			++Counter;
-			if (NewTile->bIsRiver) ++RiverCounter;
 		}
 	}
-	UE_LOG(LogTemp, Warning, TEXT("River tiles: %d/%d, %f"), RiverCounter, Counter,
-	       static_cast<float>(RiverCounter) / Counter)
 }
 
 void UWorldGenerator::GenerateSpawnArray()
@@ -757,11 +751,6 @@ void UWorldGenerator::GenerateColonistsFinalStartingPositions()
 		if (TestScore > WiggleTileScore)
 			ColonistsStarts[RandomWiggleIndex] = TestTile;
 	}
-	// TEMP FOR TESTING
-	for (FGeneratedTileInfo* Tile : ColonistsStarts)
-	{
-		Tile->Biome = EBiome::Mountain;
-	}
 }
 
 float UWorldGenerator::CalculateColonistStartScoreForTile(FGeneratedTileInfo* ColonistStart, FGeneratedTileInfo* Tile)
@@ -839,11 +828,6 @@ void UWorldGenerator::GenerateNativesFinalStartingPositions()
 		float TestScore = CalculateNativesStartScoreForTile(NativesStartToChange, TestTile);
 		if (TestScore > WiggleTileScore)
 			NativesStarts[RandomWiggleIndex] = TestTile;
-	}
-	// TEMP FOR TESTING
-	for (FGeneratedTileInfo* Tile : NativesStarts)
-	{
-		Tile->Biome = EBiome::Volcano;
 	}
 }
 
