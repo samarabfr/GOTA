@@ -2,6 +2,8 @@
 
 
 #include "GM_Ingame.h"
+
+#include "GOTAGameInstance.h"
 #include "PS_Ingame.h"
 #include "GameFramework/GameStateBase.h"
 #include "GOTA/CoreSystems/Tile/WorldGenerator.h"
@@ -16,7 +18,9 @@ void AGM_Ingame::PostLogin(APlayerController* NewPlayer)
 
 void AGM_Ingame::CreateWorld()
 {
+	UGOTAGameInstance* GameInstance = GetGameInstance<UGOTAGameInstance>();
 	UWorldGenerator* WorldGen = NewObject<UWorldGenerator>();
-	WorldGen->Init(GOTAGameState->TileMap, 600, 6, 4);
+	WorldGen->Init(GOTAGameState->TileMap, GameInstance->IslandTileCount, GameInstance->ColonistsSettlementCount,
+	               GameInstance->NativesSettlementCount);
 	WorldGen->GenerateWorld();
 }

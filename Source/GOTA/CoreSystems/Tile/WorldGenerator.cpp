@@ -563,6 +563,8 @@ void UWorldGenerator::SpawnTiles()
 			NewTile->SetBiome(Tile.Biome);
 			NewTile->SetIsRiver(Tile.HasRiver);
 			NewTile->SetOceanDistance(Tile.OceanDistance);
+			if(Tile.IsColonistStart) TileMap->ColonistsStarts.Add(NewTile);
+			else if(Tile.IsNativeStart) TileMap->NativesStarts.Add(NewTile);
 		}
 	}
 }

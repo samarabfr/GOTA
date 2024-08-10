@@ -38,6 +38,12 @@ private:
 	bool TryAddTile(FHexCoords HexCoords, ATile* Tile);
 
 public:
+	UPROPERTY(BlueprintReadOnly)
+	TArray<ATile*> ColonistsStarts;
+	
+	UPROPERTY(BlueprintReadOnly)
+	TArray<ATile*> NativesStarts;
+
 	UPROPERTY(EditDefaultsOnly)
 	UTerrainGeneratorDataAsset* TerrainGenData;
 	
