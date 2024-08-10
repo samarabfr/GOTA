@@ -657,7 +657,6 @@ void UWorldGenerator::SpawnTiles()
 			NewTile->RiverDistance = Tile.RiverDistance;
 			if(Tile.IsColonistStart) TileMap->ColonistsStarts.Add(NewTile);
 			else if(Tile.IsNativeStart) TileMap->NativesStarts.Add(NewTile);
-			NewTile->Score = CalculateNativesStartScoreForTile(NativesStarts[0], &Tile);
 		}
 	}
 }
@@ -856,6 +855,8 @@ void UWorldGenerator::GenerateNativesStartingPositions()
 	for (FGeneratedTileInfo* Tile : NativesStarts)
 	{
 		Tile->IsNativeStart = true;
+		// TEMP
+		Tile->Biome = EBiome::Volcano;
 	}
 }
 
