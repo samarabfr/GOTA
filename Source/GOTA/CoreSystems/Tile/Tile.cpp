@@ -130,11 +130,6 @@ void ATile::SetBiome(EBiome NewBiome)
 	RecalculateTileLayout();
 }
 
-void ATile::SetOceanDistance(int32 NewOceanDistance)
-{
-	OceanDistance = NewOceanDistance;
-}
-
 bool ATile::IsWalkable(EAffiliation Affiliation) const
 {
 	if (Affiliation == EAffiliation::Ally)

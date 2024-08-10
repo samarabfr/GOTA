@@ -89,6 +89,8 @@ private:
 	bool HasUsedUpAllRiverConnections(FGeneratedTileInfo* Tile, TArray<FGeneratedTileInfo*>& GeneratedPath,
 	                                  int8 MaxRiverConnections);
 
+	void CalculateRiverDistances();
+
 	bool HasOceanNeighbors(FGeneratedTileInfo* Tile);
 
 	bool HasSearchedForTileAsNeighbor(FGeneratedTileInfo* Tile, FGeneratedTileInfo* SearchedForTile);

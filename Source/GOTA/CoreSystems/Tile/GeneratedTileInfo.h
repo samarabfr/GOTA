@@ -35,6 +35,8 @@ struct FGeneratedTileInfo
 	bool HasRiverEnd = false;
 
 	int8 TriesAsStartPosition = 0;
+
+	int32 RiverDistance = -1;
 	
 	//Biome
 	EBiome Biome = EBiome::Gras;
