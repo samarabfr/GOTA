@@ -853,8 +853,6 @@ void UWorldGenerator::GenerateNativesStartingPositions()
 	{
 		if(!Tile) continue;
 		Tile->IsNativeStart = true;
-		// TEMP
-		Tile->Biome = EBiome::Volcano;
 	}
 }
 
@@ -967,14 +965,11 @@ void UWorldGenerator::GenerateNativesFinalStartingPositions()
 		{
 			CurrentStartPositions[i] += Forces[i];
 		}
-		UE_LOG(LogTemp, Warning, TEXT("Forces: %f"), Forces[0].Length())
 	}
 	// Apply position to Tiles
 	for (int32 i = 0; i < NativesCount; ++i)
 	{
 		NativesStarts[i] = GetTile(UHexCoordsFunctions::Vector2DToHexCoords(CurrentStartPositions[i]));
-		UE_LOG(LogTemp, Warning, TEXT("Position: (%f,%f)"), CurrentStartPositions[i].X, CurrentStartPositions[i].Y)
-		if(!NativesStarts[i]) UE_LOG(LogTemp, Warning, TEXT("Is null"))
 	}
 }
 
@@ -1013,7 +1008,6 @@ float UWorldGenerator::CalculateNativesStartScoreForTile(FGeneratedTileInfo* New
 	// ocean distance
 	float OceanDistanceScore = FMath::Log2(static_cast<float>(NewNativesStart->OceanDistance)) * TerrainGenData->
 		NativesStartsCoastFactor;
-	//UE_LOG(LogTemp, Warning, TEXT("Natives score: %f; Colonists score: %f; Ocean score: %f;"), SmallestNativesTileScore,SmallestColonistsTileScore, OceanDistanceScore)
 	// solution
 	return SmallestNativesTileScore + SmallestColonistsTileScore + OceanDistanceScore;
 }
