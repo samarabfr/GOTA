@@ -281,13 +281,13 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 		{
 			ATile* NeighborTile = ClaimedTile->Neighbors[i];
 			bool Checked = NeighborTile
-				               ? AlreadyChecked[ClaimedTile->Neighbors[i]->HexCoords.Q * MapSize
+				               ? AlreadyChecked[ClaimedTile->Neighbors[i]->HexCoords.Q * Size.R
 					               + ClaimedTile->Neighbors[i]->HexCoords.R]
 				               : true;
 			if (!Checked && !NeighborTile->Building)
 			{
 				Border.Add(NeighborTile);
-				AlreadyChecked[ClaimedTile->Neighbors[i]->HexCoords.Q * MapSize
+				AlreadyChecked[ClaimedTile->Neighbors[i]->HexCoords.Q * Size.R
 					+ ClaimedTile->Neighbors[i]->HexCoords.R] = true;
 				int8 NeighborValue = 0;
 				switch (EcoValue)
@@ -408,13 +408,13 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 			{
 				ATile* NeighborTile = BorderTile->Neighbors[i];
 				bool Checked = NeighborTile
-					               ? AlreadyChecked[BorderTile->Neighbors[i]->HexCoords.Q * MapSize
+					               ? AlreadyChecked[BorderTile->Neighbors[i]->HexCoords.Q * Size.R
 						               + BorderTile->Neighbors[i]->HexCoords.R]
 					               : true;
 				if (!Checked && !NeighborTile->Building)
 				{
 					NewBorder.Add(NeighborTile);
-					AlreadyChecked[BorderTile->Neighbors[i]->HexCoords.Q * MapSize
+					AlreadyChecked[BorderTile->Neighbors[i]->HexCoords.Q * Size.R
 						+ BorderTile->Neighbors[i]->HexCoords.R] = true;
 					int8 NeighborValue = 0;
 					switch (EcoValue)
