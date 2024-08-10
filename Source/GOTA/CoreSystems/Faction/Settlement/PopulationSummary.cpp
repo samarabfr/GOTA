@@ -32,7 +32,7 @@ FPopulation UPopulationSummary::ExtractArmyPopulation(USettlementBalance* Balanc
 		if (PopCon->GetSize() >= Balance->MinBuildingPopToJoinArmy)
 		{
 			EligiblePopCons.Add(PopCon);
-			int32 Eligible = PopCon->GetSize() - Balance->MinBuildingPopRemainingAfterJoining
+			int32 Eligible = PopCon->GetSize() - Balance->MinBuildingPopRemainingAfterJoining;
 			EligiblePop.Add(Eligible);
 			MaxArmySize += Eligible;
 		}
