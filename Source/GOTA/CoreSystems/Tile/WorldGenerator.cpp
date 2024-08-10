@@ -866,7 +866,8 @@ void UWorldGenerator::GenerateNativesInitialStartingPositions()
 	for (FGeneratedTileInfo& Tile : GTiles)
 	{
 		if (Tile.OceanDistance > 1
-			&& Tile.VolcanoDistance > 2)
+			&& Tile.VolcanoDistance > 2
+			&& Tile.ColonistsDistance >= TerrainGenData->NativesMinColonistDistance)
 			InlandWithoutVolcano.Add(&Tile);
 	}
 	// randomly choose tile for natives starts
@@ -890,22 +891,19 @@ void UWorldGenerator::GenerateNativesFinalStartingPositions()
 	// Determine the positions through score calculations
 	for (int32 _ = 0; _ < TerrainGenData->IterationsStarts; ++_)
 	{
-		// randomly choose tile to wiggle
-		const int32 RandomWiggleIndex = FMath::RandRange(0, NativesCount - 1);
-		FGeneratedTileInfo* NativesStartToChange = NativesStarts[RandomWiggleIndex];
-		// calculate score for tile itself
-		float NativesStartToChangeScore = CalculateNativesStartScoreForTile(NativesStartToChange, NativesStartToChange);
-		// Choose random other coast tile
-		const int32 RandomTestIndex = FMath::RandRange(0, EligibleTiles.Num() - 1);
-		FGeneratedTileInfo* TestTile = EligibleTiles[RandomTestIndex];
-		UE_LOG(LogTemp, Warning, TEXT("Trying new tile with score: %f"), NativesStartToChangeScore)
-		if (NativesStarts.Contains(TestTile)) continue;
-		float TestScore = CalculateNativesStartScoreForTile(NativesStartToChange, TestTile);
-		if (TestScore > NativesStartToChangeScore)
+		for (int i = 0; i < NativesCount; ++i)
 		{
-			NativesStarts[RandomWiggleIndex] = TestTile;
-			UE_LOG(LogTemp, Warning, TEXT("Chose Tile"))
+			for (FGeneratedTileInfo* EligibleTile : EligibleTiles)
+			{
+				// calculate score for tile itself
+				float NativesStartToChangeScore = CalculateNativesStartScoreForTile(NativesStarts[i], NativesStarts[i]);
+				if (NativesStarts.Contains(EligibleTile)) continue;
+				float TestScore = CalculateNativesStartScoreForTile(NativesStarts[i], EligibleTile);
+				if (TestScore > NativesStartToChangeScore)
+					NativesStarts[i] = EligibleTile;
+			}
 		}
+		
 	}
 }
 
@@ -942,7 +940,7 @@ float UWorldGenerator::CalculateNativesStartScoreForTile(FGeneratedTileInfo* Nat
 	}
 	// ocean distance
 	float OceanDistanceScore = FMath::Log2(static_cast<float>(Tile->OceanDistance)) * TerrainGenData->NativesStartsOceanDistanceFactor;
-	UE_LOG(LogTemp, Warning, TEXT("Natives score: %f; Colonists score: %f; Ocean score: %f;"), SmallestNativesTileScore,SmallestColonistsTileScore, OceanDistanceScore)
+	//UE_LOG(LogTemp, Warning, TEXT("Natives score: %f; Colonists score: %f; Ocean score: %f;"), SmallestNativesTileScore,SmallestColonistsTileScore, OceanDistanceScore)
 	// solution
 	return SmallestNativesTileScore + SmallestColonistsTileScore + OceanDistanceScore;
 }
