@@ -4,9 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "HexCoords.h"
+#include "TerrainGeneratorDataAsset.h"
 #include "Tile.h"
-#include "TestRiverDataAsset.h"
-#include "TestBiomeDataAsset.h"
 #include "GameFramework/Actor.h"
 #include "TileMap.generated.h"
 
@@ -17,35 +16,41 @@ class GOTA_API ATileMap : public AActor
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	ATileMap();
 
-public:
-	static int32 MapOffset;
-
+	virtual void BeginPlay() override;
+	
+protected:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ATile> TileClass;
+	
 private:
+	AGS_Ingame* GameState;
+	
+	UPROPERTY(Replicated)
+	FHexCoords Size;
+	
+	// Array for replication to clients
 	UPROPERTY(Replicated)
 	TArray<ATile*> Tiles;
-
-protected:
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_MapRadius)
-	int32 MapRadius;
-
-	UPROPERTY(BlueprintReadOnly, Replicated)
-	int32 MapSize;
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
-	void Init(int32 Init_MapRadius);
-
-	UFUNCTION()
-	void OnRep_MapRadius() const;
-
-private:
-	ATile*** TilesArray;
-	void InitializeArray();
-
-protected:
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
+	
+	// Array for fast access on server
+	ATile** TilesArray;
+	
 	bool TryAddTile(FHexCoords HexCoords, ATile* Tile);
 
 public:
+	UPROPERTY(BlueprintReadOnly)
+	TArray<ATile*> ColonistsStarts;
+	
+	UPROPERTY(BlueprintReadOnly)
+	TArray<ATile*> NativesStarts;
+
+	UPROPERTY(EditDefaultsOnly)
+	UTerrainGeneratorDataAsset* TerrainGenData;
+	
+	void InitializeBothArrays(FHexCoords SizeInit);
+
+	ATile* SpawnNewTile(FHexCoords Coords, float Height);
+	
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	ATile* GetTile(FHexCoords HexCoords);
 
@@ -58,9 +63,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	ATile* GetRandomTile();
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="TileMap")
-	void GenerateTilesInAHexagon();
-
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	void CalculateTurn();
 
@@ -69,13 +71,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	TArray<ATile*> GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation Affiliation);
-
-	// temp property until Terraforming works, just to have a river on the map
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	UTestRiver* TestRiverDataAsset;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	UTestBiomeDataAsset* TestBiomeDataAsset;
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	int32 TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, int32 Amount, int32 Threshold, int32 MaxRange);

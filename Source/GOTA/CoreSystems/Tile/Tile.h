@@ -74,6 +74,15 @@ public:
 	void SetBiome(EBiome NewBiome);
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
+	int32 OceanDistance = -1;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
+	int32 VolcanoDistance = -1;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
+	int32 RiverDistance = -1;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	AEntity* AlliedTileEntity;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
