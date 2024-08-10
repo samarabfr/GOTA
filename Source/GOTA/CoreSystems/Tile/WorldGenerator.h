@@ -125,5 +125,5 @@ private:
 
 	void GenerateNativesFinalStartingPositions();
 
-	float CalculateNativesStartScoreForTile(FGeneratedTileInfo* NativesStart, FGeneratedTileInfo* Tile);
+	float CalculateNativesStartScoreForTile(FGeneratedTileInfo* NewNativesStart, TArray<FGeneratedTileInfo*> NewNativesStarts);
 };
