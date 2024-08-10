@@ -896,7 +896,7 @@ void UWorldGenerator::GenerateNativesFinalStartingPositions()
 		ColonistStartPositions.Add(UHexCoordsFunctions::HexCoordsToVector2D(ColonistStart->HexCoords));
 	}
 	// Determine the positions through force calculations
-	for (int32 _ = 0; _ < TerrainGenData->IterationsStarts; ++_)
+	for (int32 Iteration = 0; Iteration < TerrainGenData->IterationsStarts; ++Iteration)
 	{
 		TArray<FVector2D> Forces;
 		Forces.SetNumZeroed(NativesCount);
@@ -941,13 +941,16 @@ void UWorldGenerator::GenerateNativesFinalStartingPositions()
 				}
 			}
 			// Volcano
-			FVector2D Delta = UHexCoordsFunctions::HexCoordsToVector2D(Volcano->HexCoords) - CurrentStartPositions[i];
-			float Distance = Delta.Length() * 0.01f; // factor because of cm
-			if (Distance > 0)
+			if(Iteration > TerrainGenData->IterationsStarts / 2)
 			{
-				float ForceMagnitude = TerrainGenData->NativesStartsVolcanoFactor / (Distance * Distance);
-				FVector2D ForceVector = ForceMagnitude * (Delta / Distance);
-				Forces[i] -= ForceVector;
+				FVector2D Delta = UHexCoordsFunctions::HexCoordsToVector2D(Volcano->HexCoords) - CurrentStartPositions[i];
+				float Distance = Delta.Length() * 0.01f; // factor because of cm
+				if (Distance > 0)
+				{
+					float ForceMagnitude = TerrainGenData->NativesStartsVolcanoFactor / (Distance * Distance);
+					FVector2D ForceVector = ForceMagnitude * (Delta / Distance);
+					Forces[i] -= ForceVector;
+				}
 			}
 		}
 		// Apply max force
