@@ -33,6 +33,9 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME(ATile, EnemyTileEntity);
 	DOREPLIFETIME(ATile, bIsRiver);
 	DOREPLIFETIME(ATile, Biome);
+	DOREPLIFETIME(ATile, OceanDistance);
+	DOREPLIFETIME(ATile, VolcanoDistance);
+	DOREPLIFETIME(ATile, RiverDistance);
 	DOREPLIFETIME(ATile, SpawnPointLayout);
 	DOREPLIFETIME(ATile, GameplayTags);
 	DOREPLIFETIME(ATile, TileContentRotation);
