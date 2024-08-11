@@ -17,7 +17,7 @@ class GOTA_API UGOTAGameInstance : public UGameInstance
 public:
 	// Default 15 for singleplayer, kinda wierd right now but it is what it is
 	UPROPERTY(BlueprintReadWrite, Category="GOTAGameInstance")
-	int32 IslandTileCount = 200;
+	int32 IslandTileCount = 800;
 
 	// Default 1 because of singleplayer. Lobby overrides the 1 with the correct playercount if multiplayer
 	UPROPERTY(BlueprintReadWrite, Category="GOTAGameInstance")

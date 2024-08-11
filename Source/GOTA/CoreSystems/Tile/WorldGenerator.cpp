@@ -604,6 +604,7 @@ void UWorldGenerator::CalculateRiverDistances()
 		++Distance;
 		Frontier = NewFrontier;
 	}
+	MaxRiverDistance = Distance - 1;
 }
 
 bool UWorldGenerator::HasOceanNeighbors(FGeneratedTileInfo* Tile)
@@ -653,9 +654,12 @@ void UWorldGenerator::SpawnTiles()
 			float Height = FMath::TruncToFloat(Tile.Height / TerrainGenData->HeightStep) * TerrainGenData->HeightStep;
 			Height += TerrainGenData->HeightOffset;
 			ATile* NewTile = TileMap->SpawnNewTile(Tile.HexCoords, Height);
+			NewTile->SetNormalizedOceanDistance(static_cast<float>(Tile.OceanDistance) / MaxOceanDistance);
+			NewTile->SetNormalizedRiverDistance(static_cast<float>(Tile.RiverDistance) / MaxRiverDistance);
+			NewTile->SetNormalizedVolcanoDistance(static_cast<float>(Tile.VolcanoDistance) / MaxVolcanoDistance);
 			NewTile->SetOceanDistance(Tile.OceanDistance);
-			NewTile->SetVolcanoDistance(Tile.VolcanoDistance);
 			NewTile->SetRiverDistance(Tile.RiverDistance);
+			NewTile->SetVolcanoDistance(Tile.VolcanoDistance);
 			NewTile->SetBiome(Tile.Biome);
 			NewTile->SetIsRiver(Tile.HasRiver);
 			if (Tile.IsColonistStart) TileMap->ColonistsStarts.Add(NewTile);

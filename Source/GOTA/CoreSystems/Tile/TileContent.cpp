@@ -350,8 +350,10 @@ void UTileContent::FindRandomValidAssets(const int32 Amount, const UDataTable* D
 	int32 TotalBias = 0;
 	for (FTileAsset* Asset : PossibleAssets)
 	{
-		
-		TotalBias += Asset->GetBiasAfterMultipliers(Tile->OceanDistance, Tile->RiverDistance, Tile->VolcanoDistance);
+		TotalBias += Asset->GetBiasAfterMultipliers(
+			Tile->NormalizedOceanDistance,
+			Tile->NormalizedRiverDistance,
+			Tile->NormalizedVolcanoDistance);
 	}
 	// Randomly select the assets based on their spawn bias
 	for (int32 i = 0; i < Amount; i++)
@@ -359,7 +361,10 @@ void UTileContent::FindRandomValidAssets(const int32 Amount, const UDataTable* D
 		int32 Count = FMath::RandRange(0, TotalBias - 1);
 		for (FTileAsset* Asset : PossibleAssets)
 		{
-			int32 SpawnBias = Asset->GetBiasAfterMultipliers(Tile->OceanDistance, Tile->RiverDistance, Tile->VolcanoDistance);
+			int32 SpawnBias = Asset->GetBiasAfterMultipliers(
+				Tile->NormalizedOceanDistance,
+				Tile->NormalizedRiverDistance,
+				Tile->NormalizedVolcanoDistance);
 			if (Count < SpawnBias)
 			{
 				OutFoundAssets.Add(Asset);

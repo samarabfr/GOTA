@@ -59,5 +59,5 @@ struct FTileAsset : public FTableRowBase
 
 	bool IsValidFor(const FGameplayTagContainer& GameplayTagContainer);
 
-	int32 GetBiasAfterMultipliers(int32 OceanDistance, int32 RiverDistance, int32 VolcanoDistance);
+	int32 GetBiasAfterMultipliers(float NormalizedOceanDistance, float NormalizedRiverDistance, float NormalizedVolcanoDistance);
 };

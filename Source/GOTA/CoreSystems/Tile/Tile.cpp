@@ -35,6 +35,9 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME(ATile, Biome);
 	DOREPLIFETIME(ATile, OceanDistance);
 	DOREPLIFETIME(ATile, VolcanoDistance);
+	DOREPLIFETIME(ATile, NormalizedOceanDistance);
+	DOREPLIFETIME(ATile, NormalizedRiverDistance);
+	DOREPLIFETIME(ATile, NormalizedVolcanoDistance);
 	DOREPLIFETIME(ATile, RiverDistance);
 	DOREPLIFETIME(ATile, SpawnPointLayout);
 	DOREPLIFETIME(ATile, GameplayTags);
@@ -139,15 +142,33 @@ void ATile::SetOceanDistance(int32 NewOceanDistance)
 	OnDistancesChanged.Broadcast();
 }
 
+void ATile::SetNormalizedOceanDistance(float NewNormalizedOceanDistance)
+{
+	NormalizedOceanDistance = NewNormalizedOceanDistance;
+	OnDistancesChanged.Broadcast();
+}
+
 void ATile::SetRiverDistance(int32 NewRiverDistance)
 {
 	RiverDistance = NewRiverDistance;
 	OnDistancesChanged.Broadcast();
 }
 
+void ATile::SetNormalizedRiverDistance(float NewNormalizedRiverDistance)
+{
+	NormalizedRiverDistance = NewNormalizedRiverDistance;
+	OnDistancesChanged.Broadcast();
+}
+
 void ATile::SetVolcanoDistance(int32 NewVolcanoDistance)
 {
 	VolcanoDistance = NewVolcanoDistance;
+	OnDistancesChanged.Broadcast();
+}
+
+void ATile::SetNormalizedVolcanoDistance(float NewNormalizedVolcanoDistance)
+{
+	NormalizedVolcanoDistance = NewNormalizedVolcanoDistance;
 	OnDistancesChanged.Broadcast();
 }
 
