@@ -72,14 +72,26 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetBiome(EBiome NewBiome);
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetOceanDistance, Replicated, Category="Tile")
 	int32 OceanDistance = -1;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
+	UFUNCTION(BlueprintSetter)
+	void SetOceanDistance(int32 NewOceanDistance);
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetRiverDistance, Replicated, Category="Tile")
+	int32 RiverDistance = -1;
+
+	UFUNCTION(BlueprintSetter)
+	void SetRiverDistance(int32 NewRiverDistance);
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetVolcanoDistance, Replicated, Category="Tile")
 	int32 VolcanoDistance = -1;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
-	int32 RiverDistance = -1;
+	UFUNCTION(BlueprintSetter)
+	void SetVolcanoDistance(int32 NewVolcanoDistance);
+
+	UPROPERTY()
+	FOnChangedSignature OnDistancesChanged;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	AEntity* AlliedTileEntity;

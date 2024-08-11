@@ -8,3 +8,22 @@ bool FTileAsset::IsValidFor(const FGameplayTagContainer& GameplayTagContainer)
 	}
 	return true;
 }
+
+int32 FTileAsset::GetBiasAfterMultipliers(int32 OceanDistance, int32 RiverDistance, int32 VolcanoDistance)
+{
+	float Bias = SpawnBias;
+	if (bUseDistanceToOceanBiasMultiplier)
+	{
+		float Multiplier = DistanceToOceanBiasMultiplier->GetFloatValue(OceanDistance);
+		Bias *= DistanceToOceanBiasMultiplier->GetFloatValue(OceanDistance);
+	}
+	if (bUseDistanceToRiverBiasMultiplier)
+	{
+		Bias *= DistanceToRiverBiasMultiplier->GetFloatValue(RiverDistance);
+	}
+	if (bUseDistanceToVolcanoBiasMultiplier)
+	{
+		Bias *= DistanceToVolcanoBiasMultiplier->GetFloatValue(VolcanoDistance);
+	}
+	return Bias;
+}

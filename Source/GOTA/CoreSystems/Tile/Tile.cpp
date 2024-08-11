@@ -133,6 +133,24 @@ void ATile::SetBiome(EBiome NewBiome)
 	RecalculateTileLayout();
 }
 
+void ATile::SetOceanDistance(int32 NewOceanDistance)
+{
+	OceanDistance = NewOceanDistance;
+	OnDistancesChanged.Broadcast();
+}
+
+void ATile::SetRiverDistance(int32 NewRiverDistance)
+{
+	RiverDistance = NewRiverDistance;
+	OnDistancesChanged.Broadcast();
+}
+
+void ATile::SetVolcanoDistance(int32 NewVolcanoDistance)
+{
+	VolcanoDistance = NewVolcanoDistance;
+	OnDistancesChanged.Broadcast();
+}
+
 bool ATile::IsWalkable(EAffiliation Affiliation) const
 {
 	if (Affiliation == EAffiliation::Ally)

@@ -653,11 +653,11 @@ void UWorldGenerator::SpawnTiles()
 			float Height = FMath::TruncToFloat(Tile.Height / TerrainGenData->HeightStep) * TerrainGenData->HeightStep;
 			Height += TerrainGenData->HeightOffset;
 			ATile* NewTile = TileMap->SpawnNewTile(Tile.HexCoords, Height);
+			NewTile->SetOceanDistance(Tile.OceanDistance);
+			NewTile->SetVolcanoDistance(Tile.VolcanoDistance);
+			NewTile->SetRiverDistance(Tile.RiverDistance);
 			NewTile->SetBiome(Tile.Biome);
 			NewTile->SetIsRiver(Tile.HasRiver);
-			NewTile->OceanDistance = Tile.OceanDistance;
-			NewTile->VolcanoDistance = Tile.VolcanoDistance;
-			NewTile->RiverDistance = Tile.RiverDistance;
 			if (Tile.IsColonistStart) TileMap->ColonistsStarts.Add(NewTile);
 			else if (Tile.IsNativeStart) TileMap->NativesStarts.Add(NewTile);
 		}
