@@ -45,9 +45,11 @@ private:
 	UPROPERTY()
 	UFastNoiseWrapper* FastNoiseWrapper;
 
-	int8 MaxOceanDistance;
+	int8 MaxOceanDistance = 0;
 
-	int8 MaxVolcanoDistance;
+	int8 MaxRiverDistance = 0;
+
+	int8 MaxVolcanoDistance = 0;
 
 	int32 ColonistsCount = 0;
 
