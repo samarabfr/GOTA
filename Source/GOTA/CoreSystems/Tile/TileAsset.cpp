@@ -9,21 +9,20 @@ bool FTileAsset::IsValidFor(const FGameplayTagContainer& GameplayTagContainer)
 	return true;
 }
 
-int32 FTileAsset::GetBiasAfterMultipliers(float NormalizedOceanDistance, float NormalizedRiverDistance, float NormalizedVolcanoDistance)
+int32 FTileAsset::GetBiasAfterMultipliers(int32 OceanDistance, int32 RiverDistance, int32 VolcanoDistance)
 {
 	float Bias = SpawnBias;
 	if (bUseDistanceToOceanBiasMultiplier)
 	{
-		float Multiplier = DistanceToOceanBiasMultiplier->GetFloatValue(NormalizedOceanDistance);
-		Bias *= DistanceToOceanBiasMultiplier->GetFloatValue(NormalizedOceanDistance);
+		Bias *= DistanceToOceanBiasMultiplier->GetFloatValue(OceanDistance);
 	}
 	if (bUseDistanceToRiverBiasMultiplier)
 	{
-		Bias *= DistanceToRiverBiasMultiplier->GetFloatValue(NormalizedRiverDistance);
+		Bias *= DistanceToRiverBiasMultiplier->GetFloatValue(RiverDistance);
 	}
 	if (bUseDistanceToVolcanoBiasMultiplier)
 	{
-		Bias *= DistanceToVolcanoBiasMultiplier->GetFloatValue(NormalizedVolcanoDistance);
+		Bias *= DistanceToVolcanoBiasMultiplier->GetFloatValue(VolcanoDistance);
 	}
 	return Bias;
 }

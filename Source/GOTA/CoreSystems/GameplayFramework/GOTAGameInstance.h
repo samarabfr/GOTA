@@ -25,11 +25,11 @@ public:
 	
 	// Default 4 for of singleplayer.
 	UPROPERTY(BlueprintReadWrite, Category="GOTAGameInstance")
-	int32 NativesSettlementCount = 0;
+	int32 NativesSettlementCount = 4;
 
 	// Default 8 for of singleplayer.
 	UPROPERTY(BlueprintReadWrite, Category="GOTAGameInstance")
-	int32 ColonistsSettlementCount = 0;
+	int32 ColonistsSettlementCount = 8;
 	
 	// Lobby players
 	UPROPERTY(BlueprintReadWrite, Category="GOTALobbyGameState")
