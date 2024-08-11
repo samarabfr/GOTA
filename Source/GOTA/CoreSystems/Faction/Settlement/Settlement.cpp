@@ -143,12 +143,13 @@ bool ASettlement::ClaimRandomTile()
 
 void ASettlement::OnBuildingAdded(UBuilding* Building)
 {
-	PopulationSummary->RegisterPopulation(Building->Population);
+	PopulationSummary->RegisterPopulationContainer(Building->PopContainer);
 	BuildingSummary->RegisterBuildingProduction(Building);
 }
 
 void ASettlement::OnBuildingRemoved(UBuilding* Building)
 {
+	PopulationSummary->UnregisterPopulationContainer(Building->PopContainer);
 	BuildingSummary->UnregisterBuildingProduction(Building);
 }
 

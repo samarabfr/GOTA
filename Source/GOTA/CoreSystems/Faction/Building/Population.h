@@ -2,127 +2,77 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
+#include "CoreMinimal.h"
 #include "Population.generated.h"
 
-UCLASS(Blueprintable)
-class GOTA_API UPopulation : public UObject
+USTRUCT(BlueprintType)
+struct FPopulation : public FTableRowBase
 {
 	GENERATED_BODY()
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	virtual bool IsSupportedForNetworking() const override;
-	UPopulation();
 
-	// Delegate
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAnythingChangedSignature);
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
+	int32 Size = 0;
 
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangedSignature, int32, ChangedBy);
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
+	int32 MaxSize = 0;
 
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnMoodChangedSignature,
-	                                               int32, NeutralChange,
-	                                               int32, FearfulChange,
-	                                               int32, AggressiveChange);
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
+	int32 FollowerColonists = 0;
 
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FOnFollowerChangedSignature,
-	                                              int32, CFollowerChange,
-	                                              int32, G1FollowerChange,
-	                                              int32, G2FollowerChange,
-	                                              int32, G3FollowerChange,
-	                                              int32, G4FollowerChange);
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
+	int32 FollowerGuardian1 = 0;
 
-public:
-	UPROPERTY(BlueprintAssignable, Category="Population")
-	FOnAnythingChangedSignature OnChanged;
-	UPROPERTY(BlueprintAssignable, Category="Population")
-	FOnChangedSignature OnPopulationChanged;
-	UPROPERTY(BlueprintAssignable, Category="Population")
-	FOnChangedSignature OnMaximumChanged;
-	UPROPERTY(BlueprintAssignable, Category="Population")
-	FOnFollowerChangedSignature OnFollowerChanged;
-	UPROPERTY(BlueprintAssignable, Category="Population")
-	FOnMoodChangedSignature OnMoodChanged;
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
+	int32 FollowerGuardian2 = 0;
 
-public:
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Current, BlueprintGetter=GetCurrent, Category = "Population")
-	int32 Current = 0;
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
+	int32 FollowerGuardian3 = 0;
+
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
+	int32 FollowerGuardian4 = 0;
+
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
+	int32 MoodContent = 0;
+
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
+	int32 MoodAngry = 0;
+
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
+	int32 MoodFear = 0;
+
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
+	int32 Bows = 0;
+
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
+	int32 Muskets = 0;
+
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
+	int32 Shields = 0;
+
+	void SetFollower(ECultureLoyalty Culture, int32 Value);
+
+	void SetMood(EMood Mood, int32 Value);
+
+	int32 GetFollower(ECultureLoyalty Culture) const;
+
+	int32 GetNativeFollowers() const;
+
+	int32 GetMood(EMood Mood) const;
+
+	int32 SumFollower() const;
 	
-	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Category = "Population")
-	int32 Growth = 0;
+	int32 SumMood() const;
+
+	bool AnyBiggerThan(const FPopulation& Other) const;
 	
-	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Category = "Population")
-	int32 GrowthChange = 0;
+	FPopulation operator+(const FPopulation& Other) const;
 
-	// TODO: DataAsset
-	UPROPERTY(BlueprintReadOnly)
-	int32 GrowthThreshold = 30;
+	FPopulation operator+=(const FPopulation& Other);
 
-	UFUNCTION()
-	void OnRep_Current(int32 Change);
+	FPopulation operator-(const FPopulation& Other) const;
+
+	FPopulation operator-() const;
 	
-	UFUNCTION(BlueprintGetter, BlueprintPure, Category = "Population")
-	int32 GetCurrent() const;
-
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Maximum, BlueprintReadOnly, Category = "Population")
-	int32 Maximum = 0;
-
-	UFUNCTION()
-	void OnRep_Maximum(int32 Change);
-
-	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ChangePopulation(int32 Change, int32& Effective_Change);
-
-	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ChangeMaximum(int32 Change, int32& Effective_Change);	
-
-	//====================================================================
-	//                           Followers
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-private:
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Follower)
-	TArray<int32> Follower;
-	void AddOneFollowerWeightedRandom(ECultureLoyalty Exclude = ECultureLoyalty::MAX);
-	void SubtractOneFollowerWeightedRandom(ECultureLoyalty Exclude = ECultureLoyalty::MAX);
-	void AddOneFollowerToGuardiansFullRandom();
-
-public:
-	UFUNCTION()
-	void OnRep_Follower();
-	
-	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ChangeFollower(ECultureLoyalty Religion, int32 Change, int32& Effective_Change);
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Population")
-	int32 GetFollower(ECultureLoyalty Religion) const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Population")
-	int32 GetFollowerNatives();
-
-	UFUNCTION(BlueprintCallable, Category = "Population")
-	void GetAllFollower(int32& Guardian1, int32& Guardian2, int32& Guardian3, int32& Guardian4, int32& Colonists);
-
-	//====================================================================
-	//                            Mood
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-private:
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Moods)
-	TArray<int32> Moods;
-	void SubtractOneMoodWeightedRandom(EMood Exclude = EMood::MAX);
-
-public:
-	UFUNCTION()
-	void OnRep_Moods();
-	
-	UFUNCTION(BlueprintCallable, Category = "Population")
-	void ChangeMood(EMood Mood, int32 Change, int32& Effective_Change);
-
-	UFUNCTION(BlueprintCallable, Category = "Population")
-	int32 GetMood(EMood Mood);
-
-	UFUNCTION(BlueprintCallable, Category = "Population")
-	void GetAllMood(int32& Neutral, int32& Fearful, int32& Aggressive);
+	FPopulation operator-=(const FPopulation& Other);
 };

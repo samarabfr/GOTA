@@ -14,6 +14,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Claim")
 	FRuntimeFloatCurve ClaimPrice;
 
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Population")
+	int32 PopulationGrowthThreshold;
+	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="EcoValues")
 	int32 NativeTreeThreshold;
 	
@@ -32,21 +35,39 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="EcoValues")
 	int32 ColonistMaxRange;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army spawning")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning Condition")
 	int32 MinimumPopulationToSpawnArmy;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army spawning")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning Condition")
 	int32 HighPopulationThreshold;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army spawning")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning Condition")
 	float HighPopulationImpact;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army spawning")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning Condition")
 	float AggressiveMoodMaximumImpact;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army spawning")
-	float MinimumRatioOfPopulationJoiningArmy;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
+	float MinRatioOfEligiblePopJoiningArmy;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army spawning")
-	float MaximumRatioOfPopulationJoiningArmy;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
+	float MaxRatioOfEligiblePopJoiningArmy;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
+	float BonusArmySizePerAngryPop;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
+	int MinBuildingPopToJoinArmy;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
+	int MinBuildingPopRemainingAfterJoining;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
+	int ContentMoodPickBias;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
+	int AngryMoodPickBias;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
+	int FearMoodPickBias;
 };

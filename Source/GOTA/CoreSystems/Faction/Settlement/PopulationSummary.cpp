@@ -8,10 +8,7 @@ void UPopulationSummary::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UPopulationSummary, Current);
-	DOREPLIFETIME(UPopulationSummary, Maximum);
-	DOREPLIFETIME(UPopulationSummary, Follower);
-	DOREPLIFETIME(UPopulationSummary, Moods);
+	DOREPLIFETIME(UPopulationSummary, Population);
 }
 
 bool UPopulationSummary::IsSupportedForNetworking() const
@@ -19,144 +16,131 @@ bool UPopulationSummary::IsSupportedForNetworking() const
 	return true;
 }
 
-UPopulationSummary::UPopulationSummary()
+void UPopulationSummary::OnRep_Population(const FPopulation& OldPopulation)
 {
-	Follower.Init(0, static_cast<int32>(ECultureLoyalty::MAX));
-	Moods.Init(0, static_cast<int32>(EMood::MAX));
+	OnPopulationChanged.Broadcast(Population - OldPopulation);
 }
 
-void UPopulationSummary::OnRep_Current()
+FPopulation UPopulationSummary::ExtractArmyPopulation(USettlementBalance* Balance)
 {
-	OnPopulationChanged.Broadcast(0);
-	OnChanged.Broadcast();
-}
-
-void UPopulationSummary::OnRep_Maximum()
-{
-	OnMaximumChanged.Broadcast(0);
-	OnChanged.Broadcast();
-}
-
-void UPopulationSummary::OnRep_Follower()
-{
-	OnFollowerChanged.Broadcast(0, 0, 0, 0, 0);
-	OnChanged.Broadcast();
-}
-
-void UPopulationSummary::OnRep_Moods()
-{
-	OnMoodChanged.Broadcast(0, 0, 0);
-	OnChanged.Broadcast();
-}
-
-int32 UPopulationSummary::GetFollower(ECultureLoyalty Religion) const
-{
-	return Follower[static_cast<int32>(Religion)];
-}
-
-int32 UPopulationSummary::GetFollowerNatives()
-{
-	int32 sum = 0;
-	for (int i = 0; i <= 3; i++)
+	FPopulation Return;
+	TArray<UPopulationContainer*> EligiblePopCons;
+	TArray<int32> EligiblePop;
+	int32 EligiblePopTotal = 0;
+	for (UPopulationContainer* PopCon : PopCons)
 	{
-		sum += Follower[i];
+		if (PopCon->GetSize() >= Balance->MinBuildingPopToJoinArmy)
+		{
+			EligiblePopCons.Add(PopCon);
+			int32 Eligible = PopCon->GetSize() - Balance->MinBuildingPopRemainingAfterJoining;
+			EligiblePop.Add(Eligible);
+			EligiblePopTotal += Eligible;
+		}
 	}
-	return sum;
+	if (EligiblePopTotal <= 0 || PopCons.IsEmpty()) return FPopulation();
+	//figure out how big the army should be
+	float ArmyPercentage = FMath::RandRange(Balance->MinRatioOfEligiblePopJoiningArmy,
+	                                        Balance->MaxRatioOfEligiblePopJoiningArmy);
+	int32 ArmySize = EligiblePopTotal * ArmyPercentage + Population.MoodAngry * Balance->BonusArmySizePerAngryPop;
+	if (ArmySize > EligiblePopTotal)ArmySize = EligiblePopTotal;
+	//figure out where we should remove pop
+	int32 SelectedPops = 0;
+	TArray<int32> SelectedPopsArray;
+	SelectedPopsArray.SetNumZeroed(EligiblePop.Num());
+	while (SelectedPops < ArmySize)
+	{
+		// Weighted Random to select a Pop for army joining
+		int32 cursor = FMath::RandRange(0, EligiblePopTotal - 1);
+		for (int32 i = 0; i < EligiblePop.Num(); i++)
+		{
+			cursor -= EligiblePop[i];
+			if (cursor < 0)
+			{
+				++SelectedPopsArray[i];
+				++SelectedPops;
+				--EligiblePop[i];
+				--EligiblePopTotal;
+				break;
+			}
+		}
+	}
+	for (int i = 0; i < SelectedPopsArray.Num(); ++i)
+	{
+		Return += EligiblePopCons[i]->ExtractRandomPopForArmy(SelectedPopsArray[i], Balance);
+	}
+	return Return;
 }
 
-void UPopulationSummary::GetAllFollower(int32& Guardian1, int32& Guardian2, int32& Guardian3, int32& Guardian4,
-                                        int32& Colonists)
-{
-	Guardian1 = Follower[0];
-	Guardian2 = Follower[1];
-	Guardian3 = Follower[2];
-	Guardian4 = Follower[3];
-	Colonists = Follower[4];
-}
+// ---------------------------------------------------------
+// Keeping Track of Population Changes
 
-int32 UPopulationSummary::GetMood(EMood Mood)
+void UPopulationSummary::RegisterPopulationContainer(UPopulationContainer* PopulationContainer)
 {
-	return Moods[static_cast<int32>(Mood)];
-}
-
-void UPopulationSummary::GetAllMood(int32& Neutral, int32& Fearful, int32& Aggressive)
-{
-	Neutral = Moods[0];
-	Fearful = Moods[1];
-	Aggressive = Moods[2];
-}
-
-void UPopulationSummary::RegisterPopulation(UPopulation* Population)
-{
-	Population->OnPopulationChanged.AddDynamic(this, &UPopulationSummary::UpdatePopulation);
-	Current += Population->Current;
-	Population->OnMaximumChanged.AddDynamic(this, &UPopulationSummary::UpdateMaximum);
-	Maximum += Population->Maximum;
-	Population->OnFollowerChanged.AddDynamic(this, &UPopulationSummary::UpdateFollower);
-	Follower[0] += Population->GetFollower(ECultureLoyalty::Colonists);
-	Follower[1] += Population->GetFollower(ECultureLoyalty::Guardian1);
-	Follower[2] += Population->GetFollower(ECultureLoyalty::Guardian2);
-	Follower[3] += Population->GetFollower(ECultureLoyalty::Guardian3);
-	Follower[4] += Population->GetFollower(ECultureLoyalty::Guardian4);
-	Population->OnMoodChanged.AddDynamic(this, &UPopulationSummary::UpdateMood);
-	Moods[0] += Population->GetMood(EMood::Neutral);
-	Moods[1] += Population->GetMood(EMood::Fearful);
-	Moods[2] += Population->GetMood(EMood::Aggressive);
+	PopulationContainer->OnPopulationChanged.AddDynamic(this, &UPopulationSummary::UpdatePopulation);
+	OnPopulationChanged.Broadcast(PopulationContainer->Population);
+	Population += PopulationContainer->Population;
+	PopCons.Add(PopulationContainer);
 }
 
 void UPopulationSummary::RegisterPopulationSummary(UPopulationSummary* PopulationSummary)
 {
 	PopulationSummary->OnPopulationChanged.AddDynamic(this, &UPopulationSummary::UpdatePopulation);
-	Current += PopulationSummary->Current;
-	PopulationSummary->OnMaximumChanged.AddDynamic(this, &UPopulationSummary::UpdateMaximum);
-	Maximum += PopulationSummary->Maximum;
-	PopulationSummary->OnFollowerChanged.AddDynamic(this, &UPopulationSummary::UpdateFollower);
-	Follower[0] += PopulationSummary->GetFollower(ECultureLoyalty::Colonists);
-	Follower[1] += PopulationSummary->GetFollower(ECultureLoyalty::Guardian1);
-	Follower[2] += PopulationSummary->GetFollower(ECultureLoyalty::Guardian2);
-	Follower[3] += PopulationSummary->GetFollower(ECultureLoyalty::Guardian3);
-	Follower[4] += PopulationSummary->GetFollower(ECultureLoyalty::Guardian4);
-	PopulationSummary->OnMoodChanged.AddDynamic(this, &UPopulationSummary::UpdateMood);
-	Moods[0] += PopulationSummary->GetMood(EMood::Neutral);
-	Moods[1] += PopulationSummary->GetMood(EMood::Fearful);
-	Moods[2] += PopulationSummary->GetMood(EMood::Aggressive);
+	OnPopulationChanged.Broadcast(PopulationSummary->Population);
+	Population += PopulationSummary->Population;
 }
 
-void UPopulationSummary::UpdatePopulation(int32 Change)
+void UPopulationSummary::UnregisterPopulationContainer(UPopulationContainer* PopulationContainer)
 {
-	Current += Change;
+	PopulationContainer->OnPopulationChanged.RemoveDynamic(this, &UPopulationSummary::UpdatePopulation);
+	OnPopulationChanged.Broadcast(-PopulationContainer->Population);
+	Population -= PopulationContainer->Population;
+	PopCons.Remove(PopulationContainer);
+}
+
+void UPopulationSummary::UnregisterPopulationSummary(UPopulationSummary* PopulationSummary)
+{
+	PopulationSummary->OnPopulationChanged.RemoveDynamic(this, &UPopulationSummary::UpdatePopulation);
+	OnPopulationChanged.Broadcast(-PopulationSummary->Population);
+	Population -= PopulationSummary->Population;
+}
+
+void UPopulationSummary::UpdatePopulation(FPopulation Change)
+{
+	Population += Change;
 	OnPopulationChanged.Broadcast(Change);
-	OnChanged.Broadcast();
 }
 
-void UPopulationSummary::UpdateMaximum(int32 Change)
+// ---------------------------------------------------------
+// Getters
+
+int32 UPopulationSummary::GetFollower(ECultureLoyalty Culture) const
 {
-	Maximum += Change;
-	OnMaximumChanged.Broadcast(Change);
-	OnChanged.Broadcast();
+	return Population.GetFollower(Culture);
 }
 
-void UPopulationSummary::UpdateFollower(int32 ChangeC, int32 ChangeG1, int32 ChangeG2, int32 ChangeG3, int32 ChangeG4)
+int32 UPopulationSummary::GetNativeFollowers()
 {
-	Follower[0] += ChangeC;
-	Follower[1] += ChangeG1;
-	Follower[2] += ChangeG2;
-	Follower[3] += ChangeG3;
-	Follower[4] += ChangeG4;
-	OnFollowerChanged.Broadcast(
-		ChangeC,
-		ChangeG1,
-		ChangeG2,
-		ChangeG3,
-		ChangeG4);
-	OnChanged.Broadcast();
+	return Population.GetNativeFollowers();
 }
 
-void UPopulationSummary::UpdateMood(int32 NeutralChange, int32 FearfulChange, int32 AggressiveChange)
+void UPopulationSummary::GetAllFollower(int32& Guardian1, int32& Guardian2, int32& Guardian3, int32& Guardian4,
+                                        int32& Colonists)
 {
-	Moods[0] += NeutralChange;
-	Moods[1] += FearfulChange;
-	Moods[2] += AggressiveChange;
-	OnMoodChanged.Broadcast(NeutralChange, FearfulChange, AggressiveChange);
-	OnChanged.Broadcast();
+	Colonists = Population.FollowerColonists;
+	Guardian1 = Population.FollowerGuardian1;
+	Guardian2 = Population.FollowerGuardian2;
+	Guardian3 = Population.FollowerGuardian3;
+	Guardian4 = Population.FollowerGuardian4;
+}
+
+int32 UPopulationSummary::GetMood(EMood Mood)
+{
+	return Population.GetMood(Mood);
+}
+
+void UPopulationSummary::GetAllMood(int32& Content, int32& Angry, int32& Fear)
+{
+	Content = Population.MoodContent;
+	Angry = Population.MoodAngry;
+	Fear = Population.MoodFear;
 }

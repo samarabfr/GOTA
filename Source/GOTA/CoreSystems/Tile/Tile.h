@@ -15,6 +15,7 @@
 #include "GameFramework/Actor.h"
 #include "GOTA/CoreSystems/Entity/Entity.h"
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttributeLimited.h"
+#include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Tile.generated.h"
 
@@ -214,7 +215,7 @@ public:
 	void CalculatePopulationGrowthChange();
 
 	UFUNCTION()
-	void CalculatePopulationGrowthChangeWithNeighbors();
+	void CalculatePopulationGrowthChangeWithNeighbors(FPopulation Change);
 
 protected:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
