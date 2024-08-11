@@ -47,15 +47,27 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning Condition")
 	float AggressiveMoodMaximumImpact;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning Condition")
-	float MinimumRatioOfPopulationJoiningArmy;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
+	float MinRatioOfEligiblePopJoiningArmy;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning Condition")
-	float MaximumRatioOfPopulationJoiningArmy;
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
+	float MaxRatioOfEligiblePopJoiningArmy;
 
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
+	float BonusArmySizePerAngryPop;
+	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
 	int MinBuildingPopToJoinArmy;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
 	int MinBuildingPopRemainingAfterJoining;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
+	int ContentMoodPickBias;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
+	int AngryMoodPickBias;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Army Spawning")
+	int FearMoodPickBias;
 };

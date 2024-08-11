@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Population.h"
+#include "GOTA/CoreSystems/Faction/Settlement/SettlementBalance.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "PopulationContainer.generated.h"
 
@@ -78,6 +79,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void DecreaseMood(EMood Mood, int32 Change);
 
+	FPopulation ExtractRandomPopForArmy(int32 Amount, USettlementBalance* Balance);
+	
 private:
 	void ChangeFollowerWeightedRandomBy(int32 Change, ECultureLoyalty Exclude = ECultureLoyalty::MAX);
 	void AddOneFollowerToGuardiansFullRandom();

@@ -297,6 +297,37 @@ void UPopulationContainer::DecreaseMood(EMood Mood, int32 Change)
 	OnPopulationChanged.Broadcast(Population - OldPop);
 }
 
+FPopulation UPopulationContainer::ExtractRandomPopForArmy(int32 Amount, USettlementBalance* Balance)
+{
+	FPopulation OldPop = Population;
+	if (Amount > Population.Size) Amount = Population.Size;
+	for (int32 i = 0; i < Amount; ++i)
+	{
+		ChangeFollowerWeightedRandomBy(-1);
+		int32 ContentBias = Population.MoodContent * Balance->ContentMoodPickBias;
+		int32 AngryBias = Population.MoodAngry * Balance->AngryMoodPickBias;
+		int32 FearBias = Population.MoodFear * Balance->FearMoodPickBias;
+		int32 TotalMood = ContentBias + AngryBias + FearBias;
+		// Select a random dude with mood
+		int32 Cursor = FMath::RandRange(0, TotalMood);
+		// Find Selected mood
+		if (Cursor < ContentBias)
+		{
+			--Population.MoodContent;
+		}
+		else if (Cursor < ContentBias + AngryBias)
+		{
+			--Population.MoodAngry;
+		}
+		else
+		{
+			--Population.MoodFear;
+		}
+	}
+	Population.Size -= Amount;
+	return OldPop - Population;
+}
+
 void UPopulationContainer::ChangeFollowerWeightedRandomBy(int32 Change, ECultureLoyalty Exclude)
 {
 	TArray<ECultureLoyalty> Cultures;
@@ -371,14 +402,15 @@ void UPopulationContainer::SubtractOneMoodWeightedRandom()
 	// Select a random dude with mood
 	int32 Cursor = FMath::RandRange(0, TotalMood);
 	// Find Selected mood
-	if(Cursor < Population.MoodContent)
+	if (Cursor < Population.MoodContent)
 	{
 		--Population.MoodContent;
 	}
-	else if(Cursor < Population.MoodContent + Population.MoodAngry)
+	else if (Cursor < Population.MoodContent + Population.MoodAngry)
 	{
 		--Population.MoodAngry;
-	} else
+	}
+	else
 	{
 		--Population.MoodFear;
 	}

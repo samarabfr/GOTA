@@ -26,7 +26,7 @@ FPopulation UPopulationSummary::ExtractArmyPopulation(USettlementBalance* Balanc
 	FPopulation Return;
 	TArray<UPopulationContainer*> EligiblePopCons;
 	TArray<int32> EligiblePop;
-	int32 MaxArmySize = 0;
+	int32 EligiblePopTotal = 0;
 	for (UPopulationContainer* PopCon : PopCons)
 	{
 		if (PopCon->GetSize() >= Balance->MinBuildingPopToJoinArmy)
@@ -34,10 +34,40 @@ FPopulation UPopulationSummary::ExtractArmyPopulation(USettlementBalance* Balanc
 			EligiblePopCons.Add(PopCon);
 			int32 Eligible = PopCon->GetSize() - Balance->MinBuildingPopRemainingAfterJoining;
 			EligiblePop.Add(Eligible);
-			MaxArmySize += Eligible;
+			EligiblePopTotal += Eligible;
 		}
 	}
-
+	if (EligiblePopTotal <= 0 || PopCons.IsEmpty()) return FPopulation();
+	//figure out how big the army should be
+	float ArmyPercentage = FMath::RandRange(Balance->MinRatioOfEligiblePopJoiningArmy,
+	                                        Balance->MaxRatioOfEligiblePopJoiningArmy);
+	int32 ArmySize = EligiblePopTotal * ArmyPercentage + Population.MoodAngry * Balance->BonusArmySizePerAngryPop;
+	if (ArmySize > EligiblePopTotal)ArmySize = EligiblePopTotal;
+	//figure out where we should remove pop
+	int32 SelectedPops = 0;
+	TArray<int32> SelectedPopsArray;
+	SelectedPopsArray.SetNumZeroed(EligiblePop.Num());
+	while (SelectedPops < ArmySize)
+	{
+		// Weighted Random to select a Pop for army joining
+		int32 cursor = FMath::RandRange(0, EligiblePopTotal - 1);
+		for (int32 i = 0; i < EligiblePop.Num(); i++)
+		{
+			cursor -= EligiblePop[i];
+			if (cursor < 0)
+			{
+				++SelectedPopsArray[i];
+				++SelectedPops;
+				--EligiblePop[i];
+				--EligiblePopTotal;
+				break;
+			}
+		}
+	}
+	for (int i = 0; i < SelectedPopsArray.Num(); ++i)
+	{
+		Return += EligiblePopCons[i]->ExtractRandomPopForArmy(SelectedPopsArray[i], Balance);
+	}
 	return Return;
 }
 
