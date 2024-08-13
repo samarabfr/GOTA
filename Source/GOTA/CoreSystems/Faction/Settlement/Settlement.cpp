@@ -2,6 +2,7 @@
 
 #include "Settlement.h"
 
+#include "Algo/RandomShuffle.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttributeLimited.h"
@@ -238,6 +239,24 @@ void ASettlement::GenerateBuildingIncomeEnemy()
 	                                     SettlementBalance->ColonistMaxRange), _);
 }
 
+void ASettlement::FigureOutBuilding()
+{
+	if (CurrentBuildingProject && CurrentBuildingProject->IsPossible())
+	{
+		if (CurrentBuildingProject->CanAfford())
+		{
+			CurrentBuildingProject->TryBuilding();
+			CurrentBuildingProject = nullptr;
+			FillBuildingPool();
+		}
+	}
+	else
+	{
+		CurrentBuildingProject = nullptr;
+		FillBuildingPool();
+	}
+}
+
 void ASettlement::OnBuildingAdded(UBuilding* Building)
 {
 	PopulationSummary->RegisterPopulationContainer(Building->PopContainer);
@@ -263,6 +282,48 @@ float ASettlement::CalculateArmySpawnChance()
 	return AngryRatioImpact + PopOverHighImpact;
 }
 
+void ASettlement::FillBuildingPool()
+{
+	BuildingProjectPool.Empty();
+	// If there is a free building slot, add all possible Buildings to the pool
+	Algo::RandomShuffle(ClaimedTiles);
+	for (ATile* ClaimedTile : ClaimedTiles)
+	{
+		if (ClaimedTile->Building) continue;
+		for (UBuildingDataAsset* PossibleBuilding : PossibleBuildings)
+		{
+			UBuildingProject* BuildingProject = NewObject<UBuildingProject>();
+			BuildingProject->Init(this, PossibleBuilding, 1, ClaimedTile);
+			BuildingProjectPool.Add(BuildingProject);
+		}
+		break;
+	}
+	// look for ugprades
+	for (ATile* ClaimedTile : ClaimedTiles)
+	{
+		if (!ClaimedTile->Building) continue;
+
+		// tier 2 is next and enabled
+		if (ClaimedTile->Building->Tier == 1 && ClaimedTile->Building->DataAsset->TierTwo.TierEnabled)
+		{
+			UBuildingProject* BuildingProject = NewObject<UBuildingProject>();
+			BuildingProject->Init(this, ClaimedTile->Building->DataAsset, 2, ClaimedTile);
+			BuildingProjectPool.Add(BuildingProject);
+		}
+		// tier 3 is next and enabled
+		else if (ClaimedTile->Building->Tier == 2 && ClaimedTile->Building->DataAsset->TierThree.TierEnabled)
+		{
+			UBuildingProject* BuildingProject = NewObject<UBuildingProject>();
+			BuildingProject->Init(this, ClaimedTile->Building->DataAsset, 3, ClaimedTile);
+			BuildingProjectPool.Add(BuildingProject);
+		}
+	}
+	// Select Random project TODO: proper logic
+	if (BuildingProjectPool.IsEmpty()) return;
+	const int32 RandomIndex = FMath::RandRange(0, BuildingProjectPool.Num() - 1);
+	CurrentBuildingProject = BuildingProjectPool[RandomIndex];
+}
+
 void ASettlement::FigureOutSendingArmy()
 {
 	if (PopulationSummary->Population.Size < SettlementBalance->MinimumPopulationToSpawnArmy) return;
@@ -285,15 +346,15 @@ bool ASettlement::SpawnArmy()
 			|| (Tile->AlliedTileEntity && Affiliation == EAffiliation::Ally)
 			|| (Tile->EnemyTileEntity && Affiliation == EAffiliation::Enemy))
 			continue;
-		
+
 		SpawnLocation = Tile;
 		break;
 	}
-	if(!SpawnLocation) return false;
-	
+	if (!SpawnLocation) return false;
+
 	// spawn the army
 	AArmy* Army = Cast<AArmy>(GetWorld()->SpawnActor(ArmyClass));
-	if(!Army) return false;
+	if (!Army) return false;
 	Army->Init(Affiliation, SpawnLocation, 1);
 
 	// reduce Pop in every building
@@ -301,7 +362,7 @@ bool ASettlement::SpawnArmy()
 	// TODO: figure out which pops to send, remove them from the buildings and add them to the army
 	for (ATile* Tile : ClaimedTiles)
 	{
-		if(!Tile || !Tile->Building) continue;
+		if (!Tile || !Tile->Building) continue;
 		Tile->Building->PopContainer->ChangeSize(-1);
 	}
 

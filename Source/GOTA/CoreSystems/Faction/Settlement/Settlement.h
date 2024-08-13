@@ -112,7 +112,7 @@ public:
 
 	void GenerateBuildingIncomeEnemy();	
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
 	void FigureOutBuilding();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
@@ -153,7 +153,13 @@ public:
 	void OnBuildingRemoved(UBuilding* Building);
 
 private:
+	UPROPERTY()
 	ATileMap* TileMap;
 
+	UPROPERTY()
+	TArray<UBuildingProject*> BuildingProjectPool;
+
 	float CalculateArmySpawnChance();
+
+	void FillBuildingPool();
 };
