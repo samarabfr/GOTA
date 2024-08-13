@@ -15,39 +15,39 @@ class GOTA_API AGM_Ingame : public AGameMode
 public:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
-	UPROPERTY(BlueprintReadWrite, Category="GameMode")
+	UPROPERTY(BlueprintReadWrite, Category="GOTA GameMode")
 	AGS_Ingame* GOTAGameState;
 
-	UPROPERTY(EditDefaultsOnly, Category="GameMode")
+	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<ATileMap> TileMapClass;
 
-	UPROPERTY(EditDefaultsOnly, Category="GameMode")
+	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<ASettlement> ColonistSettlementClass;
 
-	UPROPERTY(EditDefaultsOnly, Category="GameMode")
+	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<ASettlement> NativeSettlementClass;
-	
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GameMode")
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void Init();
 
 	virtual void Tick(float DeltaSeconds) override;
-	
+
 	// ---------------------------------------------------------
 	// World Setup
-		
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GameMode")
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void CreateWorld();
-	
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="GameMode")
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void CreateFactions();
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="GameMode")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void CreateGuardians();
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GameMode")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void InitialPlayerControllerPossession();
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GameMode")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void StartGame();
 
 	// ---------------------------------------------------------

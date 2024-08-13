@@ -45,6 +45,48 @@ void AGM_Ingame::CreateWorld()
 	WorldGen->GenerateWorld();
 }
 
+void AGM_Ingame::CreateFactions()
+{
+	for(ATile* Start : GOTAGameState->TileMap->ColonistsStarts)
+	{
+		ASettlement* Settlement = GetWorld()->SpawnActor<ASettlement>(ColonistSettlementClass);
+		Settlement->InitialStartingSetup(Start);
+		GOTAGameState->ColonistsSettlements.Add(Settlement);
+	}
+	for(ATile* Start : GOTAGameState->TileMap->NativesStarts)
+	{
+		ASettlement* Settlement = GetWorld()->SpawnActor<ASettlement>(NativeSettlementClass);
+		Settlement->InitialStartingSetup(Start);
+		GOTAGameState->NativeSettlements.Add(Settlement);
+	}
+}
+
+void AGM_Ingame::CreateGuardians()
+{
+	UGOTAGameInstance* GameInstance = GetGameInstance<UGOTAGameInstance>();
+	FVector Location = FVector(0,0,1000);
+	if(GameInstance->SelectedGuardian1)
+	{
+		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(GameInstance->SelectedGuardian1, Location,FRotator());
+		GOTAGameState->Guardians.Add(Guardian);
+	}
+	if(GameInstance->SelectedGuardian2)
+	{
+		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(GameInstance->SelectedGuardian2, Location,FRotator());
+		GOTAGameState->Guardians.Add(Guardian);
+	}
+	if(GameInstance->SelectedGuardian3)
+	{
+		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(GameInstance->SelectedGuardian3, Location,FRotator());
+		GOTAGameState->Guardians.Add(Guardian);
+	}
+	if(GameInstance->SelectedGuardian4)
+	{
+		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(GameInstance->SelectedGuardian4, Location,FRotator());
+		GOTAGameState->Guardians.Add(Guardian);
+	}
+}
+
 void AGM_Ingame::InitialPlayerControllerPossession()
 {
 	GetNumPlayers();
