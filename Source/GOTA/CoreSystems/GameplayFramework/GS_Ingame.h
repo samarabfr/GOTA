@@ -119,10 +119,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="GOTAGameState")
 	AStaticMeshBatcher* StaticMeshBatcher;
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void SpawnStaticMeshBatcher();
-
+	
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void RegisterTileForTotalsUpdates(ATile* Tile);
 

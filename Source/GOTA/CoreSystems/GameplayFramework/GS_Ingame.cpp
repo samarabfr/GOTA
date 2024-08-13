@@ -42,7 +42,8 @@ void AGS_Ingame::Init()
 	AddReplicatedSubObject(TotalWildlife);
 	AddReplicatedSubObject(TotalColonialPopulation);
 	AddReplicatedSubObject(TotalNativePopulation);
-	SpawnStaticMeshBatcher();
+	// Spawn Static Mesh Batcher
+	StaticMeshBatcher = GetWorld()->SpawnActor<AStaticMeshBatcher>();
 }
 
 void AGS_Ingame::Tick(float DeltaSeconds)
