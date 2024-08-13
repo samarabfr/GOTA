@@ -130,9 +130,8 @@ void AGM_Ingame::CalculateTurn()
 	GOTAGameState->TileMap->CalculateTurn();
 	// Finished
 	FTimespan TimeSpan = FDateTime::Now() - StartedCalculatingTurn;
-	UE_LOG(LogTemp, Warning, TEXT("It took %d.%d ms to calculate the %d turn."),
+	UE_LOG(LogTemp, Warning, TEXT("It took %d ms to calculate the %d turn."),
 	       TimeSpan.GetFractionMilli(),
-	       TimeSpan.GetFractionMicro(),
 	       GOTAGameState->TurnCounter)
 	++GOTAGameState->TurnCounter;
 	GOTAGameState->TurnCalculationEnd();
