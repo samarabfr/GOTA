@@ -3,6 +3,7 @@
 
 #include "GM_Ingame.h"
 
+
 #include "GOTAGameInstance.h"
 #include "PC_Ingame.h"
 #include "PS_Ingame.h"
@@ -10,6 +11,20 @@
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/WorldGenerator.h"
 #include "Kismet/GameplayStatics.h"
+
+AGM_Ingame::AGM_Ingame()
+{
+	ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAssetFinder(
+		TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
+	if (DataAssetFinder.Succeeded())
+	{
+		GameBalance = DataAssetFinder.Object;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Failed to load GameBalance DataAsset Inside GameMode!"));
+	}
+}
 
 void AGM_Ingame::PostLogin(APlayerController* NewPlayer)
 {
@@ -28,6 +43,7 @@ void AGM_Ingame::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	if (!GOTAGameState) return;
+	if (GOTAGameState->GameStarted) CheckGameEndingConditions();
 	if (GOTAGameState->ElapsedTurnTime >= GOTAGameState->MaxTurnTime)
 	{
 		CalculateTurn();
@@ -47,13 +63,13 @@ void AGM_Ingame::CreateWorld()
 
 void AGM_Ingame::CreateFactions()
 {
-	for(ATile* Start : GOTAGameState->TileMap->ColonistsStarts)
+	for (ATile* Start : GOTAGameState->TileMap->ColonistsStarts)
 	{
 		ASettlement* Settlement = GetWorld()->SpawnActor<ASettlement>(ColonistSettlementClass);
 		Settlement->InitialStartingSetup(Start);
 		GOTAGameState->ColonistsSettlements.Add(Settlement);
 	}
-	for(ATile* Start : GOTAGameState->TileMap->NativesStarts)
+	for (ATile* Start : GOTAGameState->TileMap->NativesStarts)
 	{
 		ASettlement* Settlement = GetWorld()->SpawnActor<ASettlement>(NativeSettlementClass);
 		Settlement->InitialStartingSetup(Start);
@@ -64,25 +80,25 @@ void AGM_Ingame::CreateFactions()
 void AGM_Ingame::CreateGuardians()
 {
 	UGOTAGameInstance* GameInstance = GetGameInstance<UGOTAGameInstance>();
-	FVector Location = FVector(0,0,1000);
-	if(GameInstance->SelectedGuardian1)
+	FVector Location = FVector(0, 0, 1000);
+	if (GameInstance->SelectedGuardian1)
 	{
-		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(GameInstance->SelectedGuardian1, Location,FRotator());
+		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(GameInstance->SelectedGuardian1, Location, FRotator());
 		GOTAGameState->Guardians.Add(Guardian);
 	}
-	if(GameInstance->SelectedGuardian2)
+	if (GameInstance->SelectedGuardian2)
 	{
-		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(GameInstance->SelectedGuardian2, Location,FRotator());
+		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(GameInstance->SelectedGuardian2, Location, FRotator());
 		GOTAGameState->Guardians.Add(Guardian);
 	}
-	if(GameInstance->SelectedGuardian3)
+	if (GameInstance->SelectedGuardian3)
 	{
-		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(GameInstance->SelectedGuardian3, Location,FRotator());
+		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(GameInstance->SelectedGuardian3, Location, FRotator());
 		GOTAGameState->Guardians.Add(Guardian);
 	}
-	if(GameInstance->SelectedGuardian4)
+	if (GameInstance->SelectedGuardian4)
 	{
-		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(GameInstance->SelectedGuardian4, Location,FRotator());
+		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(GameInstance->SelectedGuardian4, Location, FRotator());
 		GOTAGameState->Guardians.Add(Guardian);
 	}
 }
@@ -101,6 +117,7 @@ void AGM_Ingame::InitialPlayerControllerPossession()
 void AGM_Ingame::StartGame()
 {
 	GOTAGameState->ShouldTickTurnTime = true;
+	GOTAGameState->GameStarted = true;
 }
 
 void AGM_Ingame::CalculateTurn()
@@ -117,9 +134,15 @@ void AGM_Ingame::CalculateTurn()
 		Settlement->CalculateTurn();
 	}
 	// Combat Phase
+	TSet<ATile*> CombatTiles;
 	for (AEntity* Entity : GOTAGameState->TileEntities)
 	{
-		if(Entity->ShouldCombatTrigger()) Entity->TriggerCombat();
+		if (Entity->ShouldCombatTrigger()) CombatTiles.Add(Entity->CurrentTile);
+	}
+	for (ATile* CombatTile : CombatTiles)
+	{
+		if (CombatTile->AlliedTileEntity) CombatTile->AlliedTileEntity->TriggerCombat();
+		if (CombatTile->EnemyTileEntity) CombatTile->EnemyTileEntity->TriggerCombat();
 	}
 	// Entity Movement
 	for (AEntity* Entity : GOTAGameState->TileEntities)
@@ -133,6 +156,56 @@ void AGM_Ingame::CalculateTurn()
 	UE_LOG(LogTemp, Warning, TEXT("It took %d ms to calculate the %d turn."),
 	       TimeSpan.GetFractionMilli(),
 	       GOTAGameState->TurnCounter)
-	++GOTAGameState->TurnCounter;
+	GOTAGameState->IncreaseTurnCounter();
 	GOTAGameState->TurnCalculationEnd();
+}
+
+void AGM_Ingame::CheckGameEndingConditions()
+{
+	if (GOTAGameState->GameEnded) return;
+
+	// based on SettlementPop
+	int32 ColonialPop = GOTAGameState->TotalColonialPopulation->Population.Size;
+	int32 NativePop = GOTAGameState->TotalNativePopulation->Population.Size;
+	int32 TotalPop = ColonialPop + NativePop;
+
+	if (ColonialPop == 0)
+	{
+		GOTAGameState->EndGame(GameEnding::Victory, FString("Victory! :)"));
+		return;
+	}
+	if (NativePop == 0)
+	{
+		GOTAGameState->EndGame(GameEnding::Defeat, FString("Defeat! :("));
+		return;
+	}
+
+	// based on Culture
+	int32 TotalColonistFollower = GOTAGameState->TotalColonialPopulation->Population.FollowerColonists
+		+ GOTAGameState->TotalNativePopulation->Population.FollowerColonists;
+	int32 TotalNativeFollower = GOTAGameState->TotalColonialPopulation->GetNativeFollowers()
+		+ GOTAGameState->TotalNativePopulation->GetNativeFollowers();
+
+	if (TotalColonistFollower == 0)
+	{
+		GOTAGameState->EndGame(GameEnding::Victory, FString("Victory! :)"));
+		return;
+	}
+
+	if (TotalNativeFollower == 0)
+	{
+		GOTAGameState->EndGame(GameEnding::Defeat, FString("Defeat! :("));
+		return;
+	}
+
+	//based on Ecovalues
+	float TreeRatio = static_cast<float>(GOTAGameState->IslandMaxTrees) / GOTAGameState->TotalTrees->Current;
+	float WildlifeRatio = static_cast<float>(GOTAGameState->IslandMaxWildlife) / GOTAGameState->TotalWildlife->Current;
+	float ForageRatio = static_cast<float>(GOTAGameState->IslandMaxForage) / GOTAGameState->TotalForage->Current;
+	int32 EcoUnderRatioCount = 0;
+	if (TreeRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
+	if (WildlifeRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
+	if (ForageRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
+	if (EcoUnderRatioCount >= 2)
+		GOTAGameState->EndGame(GameEnding::Defeat, FString("Defeat! :("));
 }

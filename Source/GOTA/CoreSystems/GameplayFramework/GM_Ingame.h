@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "GameBalance.h"
 #include "CoreMinimal.h"
 #include "GS_Ingame.h"
 #include "GameFramework/GameMode.h"
@@ -11,10 +12,14 @@ UCLASS()
 class GOTA_API AGM_Ingame : public AGameMode
 {
 	GENERATED_BODY()
-
+	AGM_Ingame();
+	
 public:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
+	UPROPERTY()
+	UGameBalanceDataAsset* GameBalance;
+	
 	UPROPERTY(BlueprintReadWrite, Category="GOTA GameMode")
 	AGS_Ingame* GOTAGameState;
 
@@ -55,4 +60,6 @@ public:
 private:
 	void CalculateTurn();
 	FDateTime StartedCalculatingTurn;
+
+	void CheckGameEndingConditions();
 };

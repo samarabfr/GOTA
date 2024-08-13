@@ -13,7 +13,10 @@ void AGS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	DOREPLIFETIME(AGS_Ingame, TotalTrees);
 	DOREPLIFETIME(AGS_Ingame, TotalForage);
 	DOREPLIFETIME(AGS_Ingame, TotalWildlife);
-
+	DOREPLIFETIME(AGS_Ingame, IslandMaxTrees);
+	DOREPLIFETIME(AGS_Ingame, IslandMaxWildlife);
+	DOREPLIFETIME(AGS_Ingame, IslandMaxForage);
+	
 	DOREPLIFETIME(AGS_Ingame, TotalColonialPopulation);
 	DOREPLIFETIME(AGS_Ingame, TotalNativePopulation);
 
@@ -53,6 +56,17 @@ void AGS_Ingame::Tick(float DeltaSeconds)
 }
 
 
+void AGS_Ingame::IncreaseTurnCounter()
+{
+	++TurnCounter;
+	OnTurnCounterChanged.Broadcast();
+}
+
+void AGS_Ingame::OnRep_TurnCounter()
+{
+	OnTurnCounterChanged.Broadcast();
+}
+
 void AGS_Ingame::SetElapsedTurnTime(float NewValue)
 {
 	ElapsedTurnTime = NewValue;
@@ -88,4 +102,17 @@ void AGS_Ingame::TurnCalculationEnd()
 void AGS_Ingame::TogglePause()
 {
 	ShouldTickTurnTime = !ShouldTickTurnTime;
+}
+
+
+void AGS_Ingame::EndGame_Implementation(::GameEnding Ending, const FString& EndingMessage)
+{
+	if (GameEnded) return;
+	GameEnded = true;
+	OnGameEnding.Broadcast(Ending, EndingMessage);
+}
+
+void AGS_Ingame::CountIslandMaxEcoValues()
+{
+	TileMap->CountAllMaxEcoValues(IslandMaxTrees, IslandMaxWildlife, IslandMaxForage);
 }

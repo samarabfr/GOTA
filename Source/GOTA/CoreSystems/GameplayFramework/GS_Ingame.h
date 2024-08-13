@@ -61,6 +61,15 @@ public:
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UPopulationSummary* TotalNativePopulation;
 
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
+	int32 IslandMaxTrees;
+	
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
+	int32 IslandMaxWildlife;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
+	int32 IslandMaxForage;
+	
 	// ---------------------------------------------------------
 	// Turn Stuff
 	UDELEGATE()
@@ -69,6 +78,9 @@ public:
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FTimeChangedSignature, float, ElapsedTime, float, MaxTime);
 
+	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
+	FZeroParamSignature OnTurnCounterChanged;
+	
 	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
 	FTimeChangedSignature OnTurnTimerChanged;
 
@@ -89,10 +101,15 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
 	bool ShouldTickTurnTime = false;
-
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
+	
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_TurnCounter, Category="GOTAGameState")
 	int32 TurnCounter = 1;
-		
+
+	void IncreaseTurnCounter();
+	
+	UFUNCTION()
+	void OnRep_TurnCounter();
+	
 	UFUNCTION(BlueprintSetter)
 	void SetElapsedTurnTime(float NewValue);
 
@@ -101,7 +118,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void NextTurn();
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void TurnCalculationStart();
 
@@ -119,7 +136,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="GOTAGameState")
 	AStaticMeshBatcher* StaticMeshBatcher;
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void RegisterTileForTotalsUpdates(ATile* Tile);
 
@@ -128,4 +145,22 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void RegisterNativeSettlementForTotalsUpdates(UPopulationSummary* Population);
+
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGameEndingSignature, GameEnding, Ending, FString, EndMessage);
+
+	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
+	FGameEndingSignature OnGameEnding;
+
+	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+	bool GameEnded = false;
+	
+	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+	bool GameStarted = false;
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void EndGame(GameEnding Ending, const FString& EndingMessage);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
+	void CountIslandMaxEcoValues();
 };
