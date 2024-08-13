@@ -55,7 +55,13 @@ bool UBuildingProject::TryBuilding()
 	// Trying to build a new building
 	if (Tier == 1)
 	{
-		return Tile->TryBuild(Data);
+		if(Tile->TryBuild(Data))
+		{
+			int32 EC = 0;
+			if (Cost.Wood > 0) Builder->Wood->Subtract(Cost.Wood, EC);
+			if (Cost.Stone > 0) Builder->Stone->Subtract(Cost.Stone, EC);
+			return true;
+		}
 	}
 	// Trying to upgrade a Building
 	if (Tile->TryUpgrade())
