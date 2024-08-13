@@ -18,28 +18,41 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category="GameMode")
 	AGS_Ingame* GOTAGameState;
 
-	//====================================================================
-	//--------------------Overrideable Functions
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-public:
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="GameMode")
-	void CreateMap();
+	UPROPERTY(EditDefaultsOnly, Category="GameMode")
+	TSubclassOf<ATileMap> TileMapClass;
 
+	UPROPERTY(EditDefaultsOnly, Category="GameMode")
+	TSubclassOf<ASettlement> ColonistSettlementClass;
+
+	UPROPERTY(EditDefaultsOnly, Category="GameMode")
+	TSubclassOf<ASettlement> NativeSettlementClass;
+	
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GameMode")
+	void Init();
+
+	virtual void Tick(float DeltaSeconds) override;
+	
+	// ---------------------------------------------------------
+	// World Setup
+		
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GameMode")
+	void CreateWorld();
+	
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="GameMode")
 	void CreateFactions();
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="GameMode")
 	void CreateGuardians();
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="GameMode")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GameMode")
 	void InitialPlayerControllerPossession();
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, BlueprintImplementableEvent, Category="GameMode")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GameMode")
 	void StartGame();
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, BlueprintImplementableEvent, Category="GameMode")
-	void Init();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GameMode")
-	void CreateWorld();
+	// ---------------------------------------------------------
+	// Calculate Turn
+private:
+	void CalculateTurn();
+	FDateTime StartedCalculatingTurn;
 };
