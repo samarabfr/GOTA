@@ -82,11 +82,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool ClaimRandomTile();
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
-	void LostClaim(const ATile* Tile);
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
+	void LostClaim(ATile* Tile);
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
-	void ClaimTile(const ATile* Tile);
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
+	void ClaimTile(ATile* Tile);
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void RefreshBorderingTiles();
@@ -94,10 +94,10 @@ public:
 	// ---------------------------------------------------------
 	// Turn Calculation
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
 	void CalculateTurn();
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
 	void GenerateBaseIncome();
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")

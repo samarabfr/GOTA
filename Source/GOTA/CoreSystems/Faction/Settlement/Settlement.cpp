@@ -141,6 +141,48 @@ bool ASettlement::ClaimRandomTile()
 	return false;
 }
 
+void ASettlement::LostClaim(ATile* Tile)
+{
+	if (!Tile) return;
+
+	ClaimedTiles.Remove(Tile);
+}
+
+void ASettlement::ClaimTile(ATile* Tile)
+{
+	if (!Tile) return;
+
+	if (Tile->TryClaim(this))
+	{
+		ClaimedTiles.Add(Tile);
+	}
+}
+
+void ASettlement::CalculateTurn()
+{
+	GenerateBaseIncome();
+	GenerateBuildingIncome();
+	FigureOutBuilding();
+	FigureOutSendingArmy();
+}
+
+void ASettlement::GenerateBaseIncome()
+{
+	// Reached Expansion threshhold, base income +1
+	if (Expansion->GetCurrent() == Expansion->GetMaximum())
+	{
+		ClaimRandomTile();
+		Expansion->SetCurrent(1);
+		Expansion->SetMaximum(FMath::TruncToInt32(
+			SettlementBalance->ClaimPrice.GetRichCurveConst()->Eval(ClaimedTiles.Num())));
+	}
+	else
+	{
+		int32 _;
+		Expansion->Add(1,_);
+	}
+}
+
 void ASettlement::OnBuildingAdded(UBuilding* Building)
 {
 	PopulationSummary->RegisterPopulationContainer(Building->PopContainer);
@@ -167,7 +209,6 @@ bool ASettlement::SpawnArmy()
 
 	return true;
 }
-
 
 void ASettlement::SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject)
 {
