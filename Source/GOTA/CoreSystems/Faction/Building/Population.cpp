@@ -7,12 +7,16 @@ void FPopulation::SetFollower(ECultureLoyalty Culture, int32 Value)
 	{
 	case ECultureLoyalty::Colonists:
 		FollowerColonists = Value;
+		return;
 	case ECultureLoyalty::Guardian1:
 		FollowerGuardian1 = Value;
+		return;
 	case ECultureLoyalty::Guardian2:
 		FollowerGuardian2 = Value;
+		return;
 	case ECultureLoyalty::Guardian3:
 		FollowerGuardian3 = Value;
+		return;
 	case ECultureLoyalty::Guardian4:
 		FollowerGuardian4 = Value;
 	default: ;

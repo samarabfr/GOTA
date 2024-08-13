@@ -18,116 +18,34 @@ class ALoadingManager;
 UCLASS()
 class GOTA_API AGS_Ingame : public AGameState
 {
-	//Unreal Engine Mystery Code
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	//Constructor
 	AGS_Ingame();
 
-	//====================================================================
-	//--------------------Simple Variables
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 public:
-	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
-	ALoadingManager* LoadingManager;
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
+	void Init();
+
+	virtual void Tick(float DeltaSeconds) override;
+
+	// ---------------------------------------------------------
+	// Stuff in the World
 
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
 	ATileMap* TileMap;
 
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Replicated, Category="GOTAGameState")
-	float MaxTurnTime;
+	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+	TArray<ASettlement*> ColonistsSettlements;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
-	TArray<ASettlement*> Settlements;
+	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+	TArray<ASettlement*> NativeSettlements;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
+	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
 	TArray<AGuardian*> Guardians;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
+	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
 	TArray<AEntity*> TileEntities;
 
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
-	bool IsCalculatingTurn;
-
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
-	bool ShouldTickTurnTime = false;
-
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="GOTAGameState")
-	AStaticMeshBatcher* StaticMeshBatcher;
-	
-	//====================================================================
-	//--------------------ElapsedTurnTime
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-public:
-	UPROPERTY(BlueprintGetter=GetElapsedTurnTime, BlueprintSetter=SetElapsedTurnTime,
-		Category="GOTAGameState")
-	float ElapsedTurnTime;
-
-	UFUNCTION(BlueprintGetter)
-	float GetElapsedTurnTime();
-
-	UFUNCTION(BlueprintCallable, NetMulticast, Reliable)
-	void MulticastSetElapsedTurnTime(float NewValue);
-
-protected:
-	UFUNCTION(BlueprintSetter)
-	void SetElapsedTurnTime(float NewValue);
-
-	//====================================================================
-	//--------------------Delegates
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-public:
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FZeroParamSignature);
-
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FTimeChangedSignature, float, ElapsedTime, float, MaxTime);
-
-	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
-	FTimeChangedSignature TurnTimerChanged;
-
-	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
-	FZeroParamSignature TurnCalculationStart;
-
-	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
-	FZeroParamSignature TurnCalculationEnd;
-
-	//====================================================================
-	//-------------------- Functions
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-
-public:
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void AddTileEntity(AEntity* NewTileEntity);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void CallCalculationStart();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void CallCalculationEnd();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void Init();
-
-	//====================================================================
-	//--------------------Overrideable Functions
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void SpawnStaticMeshBatcher();
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void RegisterTileForTotalsUpdates(ATile* Tile);
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void RegisterColonialSettlementForTotalsUpdates(UPopulationSummary* Population);
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void RegisterNativeSettlementForTotalsUpdates(UPopulationSummary* Population);
-
-	//====================================================================
-	//-------------------- Attributes
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UGOTAAttribute* TotalTrees;
 
@@ -144,17 +62,105 @@ public:
 	UPopulationSummary* TotalNativePopulation;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
-	UPopulationSummary* TotalPopulation;
+	int32 IslandMaxTrees;
+	
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
+	int32 IslandMaxWildlife;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
+	int32 IslandMaxForage;
+	
+	// ---------------------------------------------------------
+	// Turn Stuff
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FZeroParamSignature);
+
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FTimeChangedSignature, float, ElapsedTime, float, MaxTime);
+
+	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
+	FZeroParamSignature OnTurnCounterChanged;
+	
+	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
+	FTimeChangedSignature OnTurnTimerChanged;
+
+	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
+	FZeroParamSignature OnTurnCalculationStart;
+
+	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
+	FZeroParamSignature OnTurnCalculationEnd;
 
 	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
-	TArray<ASettlement*> ColonistsSettlements;
+	float ElapsedTurnTime;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Replicated, Category="GOTAGameState")
+	float MaxTurnTime;
+
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
+	bool IsCalculatingTurn = false;
+
+	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
+	bool ShouldTickTurnTime = false;
+	
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_TurnCounter, Category="GOTAGameState")
+	int32 TurnCounter = 1;
+
+	void IncreaseTurnCounter();
+	
+	UFUNCTION()
+	void OnRep_TurnCounter();
+	
+	UFUNCTION(BlueprintSetter)
+	void SetElapsedTurnTime(float NewValue);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void SetElapsedTurnTimeMulticast(float NewValue);
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
+	void NextTurn();
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
+	void TurnCalculationStart();
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
+	void TurnCalculationEnd();
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
+	void TogglePause();
+
+	// ---------------------------------------------------------
+	// Useful Stuff
+
+	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
+	ALoadingManager* LoadingManager;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="GOTAGameState")
+	AStaticMeshBatcher* StaticMeshBatcher;
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
+	void RegisterTileForTotalsUpdates(ATile* Tile);
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
+	void RegisterColonialSettlementForTotalsUpdates(UPopulationSummary* Population);
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
+	void RegisterNativeSettlementForTotalsUpdates(UPopulationSummary* Population);
+
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGameEndingSignature, GameEnding, Ending, FString, EndMessage);
+
+	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
+	FGameEndingSignature OnGameEnding;
 
 	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
-	TArray<ASettlement*> NativeSettlements;
+	bool GameEnded = false;
+	
+	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+	bool GameStarted = false;
+	
+	UFUNCTION(NetMulticast, Reliable)
+	void EndGame(GameEnding Ending, const FString& EndingMessage);
 
-	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
-	USettlementBalance* NativeCulture;
-
-	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
-	USettlementBalance* ColonistCulture;
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
+	void CountIslandMaxEcoValues();
 };

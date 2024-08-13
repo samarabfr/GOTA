@@ -4,16 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "PC_Ingame.generated.h"
 
 UCLASS()
 class GOTA_API APC_Ingame : public APlayerController
 {
 	GENERATED_BODY()
-
-	//====================================================================
-	//--------------------Overrideable Functions
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintCosmetic, Category="PlayerController")
@@ -24,4 +21,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintCosmetic, Category="PlayerController")
 	void InitInput();
+	
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintCosmetic, Category="PlayerController")
+	void PossessGuardian(AGuardian* Guardian);
 };
