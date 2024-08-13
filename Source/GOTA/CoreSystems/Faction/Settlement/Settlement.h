@@ -8,6 +8,7 @@
 #include "SettlementBalance.h"
 #include "PopulationSummary.h"
 #include "GameFramework/Actor.h"
+#include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "Settlement.generated.h"
 
 UCLASS(Abstract, Blueprintable)
@@ -100,8 +101,12 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
 	void GenerateBaseIncome();
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
 	void GenerateBuildingIncome();
+
+	void GenerateBuildingIncomeAlly();
+
+	void GenerateBuildingIncomeEnemy();	
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void FigureOutBuilding();
@@ -142,4 +147,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
 	void OnBuildingRemoved(UBuilding* Building);
+
+private:
+	ATileMap* TileMap;
 };

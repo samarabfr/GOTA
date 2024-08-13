@@ -62,6 +62,7 @@ void ASettlement::BeginPlay()
 
 	// Get the GameState
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
+	TileMap = GameState->TileMap;
 	GameState->LoadingManager->IncrementReplicationCount();
 
 	if (HasAuthority())
@@ -181,6 +182,60 @@ void ASettlement::GenerateBaseIncome()
 		int32 _;
 		Expansion->Add(1,_);
 	}
+}
+
+void ASettlement::GenerateBuildingIncome()
+{
+	int32 _;
+	Expansion->Add(*BuildingSummary->ProductionMap.Find(EProductionType::Expansion),_);
+	if(Affiliation == EAffiliation::Ally)
+	{
+		GenerateBuildingIncomeAlly();
+	}
+	else
+	{
+		GenerateBuildingIncomeEnemy();
+	}
+}
+
+void ASettlement::GenerateBuildingIncomeAlly()
+{
+	int32 _;
+	// Trees
+	Wood->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Tree,
+		*BuildingSummary->ProductionMap.Find(EProductionType::Woodcutting),
+		SettlementBalance->NativeTreeThreshold,
+		SettlementBalance->NativeMaxRange),_);
+	// Wildlife
+	Food->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Wildlife,
+		*BuildingSummary->ProductionMap.Find(EProductionType::Hunting),
+		SettlementBalance->NativeWildlifeThreshold,
+		SettlementBalance->NativeMaxRange),_);
+	// Forage
+	Food->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Forage,
+		*BuildingSummary->ProductionMap.Find(EProductionType::Foraging),
+		SettlementBalance->NativeForageThreshold,
+		SettlementBalance->NativeMaxRange),_);
+}
+
+void ASettlement::GenerateBuildingIncomeEnemy()
+{
+	int32 _;
+	// Trees
+	Wood->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Tree,
+		*BuildingSummary->ProductionMap.Find(EProductionType::Woodcutting),
+		0,
+		SettlementBalance->ColonistMaxRange),_);
+	// Wildlife
+	Food->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Wildlife,
+		*BuildingSummary->ProductionMap.Find(EProductionType::Hunting),
+		0,
+		SettlementBalance->ColonistMaxRange),_);
+	// Forage
+	Food->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Forage,
+		*BuildingSummary->ProductionMap.Find(EProductionType::Foraging),
+		0,
+		SettlementBalance->ColonistMaxRange),_);
 }
 
 void ASettlement::OnBuildingAdded(UBuilding* Building)
