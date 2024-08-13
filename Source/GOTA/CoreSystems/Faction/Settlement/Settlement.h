@@ -57,20 +57,11 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMesh* ClaimMeshRiver;
 
-	UPROPERTY(EditDefaultsOnly)
-	UMaterial* ClaimMaterial;
-
 	UPROPERTY(BlueprintReadWrite, Category="Settlement")
 	TSet<ATile*> BorderingUnclaimedTiles;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Settlement")
 	TArray<ATile*> ClaimedTiles;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, ReplicatedUsing=OnRep_ClaimColor, Category="Settlement")
-	FLinearColor ClaimColor;
-
-	UFUNCTION()
-	void OnRep_ClaimColor();
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
 	UGOTAAttributeLimited* Expansion;

@@ -15,7 +15,6 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ASettlement, ClaimColor);
 	DOREPLIFETIME(ASettlement, PopulationSummary);
 	DOREPLIFETIME(ASettlement, BuildingSummary);
 	DOREPLIFETIME(ASettlement, CurrentBuildingProject);
@@ -49,14 +48,6 @@ ASettlement::ASettlement()
 	CurrentBuildingProject = CreateDefaultSubobject<UBuildingProject>(TEXT("Current Building Project"));
 }
 
-void ASettlement::OnRep_ClaimColor()
-{
-	ISM_ClaimWalls->SetStaticMesh(ClaimMesh);
-	UMaterialInstanceDynamic* DynMaterial = UMaterialInstanceDynamic::Create(ClaimMaterial, this);
-	DynMaterial->SetVectorParameterValue(EName::Color, ClaimColor);
-	ISM_ClaimWalls->SetMaterialByName(FName("Flag"), DynMaterial);
-}
-
 void ASettlement::BeginPlay()
 {
 	Super::BeginPlay();
@@ -69,10 +60,6 @@ void ASettlement::BeginPlay()
 	if (HasAuthority())
 	{
 		ISM_ClaimWalls->SetStaticMesh(ClaimMesh);
-		ClaimColor = FLinearColor(FMath::FRand(), FMath::FRand(), FMath::FRand());
-		UMaterialInstanceDynamic* DynMaterial = UMaterialInstanceDynamic::Create(ClaimMaterial, this);
-		DynMaterial->SetVectorParameterValue(EName::Color, ClaimColor);
-		ISM_ClaimWalls->SetMaterialByName(FName("Flag"), DynMaterial);
 
 		AddReplicatedSubObject(Food);
 		AddReplicatedSubObject(Wood);
