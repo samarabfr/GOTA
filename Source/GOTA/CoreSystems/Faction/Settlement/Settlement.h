@@ -8,6 +8,7 @@
 #include "SettlementBalance.h"
 #include "PopulationSummary.h"
 #include "GameFramework/Actor.h"
+#include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "Settlement.generated.h"
 
@@ -25,6 +26,9 @@ class ASettlement : public AActor
 public:
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Settlement")
 	USettlementBalance* SettlementBalance;
+
+	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Settlement")
+	TSubclassOf<AArmy> ArmyClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category="Settlement")
 	ECultureLoyalty PrimaryCulture = ECultureLoyalty::MAX;
@@ -111,7 +115,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void FigureOutBuilding();
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
 	void FigureOutSendingArmy();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
@@ -150,4 +154,6 @@ public:
 
 private:
 	ATileMap* TileMap;
+
+	float CalculateArmySpawnChance();
 };

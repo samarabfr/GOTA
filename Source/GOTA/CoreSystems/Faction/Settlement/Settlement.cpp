@@ -180,15 +180,15 @@ void ASettlement::GenerateBaseIncome()
 	else
 	{
 		int32 _;
-		Expansion->Add(1,_);
+		Expansion->Add(1, _);
 	}
 }
 
 void ASettlement::GenerateBuildingIncome()
 {
 	int32 _;
-	Expansion->Add(*BuildingSummary->ProductionMap.Find(EProductionType::Expansion),_);
-	if(Affiliation == EAffiliation::Ally)
+	Expansion->Add(*BuildingSummary->ProductionMap.Find(EProductionType::Expansion), _);
+	if (Affiliation == EAffiliation::Ally)
 	{
 		GenerateBuildingIncomeAlly();
 	}
@@ -203,19 +203,19 @@ void ASettlement::GenerateBuildingIncomeAlly()
 	int32 _;
 	// Trees
 	Wood->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Tree,
-		*BuildingSummary->ProductionMap.Find(EProductionType::Woodcutting),
-		SettlementBalance->NativeTreeThreshold,
-		SettlementBalance->NativeMaxRange),_);
+	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Woodcutting),
+	                                     SettlementBalance->NativeTreeThreshold,
+	                                     SettlementBalance->NativeMaxRange), _);
 	// Wildlife
 	Food->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Wildlife,
-		*BuildingSummary->ProductionMap.Find(EProductionType::Hunting),
-		SettlementBalance->NativeWildlifeThreshold,
-		SettlementBalance->NativeMaxRange),_);
+	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Hunting),
+	                                     SettlementBalance->NativeWildlifeThreshold,
+	                                     SettlementBalance->NativeMaxRange), _);
 	// Forage
 	Food->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Forage,
-		*BuildingSummary->ProductionMap.Find(EProductionType::Foraging),
-		SettlementBalance->NativeForageThreshold,
-		SettlementBalance->NativeMaxRange),_);
+	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Foraging),
+	                                     SettlementBalance->NativeForageThreshold,
+	                                     SettlementBalance->NativeMaxRange), _);
 }
 
 void ASettlement::GenerateBuildingIncomeEnemy()
@@ -223,19 +223,19 @@ void ASettlement::GenerateBuildingIncomeEnemy()
 	int32 _;
 	// Trees
 	Wood->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Tree,
-		*BuildingSummary->ProductionMap.Find(EProductionType::Woodcutting),
-		0,
-		SettlementBalance->ColonistMaxRange),_);
+	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Woodcutting),
+	                                     0,
+	                                     SettlementBalance->ColonistMaxRange), _);
 	// Wildlife
 	Food->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Wildlife,
-		*BuildingSummary->ProductionMap.Find(EProductionType::Hunting),
-		0,
-		SettlementBalance->ColonistMaxRange),_);
+	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Hunting),
+	                                     0,
+	                                     SettlementBalance->ColonistMaxRange), _);
 	// Forage
 	Food->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Forage,
-		*BuildingSummary->ProductionMap.Find(EProductionType::Foraging),
-		0,
-		SettlementBalance->ColonistMaxRange),_);
+	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Foraging),
+	                                     0,
+	                                     SettlementBalance->ColonistMaxRange), _);
 }
 
 void ASettlement::OnBuildingAdded(UBuilding* Building)
@@ -250,17 +250,60 @@ void ASettlement::OnBuildingRemoved(UBuilding* Building)
 	BuildingSummary->UnregisterBuildingProduction(Building);
 }
 
+float ASettlement::CalculateArmySpawnChance()
+{
+	// angry ratio
+	const float AngryRatio = PopulationSummary->GetMood(EMood::Angry) / PopulationSummary->Population.Size;
+	const float AngryRatioImpact = AngryRatio * SettlementBalance->AggressiveMoodMaximumImpact;
+	// Pop over high
+	float PopOverHigh = PopulationSummary->Population.Size - SettlementBalance->HighPopulationThreshold;
+	PopOverHigh = FMath::Max(PopOverHigh, 0);
+	const float PopOverHighImpact = PopOverHigh * SettlementBalance->HighPopulationImpact;
+	// spawn chance
+	return AngryRatioImpact + PopOverHighImpact;
+}
+
+void ASettlement::FigureOutSendingArmy()
+{
+	if (PopulationSummary->Population.Size < SettlementBalance->MinimumPopulationToSpawnArmy) return;
+
+	// roll if army should spawn
+	if (CalculateArmySpawnChance() < FMath::RandRange(0, 99)) return;
+	// TODO: was losschicken? Wo spawnen? army spawnen; pop raus und rein
+	SpawnArmy();
+}
+
 bool ASettlement::SpawnArmy()
 {
 	// nowhere to spawn
 	if (ClaimedTiles.IsEmpty()) return false;
-	// random Tile that has no TileEntity
-	ATile* SpawnLocation = ClaimedTiles[FMath::RandRange(0, ClaimedTiles.Num() - 1)];
-
+	// first Tile that has no TileEntity with own affiliation
+	ATile* SpawnLocation = nullptr;
+	for (ATile* Tile : ClaimedTiles)
+	{
+		if (!Tile
+			|| (Tile->AlliedTileEntity && Affiliation == EAffiliation::Ally)
+			|| (Tile->EnemyTileEntity && Affiliation == EAffiliation::Enemy))
+			continue;
+		
+		SpawnLocation = Tile;
+		break;
+	}
+	if(!SpawnLocation) return false;
+	
 	// spawn the army
+	AArmy* Army = Cast<AArmy>(GetWorld()->SpawnActor(ArmyClass));
+	if(!Army) return false;
+	Army->Init(Affiliation, SpawnLocation, 1);
 
-	// evaluate how many pops to send
-	// figure out which pops to send, remove them from the buildings and add them to the army
+	// reduce Pop in every building
+	// TODO: evaluate how many pops to send
+	// TODO: figure out which pops to send, remove them from the buildings and add them to the army
+	for (ATile* Tile : ClaimedTiles)
+	{
+		if(!Tile || !Tile->Building) continue;
+		Tile->Building->PopContainer->ChangeSize(-1);
+	}
 
 	return true;
 }
