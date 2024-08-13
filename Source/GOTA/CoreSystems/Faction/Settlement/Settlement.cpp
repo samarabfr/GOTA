@@ -71,6 +71,46 @@ void ASettlement::BeginPlay()
 	}
 }
 
+void ASettlement::SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject)
+{
+	if (CurrentBuildingProject)
+	{
+		RemoveReplicatedSubObject(CurrentBuildingProject);
+	}
+	CurrentBuildingProject = NewCurrentBuildingProject;
+	if (CurrentBuildingProject)
+	{
+		AddReplicatedSubObject(CurrentBuildingProject);
+	}
+}
+
+void ASettlement::CalculateTurn()
+{
+	GenerateBaseIncome();
+	GenerateBuildingIncome();
+	FigureOutBuilding();
+	FigureOutSendingArmy();
+}
+
+void ASettlement::OnBuildingAdded(UBuilding* Building)
+{
+	PopulationSummary->RegisterPopulationContainer(Building->PopContainer);
+	BuildingSummary->RegisterBuildingProduction(Building);
+}
+
+void ASettlement::OnBuildingRemoved(UBuilding* Building)
+{
+	PopulationSummary->UnregisterPopulationContainer(Building->PopContainer);
+	BuildingSummary->UnregisterBuildingProduction(Building);
+}
+
+void ASettlement::LostClaim(ATile* Tile)
+{
+	if (!Tile) return;
+
+	ClaimedTiles.Remove(Tile);
+}
+
 FPrimitiveInstanceId ASettlement::AddClaimMeshInstance(FTransform& Transform)
 {
 	return ISM_ClaimWalls->AddInstanceById(Transform);
@@ -79,6 +119,16 @@ FPrimitiveInstanceId ASettlement::AddClaimMeshInstance(FTransform& Transform)
 void ASettlement::RemoveClaimMeshInstance(FPrimitiveInstanceId InstanceId)
 {
 	ISM_ClaimWalls->RemoveInstanceById(InstanceId);
+}
+
+void ASettlement::ClaimTile(ATile* Tile)
+{
+	if (!Tile) return;
+
+	if (Tile->TryClaim(this))
+	{
+		ClaimedTiles.Add(Tile);
+	}
 }
 
 bool ASettlement::ClaimRandomTile()
@@ -130,62 +180,6 @@ bool ASettlement::ClaimRandomTile()
 	return false;
 }
 
-void ASettlement::LostClaim(ATile* Tile)
-{
-	if (!Tile) return;
-
-	ClaimedTiles.Remove(Tile);
-}
-
-void ASettlement::ClaimTile(ATile* Tile)
-{
-	if (!Tile) return;
-
-	if (Tile->TryClaim(this))
-	{
-		ClaimedTiles.Add(Tile);
-	}
-}
-
-void ASettlement::CalculateTurn()
-{
-	GenerateBaseIncome();
-	GenerateBuildingIncome();
-	FigureOutBuilding();
-	FigureOutSendingArmy();
-}
-
-void ASettlement::GenerateBaseIncome()
-{
-	// Reached Expansion threshhold, base income +1
-	if (Expansion->GetCurrent() == Expansion->GetMaximum())
-	{
-		ClaimRandomTile();
-		Expansion->SetCurrent(1);
-		Expansion->SetMaximum(FMath::TruncToInt32(
-			SettlementBalance->ClaimPrice.GetRichCurveConst()->Eval(ClaimedTiles.Num())));
-	}
-	else
-	{
-		int32 _;
-		Expansion->Add(1, _);
-	}
-}
-
-void ASettlement::GenerateBuildingIncome()
-{
-	int32 _;
-	Expansion->Add(*BuildingSummary->ProductionMap.Find(EProductionType::Expansion), _);
-	if (Affiliation == EAffiliation::Ally)
-	{
-		GenerateBuildingIncomeAlly();
-	}
-	else
-	{
-		GenerateBuildingIncomeEnemy();
-	}
-}
-
 void ASettlement::GenerateBuildingIncomeAlly()
 {
 	int32 _;
@@ -226,6 +220,37 @@ void ASettlement::GenerateBuildingIncomeEnemy()
 	                                     SettlementBalance->ColonistMaxRange), _);
 }
 
+void ASettlement::GenerateBaseIncome()
+{
+	// Reached Expansion threshhold, base income +1
+	if (Expansion->GetCurrent() == Expansion->GetMaximum())
+	{
+		ClaimRandomTile();
+		Expansion->SetCurrent(1);
+		Expansion->SetMaximum(FMath::TruncToInt32(
+			SettlementBalance->ClaimPrice.GetRichCurveConst()->Eval(ClaimedTiles.Num())));
+	}
+	else
+	{
+		int32 _;
+		Expansion->Add(1, _);
+	}
+}
+
+void ASettlement::GenerateBuildingIncome()
+{
+	int32 _;
+	Expansion->Add(*BuildingSummary->ProductionMap.Find(EProductionType::Expansion), _);
+	if (Affiliation == EAffiliation::Ally)
+	{
+		GenerateBuildingIncomeAlly();
+	}
+	else
+	{
+		GenerateBuildingIncomeEnemy();
+	}
+}
+
 void ASettlement::FigureOutBuilding()
 {
 	if (CurrentBuildingProject && CurrentBuildingProject->IsPossible())
@@ -233,40 +258,15 @@ void ASettlement::FigureOutBuilding()
 		if (CurrentBuildingProject->CanAfford())
 		{
 			CurrentBuildingProject->TryBuilding();
-			CurrentBuildingProject = nullptr;
+			SetCurrentBuildingProject(nullptr);
 			FillBuildingPool();
 		}
 	}
 	else
 	{
-		CurrentBuildingProject = nullptr;
+		SetCurrentBuildingProject(nullptr);
 		FillBuildingPool();
 	}
-}
-
-void ASettlement::OnBuildingAdded(UBuilding* Building)
-{
-	PopulationSummary->RegisterPopulationContainer(Building->PopContainer);
-	BuildingSummary->RegisterBuildingProduction(Building);
-}
-
-void ASettlement::OnBuildingRemoved(UBuilding* Building)
-{
-	PopulationSummary->UnregisterPopulationContainer(Building->PopContainer);
-	BuildingSummary->UnregisterBuildingProduction(Building);
-}
-
-float ASettlement::CalculateArmySpawnChance()
-{
-	// angry ratio
-	const float AngryRatio = PopulationSummary->GetMood(EMood::Angry) / PopulationSummary->Population.Size;
-	const float AngryRatioImpact = AngryRatio * SettlementBalance->AggressiveMoodMaximumImpact;
-	// Pop over high
-	float PopOverHigh = PopulationSummary->Population.Size - SettlementBalance->HighPopulationThreshold;
-	PopOverHigh = FMath::Max(PopOverHigh, 0);
-	const float PopOverHighImpact = PopOverHigh * SettlementBalance->HighPopulationImpact;
-	// spawn chance
-	return AngryRatioImpact + PopOverHighImpact;
 }
 
 void ASettlement::FillBuildingPool()
@@ -308,7 +308,7 @@ void ASettlement::FillBuildingPool()
 	// Select Random project TODO: proper logic
 	if (BuildingProjectPool.IsEmpty()) return;
 	const int32 RandomIndex = FMath::RandRange(0, BuildingProjectPool.Num() - 1);
-	CurrentBuildingProject = BuildingProjectPool[RandomIndex];
+	SetCurrentBuildingProject(BuildingProjectPool[RandomIndex]);
 }
 
 void ASettlement::FigureOutSendingArmy()
@@ -319,6 +319,19 @@ void ASettlement::FigureOutSendingArmy()
 	if (CalculateArmySpawnChance() < FMath::RandRange(0, 99)) return;
 	// TODO: was losschicken? Wo spawnen? army spawnen; pop raus und rein
 	SpawnArmy();
+}
+
+float ASettlement::CalculateArmySpawnChance()
+{
+	// angry ratio
+	const float AngryRatio = PopulationSummary->GetMood(EMood::Angry) / PopulationSummary->Population.Size;
+	const float AngryRatioImpact = AngryRatio * SettlementBalance->AggressiveMoodMaximumImpact;
+	// Pop over high
+	float PopOverHigh = PopulationSummary->Population.Size - SettlementBalance->HighPopulationThreshold;
+	PopOverHigh = FMath::Max(PopOverHigh, 0);
+	const float PopOverHighImpact = PopOverHigh * SettlementBalance->HighPopulationImpact;
+	// spawn chance
+	return AngryRatioImpact + PopOverHighImpact;
 }
 
 bool ASettlement::SpawnArmy()
@@ -354,17 +367,4 @@ bool ASettlement::SpawnArmy()
 	}
 
 	return true;
-}
-
-void ASettlement::SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject)
-{
-	if (CurrentBuildingProject)
-	{
-		RemoveReplicatedSubObject(CurrentBuildingProject);
-	}
-	CurrentBuildingProject = NewCurrentBuildingProject;
-	if (CurrentBuildingProject)
-	{
-		AddReplicatedSubObject(CurrentBuildingProject);
-	}
 }
