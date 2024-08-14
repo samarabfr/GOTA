@@ -74,6 +74,7 @@ void UPopulationContainer::IncreaseSize(int32 Change)
 	{
 		ChangeFollowerWeightedRandomBy(1);
 	}
+	Population.MoodContent += Effective_Change;
 	OnPopulationChanged.Broadcast(Population - OldPop);
 }
 
@@ -363,8 +364,13 @@ void UPopulationContainer::ChangeFollowerWeightedRandomBy(int32 Change, ECulture
 		Values.Add(Population.FollowerGuardian4);
 		TotalFollower += Population.FollowerGuardian4;
 	}
-	// No Weights so this doesn't make sense
-	if (TotalFollower == 0) return;
+	// No Weights so this doesn't make sense, use default culture in this case
+	if (TotalFollower == 0)
+	{
+		if (Change > 0)
+			Population.SetFollower(DefaultCulture, Change);
+		return;
+	}
 	// Select a random Believer
 	int32 cursor = FMath::RandRange(0, TotalFollower - 1);
 	// Find Selected Religion
@@ -400,7 +406,7 @@ void UPopulationContainer::SubtractOneMoodWeightedRandom()
 {
 	int32 TotalMood = Population.MoodContent + Population.MoodAngry + Population.MoodFear;
 	// Select a random dude with mood
-	int32 Cursor = FMath::RandRange(0, TotalMood);
+	int32 Cursor = FMath::RandRange(0, TotalMood - 1);
 	// Find Selected mood
 	if (Cursor < Population.MoodContent)
 	{

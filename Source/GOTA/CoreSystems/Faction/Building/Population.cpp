@@ -80,6 +80,32 @@ int32 FPopulation::GetMood(EMood Mood) const
 	}
 }
 
+ECultureLoyalty FPopulation::GetLargestCulture() const
+{
+	ECultureLoyalty Largest = ECultureLoyalty::Colonists;
+	int32 LargestNum = FollowerColonists;
+	if(FollowerGuardian1 > LargestNum)
+	{
+		LargestNum = FollowerGuardian1;
+		Largest = ECultureLoyalty::Guardian1;
+	}
+	if(FollowerGuardian2 > LargestNum)
+	{
+		LargestNum = FollowerGuardian2;
+		Largest = ECultureLoyalty::Guardian2;
+	}
+	if(FollowerGuardian3 > LargestNum)
+	{
+		LargestNum = FollowerGuardian3;
+		Largest = ECultureLoyalty::Guardian3;
+	}
+	if(FollowerGuardian4 > LargestNum)
+	{
+		Largest = ECultureLoyalty::Guardian4;
+	}
+	return Largest;
+}
+
 int32 FPopulation::SumFollower() const
 {
 	return FollowerColonists + FollowerGuardian1 + FollowerGuardian2 + FollowerGuardian3 + FollowerGuardian4;

@@ -13,12 +13,14 @@ class GOTA_API UPopulationSummary : public UObject
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
-	
+
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFPopulationChangedSig, FPopulation, ChangedBy);
 
 	UPROPERTY()
 	TArray<UPopulationContainer*> PopCons;
+	ECultureLoyalty DefaultCulture = ECultureLoyalty::Colonists;
+
 public:
 	UPROPERTY(BlueprintAssignable, Category="Population")
 	FOnFPopulationChangedSig OnPopulationChanged;
@@ -30,7 +32,7 @@ public:
 	void OnRep_Population(const FPopulation& OldPopulation);
 
 	FPopulation ExtractArmyPopulation(USettlementBalance* Balance);
-	
+
 	// ---------------------------------------------------------
 	// Keeping Track of Population Changes
 
@@ -48,6 +50,8 @@ public:
 
 	UFUNCTION()
 	void UpdatePopulation(FPopulation Change);
+
+	void SetDefaultCulture(ECultureLoyalty Culture);
 
 	// ---------------------------------------------------------
 	// Getters
