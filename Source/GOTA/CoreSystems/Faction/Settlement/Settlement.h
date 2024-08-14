@@ -7,6 +7,7 @@
 #include "BuildingProject.h"
 #include "SettlementBalance.h"
 #include "PopulationSummary.h"
+#include "SettlementImportanceRatings.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
@@ -61,6 +62,12 @@ public:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Settlement")
 	TArray<ATile*> ClaimedTiles;
 
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Settlement")
+	FSettlementImportanceRatings ImportanceRatings;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Settlement")
+	TMap<UBuildingProject*, int32> Scores;
+
 	UFUNCTION(BlueprintSetter)
 	void SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject);
 
@@ -82,7 +89,7 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AArmy> ArmyClass;
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMesh* ClaimMesh;
 
@@ -94,7 +101,7 @@ protected:
 
 	UPROPERTY()
 	UInstancedStaticMeshComponent* ISM_ClaimWallsRiver;
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
 	void InitialStartingSetup(ATile* SpawnTile);
 
@@ -107,28 +114,32 @@ protected:
 private:
 	UPROPERTY()
 	TSet<ATile*> BorderingUnclaimedTiles;
-	
+
 	UPROPERTY()
 	ATileMap* TileMap;
 
 	UPROPERTY()
 	TArray<UBuildingProject*> BuildingProjectPool;
-	
+
 	UPROPERTY()
 	TArray<UBuildingDataAsset*> PossibleBuildings;
 
 	void GenerateBuildingIncomeAlly();
 
-	void GenerateBuildingIncomeEnemy();	
-	
+	void GenerateBuildingIncomeEnemy();
+
 	void GenerateBaseIncome();
-	
+
 	void GenerateBuildingIncome();
-	
+
 	void FigureOutBuilding();
 
+	void SelectNewBuildingProject();
+
 	void FillBuildingPool();
-	
+
+	void CalculateImportances();
+
 	void FigureOutSendingArmy();
 
 	float CalculateArmySpawnChance();
