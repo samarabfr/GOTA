@@ -278,28 +278,26 @@ void ASettlement::SelectNewBuildingProject()
 	Scores.Empty();
 	for (UBuildingProject* BuildingProject : BuildingProjectPool)
 	{
-		Scores.Add(BuildingProject, BuildingProject->CalculateScore());
+		Scores.Add(FBuildingProjectScore(BuildingProject,
+			BuildingProject->CalculateScore(),
+			BuildingProject->Data,
+			BuildingProject->CalculateProjectTime(),
+			BuildingProject->Tier));
 	}
 	// sort by highest score
-	Scores.ValueSort([](const int32 A, const int32 B)
+	Scores.Sort([](const FBuildingProjectScore& A, const FBuildingProjectScore& B)
 	{
-		return A > B;
+		return A.Score > B.Score;
 	});
-	// set debug array
-	ScoresDebug.Empty();
-	for (auto Score : Scores)
-	{
-		ScoresDebug.Add(Score.Key->Data, Score.Value);
-	}
 	// Set from highest score
 	UBuildingProject* Highest = nullptr;
-	int32 LowestScore = 0;
+	float LowestScore = 0;
 	for (auto Score : Scores)
 	{
-		if (Score.Value > LowestScore)
+		if (Score.Score > LowestScore)
 		{
-			LowestScore = Score.Value;
-			Highest = Score.Key;
+			LowestScore = Score.Score;
+			Highest = Score.BuildingProject;
 		}
 	}
 	SetCurrentBuildingProject(Highest);
@@ -351,15 +349,15 @@ void ASettlement::CalculateImportances()
 	float FoodIncome = BuildingSummary->ProductionMap[EProductionType::Hunting];
 	FoodIncome += BuildingSummary->ProductionMap[EProductionType::Foraging]
 		* SettlementBalance->ForagingFoodToWoodRatio;
-	ImportanceRatings.Food = FMath::Pow(EULERS_NUMBER, -0.01 * FoodIncome);
+	ImportanceRatings.Food = FMath::Pow(EULERS_NUMBER, -0.1 * FoodIncome);
 	// wood
 	float WoodIncome = BuildingSummary->ProductionMap[EProductionType::Woodcutting];
 	WoodIncome += BuildingSummary->ProductionMap[EProductionType::Foraging]
 		* (1 - SettlementBalance->ForagingFoodToWoodRatio);
-	ImportanceRatings.Wood = FMath::Pow(EULERS_NUMBER, -0.01 * WoodIncome);
+	ImportanceRatings.Wood = FMath::Pow(EULERS_NUMBER, -0.1 * WoodIncome);
 	// stone
 	float StoneIncome = BuildingSummary->ProductionMap[EProductionType::Stonecutting];
-	ImportanceRatings.Stone = FMath::Pow(EULERS_NUMBER, -0.01 * StoneIncome);
+	ImportanceRatings.Stone = FMath::Pow(EULERS_NUMBER, -0.1 * StoneIncome);
 	// More aggressive => weapons more important
 	/*
 	const float AngryRatio = PopulationSummary->GetMood(EMood::Angry) / PopulationSummary->Population.Size;
@@ -369,7 +367,7 @@ void ASettlement::CalculateImportances()
 	 */
 	// The less free housing, the more important
 	const float FreeHousing = ImportanceRatings.Housing - PopulationSummary->Population.Size;
-	ImportanceRatings.Housing = FMath::Pow(EULERS_NUMBER, -0.01 * FreeHousing);
+	ImportanceRatings.Housing = FMath::Pow(EULERS_NUMBER, -0.1 * FreeHousing);
 }
 
 void ASettlement::FigureOutSendingArmy()

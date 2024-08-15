@@ -42,7 +42,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Building Project")
 	bool TryBuilding();
 	
-	int32 CalculateScore();
+	float CalculateScore();
 
 	int32 CalculateProjectTime();
 

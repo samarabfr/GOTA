@@ -77,11 +77,11 @@ bool UBuildingProject::TryBuilding()
 	return false;
 }
 
-int32 UBuildingProject::CalculateScore()
+float UBuildingProject::CalculateScore()
 {
 	// costs
 	int32 ProjectTime = CalculateProjectTime();
-	const float CostScore = ProjectTime;
+	const float CostScore = FMath::Pow(EULERS_NUMBER, -0.1 * ProjectTime);
 	// gains
 	float GainsScore = 0;
 	FBuildingTierData* TierData = Data->GetTierData(Tier);
@@ -120,7 +120,7 @@ int32 UBuildingProject::CalculateScore()
 		{
 			GainsScore = Builder->ImportanceRatings.Stone * MaxIncome;
 		}
-		// TODO: incorporate housing
+		// TODO: incorporate housing and weapons
 	}
 	
 	// result

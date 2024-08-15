@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "BuildingSummary.h"
 #include "BuildingProject.h"
+#include "BuildingProjectScore.h"
 #include "SettlementBalance.h"
 #include "PopulationSummary.h"
 #include "SettlementImportanceRatings.h"
@@ -66,7 +67,7 @@ public:
 	FSettlementImportanceRatings ImportanceRatings;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Settlement")
-	TMap<UBuildingDataAsset*, int32> ScoresDebug;
+	TArray<FBuildingProjectScore> Scores;
 
 	UFUNCTION(BlueprintSetter)
 	void SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject);
@@ -111,10 +112,7 @@ protected:
 	UFUNCTION(BlueprintCallable)
 	bool ClaimRandomTile();
 
-private:
-	UPROPERTY()
-	TMap<UBuildingProject*, int32> Scores;
-	
+private:	
 	UPROPERTY()
 	TSet<ATile*> BorderingUnclaimedTiles;
 
