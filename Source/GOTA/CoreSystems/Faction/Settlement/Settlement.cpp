@@ -285,6 +285,12 @@ void ASettlement::SelectNewBuildingProject()
 	{
 		return A > B;
 	});
+	// set debug array
+	ScoresDebug.Empty();
+	for (auto Score : Scores)
+	{
+		ScoresDebug.Add(Score.Key->Data, Score.Value);
+	}
 	// Set from highest score
 	UBuildingProject* Highest = nullptr;
 	int32 LowestScore = 0;

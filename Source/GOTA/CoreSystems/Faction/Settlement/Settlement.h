@@ -66,7 +66,7 @@ public:
 	FSettlementImportanceRatings ImportanceRatings;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Settlement")
-	TMap<UBuildingProject*, int32> Scores;
+	TMap<UBuildingDataAsset*, int32> ScoresDebug;
 
 	UFUNCTION(BlueprintSetter)
 	void SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject);
@@ -112,6 +112,9 @@ protected:
 	bool ClaimRandomTile();
 
 private:
+	UPROPERTY()
+	TMap<UBuildingProject*, int32> Scores;
+	
 	UPROPERTY()
 	TSet<ATile*> BorderingUnclaimedTiles;
 
