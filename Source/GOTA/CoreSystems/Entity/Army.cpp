@@ -17,6 +17,18 @@ void AArmy::CalculateMovement()
 	Step();
 }
 
+AArmy::AArmy()
+{
+	PopCon = CreateDefaultSubobject<UPopulationContainer>("Population Container");
+	FPopulation RandomPop = FPopulation();
+	RandomPop.Size = FMath::RandRange(5,10);
+	RandomPop.MoodContent = RandomPop.Size;
+	RandomPop.Bows = FMath::RandRange(1,3);
+	RandomPop.Muskets = FMath::RandRange(1,4);
+	RandomPop.Shields = FMath::RandRange(1,3);
+	PopCon->AddPopulation(RandomPop);
+}
+
 bool AArmy::IsTargetValid() const
 {
 	// no target
@@ -28,4 +40,14 @@ bool AArmy::IsTargetValid() const
 	// target is not claimed by the enemy
 	if(Target->GetClaimant()->Affiliation == Affiliation) return false;
 	return true;
+}
+
+int32 AArmy::GetAttack() const
+{
+	return PopCon->Attack;
+}
+
+int32 AArmy::GetDefense() const
+{
+	return PopCon->Defense;
 }

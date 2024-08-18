@@ -34,6 +34,16 @@ void AEntity::Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 Movemen
 	GameState->TileEntities.Add(this);
 }
 
+int32 AEntity::GetAttack() const
+{
+	return 0;
+}
+
+int32 AEntity::GetDefense() const
+{
+	return 0;
+}
+
 bool AEntity::ShouldCombatTrigger() const
 {
 	// Combat between this unit and enemy building

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Population.h"
+#include "GOTA/CoreSystems/GameplayFramework/GameBalance.h"
 #include "GOTA/CoreSystems/Faction/Settlement/SettlementBalance.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "PopulationContainer.generated.h"
@@ -25,12 +26,17 @@ class GOTA_API UPopulationContainer : public UObject
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFPopulationChangedSig, FPopulation, ChangedBy);
 
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnCombatValuesChangedSig, int32, NewHP, int32, NewAttack, int32,
+	                                               NewDefense);
+
 public:
 	UPROPERTY(BlueprintAssignable, Category="Population")
 	FOnFPopulationChangedSig OnPopulationChanged;
 	UPROPERTY(BlueprintAssignable, Category="Population")
 	FOnGrowthChangedSig OnGrowthChanged;
-
+	UPROPERTY(BlueprintAssignable, Category="Population")
+	FOnCombatValuesChangedSig OnCombatValuesChanged;
 	// ---------------------------------------------------------
 	// Population Struct
 
@@ -38,12 +44,32 @@ public:
 	FPopulation Population;
 
 	ECultureLoyalty DefaultCulture = ECultureLoyalty::Colonists;
-	
+
 	UFUNCTION()
 	void OnRep_Population(const FPopulation& OldPopulation);
 
 	// ---------------------------------------------------------
+	// Combat Values
+
+	UPROPERTY()
+	UGameBalanceDataAsset* GameBalance;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 HP = 0;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 Attack = 0;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 Defense = 0;
+
+	void RecalculateCombatValues();
+
+	// ---------------------------------------------------------
 	// Changing Population Values
+
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void AddPopulation(const FPopulation& Pop);
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void ChangeSize(int32 Change);
@@ -82,11 +108,12 @@ public:
 	void DecreaseMood(EMood Mood, int32 Change);
 
 	FPopulation ExtractRandomPopForArmy(int32 Amount, USettlementBalance* Balance);
-	
+
 private:
 	void ChangeFollowerWeightedRandomBy(int32 Change, ECultureLoyalty Exclude = ECultureLoyalty::MAX);
 	void AddOneFollowerToGuardiansFullRandom();
 	void SubtractOneMoodWeightedRandom();
+	void PopulationChanged(const FPopulation& Change);
 
 	// ---------------------------------------------------------
 	// Population Growth Stuff
@@ -104,7 +131,7 @@ public:
 	// Getters and Setters
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Population")
 	int32 GetSize();
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintGetter, Category = "Population")
 	FPopulation GetPopulation();
 

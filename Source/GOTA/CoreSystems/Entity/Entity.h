@@ -17,10 +17,10 @@ class GOTA_API AEntity : public AActor
 
 public:
 	AEntity();
-	
+
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Entity")
 	EAffiliation Affiliation;
-	
+
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Entity")
 	ATile* Target;
 
@@ -35,9 +35,15 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Entity")
 	void Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 MovementSpeed_);
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Entity")
-	virtual void CalculateMovement() PURE_VIRTUAL(ATileEntity::CalculateMovement, );
+	virtual void CalculateMovement() PURE_VIRTUAL(ATileEntity::CalculateMovement,);
+
+	UFUNCTION(BlueprintCallable, Category="Entity")
+	virtual int32 GetAttack() const;
+
+	UFUNCTION(BlueprintCallable, Category="Entity")
+	virtual int32 GetDefense() const;
 
 	UFUNCTION(BlueprintCallable, Category="Entity")
 	bool ShouldCombatTrigger() const;
@@ -47,7 +53,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Entity")
 	void Kill();
-	
+
 	bool IsNextStepBlocked();
 
 	void Step();
