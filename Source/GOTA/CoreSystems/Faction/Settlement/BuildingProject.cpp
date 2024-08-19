@@ -88,41 +88,64 @@ float UBuildingProject::CalculateScore()
 	if (TierData && TierData->TierEnabled)
 	{
 		const int32 CountThresholdMet = TierData->Housing / TierData->PopulationThreshold;
-		int32 MaxIncome = CountThresholdMet * TierData->ProductionPerThreshold;
+		int32 MaxIncomeDiff = CountThresholdMet * TierData->ProductionPerThreshold;
+		int32 MaxHousingDiff = TierData->Housing;
+		float FreeHousing = 0;
 		// subtract income from previous tier
-		if(Tier > 1)
+		if (Tier > 1)
 		{
 			FBuildingTierData* PreviousTierData = Data->GetTierData(Tier - 1);
+			// income
 			if (PreviousTierData && PreviousTierData->TierEnabled)
 			{
-				const int32 PreviousCountThresholdMet = PreviousTierData->Housing / PreviousTierData->PopulationThreshold;
+				const int32 PreviousCountThresholdMet = PreviousTierData->Housing / PreviousTierData->
+					PopulationThreshold;
 				const int32 PreviousMaxIncome = PreviousCountThresholdMet * PreviousTierData->ProductionPerThreshold;
-				MaxIncome -= PreviousMaxIncome;
+				MaxIncomeDiff -= PreviousMaxIncome;
 			}
+			// Housing
+			MaxHousingDiff -= PreviousTierData->Housing;
+			FreeHousing = PreviousTierData->Housing - Tile->Building->PopContainer->Population.Size;
 		}
 		// Calculate GainScore
+		// income
 		if (TierData->ProductionType == EProductionType::Foraging)
 		{
-			const float MaxFoodIncome = MaxIncome * Builder->SettlementBalance->ForagingFoodToWoodRatio;
-			const float MaxWoodIncome = MaxIncome * (1 - Builder->SettlementBalance->ForagingFoodToWoodRatio);
+			const float MaxFoodIncome = MaxIncomeDiff * Builder->SettlementBalance->ForagingFoodToWoodRatio;
+			const float MaxWoodIncome = MaxIncomeDiff * (1 - Builder->SettlementBalance->ForagingFoodToWoodRatio);
 			GainsScore = Builder->ImportanceRatings.Food * MaxFoodIncome;
 			GainsScore += Builder->ImportanceRatings.Wood * MaxWoodIncome;
 		}
 		else if (TierData->ProductionType == EProductionType::Woodcutting)
 		{
-			GainsScore = Builder->ImportanceRatings.Wood * MaxIncome;
+			GainsScore = Builder->ImportanceRatings.Wood * MaxIncomeDiff;
 		}
 		else if (TierData->ProductionType == EProductionType::Hunting)
 		{
-			GainsScore = Builder->ImportanceRatings.Food * MaxIncome;
+			GainsScore = Builder->ImportanceRatings.Food * MaxIncomeDiff;
 		}
 		else if (TierData->ProductionType == EProductionType::Stonecutting)
 		{
-			GainsScore = Builder->ImportanceRatings.Stone * MaxIncome;
+			GainsScore = Builder->ImportanceRatings.Stone * MaxIncomeDiff;
 		}
-		// TODO: incorporate housing and weapons
+		else if (TierData->ProductionType == EProductionType::Bowmaking)
+		{
+			GainsScore = Builder->ImportanceRatings.Weapons * MaxIncomeDiff;
+		}
+		else if (TierData->ProductionType == EProductionType::Musketmaking)
+		{
+			GainsScore = Builder->ImportanceRatings.Weapons * MaxIncomeDiff;
+		}
+		else if (TierData->ProductionType == EProductionType::Shieldmaking)
+		{
+			GainsScore = Builder->ImportanceRatings.Shields * MaxIncomeDiff;
+		}
+		// Housing
+		float HousingImportanceRating = Builder->SettlementBalance->HousingImportance
+			* FMath::Pow(EULERS_NUMBER, -Builder->SettlementBalance->HousingImportanceDescent * FreeHousing);
+		GainsScore += HousingImportanceRating * MaxHousingDiff;
 	}
-	
+
 	// result
 	return CostScore * GainsScore;
 }
