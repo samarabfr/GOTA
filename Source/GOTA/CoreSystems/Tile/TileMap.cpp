@@ -441,3 +441,14 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 	}
 	return AmountReduced;
 }
+
+void ATileMap::CountAllMaxEcoValues(int32& TotalMaxTrees, int32& TotalMaxWildlife, int32& TotalMaxForage)
+{
+	for (ATile* Tile : Tiles)
+	{
+		if(!Tile) continue;
+		TotalMaxTrees += Tile->Trees->GetMaximum();
+		TotalMaxWildlife += Tile->Wildlife->GetMaximum();
+		TotalMaxForage += Tile->Forage->GetMaximum();
+	}
+}

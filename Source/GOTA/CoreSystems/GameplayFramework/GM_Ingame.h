@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "GameBalance.h"
 #include "CoreMinimal.h"
 #include "GS_Ingame.h"
 #include "GameFramework/GameMode.h"
@@ -11,35 +12,54 @@ UCLASS()
 class GOTA_API AGM_Ingame : public AGameMode
 {
 	GENERATED_BODY()
-
+	AGM_Ingame();
+	
 public:
 	virtual void PostLogin(APlayerController* NewPlayer) override;
 
-	UPROPERTY(BlueprintReadWrite, Category="GameMode")
+	UPROPERTY()
+	UGameBalanceDataAsset* GameBalance;
+	
+	UPROPERTY(BlueprintReadWrite, Category="GOTA GameMode")
 	AGS_Ingame* GOTAGameState;
 
-	//====================================================================
-	//--------------------Overrideable Functions
-	//vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-public:
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="GameMode")
-	void CreateMap();
+	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
+	TSubclassOf<ATileMap> TileMapClass;
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="GameMode")
-	void CreateFactions();
+	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
+	TSubclassOf<ASettlement> ColonistSettlementClass;
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="GameMode")
-	void CreateGuardians();
+	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
+	TSubclassOf<ASettlement> NativeSettlementClass;
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="GameMode")
-	void InitialPlayerControllerPossession();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, BlueprintImplementableEvent, Category="GameMode")
-	void StartGame();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, BlueprintImplementableEvent, Category="GameMode")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void Init();
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GameMode")
+	virtual void Tick(float DeltaSeconds) override;
+
+	// ---------------------------------------------------------
+	// World Setup
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void CreateWorld();
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
+	void CreateFactions();
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
+	void CreateGuardians();
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
+	void InitialPlayerControllerPossession();
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
+	void StartGame();
+
+	// ---------------------------------------------------------
+	// Calculate Turn
+private:
+	void CalculateTurn();
+	FDateTime StartedCalculatingTurn;
+
+	void CheckGameEndingConditions();
 };

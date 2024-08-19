@@ -66,3 +66,10 @@ enum class EEcoValue : uint8
 	Wildlife UMETA(DisplayName = "Wildlife"),
 	Forage UMETA(DisplayName = "Forage")
 };
+
+UENUM(BlueprintType)
+enum class GameEnding : uint8
+{
+	Victory UMETA(DisplayName = "Victory"),
+	Defeat UMETA(DisplayName = "Defeat")
+};

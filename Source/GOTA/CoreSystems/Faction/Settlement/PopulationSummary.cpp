@@ -77,37 +77,45 @@ FPopulation UPopulationSummary::ExtractArmyPopulation(USettlementBalance* Balanc
 void UPopulationSummary::RegisterPopulationContainer(UPopulationContainer* PopulationContainer)
 {
 	PopulationContainer->OnPopulationChanged.AddDynamic(this, &UPopulationSummary::UpdatePopulation);
-	OnPopulationChanged.Broadcast(PopulationContainer->Population);
-	Population += PopulationContainer->Population;
+	PopulationContainer->DefaultCulture = DefaultCulture;
+	UpdatePopulation(PopulationContainer->Population);
 	PopCons.Add(PopulationContainer);
 }
 
 void UPopulationSummary::RegisterPopulationSummary(UPopulationSummary* PopulationSummary)
 {
 	PopulationSummary->OnPopulationChanged.AddDynamic(this, &UPopulationSummary::UpdatePopulation);
-	OnPopulationChanged.Broadcast(PopulationSummary->Population);
-	Population += PopulationSummary->Population;
+	UpdatePopulation(PopulationSummary->Population);
 }
 
 void UPopulationSummary::UnregisterPopulationContainer(UPopulationContainer* PopulationContainer)
 {
 	PopulationContainer->OnPopulationChanged.RemoveDynamic(this, &UPopulationSummary::UpdatePopulation);
-	OnPopulationChanged.Broadcast(-PopulationContainer->Population);
-	Population -= PopulationContainer->Population;
+	UpdatePopulation(-PopulationContainer->Population);
 	PopCons.Remove(PopulationContainer);
 }
 
 void UPopulationSummary::UnregisterPopulationSummary(UPopulationSummary* PopulationSummary)
 {
 	PopulationSummary->OnPopulationChanged.RemoveDynamic(this, &UPopulationSummary::UpdatePopulation);
-	OnPopulationChanged.Broadcast(-PopulationSummary->Population);
-	Population -= PopulationSummary->Population;
+	UpdatePopulation(-PopulationSummary->Population);
 }
 
 void UPopulationSummary::UpdatePopulation(FPopulation Change)
 {
 	Population += Change;
+	ECultureLoyalty NewLargest = Population.GetLargestCulture();
+	if (NewLargest != DefaultCulture)SetDefaultCulture(NewLargest);
 	OnPopulationChanged.Broadcast(Change);
+}
+
+void UPopulationSummary::SetDefaultCulture(ECultureLoyalty Culture)
+{
+	DefaultCulture = Culture;
+	for (UPopulationContainer* PopCon : PopCons)
+	{
+		PopCon->DefaultCulture = Culture;
+	}
 }
 
 // ---------------------------------------------------------

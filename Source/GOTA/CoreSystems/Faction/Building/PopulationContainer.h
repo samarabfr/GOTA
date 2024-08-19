@@ -37,6 +37,8 @@ public:
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Population, BlueprintReadOnly, Category = "Population")
 	FPopulation Population;
 
+	ECultureLoyalty DefaultCulture = ECultureLoyalty::Colonists;
+	
 	UFUNCTION()
 	void OnRep_Population(const FPopulation& OldPopulation);
 

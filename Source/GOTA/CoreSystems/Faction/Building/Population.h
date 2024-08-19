@@ -60,6 +60,8 @@ struct FPopulation : public FTableRowBase
 
 	int32 GetMood(EMood Mood) const;
 
+	ECultureLoyalty GetLargestCulture() const;
+
 	int32 SumFollower() const;
 	
 	int32 SumMood() const;

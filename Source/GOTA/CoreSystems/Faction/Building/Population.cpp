@@ -7,12 +7,16 @@ void FPopulation::SetFollower(ECultureLoyalty Culture, int32 Value)
 	{
 	case ECultureLoyalty::Colonists:
 		FollowerColonists = Value;
+		return;
 	case ECultureLoyalty::Guardian1:
 		FollowerGuardian1 = Value;
+		return;
 	case ECultureLoyalty::Guardian2:
 		FollowerGuardian2 = Value;
+		return;
 	case ECultureLoyalty::Guardian3:
 		FollowerGuardian3 = Value;
+		return;
 	case ECultureLoyalty::Guardian4:
 		FollowerGuardian4 = Value;
 	default: ;
@@ -74,6 +78,32 @@ int32 FPopulation::GetMood(EMood Mood) const
 	default:
 		return -1;
 	}
+}
+
+ECultureLoyalty FPopulation::GetLargestCulture() const
+{
+	ECultureLoyalty Largest = ECultureLoyalty::Colonists;
+	int32 LargestNum = FollowerColonists;
+	if(FollowerGuardian1 > LargestNum)
+	{
+		LargestNum = FollowerGuardian1;
+		Largest = ECultureLoyalty::Guardian1;
+	}
+	if(FollowerGuardian2 > LargestNum)
+	{
+		LargestNum = FollowerGuardian2;
+		Largest = ECultureLoyalty::Guardian2;
+	}
+	if(FollowerGuardian3 > LargestNum)
+	{
+		LargestNum = FollowerGuardian3;
+		Largest = ECultureLoyalty::Guardian3;
+	}
+	if(FollowerGuardian4 > LargestNum)
+	{
+		Largest = ECultureLoyalty::Guardian4;
+	}
+	return Largest;
 }
 
 int32 FPopulation::SumFollower() const
