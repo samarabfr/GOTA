@@ -87,6 +87,9 @@ public:
 	FPrimitiveInstanceId AddClaimMeshInstance(FTransform& Transform);
 	void RemoveClaimMeshInstance(FPrimitiveInstanceId InstanceId);
 
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
+	void InitialStartingSetup(ATile* SpawnTile);
+
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AArmy> ArmyClass;
@@ -102,9 +105,6 @@ protected:
 
 	UPROPERTY()
 	UInstancedStaticMeshComponent* ISM_ClaimWallsRiver;
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
-	void InitialStartingSetup(ATile* SpawnTile);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
 	void ClaimTile(ATile* Tile);
