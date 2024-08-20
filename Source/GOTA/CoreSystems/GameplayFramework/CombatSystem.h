@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GOTA/CoreSystems/Tile/Tile.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "CombatSystem.generated.h"
 
@@ -13,5 +14,12 @@ class GOTA_API UCombatSystem : public UObject
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
 	UCombatSystem();
-
+	
+	UPROPERTY()
+	TSet<ATile*> CurrentCombatSources;
+public:
+	void RegisterCombat(ATile* Tile);
+	void TriggerAllCombats();
+private:
+	void EvaluateCombat(ATile* Tile);
 };
