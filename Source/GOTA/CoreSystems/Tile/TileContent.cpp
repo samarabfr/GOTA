@@ -214,13 +214,13 @@ void UTileContent::ValidateEverything()
 	ValidateTileAssets(PropTileAssetSpawns, Tile->DA_TileGraphics->PropAssets);
 	SpawnProps();
 	ValidateTileAssets(BuildingTileAssetSpawns, Tile->DA_TileGraphics->BuildingAssets);
-	ValidateBuildings();
+	ValidateBuildings(Tile);
 	ValidateTileAssets(ForageTileAssetSpawns, Tile->DA_TileGraphics->ForageAssets);
 	UpdateForage(0);
-	ValidateMainBuilding();
+	ValidateMainBuilding(Tile);
 }
 
-void UTileContent::ValidateMainBuilding()
+void UTileContent::ValidateMainBuilding(ATile* Tile_)
 {
 	if (Tile->Building)
 	{
@@ -241,9 +241,9 @@ void UTileContent::SpawnProps()
 	}
 }
 
-void UTileContent::ValidateBuildings()
+void UTileContent::ValidateBuildings(ATile* Tile_)
 {
-	if (Tile->Building)
+	if (Tile_->Building)
 	{
 		for (FTileAssetSpawn& TileAssetSpawn : BuildingTileAssetSpawns)
 		{

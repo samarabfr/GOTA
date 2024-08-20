@@ -6,6 +6,7 @@
 #include "Population.h"
 #include "GOTA/CoreSystems/GameplayFramework/GameBalance.h"
 #include "GOTA/CoreSystems/Faction/Settlement/SettlementBalance.h"
+#include "GOTA/CoreSystems/GameplayFramework/CombatValues.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "PopulationContainer.generated.h"
 
@@ -26,17 +27,11 @@ class GOTA_API UPopulationContainer : public UObject
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFPopulationChangedSig, FPopulation, ChangedBy);
 
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnCombatValuesChangedSig, int32, NewHP, int32, NewAttack, int32,
-	                                               NewDefense);
-
 public:
 	UPROPERTY(BlueprintAssignable, Category="Population")
 	FOnFPopulationChangedSig OnPopulationChanged;
 	UPROPERTY(BlueprintAssignable, Category="Population")
 	FOnGrowthChangedSig OnGrowthChanged;
-	UPROPERTY(BlueprintAssignable, Category="Population")
-	FOnCombatValuesChangedSig OnCombatValuesChanged;
 	// ---------------------------------------------------------
 	// Population Struct
 
@@ -54,14 +49,8 @@ public:
 	UPROPERTY()
 	UGameBalanceDataAsset* GameBalance;
 
-	UPROPERTY(BlueprintReadOnly)
-	int32 HP = 0;
-
-	UPROPERTY(BlueprintReadOnly)
-	int32 Attack = 0;
-
-	UPROPERTY(BlueprintReadOnly)
-	int32 Defense = 0;
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	UCombatValues* CombatValues;
 
 	void RecalculateCombatValues();
 	void DealDamage(int32 Damage);

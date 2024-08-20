@@ -58,9 +58,6 @@ public:
 	bool ShouldCombatTrigger() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Entity")
-	void TriggerCombat();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Entity")
 	void Kill();
 
 	bool IsNextStepBlocked();

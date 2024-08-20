@@ -30,6 +30,9 @@ class GOTA_API ATile : public AActor
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnChangedSignature);
 
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTileChangedSignature, ATile* , Tile);
+
 	// ---------------------------------------------------------
 	// Initialisation and core variables
 
@@ -112,11 +115,28 @@ public:
 	UPROPERTY()
 	FOnChangedSignature OnDistancesChanged;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
+private:
+	UPROPERTY(VisibleInstanceOnly, BlueprintGetter=GetAlliedEntity, Replicated, Category="Tile")
 	AEntity* AlliedEntity;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintGetter=GetEnemyEntity, Replicated, Category="Tile")
 	AEntity* EnemyEntity;
+
+public:
+	UPROPERTY(BlueprintAssignable)
+	FOnTileChangedSignature OnEntityChanged;
+
+	UFUNCTION(BlueprintGetter)
+	AEntity* GetAlliedEntity();
+
+	UFUNCTION(BlueprintGetter)
+	AEntity* GetEnemyEntity();
+	
+	void SetAlliedEntity(AEntity* NewAlliedEntity);
+	void SetEnemyEntity(AEntity* NewEnemyEntity);
+
+	AEntity* GetEntity(EAffiliation Affiliation);
+	void SetEntity(AEntity* NewEntity, EAffiliation Affiliation);
 
 	UFUNCTION(BlueprintCallable, Category="Tile")
 	bool IsWalkable(EAffiliation Affiliation) const;
@@ -166,7 +186,7 @@ public:
 	void OnRep_Building();
 
 	UPROPERTY(BlueprintAssignable)
-	FOnChangedSignature OnBuildingChanged;
+	FOnTileChangedSignature OnBuildingChanged;
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	bool CanBuild();

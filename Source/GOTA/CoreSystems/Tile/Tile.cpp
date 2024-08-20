@@ -172,6 +172,42 @@ void ATile::SetNormalizedVolcanoDistance(float NewNormalizedVolcanoDistance)
 	OnDistancesChanged.Broadcast();
 }
 
+AEntity* ATile::GetAlliedEntity()
+{
+	return AlliedEntity;
+}
+
+AEntity* ATile::GetEnemyEntity()
+{
+	return EnemyEntity;
+}
+
+void ATile::SetAlliedEntity(AEntity* NewAlliedEntity)
+{
+	AlliedEntity = NewAlliedEntity;
+	OnEntityChanged.Broadcast(this);
+}
+
+void ATile::SetEnemyEntity(AEntity* NewEnemyEntity)
+{
+	EnemyEntity = NewEnemyEntity;
+	OnEntityChanged.Broadcast(this);
+}
+
+AEntity* ATile::GetEntity(EAffiliation Affiliation)
+{
+	if(Affiliation == EAffiliation::Ally)
+		return GetAlliedEntity();
+	return GetEnemyEntity();
+}
+
+void ATile::SetEntity(AEntity* NewEntity, EAffiliation Affiliation)
+{
+	if(Affiliation == EAffiliation::Ally)
+		SetAlliedEntity(NewEntity);
+	SetEnemyEntity(NewEntity);
+}
+
 bool ATile::IsWalkable(EAffiliation Affiliation) const
 {
 	if (Affiliation == EAffiliation::Ally)
@@ -288,7 +324,7 @@ void ATile::Unclaim()
 
 void ATile::OnRep_Building()
 {
-	OnBuildingChanged.Broadcast();
+	OnBuildingChanged.Broadcast(this);
 }
 
 bool ATile::CanBuild()
@@ -319,7 +355,7 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 	Building->PopContainer->OnPopulationChanged.AddDynamic(this, &ATile::CalculatePopulationGrowthChangeWithNeighbors);
 	CalculatePopulationGrowthChangeWithNeighbors(FPopulation());
 	// Set Graphics
-	OnBuildingChanged.Broadcast();
+	OnBuildingChanged.Broadcast(this);
 	RecalculateTileLayout();
 	return true;
 }
@@ -335,7 +371,7 @@ bool ATile::TryUpgrade()
 	GameplayTags.RemoveTags(Building->DataAsset->GetTierData(Building->Tier)->GameplayTags);
 	Building->Upgrade();
 	GameplayTags.AppendTags(Building->DataAsset->GetTierData(Building->Tier)->GameplayTags);
-	OnBuildingChanged.Broadcast();
+	OnBuildingChanged.Broadcast(this);
 	return true;
 }
 
@@ -354,7 +390,7 @@ void ATile::Unbuild()
 	// Destroy the Object
 	Building = nullptr;
 	// Set Graphics
-	OnBuildingChanged.Broadcast();
+	OnBuildingChanged.Broadcast(this);
 	RecalculateTileLayout();
 }
 

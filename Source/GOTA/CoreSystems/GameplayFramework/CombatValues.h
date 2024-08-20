@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GOTA/CoreSystems/Faction/Building/PopulationContainer.h"
 #include "CombatValues.generated.h"
 
 UCLASS(Blueprintable)
@@ -15,25 +14,50 @@ class UCombatValues : public UObject
 
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangedSig, UCombatValues*, CombatValues);
-	
+
 public:
 	FOnChangedSig OnChanged;
-	
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Combat Values")
+
+private:
+	UPROPERTY(BlueprintGetter=GetAttack, BlueprintSetter=SetAttack, Replicated, Category="Combat Values")
 	int32 Attack = 0;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Combat Values")
+	UPROPERTY(BlueprintGetter=GetDefense, BlueprintSetter=SetDefense, Replicated, Category="Combat Values")
 	int32 Defense = 0;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Combat Values")
+	UPROPERTY(BlueprintGetter=GetIndividualHP, BlueprintSetter=SetIndividualHP, Replicated, Category="Combat Values")
 	int32 IndividualHP = 0;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="Combat Values")
+	UPROPERTY(BlueprintGetter=GetIndividuals, BlueprintSetter=SetIndividuals, Replicated, Category="Combat Values")
 	int32 Individuals = 0;
 
-	int32 GetHP() const;
+public:
+	UFUNCTION(BlueprintGetter)
+	int32 GetAttack();
 
-	void BindToPopulation(UPopulationContainer* PopCon);
-	UFUNCTION()
-	void UpdateIndividuals(const FPopulation ChangedBy);
+	UFUNCTION(BlueprintGetter)
+	int32 GetDefense();
+
+	UFUNCTION(BlueprintGetter)
+	int32 GetIndividualHP();
+
+	UFUNCTION(BlueprintGetter)
+	int32 GetIndividuals();
+
+	UFUNCTION(BlueprintSetter)
+	void SetAttack(int32 NewAttack);
+
+	UFUNCTION(BlueprintSetter)
+	void SetDefense(int32 NewDefense);
+
+	UFUNCTION(BlueprintSetter)
+	void SetIndividualHP(int32 NewIndividualHP);
+
+	UFUNCTION(BlueprintSetter)
+	void SetIndividuals(int32 NewIndividuals);
+
+	UFUNCTION(BlueprintSetter)
+	void SetAll(int32 NewAttack, int32 NewDefense, int32 NewIndividualHP, int32 NewIndividuals);
+
+	int32 GetHP() const;
 };

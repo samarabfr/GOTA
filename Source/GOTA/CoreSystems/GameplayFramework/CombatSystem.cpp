@@ -56,27 +56,27 @@ void UCombatSystem::EvaluateCombat(ATile* Tile)
 
 
 	Tile->Unbuild();
-	if (Tile->EnemyEntity)
-		Tile->EnemyEntity->Kill();
-	if (Tile->AlliedEntity)
-		Tile->AlliedEntity->Kill();
+	if (Tile->GetEnemyEntity())
+		Tile->GetEnemyEntity()->Kill();
+	if (Tile->GetAlliedEntity())
+		Tile->GetAlliedEntity()->Kill();
 }
 
 void UCombatSystem::CalcCombatValues(ATile* Tile, int32& Attack, int32& Defense, EAffiliation Affiliation)
 {
-	if (Affiliation == EAffiliation::Enemy && Tile->EnemyEntity)
+	if (Affiliation == EAffiliation::Enemy && Tile->GetEnemyEntity())
 	{
-		Attack += Tile->EnemyEntity->GetAttack();
-		Defense += Tile->EnemyEntity->GetDefense();
+		Attack += Tile->GetEnemyEntity()->GetAttack();
+		Defense += Tile->GetEnemyEntity()->GetDefense();
 	}
-	if (Affiliation == EAffiliation::Ally && Tile->AlliedEntity)
+	if (Affiliation == EAffiliation::Ally && Tile->GetAlliedEntity())
 	{
-		Attack += Tile->AlliedEntity->GetAttack();
-		Defense += Tile->AlliedEntity->GetDefense();
+		Attack += Tile->GetAlliedEntity()->GetAttack();
+		Defense += Tile->GetAlliedEntity()->GetDefense();
 	}
 	if(Tile->Building && Tile->GetClaimant() && Tile->GetClaimant()->Affiliation == Affiliation)
 	{
-		Attack += Tile->Building->PopContainer->Attack;
-		Defense += Tile->Building->PopContainer->Defense;
+		Attack += Tile->Building->PopContainer->CombatValues->GetAttack();
+		Defense += Tile->Building->PopContainer->CombatValues->GetDefense();
 	}
 }

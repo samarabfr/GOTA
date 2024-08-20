@@ -68,47 +68,16 @@ bool AEntity::ShouldCombatTrigger() const
 		return true;
 	}
 	// Combat between this unit and enemy entity
-	if (Affiliation == EAffiliation::Ally)
-	{
-		if (CurrentTile->EnemyEntity) return true;
-	}
-	else
-	{
-		if (CurrentTile->AlliedEntity) return true;
-	}
+	if(CurrentTile->GetEntity(!Affiliation)) return true;
 	// no combat
 	return false;
-}
-
-void AEntity::TriggerCombat()
-{
-	// destroy building
-	if (CurrentTile->Building) CurrentTile->Unbuild();
-	// destroy enemy Entity
-	if (Affiliation == EAffiliation::Ally)
-	{
-		if (CurrentTile->EnemyEntity) CurrentTile->EnemyEntity->Kill();
-	}
-	else
-	{
-		if (CurrentTile->AlliedEntity) CurrentTile->AlliedEntity->Kill();
-	}
-	// destroy this entity
-	Kill();
 }
 
 void AEntity::Kill()
 {
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->TileEntities.Remove(this);
-	if (Affiliation == EAffiliation::Ally)
-	{
-		CurrentTile->AlliedEntity = nullptr;
-	}
-	else
-	{
-		CurrentTile->EnemyEntity = nullptr;
-	}
+	CurrentTile->SetEntity(nullptr, Affiliation);
 	Destroy();
 }
 
@@ -138,16 +107,8 @@ void AEntity::Step()
 	// can't move
 	if(!NewCurrent) return;
 	// move
-	if (Affiliation == EAffiliation::Ally)
-	{
-		CurrentTile->AlliedEntity = nullptr;
-		NewCurrent->AlliedEntity = this;
-	}
-	else
-	{
-		CurrentTile->EnemyEntity = nullptr;
-		NewCurrent->EnemyEntity = this;
-	}
+	CurrentTile->SetEntity(nullptr, Affiliation);
+	NewCurrent->SetEntity(this, Affiliation);
 	CurrentTile=NewCurrent;
 	SetActorLocation(CurrentTile->GetActorLocation());
 }

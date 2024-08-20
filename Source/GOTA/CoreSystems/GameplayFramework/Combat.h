@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CombatTile.h"
 #include "Combat.generated.h"
 
 UCLASS()
@@ -12,14 +13,17 @@ class GOTA_API ACombat : public AActor
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UPROPERTY()
-	TArray<ATile*> Tiles;
+	TArray<FCombatTile> CombatTiles;
 
-	UPROPERTY()
-	TArray<ATile*> Sources;
+	bool DoesCombatTilesContain(ATile* Tile);
+
+	void AddCombatTile(FCombatTile CombatTile);
+
+	void RemoveCombatTile(FCombatTile CombatTile);
 
 	void AddSource(ATile* Tile);
 	
 	bool ShouldMerge(ATile* Tile);
 
-	
+	void CalcKills();
 };

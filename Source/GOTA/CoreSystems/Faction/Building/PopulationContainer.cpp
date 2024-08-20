@@ -16,6 +16,7 @@ void UPopulationContainer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME(UPopulationContainer, Growth);
 	DOREPLIFETIME(UPopulationContainer, GrowthChange);
 	DOREPLIFETIME(UPopulationContainer, GrowthThreshold);
+	DOREPLIFETIME(UPopulationContainer, CombatValues);
 }
 
 bool UPopulationContainer::IsSupportedForNetworking() const
@@ -25,6 +26,7 @@ bool UPopulationContainer::IsSupportedForNetworking() const
 
 UPopulationContainer::UPopulationContainer()
 {
+	CombatValues = CreateDefaultSubobject<UCombatValues>("Combat Values");
 	// Load SettlementBalance to extract GrowthThreshold
 	static ConstructorHelpers::FObjectFinder<USettlementBalance> DataAsset(
 		TEXT("/Game/CoreSystems/Faction/DA_SettlementBalance"));
@@ -64,18 +66,18 @@ void UPopulationContainer::OnRep_Population(const FPopulation& OldPopulation)
 
 void UPopulationContainer::RecalculateCombatValues()
 {
-	HP = Population.Size * GameBalance->HumanHP;
-	Attack = Population.MoodContent * GameBalance->ContentPopAttack;
+	int32 Attack = Population.MoodContent * GameBalance->ContentPopAttack;
 	Attack += Population.MoodAngry * GameBalance->AngryPopAttack;
 	Attack += Population.MoodFear * GameBalance->FearPopAttack;
 	Attack += Population.Muskets * GameBalance->MusketAttack;
 	Attack += Population.Bows * GameBalance->BowAttack;
 
-	Defense = Population.MoodContent * GameBalance->ContentPopDefense;
+	int32 Defense = Population.MoodContent * GameBalance->ContentPopDefense;
 	Defense += Population.MoodAngry * GameBalance->AngryPopDefense;
 	Defense += Population.MoodFear * GameBalance->FearPopDefense;
 	Defense += Population.MoodFear * GameBalance->ShieldDefense;
-	OnCombatValuesChanged.Broadcast(HP, Attack, Defense);
+	
+	CombatValues->SetAll(Attack, Defense, GameBalance->HumanHP, Population.Size);
 }
 
 void UPopulationContainer::DealDamage(int32 Damage)

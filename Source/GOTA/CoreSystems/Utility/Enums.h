@@ -42,6 +42,13 @@ enum class EAffiliation : uint8
 	Enemy UMETA(DisplayName = "Enemy")
 };
 
+inline EAffiliation operator!(EAffiliation Affiliation)
+{
+	if(Affiliation == EAffiliation::Ally)
+		return EAffiliation::Enemy;
+	return EAffiliation::Ally;
+}
+
 UENUM(BlueprintType)
 enum class EFaction : uint8
 {

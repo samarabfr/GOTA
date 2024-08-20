@@ -405,11 +405,7 @@ bool ASettlement::SpawnArmy()
 	ATile* SpawnLocation = nullptr;
 	for (ATile* Tile : ClaimedTiles)
 	{
-		if (!Tile
-			|| (Tile->AlliedEntity && Affiliation == EAffiliation::Ally)
-			|| (Tile->EnemyEntity && Affiliation == EAffiliation::Enemy))
-			continue;
-
+		if (!Tile || Tile->GetEntity(Affiliation)) continue;
 		SpawnLocation = Tile;
 		break;
 	}
