@@ -58,4 +58,6 @@ public:
 	void UpdateProduction(FPopulation Change);
 	
 	void SetupProduction(const FBuildingTierData* TierData);
+
+	UCombatValues* GetCombatValues();
 };

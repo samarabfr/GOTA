@@ -1,6 +1,7 @@
 ﻿#include "Combat.h"
 
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 
 void ACombat::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -79,6 +80,51 @@ void ACombat::CombatValuesChanged(UCombatValues* CombatValues)
 }
 
 void ACombat::CalcKills()
+{
+	CalcAttackDefense();
+	int32 AlliedDamage = AlliedAttack - EnemyDefense;
+	int32 EnemyDamage = EnemyAttack - AlliedDefense;
+	SpreadDamage(AlliedDamage, EAffiliation::Ally);
+	SpreadDamage(EnemyDamage, EAffiliation::Enemy);
+}
+
+void ACombat::CalcAttackDefense()
+{
+	AlliedAttack = 0;
+	AlliedDefense = 0;
+	EnemyAttack = 0;
+	EnemyDefense = 0;
+	for (FCombatTile& CombatTile : CombatTiles)
+	{
+		if(CombatTile.Tile->GetAlliedEntity())
+		{
+			AlliedAttack += CombatTile.Tile->GetAlliedEntity()->GetAttack();
+			AlliedDefense += CombatTile.Tile->GetAlliedEntity()->GetDefense();
+		}
+		if(CombatTile.Tile->GetEnemyEntity())
+		{
+			EnemyAttack += CombatTile.Tile->GetEnemyEntity()->GetAttack();
+			EnemyDefense += CombatTile.Tile->GetEnemyEntity()->GetDefense();
+		}
+		if(CombatTile.Tile->Building
+			&& CombatTile.Tile->GetClaimant())
+		{
+			UCombatValues* CV = CombatTile.Tile->Building->GetCombatValues();
+			if(CombatTile.Tile->GetClaimant()->Affiliation == EAffiliation::Ally)
+			{
+				AlliedAttack += CV->GetAttack();
+				AlliedDefense += CV->GetDefense();
+			}
+			else
+			{
+				EnemyAttack += CV->GetAttack();
+				EnemyDefense += CV->GetDefense();
+			}
+		}
+	}
+}
+
+void ACombat::SpreadDamage(int32 Damage, EAffiliation Affiliation)
 {
 	
 }

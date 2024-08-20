@@ -16,6 +16,14 @@ class GOTA_API ACombat : public AActor
 	UPROPERTY()
 	TArray<FCombatTile> CombatTiles;
 
+	int32 AlliedAttack = 0;
+
+	int32 AlliedDefense = 0;
+
+	int32 EnemyAttack = 0;
+
+	int32 EnemyDefense = 0;
+
 	bool DoesCombatTilesContain(ATile* Tile);
 
 	void AddCombatTile(FCombatTile CombatTile);
@@ -36,4 +44,8 @@ class GOTA_API ACombat : public AActor
 	void CombatValuesChanged(UCombatValues* CombatValues);
 
 	void CalcKills();
+
+	void CalcAttackDefense();
+
+	void SpreadDamage(int32 Damage, EAffiliation Affiliation);
 };
