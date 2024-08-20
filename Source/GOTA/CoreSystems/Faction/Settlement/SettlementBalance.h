@@ -106,4 +106,7 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Importance Rating")
 	float HousingImportanceDescent = 0.1;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Importance Rating")
+	float CurrentPopImportance = 1;
 };

@@ -91,6 +91,7 @@ float UBuildingProject::CalculateScore()
 		int32 MaxIncomeDiff = CountThresholdMet * TierData->ProductionPerThreshold;
 		int32 MaxHousingDiff = TierData->Housing;
 		float FreeHousing = 0;
+		float CurrentPop = 0;
 		// subtract income from previous tier
 		if (Tier > 1)
 		{
@@ -103,9 +104,11 @@ float UBuildingProject::CalculateScore()
 				const int32 PreviousMaxIncome = PreviousCountThresholdMet * PreviousTierData->ProductionPerThreshold;
 				MaxIncomeDiff -= PreviousMaxIncome;
 			}
+			// Pop
+			CurrentPop = Tile->Building->PopContainer->Population.Size;
 			// Housing
 			MaxHousingDiff -= PreviousTierData->Housing;
-			FreeHousing = PreviousTierData->Housing - Tile->Building->PopContainer->Population.Size;
+			FreeHousing = PreviousTierData->Housing - CurrentPop;
 		}
 		// Calculate GainScore
 		// income
@@ -140,6 +143,8 @@ float UBuildingProject::CalculateScore()
 		{
 			GainsScore = Builder->ImportanceRatings.Shields * MaxIncomeDiff;
 		}
+		// Pop
+		GainsScore += Builder->SettlementBalance->CurrentPopImportance * CurrentPop;
 		// Housing
 		float HousingImportanceRating = Builder->SettlementBalance->HousingImportance
 			* FMath::Pow(EULERS_NUMBER, -Builder->SettlementBalance->HousingImportanceDescent * FreeHousing);
