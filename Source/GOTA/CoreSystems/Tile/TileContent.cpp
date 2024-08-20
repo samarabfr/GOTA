@@ -1,5 +1,6 @@
 ﻿#include "TileContent.h"
 #include "Tile.h"
+#include "Algo/RandomShuffle.h"
 #include "Components/StaticMeshComponent.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
@@ -182,7 +183,7 @@ void UTileContent::BringArrayToCorrectSize(TArray<FTileAssetSpawn>& Array, int32
 
 void UTileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<FSpawnPoint> SpawnPoints)
 {
-	ShuffleTArray(SpawnPoints);
+	Algo::RandomShuffle(SpawnPoints);
 	for (int i = 0; i < Array.Num(); ++i)
 	{
 		Array[i].SpawnPoint = SpawnPoints[i];
@@ -381,21 +382,4 @@ void UTileContent::CalculateTransform(const FSpawnPoint& SpawnPoint, FTransform&
 	Transform.SetLocation(RotatedSpawnPointLocation + Tile->GetActorLocation());
 	FRotator Rot = FRotator(0, SpawnPoint.Rotation, 0) + Rotation;
 	Transform.SetRotation(Rot.Quaternion());
-}
-
-template <typename T>
-void UTileContent::ShuffleTArray(TArray<T>& Array)
-{
-	if (Array.Num() <= 1)
-	{
-		return;
-	}
-	// Create a random stream with a random seed
-	FRandomStream RandomStream(FMath::Rand());
-
-	for (int32 i = Array.Num() - 1; i > 0; i--)
-	{
-		int32 j = RandomStream.RandRange(0, i);
-		Array.Swap(i, j);
-	}
 }

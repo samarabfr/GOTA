@@ -79,9 +79,5 @@ private:
 	UPROPERTY()
 	AGS_Ingame* GameState;
 
-private:
-	template <typename T>
-	static void ShuffleTArray(TArray<T>& Array);
-
 	void CalculateTransform(const FSpawnPoint& SpawnPoint, FTransform& Transform);
 };
