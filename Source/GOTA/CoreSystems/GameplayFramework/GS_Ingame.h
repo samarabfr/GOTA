@@ -64,13 +64,13 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	int32 IslandMaxTrees;
-	
+
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	int32 IslandMaxWildlife;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	int32 IslandMaxForage;
-	
+
 	// ---------------------------------------------------------
 	// Turn Stuff
 	UDELEGATE()
@@ -81,7 +81,7 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
 	FZeroParamSignature OnTurnCounterChanged;
-	
+
 	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
 	FTimeChangedSignature OnTurnTimerChanged;
 
@@ -102,15 +102,15 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
 	bool ShouldTickTurnTime = false;
-	
+
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_TurnCounter, Category="GOTAGameState")
 	int32 TurnCounter = 1;
 
 	void IncreaseTurnCounter();
-	
+
 	UFUNCTION()
 	void OnRep_TurnCounter();
-	
+
 	UFUNCTION(BlueprintSetter)
 	void SetElapsedTurnTime(float NewValue);
 
@@ -134,7 +134,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UCombatSystem* CombatSystem;
-	
+
 	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
 	ALoadingManager* LoadingManager;
 
@@ -144,11 +144,14 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void RegisterTileForTotalsUpdates(ATile* Tile);
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void RegisterColonialSettlementForTotalsUpdates(UPopulationSummary* Population);
 
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void RegisterNativeSettlementForTotalsUpdates(UPopulationSummary* Population);
+
+	void RegisterPopConForTotals(UPopulationContainer* PopCon, EAffiliation Affiliation);
+	void UnregisterPopConForTotals(UPopulationContainer* PopCon, EAffiliation Affiliation);
 
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGameEndingSignature, GameEnding, Ending, FString, EndMessage);
@@ -158,10 +161,10 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
 	bool GameEnded = false;
-	
+
 	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
 	bool GameStarted = false;
-	
+
 	UFUNCTION(NetMulticast, Reliable)
 	void EndGame(GameEnding Ending, const FString& EndingMessage);
 

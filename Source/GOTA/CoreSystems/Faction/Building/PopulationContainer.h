@@ -64,7 +64,8 @@ public:
 	int32 Defense = 0;
 
 	void RecalculateCombatValues();
-
+	void DealDamage(int32 Damage);
+	
 	// ---------------------------------------------------------
 	// Changing Population Values
 

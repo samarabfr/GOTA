@@ -29,8 +29,8 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME(ATile, WildlifeGrowthChange);
 	DOREPLIFETIME(ATile, Building);
 	DOREPLIFETIME(ATile, Neighbors);
-	DOREPLIFETIME(ATile, AlliedTileEntity);
-	DOREPLIFETIME(ATile, EnemyTileEntity);
+	DOREPLIFETIME(ATile, AlliedEntity);
+	DOREPLIFETIME(ATile, EnemyEntity);
 	DOREPLIFETIME(ATile, bIsRiver);
 	DOREPLIFETIME(ATile, Biome);
 	DOREPLIFETIME(ATile, OceanDistance);
@@ -176,11 +176,11 @@ bool ATile::IsWalkable(EAffiliation Affiliation) const
 {
 	if (Affiliation == EAffiliation::Ally)
 	{
-		return !EnemyTileEntity;
+		return !EnemyEntity;
 	}
 	if (Affiliation == EAffiliation::Enemy)
 	{
-		return !AlliedTileEntity;
+		return !AlliedEntity;
 	}
 	return false;
 }
@@ -331,7 +331,7 @@ bool ATile::CanUpgrade()
 
 bool ATile::TryUpgrade()
 {
-	if(!Building || !Building->CanUpgrade()) return false;
+	if (!Building || !Building->CanUpgrade()) return false;
 	GameplayTags.RemoveTags(Building->DataAsset->GetTierData(Building->Tier)->GameplayTags);
 	Building->Upgrade();
 	GameplayTags.AppendTags(Building->DataAsset->GetTierData(Building->Tier)->GameplayTags);
@@ -713,4 +713,11 @@ void ATile::UpdateRiverConnections()
 		RiverConnections[NullConnection] = true;
 		RealCount++;
 	}
+}
+
+AEntity* ATile::GetEntityByAffiliation(EAffiliation Affiliation) const
+{
+	if (Affiliation == EAffiliation::Ally) return AlliedEntity;
+	if (Affiliation == EAffiliation::Enemy) return EnemyEntity;
+	return nullptr;
 }

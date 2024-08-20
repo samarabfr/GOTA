@@ -113,10 +113,10 @@ public:
 	FOnChangedSignature OnDistancesChanged;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
-	AEntity* AlliedTileEntity;
+	AEntity* AlliedEntity;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
-	AEntity* EnemyTileEntity;
+	AEntity* EnemyEntity;
 
 	UFUNCTION(BlueprintCallable, Category="Tile")
 	bool IsWalkable(EAffiliation Affiliation) const;
@@ -303,4 +303,9 @@ private:
 public:
 	UFUNCTION(BlueprintImplementableEvent, Category="Tile Graphics")
 	void UpdateHexagonMaterial();
+
+	// ---------------------------------------------------------
+	// Getter & Setter
+
+	AEntity* GetEntityByAffiliation(EAffiliation Affiliation) const;
 };

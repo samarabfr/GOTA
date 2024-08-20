@@ -78,6 +78,12 @@ void UPopulationContainer::RecalculateCombatValues()
 	OnCombatValuesChanged.Broadcast(HP, Attack, Defense);
 }
 
+void UPopulationContainer::DealDamage(int32 Damage)
+{
+	int32 Kills = Damage / GameBalance->HumanHP;
+	DecreaseSize(Kills);
+}
+
 // ---------------------------------------------------------
 // Changing Population Values
 

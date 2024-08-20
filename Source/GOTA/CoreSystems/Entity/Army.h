@@ -12,7 +12,7 @@ class GOTA_API AArmy : public AEntity
 {
 	GENERATED_BODY()
 	AArmy();
-	bool IsTargetValid() const;
+	bool IsTargetValid();
 
 public:
 	virtual void CalculateMovement() override;
@@ -23,4 +23,12 @@ public:
 	virtual int32 GetAttack() const override;
 
 	virtual int32 GetDefense() const override;
+
+	virtual int32 GetHP() const override;
+
+	virtual void DealDamage(int32 Damage) override;
+	
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	
+	virtual void Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 MovementSpeed_) override;
 };

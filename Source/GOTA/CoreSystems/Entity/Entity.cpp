@@ -24,6 +24,11 @@ AEntity::AEntity()
 	SetReplicateMovement(true);
 }
 
+EAffiliation AEntity::GetAffiliation()
+{
+	return Affiliation;
+}
+
 void AEntity::Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 MovementSpeed_)
 {
 	Affiliation = Affiliation_;
@@ -44,6 +49,15 @@ int32 AEntity::GetDefense() const
 	return 0;
 }
 
+int32 AEntity::GetHP() const
+{
+	return 0;
+}
+
+void AEntity::DealDamage(int32 Damage)
+{
+}
+
 bool AEntity::ShouldCombatTrigger() const
 {
 	// Combat between this unit and enemy building
@@ -56,11 +70,11 @@ bool AEntity::ShouldCombatTrigger() const
 	// Combat between this unit and enemy entity
 	if (Affiliation == EAffiliation::Ally)
 	{
-		if (CurrentTile->EnemyTileEntity) return true;
+		if (CurrentTile->EnemyEntity) return true;
 	}
 	else
 	{
-		if (CurrentTile->AlliedTileEntity) return true;
+		if (CurrentTile->AlliedEntity) return true;
 	}
 	// no combat
 	return false;
@@ -73,11 +87,11 @@ void AEntity::TriggerCombat()
 	// destroy enemy Entity
 	if (Affiliation == EAffiliation::Ally)
 	{
-		if (CurrentTile->EnemyTileEntity) CurrentTile->EnemyTileEntity->Kill();
+		if (CurrentTile->EnemyEntity) CurrentTile->EnemyEntity->Kill();
 	}
 	else
 	{
-		if (CurrentTile->AlliedTileEntity) CurrentTile->AlliedTileEntity->Kill();
+		if (CurrentTile->AlliedEntity) CurrentTile->AlliedEntity->Kill();
 	}
 	// destroy this entity
 	Kill();
@@ -89,11 +103,11 @@ void AEntity::Kill()
 	GameState->TileEntities.Remove(this);
 	if (Affiliation == EAffiliation::Ally)
 	{
-		CurrentTile->AlliedTileEntity = nullptr;
+		CurrentTile->AlliedEntity = nullptr;
 	}
 	else
 	{
-		CurrentTile->EnemyTileEntity = nullptr;
+		CurrentTile->EnemyEntity = nullptr;
 	}
 	Destroy();
 }
@@ -126,13 +140,13 @@ void AEntity::Step()
 	// move
 	if (Affiliation == EAffiliation::Ally)
 	{
-		CurrentTile->AlliedTileEntity = nullptr;
-		NewCurrent->AlliedTileEntity = this;
+		CurrentTile->AlliedEntity = nullptr;
+		NewCurrent->AlliedEntity = this;
 	}
 	else
 	{
-		CurrentTile->EnemyTileEntity = nullptr;
-		NewCurrent->EnemyTileEntity = this;
+		CurrentTile->EnemyEntity = nullptr;
+		NewCurrent->EnemyEntity = this;
 	}
 	CurrentTile=NewCurrent;
 	SetActorLocation(CurrentTile->GetActorLocation());

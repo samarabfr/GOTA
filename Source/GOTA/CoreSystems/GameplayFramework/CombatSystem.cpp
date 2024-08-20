@@ -1,5 +1,7 @@
 ﻿#include "CombatSystem.h"
 
+#include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 
 void UCombatSystem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -14,6 +16,17 @@ bool UCombatSystem::IsSupportedForNetworking() const
 
 UCombatSystem::UCombatSystem()
 {
+	// Load GameBalance for Combat Value calculation
+	static ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAsset2(
+		TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
+	if (DataAsset2.Succeeded())
+	{
+		GameBalance = DataAsset2.Object;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Combat System couldn't load GameBalance Data Asset"))
+	}
 }
 
 void UCombatSystem::RegisterCombat(ATile* Tile)
@@ -32,9 +45,38 @@ void UCombatSystem::TriggerAllCombats()
 
 void UCombatSystem::EvaluateCombat(ATile* Tile)
 {
+	int32 EnemyAttack = 0;
+	int32 EnemyDefense = 0;
+	CalcCombatValues(Tile, EnemyAttack, EnemyDefense, EAffiliation::Enemy);
+	int32 AllyAttack = 0;
+	int32 AllyDefense = 0;
+	CalcCombatValues(Tile, AllyAttack, AllyDefense, EAffiliation::Ally);
+	int32 EnemyDamage = EnemyAttack - AllyDefense;
+	int32 AllyDamage = AllyAttack - EnemyDefense;
+
+
 	Tile->Unbuild();
-	if (Tile->EnemyTileEntity)
-		Tile->EnemyTileEntity->Kill();
-	if (Tile->AlliedTileEntity)
-		Tile->AlliedTileEntity->Kill();
+	if (Tile->EnemyEntity)
+		Tile->EnemyEntity->Kill();
+	if (Tile->AlliedEntity)
+		Tile->AlliedEntity->Kill();
+}
+
+void UCombatSystem::CalcCombatValues(ATile* Tile, int32& Attack, int32& Defense, EAffiliation Affiliation)
+{
+	if (Affiliation == EAffiliation::Enemy && Tile->EnemyEntity)
+	{
+		Attack += Tile->EnemyEntity->GetAttack();
+		Defense += Tile->EnemyEntity->GetDefense();
+	}
+	if (Affiliation == EAffiliation::Ally && Tile->AlliedEntity)
+	{
+		Attack += Tile->AlliedEntity->GetAttack();
+		Defense += Tile->AlliedEntity->GetDefense();
+	}
+	if(Tile->Building && Tile->GetClaimant() && Tile->GetClaimant()->Affiliation == Affiliation)
+	{
+		Attack += Tile->Building->PopContainer->Attack;
+		Defense += Tile->Building->PopContainer->Defense;
+	}
 }
