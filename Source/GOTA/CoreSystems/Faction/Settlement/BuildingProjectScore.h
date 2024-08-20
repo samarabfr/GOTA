@@ -13,13 +13,13 @@ struct FBuildingProjectScore
 	GENERATED_BODY()
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	UBuildingProject* BuildingProject;
+	UBuildingProject* BuildingProject = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	float Score = 0;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	UBuildingDataAsset* Data; // for debugging
+	UBuildingDataAsset* Data = nullptr; // for debugging
 	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	int32 ProjectTime = 0; // for debugging

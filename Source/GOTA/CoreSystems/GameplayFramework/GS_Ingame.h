@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CombatSystem.h"
 #include "GameFramework/GameState.h"
 #include "GOTA/CoreSystems/Entity/Entity.h"
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
@@ -131,6 +132,9 @@ public:
 	// ---------------------------------------------------------
 	// Useful Stuff
 
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
+	UCombatSystem* CombatSystem;
+	
 	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
 	ALoadingManager* LoadingManager;
 

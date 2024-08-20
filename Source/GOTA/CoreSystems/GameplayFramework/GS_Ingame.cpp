@@ -24,6 +24,8 @@ void AGS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	DOREPLIFETIME(AGS_Ingame, IsCalculatingTurn);
 	DOREPLIFETIME(AGS_Ingame, ShouldTickTurnTime);
 	DOREPLIFETIME(AGS_Ingame, TurnCounter);
+	
+	DOREPLIFETIME(AGS_Ingame, CombatSystem);
 }
 
 AGS_Ingame::AGS_Ingame()
@@ -36,6 +38,7 @@ AGS_Ingame::AGS_Ingame()
 	TotalWildlife = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Wildlife"));
 	TotalColonialPopulation = CreateDefaultSubobject<UPopulationSummary>(TEXT("Total Colonial Population"));
 	TotalNativePopulation = CreateDefaultSubobject<UPopulationSummary>(TEXT("Total Native Population"));
+	CombatSystem= CreateDefaultSubobject<UCombatSystem>(TEXT("Combat System"));
 }
 
 void AGS_Ingame::Init()
@@ -45,6 +48,7 @@ void AGS_Ingame::Init()
 	AddReplicatedSubObject(TotalWildlife);
 	AddReplicatedSubObject(TotalColonialPopulation);
 	AddReplicatedSubObject(TotalNativePopulation);
+	AddReplicatedSubObject(CombatSystem);
 	// Spawn Static Mesh Batcher
 	StaticMeshBatcher = GetWorld()->SpawnActor<AStaticMeshBatcher>();
 }
