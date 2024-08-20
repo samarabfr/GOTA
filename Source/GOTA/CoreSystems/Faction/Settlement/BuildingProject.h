@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "SettlementImportanceRatings.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "BuildingProject.generated.h"
@@ -33,13 +34,17 @@ public:
 	FGameResources Cost;
 	
 	UFUNCTION(BlueprintCallable, Category="Building Project")
-	bool IsPossible() const;
+	bool IsPossible();
 
 	UFUNCTION(BlueprintCallable, Category="Building Project")
 	bool CanAfford() const;
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Building Project")
 	bool TryBuilding();
+	
+	float CalculateScore();
+
+	int32 CalculateProjectTime();
 
 	UFUNCTION(BlueprintCallable, Category="Building Project")
 	void Init(ASettlement* Builder_, UBuildingDataAsset* Data_, int32 Tier_, ATile* Tile_);
