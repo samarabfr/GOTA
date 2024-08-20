@@ -27,6 +27,7 @@ AArmy::AArmy()
 	RandomPop.Muskets = FMath::RandRange(1, 4);
 	RandomPop.Shields = FMath::RandRange(1, 3);
 	PopCon->AddPopulation(RandomPop);
+	PopCon->CombatValues->OnChanged.AddDynamic(this, &AArmy::CombatValuesChanged);
 }
 
 bool AArmy::IsTargetValid()

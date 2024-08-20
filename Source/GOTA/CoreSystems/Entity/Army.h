@@ -27,8 +27,8 @@ public:
 	virtual int32 GetHP() const override;
 
 	virtual void DealDamage(int32 Damage) override;
-	
+
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	
+
 	virtual void Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 MovementSpeed_) override;
 };

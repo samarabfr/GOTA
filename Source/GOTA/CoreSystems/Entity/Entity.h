@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GOTA/CoreSystems/GameplayFramework/CombatValues.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Entity.generated.h"
 
@@ -17,9 +18,18 @@ class GOTA_API AEntity : public AActor
 	
 	UPROPERTY(BlueprintGetter=GetAffiliation, Replicated, Category="Entity")
 	EAffiliation Affiliation;
+
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCombatValuesChangedSig, UCombatValues*, NewCombatValues);
 	
 public:
 	AEntity();
+
+	UPROPERTY(BlueprintAssignable)
+	FOnCombatValuesChangedSig OnCombatValuesChanged;
+
+	UFUNCTION()
+	void CombatValuesChanged(UCombatValues* CombatValues);
 	
 	UFUNCTION(BlueprintGetter)
 	EAffiliation GetAffiliation();

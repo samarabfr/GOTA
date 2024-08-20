@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CombatTile.h"
+#include "CombatValues.h"
 #include "Combat.generated.h"
 
 UCLASS()
@@ -24,6 +25,15 @@ class GOTA_API ACombat : public AActor
 	void AddSource(ATile* Tile);
 	
 	bool ShouldMerge(ATile* Tile);
+
+	UFUNCTION()
+	void EntityChanged(ATile* Tile, AEntity* OldEntity);
+
+	UFUNCTION()
+	void BuildingChanged(ATile* Tile);
+
+	UFUNCTION()
+	void CombatValuesChanged(UCombatValues* CombatValues);
 
 	void CalcKills();
 };

@@ -31,7 +31,10 @@ class GOTA_API ATile : public AActor
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnChangedSignature);
 
 	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTileChangedSignature, ATile* , Tile);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnTileChangedSignature, ATile*, Tile);
+
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnEntityChangedSignature, ATile*, Tile, AEntity*, OldEntity);
 
 	// ---------------------------------------------------------
 	// Initialisation and core variables
@@ -82,7 +85,8 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetOceanDistance(int32 NewOceanDistance);
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetNormalizedOceanDistance, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetNormalizedOceanDistance, Replicated,
+		Category="Tile")
 	float NormalizedOceanDistance = -1;
 
 	UFUNCTION(BlueprintSetter)
@@ -94,7 +98,8 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetRiverDistance(int32 NewRiverDistance);
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetNormalizedRiverDistance, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetNormalizedRiverDistance, Replicated,
+		Category="Tile")
 	float NormalizedRiverDistance = -1;
 
 	UFUNCTION(BlueprintSetter)
@@ -106,7 +111,8 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetVolcanoDistance(int32 NewVolcanoDistance);
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetNormalizedVolcanoDistance, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetNormalizedVolcanoDistance, Replicated,
+		Category="Tile")
 	float NormalizedVolcanoDistance = -1;
 
 	UFUNCTION(BlueprintSetter)
@@ -124,14 +130,14 @@ private:
 
 public:
 	UPROPERTY(BlueprintAssignable)
-	FOnTileChangedSignature OnEntityChanged;
+	FOnEntityChangedSignature OnEntityChanged;
 
 	UFUNCTION(BlueprintGetter)
 	AEntity* GetAlliedEntity();
 
 	UFUNCTION(BlueprintGetter)
 	AEntity* GetEnemyEntity();
-	
+
 	void SetAlliedEntity(AEntity* NewAlliedEntity);
 	void SetEnemyEntity(AEntity* NewEnemyEntity);
 
@@ -190,13 +196,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	bool CanBuild();
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	bool TryBuild(UBuildingDataAsset* BuildingDataAsset);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	bool CanUpgrade();
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	bool TryUpgrade();
 

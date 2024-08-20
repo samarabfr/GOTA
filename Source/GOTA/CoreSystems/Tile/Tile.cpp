@@ -184,14 +184,16 @@ AEntity* ATile::GetEnemyEntity()
 
 void ATile::SetAlliedEntity(AEntity* NewAlliedEntity)
 {
+	AEntity* OldEntity = AlliedEntity;
 	AlliedEntity = NewAlliedEntity;
-	OnEntityChanged.Broadcast(this);
+	OnEntityChanged.Broadcast(this, OldEntity);
 }
 
 void ATile::SetEnemyEntity(AEntity* NewEnemyEntity)
 {
+	AEntity* OldEntity = EnemyEntity;
 	EnemyEntity = NewEnemyEntity;
-	OnEntityChanged.Broadcast(this);
+	OnEntityChanged.Broadcast(this, OldEntity);
 }
 
 AEntity* ATile::GetEntity(EAffiliation Affiliation)

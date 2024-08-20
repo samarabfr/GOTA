@@ -24,6 +24,11 @@ AEntity::AEntity()
 	SetReplicateMovement(true);
 }
 
+void AEntity::CombatValuesChanged(UCombatValues* CombatValues)
+{
+	OnCombatValuesChanged.Broadcast(CombatValues);
+}
+
 EAffiliation AEntity::GetAffiliation()
 {
 	return Affiliation;
