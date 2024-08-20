@@ -109,4 +109,7 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Importance Rating")
 	float CurrentPopImportance = 1;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Importance Rating")
+	float BuildingAlreadyExistsMalus = 3;
 };

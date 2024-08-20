@@ -149,6 +149,19 @@ float UBuildingProject::CalculateScore()
 		float HousingImportanceRating = Builder->SettlementBalance->HousingImportance
 			* FMath::Pow(EULERS_NUMBER, -Builder->SettlementBalance->HousingImportanceDescent * FreeHousing);
 		GainsScore += HousingImportanceRating * MaxHousingDiff;
+		// Building already exists malus
+		if(Tier == 1)
+		{
+			for (ATile* ClaimedTile : Builder->ClaimedTiles)
+			{
+				if(ClaimedTile
+					&& ClaimedTile->Building
+					&& ClaimedTile->Building->DataAsset == Data)
+				{
+					GainsScore -= Builder->SettlementBalance->BuildingAlreadyExistsMalus;
+				}
+			}
+		}
 	}
 
 	// result
