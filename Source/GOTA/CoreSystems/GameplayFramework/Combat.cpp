@@ -53,6 +53,7 @@ void ACombat::RemoveCombatTile(FCombatTile CombatTile)
 
 void ACombat::AddSource(ATile* Tile)
 {
+	PreventCalcKills = true;
 	if (!DoesCombatTilesContain(Tile))
 	{
 		AddCombatTile(FCombatTile(Tile));
@@ -62,14 +63,16 @@ void ACombat::AddSource(ATile* Tile)
 		if (!Neighbor || DoesCombatTilesContain(Neighbor)) continue;
 		AddCombatTile(FCombatTile(Neighbor));
 	}
+	PreventCalcKills = false;
+	CalcKills();
 }
 
 bool ACombat::ShouldMerge(ATile* Tile)
 {
-	if(DoesCombatTilesContain(Tile)) return true;
+	if (DoesCombatTilesContain(Tile)) return true;
 	for (ATile* Neighbor : Tile->Neighbors)
 	{
-		if(DoesCombatTilesContain(Neighbor)) return true;
+		if (DoesCombatTilesContain(Neighbor)) return true;
 	}
 	return false;
 }
@@ -103,7 +106,7 @@ void ACombat::CombatValuesChanged(UCombatValues* CombatValues)
 
 void ACombat::CalcKills()
 {
-	if(PreventCalcKills) return;
+	if (PreventCalcKills) return;
 	CalcAttackDefense();
 	int32 AlliedDamage = AlliedAttack - EnemyDefense;
 	int32 EnemyDamage = EnemyAttack - AlliedDefense;
@@ -162,7 +165,7 @@ void ACombat::SpreadDamage(int32 Damage, EAffiliation Receiver)
 
 void ACombat::SpreadDamageToEntities(EAffiliation Receiver, int32& DamageLeft)
 {
-	if(DamageLeft <= 0) return;
+	if (DamageLeft <= 0) return;
 	// get combat tiles with Receiver entities
 	TArray<FCombatTile*> EntityCombatTiles;
 	int32 TotalHP = 0;
@@ -175,7 +178,7 @@ void ACombat::SpreadDamageToEntities(EAffiliation Receiver, int32& DamageLeft)
 			TotalHP += CV->GetHP();
 		}
 	}
-	if(TotalHP <= 0) return;
+	if (TotalHP <= 0) return;
 	// entities
 	int32 Damage = DamageLeft;
 	// spread damage based on total hp ratio
@@ -213,7 +216,7 @@ void ACombat::SpreadDamageToEntities(EAffiliation Receiver, int32& DamageLeft)
 
 void ACombat::SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft)
 {
-	if(DamageLeft <= 0) return;
+	if (DamageLeft <= 0) return;
 	// get combat tiles with Receiver Building Pop
 	TArray<FCombatTile*> BuildingPopCombatTiles;
 	int32 TotalHP = 0;
@@ -229,7 +232,7 @@ void ACombat::SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft
 			TotalHP += CV->GetHP();
 		}
 	}
-	if(TotalHP <= 0) return;
+	if (TotalHP <= 0) return;
 	// entities
 	int32 Damage = DamageLeft;
 	// spread damage based on total hp ratio
@@ -267,7 +270,7 @@ void ACombat::SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft
 
 void ACombat::SpreadDamageToBuildings(EAffiliation Receiver, int32& DamageLeft)
 {
-	if(DamageLeft <= 0) return;
+	if (DamageLeft <= 0) return;
 	int32 BuildingTierHP = GameBalance->BuildingTierHP;
 	// get combat tiles with Receiver Building Pop
 	TArray<FCombatTile*> BuildingCombatTiles;
@@ -282,7 +285,7 @@ void ACombat::SpreadDamageToBuildings(EAffiliation Receiver, int32& DamageLeft)
 			TotalHP += BuildingTierHP * CombatTile.Tile->Building->Tier;
 		}
 	}
-	if(TotalHP <= 0) return;
+	if (TotalHP <= 0) return;
 	// entities
 	int32 Damage = DamageLeft;
 	// spread damage based on total hp ratio
@@ -318,15 +321,23 @@ void ACombat::TriggerCombat()
 	for (FCombatTile CombatTile : CombatTiles)
 	{
 		ATile* Tile = CombatTile.Tile;
-		if(Tile->GetAlliedEntity())
+		if (Tile->GetAlliedEntity())
 			Tile->GetAlliedEntity()->KillIndividuals(CombatTile.AlliedEntityKills);
-		if(Tile->GetEnemyEntity())
+		if (Tile->GetEnemyEntity())
 			Tile->GetEnemyEntity()->KillIndividuals(CombatTile.EnemyEntityKills);
-		if(Tile->Building)
+		if (Tile->Building)
 		{
 			Tile->Building->PopContainer->DecreaseSize(CombatTile.BuildingPopKills);
-			Tile->Unbuild(); // TODO: Downgrade instead
+			if (CombatTile.BuildingDowngrade > 0) Tile->Unbuild(); // TODO: Downgrade instead
 		}
 	}
 	PreventCalcKills = false;
+}
+
+void ACombat::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	for (int32 i = CombatTiles.Num() - 1; i >= 0; --i)
+	{
+		RemoveCombatTile(CombatTiles[i]);
+	}
 }

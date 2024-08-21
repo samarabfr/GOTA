@@ -19,15 +19,19 @@ class GOTA_API ACombat : public AActor
 	UPROPERTY()
 	UGameBalanceDataAsset* GameBalance;
 
-	UPROPERTY()
+	UPROPERTY(VisibleInstanceOnly)
 	TArray<FCombatTile> CombatTiles;
 
+	UPROPERTY(VisibleInstanceOnly)
 	int32 AlliedAttack = 0;
 
+	UPROPERTY(VisibleInstanceOnly)
 	int32 AlliedDefense = 0;
 
+	UPROPERTY(VisibleInstanceOnly)
 	int32 EnemyAttack = 0;
 
+	UPROPERTY(VisibleInstanceOnly)
 	int32 EnemyDefense = 0;
 
 	bool DoesCombatTilesContain(ATile* Tile);
@@ -67,5 +71,7 @@ private:
 public:
 	void TriggerCombat();
 
+private:
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	
 };

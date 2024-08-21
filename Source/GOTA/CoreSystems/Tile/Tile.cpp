@@ -207,7 +207,8 @@ void ATile::SetEntity(AEntity* NewEntity, EAffiliation Affiliation)
 {
 	if(Affiliation == EAffiliation::Ally)
 		SetAlliedEntity(NewEntity);
-	SetEnemyEntity(NewEntity);
+	else
+		SetEnemyEntity(NewEntity);
 }
 
 bool ATile::IsWalkable(EAffiliation Affiliation) const
