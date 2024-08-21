@@ -162,6 +162,7 @@ void ACombat::SpreadDamage(int32 Damage, EAffiliation Receiver)
 
 void ACombat::SpreadDamageToEntities(EAffiliation Receiver, int32& DamageLeft)
 {
+	if(DamageLeft <= 0) return;
 	// get combat tiles with Receiver entities
 	TArray<FCombatTile*> EntityCombatTiles;
 	int32 TotalHP = 0;
@@ -174,6 +175,7 @@ void ACombat::SpreadDamageToEntities(EAffiliation Receiver, int32& DamageLeft)
 			TotalHP += CV->GetHP();
 		}
 	}
+	if(TotalHP <= 0) return;
 	// entities
 	int32 Damage = DamageLeft;
 	// spread damage based on total hp ratio
@@ -211,6 +213,7 @@ void ACombat::SpreadDamageToEntities(EAffiliation Receiver, int32& DamageLeft)
 
 void ACombat::SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft)
 {
+	if(DamageLeft <= 0) return;
 	// get combat tiles with Receiver Building Pop
 	TArray<FCombatTile*> BuildingPopCombatTiles;
 	int32 TotalHP = 0;
@@ -226,6 +229,7 @@ void ACombat::SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft
 			TotalHP += CV->GetHP();
 		}
 	}
+	if(TotalHP <= 0) return;
 	// entities
 	int32 Damage = DamageLeft;
 	// spread damage based on total hp ratio
@@ -263,6 +267,7 @@ void ACombat::SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft
 
 void ACombat::SpreadDamageToBuildings(EAffiliation Receiver, int32& DamageLeft)
 {
+	if(DamageLeft <= 0) return;
 	int32 BuildingTierHP = GameBalance->BuildingTierHP;
 	// get combat tiles with Receiver Building Pop
 	TArray<FCombatTile*> BuildingCombatTiles;
@@ -277,6 +282,7 @@ void ACombat::SpreadDamageToBuildings(EAffiliation Receiver, int32& DamageLeft)
 			TotalHP += BuildingTierHP * CombatTile.Tile->Building->Tier;
 		}
 	}
+	if(TotalHP <= 0) return;
 	// entities
 	int32 Damage = DamageLeft;
 	// spread damage based on total hp ratio
