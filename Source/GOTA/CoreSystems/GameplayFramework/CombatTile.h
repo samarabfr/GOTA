@@ -15,13 +15,22 @@ struct FCombatTile
 	ATile* Tile = nullptr;
 	
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Combat")
-	int32 BuildingsKills = 0;
+	int32 BuildingDowngrade = 0;
 	
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Combat")
-	int32 EnemyKills = 0;
+	int32 BuildingPopKills = 0;
 	
 	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Combat")
-	int32 AlliedKills = 0;
+	int32 EnemyEntityKills = 0;
+	
+	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Combat")
+	int32 AlliedEntityKills = 0;
+
+	int32 GetEntityKills(EAffiliation Affiliation);
+
+	void SetEntityKills(int32 Kills, EAffiliation Affiliation);
+
+	void ZeroNumbers();
 	
 	bool operator==(const FCombatTile& Other) const;
 	 

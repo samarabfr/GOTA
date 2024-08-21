@@ -79,15 +79,8 @@ public:
 
 	// ---------------------------------------------------------
 	// Getter & Setter
-	
 	UFUNCTION(BlueprintCallable, Category="Entity")
-	virtual int32 GetAttack() const;
-
-	UFUNCTION(BlueprintCallable, Category="Entity")
-	virtual int32 GetDefense() const;
-
-	UFUNCTION(BlueprintCallable, Category="Entity")
-	virtual int32 GetHP() const;
+	virtual UCombatValues* GetCombatValues() const;
 	
 	UFUNCTION(BlueprintGetter)
 	TArray<ATile*> GetPath();

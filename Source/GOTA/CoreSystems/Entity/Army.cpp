@@ -44,19 +44,9 @@ bool AArmy::IsTargetValid()
 	return true;
 }
 
-int32 AArmy::GetAttack() const
+UCombatValues* AArmy::GetCombatValues() const
 {
-	return PopCon->CombatValues->GetAttack();
-}
-
-int32 AArmy::GetDefense() const
-{
-	return PopCon->CombatValues->GetDefense();
-}
-
-int32 AArmy::GetHP() const
-{
-	return PopCon->CombatValues->GetHP();
+	return PopCon->CombatValues;
 }
 
 void AArmy::DealDamage(int32 Damage)

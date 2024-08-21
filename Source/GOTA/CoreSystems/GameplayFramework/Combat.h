@@ -13,6 +13,11 @@ class GOTA_API ACombat : public AActor
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	ACombat();
+
+	UPROPERTY()
+	UGameBalanceDataAsset* GameBalance;
+
 	UPROPERTY()
 	TArray<FCombatTile> CombatTiles;
 
@@ -31,7 +36,7 @@ class GOTA_API ACombat : public AActor
 	void RemoveCombatTile(FCombatTile CombatTile);
 
 	void AddSource(ATile* Tile);
-	
+
 	bool ShouldMerge(ATile* Tile);
 
 	UFUNCTION()
@@ -47,5 +52,11 @@ class GOTA_API ACombat : public AActor
 
 	void CalcAttackDefense();
 
-	void SpreadDamage(int32 Damage, EAffiliation Affiliation);
+	void SpreadDamage(int32 Damage, EAffiliation Receiver);
+
+	void SpreadDamageToEntities(EAffiliation Receiver, int32& DamageLeft);
+
+	void SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft);
+
+	void SpreadDamageToBuildings(EAffiliation Receiver, int32& DamageLeft);
 };

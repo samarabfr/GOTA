@@ -20,11 +20,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, Instanced)
 	UPopulationContainer* PopCon;
 
-	virtual int32 GetAttack() const override;
-
-	virtual int32 GetDefense() const override;
-
-	virtual int32 GetHP() const override;
+	virtual UCombatValues* GetCombatValues() const override;
 
 	virtual void DealDamage(int32 Damage) override;
 

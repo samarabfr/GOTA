@@ -9,6 +9,21 @@ void ACombat::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
+ACombat::ACombat()
+{
+	// Load GameBalance for Combat Value calculation
+	static ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAsset2(
+		TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
+	if (DataAsset2.Succeeded())
+	{
+		GameBalance = DataAsset2.Object;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Combat System couldn't load GameBalance Data Asset"))
+	}
+}
+
 bool ACombat::DoesCombatTilesContain(ATile* Tile)
 {
 	for (FCombatTile& CombatTile : CombatTiles)
@@ -22,7 +37,6 @@ void ACombat::AddCombatTile(FCombatTile CombatTile)
 {
 	CombatTiles.Add(CombatTile);
 	// anfangen zu tracken
-	// tile
 	CombatTile.Tile->OnEntityChanged.AddDynamic(this, &ACombat::EntityChanged);
 	EntityChanged(CombatTile.Tile, nullptr);
 	CombatTile.Tile->OnBuildingChanged.AddDynamic(this, &ACombat::BuildingChanged);
@@ -33,15 +47,16 @@ void ACombat::RemoveCombatTile(FCombatTile CombatTile)
 {
 	CombatTiles.Remove(CombatTile);
 	// aufhören zu tracken
-	// tile
 	CombatTile.Tile->OnEntityChanged.RemoveDynamic(this, &ACombat::EntityChanged);
 	CombatTile.Tile->OnBuildingChanged.RemoveDynamic(this, &ACombat::BuildingChanged);
 }
 
 void ACombat::AddSource(ATile* Tile)
 {
-	if (DoesCombatTilesContain(Tile)) return;
-	AddCombatTile(FCombatTile(Tile));
+	if (!DoesCombatTilesContain(Tile))
+	{
+		AddCombatTile(FCombatTile(Tile));
+	}
 	for (ATile* Neighbor : Tile->Neighbors)
 	{
 		if (!Neighbor || DoesCombatTilesContain(Neighbor)) continue;
@@ -60,10 +75,12 @@ void ACombat::EntityChanged(ATile* Tile, AEntity* OldEntity)
 	// unregister from delegates
 	if (OldEntity) OldEntity->OnCombatValuesChanged.RemoveDynamic(this, &ACombat::CombatValuesChanged);
 	// register to delegates
-	if (Tile->GetAlliedEntity()) Tile->GetAlliedEntity()->OnCombatValuesChanged.AddDynamic(
-		this, &ACombat::CombatValuesChanged);
-	if (Tile->GetEnemyEntity()) Tile->GetEnemyEntity()->OnCombatValuesChanged.AddDynamic(
-		this, &ACombat::CombatValuesChanged);
+	if (Tile->GetAlliedEntity())
+		Tile->GetAlliedEntity()->OnCombatValuesChanged.AddDynamic(
+			this, &ACombat::CombatValuesChanged);
+	if (Tile->GetEnemyEntity())
+		Tile->GetEnemyEntity()->OnCombatValuesChanged.AddDynamic(
+			this, &ACombat::CombatValuesChanged);
 }
 
 void ACombat::BuildingChanged(ATile* Tile)
@@ -84,8 +101,8 @@ void ACombat::CalcKills()
 	CalcAttackDefense();
 	int32 AlliedDamage = AlliedAttack - EnemyDefense;
 	int32 EnemyDamage = EnemyAttack - AlliedDefense;
-	SpreadDamage(AlliedDamage, EAffiliation::Ally);
-	SpreadDamage(EnemyDamage, EAffiliation::Enemy);
+	SpreadDamage(AlliedDamage, EAffiliation::Enemy);
+	SpreadDamage(EnemyDamage, EAffiliation::Ally);
 }
 
 void ACombat::CalcAttackDefense()
@@ -96,21 +113,23 @@ void ACombat::CalcAttackDefense()
 	EnemyDefense = 0;
 	for (FCombatTile& CombatTile : CombatTiles)
 	{
-		if(CombatTile.Tile->GetAlliedEntity())
+		if (CombatTile.Tile->GetAlliedEntity())
 		{
-			AlliedAttack += CombatTile.Tile->GetAlliedEntity()->GetAttack();
-			AlliedDefense += CombatTile.Tile->GetAlliedEntity()->GetDefense();
+			UCombatValues* CV = CombatTile.Tile->GetAlliedEntity()->GetCombatValues();
+			AlliedAttack += CV->GetAttack();
+			AlliedDefense += CV->GetDefense();
 		}
-		if(CombatTile.Tile->GetEnemyEntity())
+		if (CombatTile.Tile->GetEnemyEntity())
 		{
-			EnemyAttack += CombatTile.Tile->GetEnemyEntity()->GetAttack();
-			EnemyDefense += CombatTile.Tile->GetEnemyEntity()->GetDefense();
+			UCombatValues* CV = CombatTile.Tile->GetEnemyEntity()->GetCombatValues();
+			EnemyAttack += CV->GetAttack();
+			EnemyDefense += CV->GetDefense();
 		}
-		if(CombatTile.Tile->Building
+		if (CombatTile.Tile->Building
 			&& CombatTile.Tile->GetClaimant())
 		{
 			UCombatValues* CV = CombatTile.Tile->Building->GetCombatValues();
-			if(CombatTile.Tile->GetClaimant()->Affiliation == EAffiliation::Ally)
+			if (CombatTile.Tile->GetClaimant()->Affiliation == EAffiliation::Ally)
 			{
 				AlliedAttack += CV->GetAttack();
 				AlliedDefense += CV->GetDefense();
@@ -124,7 +143,159 @@ void ACombat::CalcAttackDefense()
 	}
 }
 
-void ACombat::SpreadDamage(int32 Damage, EAffiliation Affiliation)
+void ACombat::SpreadDamage(int32 Damage, EAffiliation Receiver)
 {
-	
+	for (FCombatTile& CombatTile : CombatTiles)
+	{
+		CombatTile.ZeroNumbers();
+	}
+	SpreadDamageToEntities(Receiver, Damage);
+	SpreadDamageToBuildingPop(Receiver, Damage);
+	SpreadDamageToBuildings(Receiver, Damage);
+}
+
+void ACombat::SpreadDamageToEntities(EAffiliation Receiver, int32& DamageLeft)
+{
+	// get combat tiles with Receiver entities
+	TArray<FCombatTile*> EntityCombatTiles;
+	int32 TotalHP = 0;
+	for (FCombatTile& CombatTile : CombatTiles)
+	{
+		if (CombatTile.Tile->GetEntity(Receiver))
+		{
+			EntityCombatTiles.Add(&CombatTile);
+			UCombatValues* CV = CombatTile.Tile->GetEntity(Receiver)->GetCombatValues();
+			TotalHP += CV->GetHP();
+		}
+	}
+	// entities
+	int32 Damage = DamageLeft;
+	// spread damage based on total hp ratio
+	for (FCombatTile* EntityCombatTile : EntityCombatTiles)
+	{
+		UCombatValues* CV = EntityCombatTile->Tile->GetEntity(Receiver)->GetCombatValues();
+		int32 EntityDamage = CV->GetHP() / TotalHP * Damage;
+		int32 EntityKills = FMath::Min(EntityDamage / CV->GetIndividualHP(), CV->GetIndividuals());
+		EntityCombatTile->SetEntityKills(EntityKills, Receiver);
+		DamageLeft -= EntityKills * CV->GetIndividualHP();
+	}
+	// spread left over damage
+	EntityCombatTiles.Sort([&](const FCombatTile& A, const FCombatTile& B)
+	{
+		return A.Tile->GetEntity(Receiver)->GetCombatValues()->GetIndividualHP()
+			> B.Tile->GetEntity(Receiver)->GetCombatValues()->GetIndividualHP();
+	});
+	bool HasKilledSomething = true;
+	while (HasKilledSomething)
+	{
+		HasKilledSomething = false;
+		for (FCombatTile* EntityCombatTile : EntityCombatTiles)
+		{
+			UCombatValues* CV = EntityCombatTile->Tile->GetEntity(Receiver)->GetCombatValues();
+			if (CV->GetIndividuals() > EntityCombatTile->GetEntityKills(Receiver)
+				&& DamageLeft >= CV->GetIndividualHP())
+			{
+				HasKilledSomething = true;
+				EntityCombatTile->SetEntityKills(EntityCombatTile->GetEntityKills(Receiver) + 1, Receiver);
+				DamageLeft -= CV->GetIndividualHP();
+			}
+		}
+	}
+}
+
+void ACombat::SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft)
+{
+	// get combat tiles with Receiver Building Pop
+	TArray<FCombatTile*> BuildingPopCombatTiles;
+	int32 TotalHP = 0;
+	for (FCombatTile& CombatTile : CombatTiles)
+	{
+		if (CombatTile.Tile->Building
+			&& CombatTile.Tile->GetClaimant()
+			&& CombatTile.Tile->GetClaimant()->Affiliation == Receiver
+			&& CombatTile.Tile->Building->PopContainer->GetSize() > 0)
+		{
+			BuildingPopCombatTiles.Add(&CombatTile);
+			UCombatValues* CV = CombatTile.Tile->Building->GetCombatValues();
+			TotalHP += CV->GetHP();
+		}
+	}
+	// entities
+	int32 Damage = DamageLeft;
+	// spread damage based on total hp ratio
+	for (FCombatTile* BuildingPopCombatTile : BuildingPopCombatTiles)
+	{
+		UCombatValues* CV = BuildingPopCombatTile->Tile->Building->GetCombatValues();
+		int32 BuildingPopDamage = CV->GetHP() / TotalHP * Damage;
+		int32 BuildingPopKills = FMath::Min(BuildingPopDamage / CV->GetIndividualHP(), CV->GetIndividuals());
+		BuildingPopCombatTile->BuildingPopKills = BuildingPopKills;
+		DamageLeft -= BuildingPopKills * CV->GetIndividualHP();
+	}
+	// spread left over damage
+	BuildingPopCombatTiles.Sort([&](const FCombatTile& A, const FCombatTile& B)
+	{
+		return A.Tile->Building->GetCombatValues()->GetIndividualHP()
+			> B.Tile->Building->GetCombatValues()->GetIndividualHP();
+	});
+	bool HasKilledSomething = true;
+	while (HasKilledSomething)
+	{
+		HasKilledSomething = false;
+		for (FCombatTile* BuildingPopCombatTile : BuildingPopCombatTiles)
+		{
+			UCombatValues* CV = BuildingPopCombatTile->Tile->Building->GetCombatValues();
+			if (CV->GetIndividuals() > BuildingPopCombatTile->BuildingPopKills
+				&& DamageLeft >= CV->GetIndividualHP())
+			{
+				HasKilledSomething = true;
+				++BuildingPopCombatTile->BuildingPopKills;
+				DamageLeft -= CV->GetIndividualHP();
+			}
+		}
+	}
+}
+
+void ACombat::SpreadDamageToBuildings(EAffiliation Receiver, int32& DamageLeft)
+{
+	int32 BuildingTierHP = GameBalance->BuildingTierHP;
+	// get combat tiles with Receiver Building Pop
+	TArray<FCombatTile*> BuildingCombatTiles;
+	int32 TotalHP = 0;
+	for (FCombatTile& CombatTile : CombatTiles)
+	{
+		if (CombatTile.Tile->Building
+			&& CombatTile.Tile->GetClaimant()
+			&& CombatTile.Tile->GetClaimant()->Affiliation == Receiver)
+		{
+			BuildingCombatTiles.Add(&CombatTile);
+			TotalHP += BuildingTierHP * CombatTile.Tile->Building->Tier;
+		}
+	}
+	// entities
+	int32 Damage = DamageLeft;
+	// spread damage based on total hp ratio
+	for (FCombatTile* BuildingCombatTile : BuildingCombatTiles)
+	{
+		int32 HP = BuildingTierHP * BuildingCombatTile->Tile->Building->Tier;
+		int32 BuildingDamage = HP / TotalHP * Damage;
+		int32 BuildingKills = FMath::Min(BuildingDamage / BuildingTierHP, BuildingCombatTile->Tile->Building->Tier);
+		BuildingCombatTile->BuildingDowngrade = BuildingKills;
+		DamageLeft -= BuildingKills * BuildingTierHP;
+	}
+	// spread left over damage
+	bool HasKilledSomething = true;
+	while (HasKilledSomething)
+	{
+		HasKilledSomething = false;
+		for (FCombatTile* BuildingCombatTile : BuildingCombatTiles)
+		{
+			if (BuildingCombatTile->Tile->Building->Tier > BuildingCombatTile->BuildingDowngrade
+				&& DamageLeft >= BuildingTierHP)
+			{
+				HasKilledSomething = true;
+				++BuildingCombatTile->BuildingDowngrade;
+				DamageLeft -= BuildingTierHP;
+			}
+		}
+	}
 }

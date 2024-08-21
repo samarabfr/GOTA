@@ -60,21 +60,6 @@ void AEntity::Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 Movemen
 	GameState->TileEntities.Add(this);
 }
 
-int32 AEntity::GetAttack() const
-{
-	return 0;
-}
-
-int32 AEntity::GetDefense() const
-{
-	return 0;
-}
-
-int32 AEntity::GetHP() const
-{
-	return 0;
-}
-
 void AEntity::DealDamage(int32 Damage)
 {
 }
@@ -155,4 +140,9 @@ void AEntity::RefreshSpline()
 	}
 	Spline->UpdateSpline();
 	NiagaraPath->SetHiddenInGame(false);
+}
+
+UCombatValues* AEntity::GetCombatValues() const
+{
+	return nullptr;
 }
