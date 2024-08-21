@@ -16,15 +16,25 @@ bool UCombatSystem::IsSupportedForNetworking() const
 
 void UCombatSystem::RegisterCombat(ATile* Tile)
 {
-	
-	Combats.Add(Tile);
+	for (ACombat* Combat : Combats)
+	{
+		if (Combat->ShouldMerge(Tile))
+		{
+			Combat->AddSource(Tile);
+			return;
+		}
+	}
+	ACombat* NewCombat = GetWorld()->SpawnActor<ACombat>();
+	Combats.Add(NewCombat);
+	NewCombat->AddSource(Tile);
 }
 
 void UCombatSystem::TriggerAllCombats()
 {
-	for (ATile* CombatSource : Combats)
+	for (ACombat* Combat : Combats)
 	{
-		EvaluateCombat(CombatSource);
+		Combat->TriggerCombat();
+		Combat->Destroy();
 	}
 	Combats.Empty();
 }

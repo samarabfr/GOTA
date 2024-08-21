@@ -22,7 +22,7 @@ public:
 
 	virtual UCombatValues* GetCombatValues() const override;
 
-	virtual void DealDamage(int32 Damage) override;
+	virtual void KillIndividuals(int32 Kills) override;
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 

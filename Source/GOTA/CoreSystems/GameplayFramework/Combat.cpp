@@ -66,7 +66,12 @@ void ACombat::AddSource(ATile* Tile)
 
 bool ACombat::ShouldMerge(ATile* Tile)
 {
-	return DoesCombatTilesContain(Tile);
+	if(DoesCombatTilesContain(Tile)) return true;
+	for (ATile* Neighbor : Tile->Neighbors)
+	{
+		if(DoesCombatTilesContain(Neighbor)) return true;
+	}
+	return false;
 }
 
 void ACombat::EntityChanged(ATile* Tile, AEntity* OldEntity)
@@ -98,6 +103,7 @@ void ACombat::CombatValuesChanged(UCombatValues* CombatValues)
 
 void ACombat::CalcKills()
 {
+	if(PreventCalcKills) return;
 	CalcAttackDefense();
 	int32 AlliedDamage = AlliedAttack - EnemyDefense;
 	int32 EnemyDamage = EnemyAttack - AlliedDefense;
@@ -298,4 +304,23 @@ void ACombat::SpreadDamageToBuildings(EAffiliation Receiver, int32& DamageLeft)
 			}
 		}
 	}
+}
+
+void ACombat::TriggerCombat()
+{
+	PreventCalcKills = true;
+	for (FCombatTile CombatTile : CombatTiles)
+	{
+		ATile* Tile = CombatTile.Tile;
+		if(Tile->GetAlliedEntity())
+			Tile->GetAlliedEntity()->KillIndividuals(CombatTile.AlliedEntityKills);
+		if(Tile->GetEnemyEntity())
+			Tile->GetEnemyEntity()->KillIndividuals(CombatTile.EnemyEntityKills);
+		if(Tile->Building)
+		{
+			Tile->Building->PopContainer->DecreaseSize(CombatTile.BuildingPopKills);
+			Tile->Unbuild(); // TODO: Downgrade instead
+		}
+	}
+	PreventCalcKills = false;
 }

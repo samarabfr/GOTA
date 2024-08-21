@@ -49,9 +49,9 @@ UCombatValues* AArmy::GetCombatValues() const
 	return PopCon->CombatValues;
 }
 
-void AArmy::DealDamage(int32 Damage)
+void AArmy::KillIndividuals(int32 Kills)
 {
-	PopCon->DealDamage(Damage);
+	PopCon->DecreaseSize(Kills);
 }
 
 void AArmy::EndPlay(const EEndPlayReason::Type EndPlayReason)

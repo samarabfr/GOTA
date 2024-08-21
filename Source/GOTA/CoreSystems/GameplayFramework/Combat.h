@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "CombatTile.h"
 #include "CombatValues.h"
+#include "GameBalance.h"
 #include "Combat.generated.h"
 
 UCLASS()
@@ -35,10 +36,12 @@ class GOTA_API ACombat : public AActor
 
 	void RemoveCombatTile(FCombatTile CombatTile);
 
+public:
 	void AddSource(ATile* Tile);
 
 	bool ShouldMerge(ATile* Tile);
 
+private:
 	UFUNCTION()
 	void EntityChanged(ATile* Tile, AEntity* OldEntity);
 
@@ -50,6 +53,8 @@ class GOTA_API ACombat : public AActor
 
 	void CalcKills();
 
+	bool PreventCalcKills = false;
+
 	void CalcAttackDefense();
 
 	void SpreadDamage(int32 Damage, EAffiliation Receiver);
@@ -59,4 +64,8 @@ class GOTA_API ACombat : public AActor
 	void SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft);
 
 	void SpreadDamageToBuildings(EAffiliation Receiver, int32& DamageLeft);
+public:
+	void TriggerCombat();
+
+	
 };

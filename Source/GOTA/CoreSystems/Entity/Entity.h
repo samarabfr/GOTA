@@ -63,7 +63,7 @@ public:
 	virtual void CalculateMovement() PURE_VIRTUAL(ATileEntity::CalculateMovement,);
 	
 	UFUNCTION(BlueprintCallable, Category="Entity")
-	virtual void DealDamage(int32 Damage);
+	virtual void KillIndividuals(int32 Kills);
 
 	UFUNCTION(BlueprintCallable, Category="Entity")
 	bool ShouldCombatTrigger() const;

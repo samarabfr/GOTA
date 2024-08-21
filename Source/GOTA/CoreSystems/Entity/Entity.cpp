@@ -60,7 +60,7 @@ void AEntity::Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 Movemen
 	GameState->TileEntities.Add(this);
 }
 
-void AEntity::DealDamage(int32 Damage)
+void AEntity::KillIndividuals(int32 Kills)
 {
 }
 
