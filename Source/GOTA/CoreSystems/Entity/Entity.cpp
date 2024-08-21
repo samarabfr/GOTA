@@ -21,7 +21,12 @@ void AEntity::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 AEntity::AEntity()
 {
 	bReplicates = true;
-	SetReplicateMovement(true);
+	AActor::SetReplicateMovement(true);
+	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
+	Spline = CreateDefaultSubobject<USplineComponent>("Spline Path");
+	Spline->SetupAttachment(RootComponent);
+	NiagaraPath = CreateDefaultSubobject<UNiagaraComponent>("Niagara Path");
+	NiagaraPath->SetupAttachment(RootComponent);
 }
 
 void AEntity::CombatValuesChanged(UCombatValues* CombatValues)
@@ -32,6 +37,25 @@ void AEntity::CombatValuesChanged(UCombatValues* CombatValues)
 EAffiliation AEntity::GetAffiliation()
 {
 	return Affiliation;
+}
+
+TArray<ATile*> AEntity::GetPath()
+{
+	return Path;
+}
+
+void AEntity::SetPath(const TArray<ATile*>& NewPath)
+{
+	Path = NewPath;
+	Spline->ClearSplinePoints();
+	if (Path.Num() < 1) return;
+	Spline->AddSplineWorldPoint(CurrentTile->GetActorLocation());
+	Spline->SetSplinePointType(0, ESplinePointType::Linear, true);
+	for (int32 i = 0; i < Path.Num(); ++i)
+	{
+		Spline->AddSplineWorldPoint(Path[Path.Num() - i - 1]->GetActorLocation());
+		Spline->SetSplinePointType(i + 1, ESplinePointType::Linear, true);
+	}
 }
 
 void AEntity::Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 MovementSpeed_)
@@ -73,7 +97,7 @@ bool AEntity::ShouldCombatTrigger() const
 		return true;
 	}
 	// Combat between this unit and enemy entity
-	if(CurrentTile->GetEntity(!Affiliation)) return true;
+	if (CurrentTile->GetEntity(!Affiliation)) return true;
 	// no combat
 	return false;
 }
@@ -90,10 +114,10 @@ bool AEntity::IsNextStepBlocked()
 {
 	for (int32 i = 0; i < MovementSpeed; ++i)
 	{
-		int32 index = Path.Num() -1 -i;
-		if(Path.IsValidIndex(index))
+		int32 index = Path.Num() - 1 - i;
+		if (Path.IsValidIndex(index))
 		{
-			if(!Path[index]->IsWalkable(Affiliation)) return true;
+			if (!Path[index]->IsWalkable(Affiliation)) return true;
 		}
 	}
 	return false;
@@ -104,16 +128,16 @@ void AEntity::Step()
 	ATile* NewCurrent = nullptr;
 	for (int32 i = 0; i < MovementSpeed; ++i)
 	{
-		if(!Path.IsEmpty())
+		if (!Path.IsEmpty())
 		{
 			NewCurrent = Path.Pop();
 		}
 	}
 	// can't move
-	if(!NewCurrent) return;
+	if (!NewCurrent) return;
 	// move
 	CurrentTile->SetEntity(nullptr, Affiliation);
 	NewCurrent->SetEntity(this, Affiliation);
-	CurrentTile=NewCurrent;
+	CurrentTile = NewCurrent;
 	SetActorLocation(CurrentTile->GetActorLocation());
 }
