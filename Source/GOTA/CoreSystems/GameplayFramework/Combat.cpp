@@ -110,6 +110,10 @@ void ACombat::CalcKills()
 	CalcAttackDefense();
 	int32 AlliedDamage = AlliedAttack - EnemyDefense;
 	int32 EnemyDamage = EnemyAttack - AlliedDefense;
+	for (FCombatTile& CombatTile : CombatTiles)
+	{
+		CombatTile.ZeroNumbers();
+	}
 	SpreadDamage(AlliedDamage, EAffiliation::Enemy);
 	SpreadDamage(EnemyDamage, EAffiliation::Ally);
 }
@@ -154,10 +158,6 @@ void ACombat::CalcAttackDefense()
 
 void ACombat::SpreadDamage(int32 Damage, EAffiliation Receiver)
 {
-	for (FCombatTile& CombatTile : CombatTiles)
-	{
-		CombatTile.ZeroNumbers();
-	}
 	SpreadDamageToEntities(Receiver, Damage);
 	SpreadDamageToBuildingPop(Receiver, Damage);
 	SpreadDamageToBuildings(Receiver, Damage);

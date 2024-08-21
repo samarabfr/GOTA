@@ -52,6 +52,7 @@ UCombatValues* AArmy::GetCombatValues() const
 void AArmy::KillIndividuals(int32 Kills)
 {
 	PopCon->DecreaseSize(Kills);
+	if(PopCon->GetSize() == 0) Kill();
 }
 
 void AArmy::EndPlay(const EEndPlayReason::Type EndPlayReason)
