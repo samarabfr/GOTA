@@ -75,6 +75,8 @@ public:
 
 	void Step();
 
+	void RefreshSpline();
+
 	// ---------------------------------------------------------
 	// Getter & Setter
 	

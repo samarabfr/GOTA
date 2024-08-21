@@ -47,15 +47,7 @@ TArray<ATile*> AEntity::GetPath()
 void AEntity::SetPath(const TArray<ATile*>& NewPath)
 {
 	Path = NewPath;
-	Spline->ClearSplinePoints();
-	if (Path.Num() < 1) return;
-	Spline->AddSplineWorldPoint(CurrentTile->GetActorLocation());
-	Spline->SetSplinePointType(0, ESplinePointType::Linear, true);
-	for (int32 i = 0; i < Path.Num(); ++i)
-	{
-		Spline->AddSplineWorldPoint(Path[Path.Num() - i - 1]->GetActorLocation());
-		Spline->SetSplinePointType(i + 1, ESplinePointType::Linear, true);
-	}
+	RefreshSpline();
 }
 
 void AEntity::Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 MovementSpeed_)
@@ -140,4 +132,27 @@ void AEntity::Step()
 	NewCurrent->SetEntity(this, Affiliation);
 	CurrentTile = NewCurrent;
 	SetActorLocation(CurrentTile->GetActorLocation());
+	RefreshSpline();
+}
+
+void AEntity::RefreshSpline()
+{
+	Spline->ClearSplinePoints(false);
+	if (Path.Num() < 1)
+	{
+		Spline->UpdateSpline();
+		NiagaraPath->SetHiddenInGame(true);
+		return;
+	}
+	Spline->AddSplinePoint(CurrentTile->GetActorLocation() + FVector(0, 0, 300),
+	                       ESplineCoordinateSpace::World, false);
+	int32 MaxSteps = 2;
+	for (int32 i = 0; i < Path.Num(); ++i)
+	{
+		if (i >= MaxSteps) break;
+		Spline->AddSplinePoint(Path[Path.Num() - i - 1]->GetActorLocation() + FVector(0, 0, 300),
+		                       ESplineCoordinateSpace::World, false);
+	}
+	Spline->UpdateSpline();
+	NiagaraPath->SetHiddenInGame(false);
 }

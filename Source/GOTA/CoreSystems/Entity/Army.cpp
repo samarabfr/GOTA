@@ -13,6 +13,7 @@ void AArmy::CalculateMovement()
 		AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 		EAffiliation Enemy = GetAffiliation() == EAffiliation::Ally ? EAffiliation::Enemy : EAffiliation::Ally;
 		SetPath(GameState->TileMap->GetPathToNearestAffiliatedBuilding(CurrentTile, Enemy));
+		if(GetPath().Num()>0) Target = GetPath()[0];
 	}
 	Step();
 }
