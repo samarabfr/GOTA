@@ -414,7 +414,7 @@ bool ASettlement::SpawnArmy()
 	// spawn the army
 	AArmy* Army = Cast<AArmy>(GetWorld()->SpawnActor(ArmyClass));
 	if (!Army) return false;
-	Army->Init(Affiliation, SpawnLocation, 1);
+	Army->Init(Affiliation, SpawnLocation, 2);
 
 	// reduce Pop in every building
 	// TODO: evaluate how many pops to send

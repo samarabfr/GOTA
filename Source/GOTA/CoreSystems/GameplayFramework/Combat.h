@@ -16,9 +16,15 @@ class GOTA_API ACombat : public AActor
 
 	ACombat();
 
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMeshComponent* MainMesh;
+	
 	UPROPERTY()
 	UGameBalanceDataAsset* GameBalance;
-
+	
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* SmallCombatMesh;
+	
 	UPROPERTY(VisibleInstanceOnly)
 	TArray<FCombatTile> CombatTiles;
 
@@ -73,5 +79,6 @@ public:
 
 private:
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	
+
+	virtual void Tick(float DeltaSeconds) override;
 };

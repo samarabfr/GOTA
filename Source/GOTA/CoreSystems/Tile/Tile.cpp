@@ -215,11 +215,11 @@ bool ATile::IsWalkable(EAffiliation Affiliation) const
 {
 	if (Affiliation == EAffiliation::Ally)
 	{
-		return !EnemyEntity;
+		return !AlliedEntity;
 	}
 	if (Affiliation == EAffiliation::Enemy)
 	{
-		return !AlliedEntity;
+		return !EnemyEntity;
 	}
 	return false;
 }

@@ -11,6 +11,8 @@ void ACombat::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 
 ACombat::ACombat()
 {
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 	// Load GameBalance for Combat Value calculation
 	static ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAsset2(
 		TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
@@ -22,6 +24,9 @@ ACombat::ACombat()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Combat System couldn't load GameBalance Data Asset"))
 	}
+	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
+	MainMesh = CreateDefaultSubobject<UStaticMeshComponent>("Main Mesh");
+	MainMesh->SetupAttachment(RootComponent);
 }
 
 bool ACombat::DoesCombatTilesContain(ATile* Tile)
@@ -41,6 +46,13 @@ void ACombat::AddCombatTile(FCombatTile CombatTile)
 	EntityChanged(CombatTile.Tile, nullptr);
 	CombatTile.Tile->OnBuildingChanged.AddDynamic(this, &ACombat::BuildingChanged);
 	BuildingChanged(CombatTile.Tile);
+	// Add graphic to show that this tile belongs to this Combat
+	UStaticMeshComponent* SMC = NewObject<UStaticMeshComponent>(this);
+	SMC->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	SMC->SetStaticMesh(SmallCombatMesh);
+	SMC->RegisterComponent();
+	SMC->SetWorldLocation(CombatTile.Tile->GetActorLocation() + FVector(0, 0, 600));
+	SMC->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void ACombat::RemoveCombatTile(FCombatTile CombatTile)
@@ -54,6 +66,8 @@ void ACombat::RemoveCombatTile(FCombatTile CombatTile)
 void ACombat::AddSource(ATile* Tile)
 {
 	PreventCalcKills = true;
+	if (CombatTiles.IsEmpty())
+		SetActorLocation(Tile->GetActorLocation());
 	if (!DoesCombatTilesContain(Tile))
 	{
 		AddCombatTile(FCombatTile(Tile));
@@ -340,4 +354,10 @@ void ACombat::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	{
 		RemoveCombatTile(CombatTiles[i]);
 	}
+}
+
+void ACombat::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	MainMesh->AddRelativeRotation(FRotator(0, DeltaSeconds * 6, 0));
 }

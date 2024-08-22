@@ -6,9 +6,8 @@
 #include "Engine/DataAsset.h"
 #include "GameBalance.generated.h"
 
-/**
- * 
- */
+class ACombat;
+
 UCLASS()
 class GOTA_API UGameBalanceDataAsset : public UPrimaryDataAsset
 {
@@ -17,6 +16,9 @@ class GOTA_API UGameBalanceDataAsset : public UPrimaryDataAsset
 public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Game End")
 	float GameEndingEcoThreshold;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Combat")
+	TSubclassOf<ACombat> CombatClass;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Combat")
 	int32 HumanHP = 4;

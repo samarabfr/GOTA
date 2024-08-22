@@ -14,6 +14,21 @@ bool UCombatSystem::IsSupportedForNetworking() const
 	return true;
 }
 
+UCombatSystem::UCombatSystem()
+{
+	// Load GameBalance for Combat Value calculation
+	static ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAsset2(
+		TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
+	if (DataAsset2.Succeeded())
+	{
+		GameBalance = DataAsset2.Object;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Combat System couldn't load GameBalance Data Asset"))
+	}
+}
+
 void UCombatSystem::RegisterCombat(ATile* Tile)
 {
 	for (ACombat* Combat : Combats)
@@ -24,7 +39,7 @@ void UCombatSystem::RegisterCombat(ATile* Tile)
 			return;
 		}
 	}
-	ACombat* NewCombat = GetWorld()->SpawnActor<ACombat>();
+	ACombat* NewCombat = Cast<ACombat>(GetWorld()->SpawnActor(GameBalance->CombatClass));
 	Combats.Add(NewCombat);
 	NewCombat->AddSource(Tile);
 }
