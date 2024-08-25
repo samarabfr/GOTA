@@ -21,8 +21,6 @@ void AArmy::CalculateMovement()
 AArmy::AArmy()
 {
 	PopCon = CreateDefaultSubobject<UPopulationContainer>("Population Container");
-	// values
-	UE_LOG(LogTemp, Warning, TEXT("bow: %d attack: %d"), PopCon->Population.Bows, PopCon->CombatValues->GetAttack())
 	PopCon->CombatValues->OnChanged.AddDynamic(this, &AArmy::CombatValuesChanged);
 }
 
@@ -37,17 +35,6 @@ bool AArmy::IsTargetValid()
 	// target is not claimed by the enemy
 	if (Target->GetClaimant()->Affiliation == GetAffiliation()) return false;
 	return true;
-}
-
-void AArmy::RandomizePop()
-{
-	FPopulation RandomPop = FPopulation();
-	RandomPop.Size = FMath::RandRange(5, 10);
-	RandomPop.MoodContent = RandomPop.Size;
-	RandomPop.Bows = FMath::RandRange(1, 3);
-	RandomPop.Muskets = FMath::RandRange(1, 4);
-	RandomPop.Shields = FMath::RandRange(1, 3);
-	PopCon->AddPopulation(RandomPop);
 }
 
 UCombatValues* AArmy::GetCombatValues() const
@@ -75,4 +62,12 @@ void AArmy::Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 MovementS
 {
 	Super::Init(Affiliation_, CurrentTile_, MovementSpeed_);
 	GetWorld()->GetGameState<AGS_Ingame>()->RegisterPopConForTotals(PopCon, Affiliation_);
+	PopCon->DecreaseSize(100);
+	FPopulation RandomPop = FPopulation();
+	RandomPop.Size = FMath::RandRange(5, 10);
+	RandomPop.MoodContent = RandomPop.Size;
+	RandomPop.Bows = FMath::RandRange(1, 3);
+	RandomPop.Muskets = FMath::RandRange(1, 4);
+	RandomPop.Shields = FMath::RandRange(1, 3);
+	PopCon->AddPopulation(RandomPop);
 }

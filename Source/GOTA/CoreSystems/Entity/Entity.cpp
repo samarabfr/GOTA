@@ -131,7 +131,7 @@ void AEntity::RefreshSpline()
 	}
 	Spline->AddSplinePoint(CurrentTile->GetActorLocation() + FVector(0, 0, 300),
 	                       ESplineCoordinateSpace::World, false);
-	int32 MaxSteps = 2;
+	int32 MaxSteps = 2 * MovementSpeed;
 	for (int32 i = 0; i < Path.Num(); ++i)
 	{
 		if (i >= MaxSteps) break;

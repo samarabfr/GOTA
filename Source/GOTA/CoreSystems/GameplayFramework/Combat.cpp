@@ -336,7 +336,7 @@ void ACombat::CountKills()
 	AlliedBuildingKills = 0;
 	EnemyPopKills = 0;
 	EnemyBuildingKills = 0;
-	for (FCombatTile& CombatTile : CombatTiles)
+	for (const FCombatTile& CombatTile : CombatTiles)
 	{
 		AlliedPopKills += CombatTile.AlliedEntityKills;
 		EnemyPopKills += CombatTile.EnemyEntityKills;
@@ -345,10 +345,12 @@ void ACombat::CountKills()
 			if (CombatTile.Tile->GetClaimant()->Affiliation == EAffiliation::Ally)
 			{
 				AlliedBuildingKills += CombatTile.BuildingDowngrade;
+				AlliedPopKills += CombatTile.BuildingPopKills;
 			}
 			else
 			{
 				EnemyBuildingKills += CombatTile.BuildingDowngrade;
+				EnemyPopKills += CombatTile.BuildingPopKills;
 			}
 		}
 	}
