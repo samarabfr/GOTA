@@ -22,7 +22,7 @@ AArmy::AArmy()
 {
 	PopCon = CreateDefaultSubobject<UPopulationContainer>("Population Container");
 	// values
-	
+	UE_LOG(LogTemp, Warning, TEXT("bow: %d attack: %d"), PopCon->Population.Bows, PopCon->CombatValues->GetAttack())
 	PopCon->CombatValues->OnChanged.AddDynamic(this, &AArmy::CombatValuesChanged);
 }
 

@@ -413,7 +413,7 @@ bool ASettlement::SpawnArmy()
 
 	// spawn the army
 	AArmy* Army = Cast<AArmy>(GetWorld()->SpawnActor(ArmyClass));
-	Army->RandomizePop();
+	//Army->RandomizePop();
 	if (!Army) return false;
 	Army->Init(Affiliation, SpawnLocation, 2);
 
