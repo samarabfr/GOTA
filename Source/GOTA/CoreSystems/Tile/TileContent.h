@@ -30,6 +30,9 @@ private:
 	void UpdateTrees(int32 Change);
 
 	UFUNCTION()
+	void RedoTreeAssets();
+
+	UFUNCTION()
 	void UpdateForage(int32 Change);
 
 	UFUNCTION()

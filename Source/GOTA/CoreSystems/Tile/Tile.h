@@ -15,6 +15,7 @@
 #include "GameFramework/Actor.h"
 #include "GOTA/CoreSystems/Entity/Entity.h"
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttributeLimited.h"
+#include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Tile.generated.h"
 
@@ -72,14 +73,44 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetBiome(EBiome NewBiome);
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetOceanDistance, Replicated, Category="Tile")
 	int32 OceanDistance = -1;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
+	UFUNCTION(BlueprintSetter)
+	void SetOceanDistance(int32 NewOceanDistance);
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetNormalizedOceanDistance, Replicated, Category="Tile")
+	float NormalizedOceanDistance = -1;
+
+	UFUNCTION(BlueprintSetter)
+	void SetNormalizedOceanDistance(float NewNormalizedOceanDistance);
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetRiverDistance, Replicated, Category="Tile")
+	int32 RiverDistance = -1;
+
+	UFUNCTION(BlueprintSetter)
+	void SetRiverDistance(int32 NewRiverDistance);
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetNormalizedRiverDistance, Replicated, Category="Tile")
+	float NormalizedRiverDistance = -1;
+
+	UFUNCTION(BlueprintSetter)
+	void SetNormalizedRiverDistance(float NewNormalizedRiverDistance);
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetVolcanoDistance, Replicated, Category="Tile")
 	int32 VolcanoDistance = -1;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
-	int32 RiverDistance = -1;
+	UFUNCTION(BlueprintSetter)
+	void SetVolcanoDistance(int32 NewVolcanoDistance);
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetNormalizedVolcanoDistance, Replicated, Category="Tile")
+	float NormalizedVolcanoDistance = -1;
+
+	UFUNCTION(BlueprintSetter)
+	void SetNormalizedVolcanoDistance(float NewNormalizedVolcanoDistance);
+
+	UPROPERTY()
+	FOnChangedSignature OnDistancesChanged;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	AEntity* AlliedTileEntity;
@@ -184,7 +215,7 @@ public:
 	void CalculatePopulationGrowthChange();
 
 	UFUNCTION()
-	void CalculatePopulationGrowthChangeWithNeighbors();
+	void CalculatePopulationGrowthChangeWithNeighbors(FPopulation Change);
 
 protected:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")

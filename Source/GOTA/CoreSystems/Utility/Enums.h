@@ -29,9 +29,9 @@ enum class ECultureLoyalty : uint8
 UENUM(BlueprintType)
 enum class EMood : uint8
 {
-	Neutral UMETA(DisplayName = "Neutral"),
-	Fearful UMETA(DisplayName = "Fearful"),
-	Aggressive UMETA(DisplayName = "Aggressive"),
+	Content UMETA(DisplayName = "Content"),
+	Angry UMETA(DisplayName = "Angry"),
+	Fear UMETA(DisplayName = "Fear"),
 	MAX UMETA(Hidden) // Sentinel value for enum size
 };
 
@@ -65,4 +65,11 @@ enum class EEcoValue : uint8
 	Tree UMETA(DisplayName = "Tree"),
 	Wildlife UMETA(DisplayName = "Wildlife"),
 	Forage UMETA(DisplayName = "Forage")
+};
+
+UENUM(BlueprintType)
+enum class GameEnding : uint8
+{
+	Victory UMETA(DisplayName = "Victory"),
+	Defeat UMETA(DisplayName = "Defeat")
 };

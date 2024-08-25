@@ -74,4 +74,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	int32 TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, int32 Amount, int32 Threshold, int32 MaxRange);
+	
+	void CountAllMaxEcoValues(int32& TotalMaxTrees, int32& TotalMaxWildlife, int32& TotalMaxForage);
 };

@@ -15,6 +15,7 @@ void UTileContent::Init(ATile* Tile_, AGS_Ingame* GameState_)
 	Tile->Forage->OnChanged.AddDynamic(this, &UTileContent::UpdateForage);
 	Tile->OnBuildingChanged.AddDynamic(this, &UTileContent::ValidateBuildings);
 	Tile->OnBuildingChanged.AddDynamic(this, &UTileContent::ValidateMainBuilding);
+	Tile->OnDistancesChanged.AddDynamic(this, &UTileContent::RedoTreeAssets); // all tree assets need to be rechosen 
 	OnSpawnPointLayoutChanged();
 }
 
@@ -79,6 +80,17 @@ void UTileContent::UpdateTrees(int32 Change)
 			}
 		}
 	}
+}
+
+void UTileContent::RedoTreeAssets()
+{
+	for (FTileAssetSpawn& TileAssetSpawn : TreeTileAssetSpawns)
+	{
+		DespawnTileAsset(TileAssetSpawn);
+		TileAssetSpawn.TileAsset = nullptr;
+	}
+	ValidateTileAssets(TreeTileAssetSpawns, Tile->DA_TileGraphics->TreeAssets);
+	UpdateTrees(0);
 }
 
 void UTileContent::UpdateForage(int32 Change)
@@ -310,6 +322,7 @@ void UTileContent::DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
 void UTileContent::FindRandomValidAssets(const int32 Amount, const UDataTable* DataTable,
                                          TArray<FTileAsset*>& OutFoundAssets) const
 {
+	if (Amount <= 0) return;
 	FString _;
 	TArray<FTileAsset*> AllAssets;
 	DataTable->GetAllRows(_, AllAssets);
@@ -337,20 +350,27 @@ void UTileContent::FindRandomValidAssets(const int32 Amount, const UDataTable* D
 	int32 TotalBias = 0;
 	for (FTileAsset* Asset : PossibleAssets)
 	{
-		TotalBias += Asset->SpawnBias;
+		TotalBias += Asset->GetBiasAfterMultipliers(
+			Tile->OceanDistance,
+			Tile->RiverDistance,
+			Tile->VolcanoDistance);
 	}
 	// Randomly select the assets based on their spawn bias
 	for (int32 i = 0; i < Amount; i++)
 	{
-		int Count = FMath::RandRange(0, TotalBias - 1);
+		int32 Count = FMath::RandRange(0, TotalBias - 1);
 		for (FTileAsset* Asset : PossibleAssets)
 		{
-			if (Count < Asset->SpawnBias)
+			int32 SpawnBias = Asset->GetBiasAfterMultipliers(
+				Tile->OceanDistance,
+				Tile->RiverDistance,
+				Tile->VolcanoDistance);
+			if (Count < SpawnBias)
 			{
 				OutFoundAssets.Add(Asset);
 				break;
 			}
-			Count -= Asset->SpawnBias;
+			Count -= SpawnBias;
 		}
 	}
 }

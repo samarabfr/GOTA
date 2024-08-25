@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BuildingTierData.h"
-#include "Population.h"
+#include "PopulationContainer.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Building.generated.h"
 
@@ -26,7 +26,7 @@ public:
 	UBuildingDataAsset* DataAsset;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Instanced, Category="Building")
-	UPopulation* Population;
+	UPopulationContainer* PopContainer;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Category="Building")
 	int32 Tier = 1;
@@ -55,7 +55,7 @@ public:
 	EProductionType ProductionType = EProductionType::MAX;
 	
 	UFUNCTION()
-	void UpdateProduction(int32 Change);
+	void UpdateProduction(FPopulation Change);
 	
 	void SetupProduction(const FBuildingTierData* TierData);
 };
