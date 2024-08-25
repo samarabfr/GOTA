@@ -23,7 +23,6 @@ ADistanceUtils::ADistanceUtils()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("DistanceUtils couldn't load Settings Data Asset"))
 	}
-
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 }
 
@@ -42,6 +41,7 @@ void ADistanceUtils::Tick(float DeltaSeconds)
 	FHexCoords NewCoords = UHexCoordsFunctions::VectorToHexCoords(CurrentLocation);
 	if (CurrentCoords == NewCoords) return;
 	// We are on a New Tile
+	CurrentCoords = NewCoords;
 	// UpdateDistanceToTiles();
 	UpdateDistanceToCombats();
 }
@@ -80,13 +80,13 @@ void ADistanceUtils::UpdateDistanceToCombats()
 	for (ACombat* Combat : GameState->CombatSystem->Combats)
 	{
 		float Distance = FVector::Distance(GetActorLocation(), Combat->GetActorLocation());
-		if(Distance < ClosestDistance)
+		if (Distance < ClosestDistance)
 		{
 			ClosestDistance = Distance;
 			ClosestCombat = Combat;
 		}
 	}
-	if(ClosestDistance > Settings->MinDistanceToCombatInCM)
+	if (ClosestDistance > Settings->MinDistanceToCombatInCM)
 	{
 		ClosestCombat = nullptr;
 	}

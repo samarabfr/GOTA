@@ -21,13 +21,8 @@ void AArmy::CalculateMovement()
 AArmy::AArmy()
 {
 	PopCon = CreateDefaultSubobject<UPopulationContainer>("Population Container");
-	FPopulation RandomPop = FPopulation();
-	RandomPop.Size = FMath::RandRange(5, 10);
-	RandomPop.MoodContent = RandomPop.Size;
-	RandomPop.Bows = FMath::RandRange(1, 3);
-	RandomPop.Muskets = FMath::RandRange(1, 4);
-	RandomPop.Shields = FMath::RandRange(1, 3);
-	PopCon->AddPopulation(RandomPop);
+	// values
+	
 	PopCon->CombatValues->OnChanged.AddDynamic(this, &AArmy::CombatValuesChanged);
 }
 
@@ -44,6 +39,17 @@ bool AArmy::IsTargetValid()
 	return true;
 }
 
+void AArmy::RandomizePop()
+{
+	FPopulation RandomPop = FPopulation();
+	RandomPop.Size = FMath::RandRange(5, 10);
+	RandomPop.MoodContent = RandomPop.Size;
+	RandomPop.Bows = FMath::RandRange(1, 3);
+	RandomPop.Muskets = FMath::RandRange(1, 4);
+	RandomPop.Shields = FMath::RandRange(1, 3);
+	PopCon->AddPopulation(RandomPop);
+}
+
 UCombatValues* AArmy::GetCombatValues() const
 {
 	return PopCon->CombatValues;
@@ -52,7 +58,8 @@ UCombatValues* AArmy::GetCombatValues() const
 void AArmy::KillIndividuals(int32 Kills)
 {
 	PopCon->DecreaseSize(Kills);
-	if (PopCon->GetSize() == 0) Kill();
+	if (PopCon->GetSize() <= 0)
+		Kill();
 }
 
 void AArmy::EndPlay(const EEndPlayReason::Type EndPlayReason)

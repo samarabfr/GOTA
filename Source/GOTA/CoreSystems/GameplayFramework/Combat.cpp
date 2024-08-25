@@ -122,14 +122,15 @@ void ACombat::CalcKills()
 {
 	if (PreventCalcKills) return;
 	CalcAttackDefense();
-	int32 AlliedDamage = AlliedAttack - EnemyDefense;
-	int32 EnemyDamage = EnemyAttack - AlliedDefense;
+	AlliedDamage = AlliedAttack - EnemyDefense;
+	EnemyDamage = EnemyAttack - AlliedDefense;
 	for (FCombatTile& CombatTile : CombatTiles)
 	{
 		CombatTile.ZeroNumbers();
 	}
 	SpreadDamage(AlliedDamage, EAffiliation::Enemy);
 	SpreadDamage(EnemyDamage, EAffiliation::Ally);
+	CountKills();
 }
 
 void ACombat::CalcAttackDefense()
@@ -329,6 +330,30 @@ void ACombat::SpreadDamageToBuildings(EAffiliation Receiver, int32& DamageLeft)
 	}
 }
 
+void ACombat::CountKills()
+{
+	AlliedPopKills = 0;
+	AlliedBuildingKills = 0;
+	EnemyPopKills = 0;
+	EnemyBuildingKills = 0;
+	for (FCombatTile& CombatTile : CombatTiles)
+	{
+		AlliedPopKills += CombatTile.AlliedEntityKills;
+		EnemyPopKills += CombatTile.EnemyEntityKills;
+		if (CombatTile.Tile->Building && CombatTile.Tile->GetClaimant())
+		{
+			if (CombatTile.Tile->GetClaimant()->Affiliation == EAffiliation::Ally)
+			{
+				AlliedBuildingKills += CombatTile.BuildingDowngrade;
+			}
+			else
+			{
+				EnemyBuildingKills += CombatTile.BuildingDowngrade;
+			}
+		}
+	}
+}
+
 void ACombat::TriggerCombat()
 {
 	PreventCalcKills = true;
@@ -336,9 +361,13 @@ void ACombat::TriggerCombat()
 	{
 		ATile* Tile = CombatTile.Tile;
 		if (Tile->GetAlliedEntity())
+		{
 			Tile->GetAlliedEntity()->KillIndividuals(CombatTile.AlliedEntityKills);
+		}
 		if (Tile->GetEnemyEntity())
+		{
 			Tile->GetEnemyEntity()->KillIndividuals(CombatTile.EnemyEntityKills);
+		}
 		if (Tile->Building)
 		{
 			Tile->Building->PopContainer->DecreaseSize(CombatTile.BuildingPopKills);
@@ -360,4 +389,54 @@ void ACombat::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	MainMesh->AddRelativeRotation(FRotator(0, DeltaSeconds * 6, 0));
+}
+
+int32 ACombat::GetAlliedAttack() const
+{
+	return AlliedAttack;
+}
+
+int32 ACombat::GetAlliedDefense() const
+{
+	return AlliedDefense;
+}
+
+int32 ACombat::GetEnemyAttack() const
+{
+	return EnemyAttack;
+}
+
+int32 ACombat::GetEnemyDefense() const
+{
+	return EnemyDefense;
+}
+
+int32 ACombat::GetAlliedDamage() const
+{
+	return AlliedDamage;
+}
+
+int32 ACombat::GetEnemyDamage() const
+{
+	return EnemyDamage;
+}
+
+int32 ACombat::GetAlliedPopKills() const
+{
+	return AlliedPopKills;
+}
+
+int32 ACombat::GetAlliedBuildingKills() const
+{
+	return AlliedBuildingKills;
+}
+
+int32 ACombat::GetEnemyPopKills() const
+{
+	return EnemyPopKills;
+}
+
+int32 ACombat::GetEnemyBuildingKills() const
+{
+	return EnemyBuildingKills;
 }

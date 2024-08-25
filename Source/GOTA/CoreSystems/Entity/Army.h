@@ -15,6 +15,8 @@ class GOTA_API AArmy : public AEntity
 	bool IsTargetValid();
 
 public:
+	void RandomizePop();
+	
 	virtual void CalculateMovement() override;
 
 	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, Instanced)
