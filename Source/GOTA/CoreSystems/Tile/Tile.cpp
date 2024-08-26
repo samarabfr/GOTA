@@ -29,8 +29,8 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME(ATile, WildlifeGrowthChange);
 	DOREPLIFETIME(ATile, Building);
 	DOREPLIFETIME(ATile, Neighbors);
-	DOREPLIFETIME(ATile, AlliedTileEntity);
-	DOREPLIFETIME(ATile, EnemyTileEntity);
+	DOREPLIFETIME(ATile, AlliedEntity);
+	DOREPLIFETIME(ATile, EnemyEntity);
 	DOREPLIFETIME(ATile, bIsRiver);
 	DOREPLIFETIME(ATile, Biome);
 	DOREPLIFETIME(ATile, OceanDistance);
@@ -172,15 +172,54 @@ void ATile::SetNormalizedVolcanoDistance(float NewNormalizedVolcanoDistance)
 	OnDistancesChanged.Broadcast();
 }
 
+AEntity* ATile::GetAlliedEntity()
+{
+	return AlliedEntity;
+}
+
+AEntity* ATile::GetEnemyEntity()
+{
+	return EnemyEntity;
+}
+
+void ATile::SetAlliedEntity(AEntity* NewAlliedEntity)
+{
+	AEntity* OldEntity = AlliedEntity;
+	AlliedEntity = NewAlliedEntity;
+	OnEntityChanged.Broadcast(this, OldEntity);
+}
+
+void ATile::SetEnemyEntity(AEntity* NewEnemyEntity)
+{
+	AEntity* OldEntity = EnemyEntity;
+	EnemyEntity = NewEnemyEntity;
+	OnEntityChanged.Broadcast(this, OldEntity);
+}
+
+AEntity* ATile::GetEntity(EAffiliation Affiliation)
+{
+	if(Affiliation == EAffiliation::Ally)
+		return GetAlliedEntity();
+	return GetEnemyEntity();
+}
+
+void ATile::SetEntity(AEntity* NewEntity, EAffiliation Affiliation)
+{
+	if(Affiliation == EAffiliation::Ally)
+		SetAlliedEntity(NewEntity);
+	else
+		SetEnemyEntity(NewEntity);
+}
+
 bool ATile::IsWalkable(EAffiliation Affiliation) const
 {
 	if (Affiliation == EAffiliation::Ally)
 	{
-		return !EnemyTileEntity;
+		return !AlliedEntity;
 	}
 	if (Affiliation == EAffiliation::Enemy)
 	{
-		return !AlliedTileEntity;
+		return !EnemyEntity;
 	}
 	return false;
 }
@@ -288,7 +327,7 @@ void ATile::Unclaim()
 
 void ATile::OnRep_Building()
 {
-	OnBuildingChanged.Broadcast();
+	OnBuildingChanged.Broadcast(this);
 }
 
 bool ATile::CanBuild()
@@ -319,7 +358,7 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 	Building->PopContainer->OnPopulationChanged.AddDynamic(this, &ATile::CalculatePopulationGrowthChangeWithNeighbors);
 	CalculatePopulationGrowthChangeWithNeighbors(FPopulation());
 	// Set Graphics
-	OnBuildingChanged.Broadcast();
+	OnBuildingChanged.Broadcast(this);
 	RecalculateTileLayout();
 	return true;
 }
@@ -331,11 +370,11 @@ bool ATile::CanUpgrade()
 
 bool ATile::TryUpgrade()
 {
-	if(!Building || !Building->CanUpgrade()) return false;
+	if (!Building || !Building->CanUpgrade()) return false;
 	GameplayTags.RemoveTags(Building->DataAsset->GetTierData(Building->Tier)->GameplayTags);
 	Building->Upgrade();
 	GameplayTags.AppendTags(Building->DataAsset->GetTierData(Building->Tier)->GameplayTags);
-	OnBuildingChanged.Broadcast();
+	OnBuildingChanged.Broadcast(this);
 	return true;
 }
 
@@ -354,7 +393,7 @@ void ATile::Unbuild()
 	// Destroy the Object
 	Building = nullptr;
 	// Set Graphics
-	OnBuildingChanged.Broadcast();
+	OnBuildingChanged.Broadcast(this);
 	RecalculateTileLayout();
 }
 
@@ -713,4 +752,11 @@ void ATile::UpdateRiverConnections()
 		RiverConnections[NullConnection] = true;
 		RealCount++;
 	}
+}
+
+AEntity* ATile::GetEntityByAffiliation(EAffiliation Affiliation) const
+{
+	if (Affiliation == EAffiliation::Ally) return AlliedEntity;
+	if (Affiliation == EAffiliation::Enemy) return EnemyEntity;
+	return nullptr;
 }

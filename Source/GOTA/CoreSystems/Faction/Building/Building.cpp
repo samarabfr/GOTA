@@ -61,3 +61,8 @@ void UBuilding::SetupProduction(const FBuildingTierData* TierData)
 	Production = ProductionPerThreshold * (PopContainer->Population.Size / PopulationThreshold);
 	OnProductionChanged.Broadcast(Production - OldProduction, ProductionType);
 }
+
+UCombatValues* UBuilding::GetCombatValues()
+{
+	return PopContainer->CombatValues;
+}

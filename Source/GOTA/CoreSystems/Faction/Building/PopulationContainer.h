@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Population.h"
+#include "GOTA/CoreSystems/GameplayFramework/GameBalance.h"
 #include "GOTA/CoreSystems/Faction/Settlement/SettlementBalance.h"
+#include "GOTA/CoreSystems/GameplayFramework/CombatValues.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "PopulationContainer.generated.h"
 
@@ -30,7 +32,6 @@ public:
 	FOnFPopulationChangedSig OnPopulationChanged;
 	UPROPERTY(BlueprintAssignable, Category="Population")
 	FOnGrowthChangedSig OnGrowthChanged;
-
 	// ---------------------------------------------------------
 	// Population Struct
 
@@ -38,12 +39,27 @@ public:
 	FPopulation Population;
 
 	ECultureLoyalty DefaultCulture = ECultureLoyalty::Colonists;
-	
+
 	UFUNCTION()
 	void OnRep_Population(const FPopulation& OldPopulation);
 
 	// ---------------------------------------------------------
+	// Combat Values
+
+	UPROPERTY()
+	UGameBalanceDataAsset* GameBalance;
+
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	UCombatValues* CombatValues;
+
+	void RecalculateCombatValues();
+	void DealDamage(int32 Damage);
+	
+	// ---------------------------------------------------------
 	// Changing Population Values
+
+	UFUNCTION(BlueprintCallable, Category = "Population")
+	void AddPopulation(const FPopulation& Pop);
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	void ChangeSize(int32 Change);
@@ -82,11 +98,12 @@ public:
 	void DecreaseMood(EMood Mood, int32 Change);
 
 	FPopulation ExtractRandomPopForArmy(int32 Amount, USettlementBalance* Balance);
-	
+
 private:
 	void ChangeFollowerWeightedRandomBy(int32 Change, ECultureLoyalty Exclude = ECultureLoyalty::MAX);
 	void AddOneFollowerToGuardiansFullRandom();
 	void SubtractOneMoodWeightedRandom();
+	void PopulationChanged(const FPopulation& Change);
 
 	// ---------------------------------------------------------
 	// Population Growth Stuff
@@ -104,7 +121,7 @@ public:
 	// Getters and Setters
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Population")
 	int32 GetSize();
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintGetter, Category = "Population")
 	FPopulation GetPopulation();
 

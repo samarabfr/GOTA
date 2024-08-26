@@ -21,7 +21,33 @@ void AEntity::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 AEntity::AEntity()
 {
 	bReplicates = true;
-	SetReplicateMovement(true);
+	AActor::SetReplicateMovement(true);
+	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
+	Spline = CreateDefaultSubobject<USplineComponent>("Spline Path");
+	Spline->SetupAttachment(RootComponent);
+	NiagaraPath = CreateDefaultSubobject<UNiagaraComponent>("Niagara Path");
+	NiagaraPath->SetupAttachment(RootComponent);
+}
+
+void AEntity::CombatValuesChanged(UCombatValues* CombatValues)
+{
+	OnCombatValuesChanged.Broadcast(CombatValues);
+}
+
+EAffiliation AEntity::GetAffiliation()
+{
+	return Affiliation;
+}
+
+TArray<ATile*> AEntity::GetPath()
+{
+	return Path;
+}
+
+void AEntity::SetPath(const TArray<ATile*>& NewPath)
+{
+	Path = NewPath;
+	RefreshSpline();
 }
 
 void AEntity::Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 MovementSpeed_)
@@ -34,6 +60,10 @@ void AEntity::Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 Movemen
 	GameState->TileEntities.Add(this);
 }
 
+void AEntity::KillIndividuals(int32 Kills)
+{
+}
+
 bool AEntity::ShouldCombatTrigger() const
 {
 	// Combat between this unit and enemy building
@@ -44,47 +74,16 @@ bool AEntity::ShouldCombatTrigger() const
 		return true;
 	}
 	// Combat between this unit and enemy entity
-	if (Affiliation == EAffiliation::Ally)
-	{
-		if (CurrentTile->EnemyTileEntity) return true;
-	}
-	else
-	{
-		if (CurrentTile->AlliedTileEntity) return true;
-	}
+	if (CurrentTile->GetEntity(!Affiliation)) return true;
 	// no combat
 	return false;
-}
-
-void AEntity::TriggerCombat()
-{
-	// destroy building
-	if (CurrentTile->Building) CurrentTile->Unbuild();
-	// destroy enemy Entity
-	if (Affiliation == EAffiliation::Ally)
-	{
-		if (CurrentTile->EnemyTileEntity) CurrentTile->EnemyTileEntity->Kill();
-	}
-	else
-	{
-		if (CurrentTile->AlliedTileEntity) CurrentTile->AlliedTileEntity->Kill();
-	}
-	// destroy this entity
-	Kill();
 }
 
 void AEntity::Kill()
 {
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->TileEntities.Remove(this);
-	if (Affiliation == EAffiliation::Ally)
-	{
-		CurrentTile->AlliedTileEntity = nullptr;
-	}
-	else
-	{
-		CurrentTile->EnemyTileEntity = nullptr;
-	}
+	CurrentTile->SetEntity(nullptr, Affiliation);
 	Destroy();
 }
 
@@ -92,10 +91,10 @@ bool AEntity::IsNextStepBlocked()
 {
 	for (int32 i = 0; i < MovementSpeed; ++i)
 	{
-		int32 index = Path.Num() -1 -i;
-		if(Path.IsValidIndex(index))
+		int32 index = Path.Num() - 1 - i;
+		if (Path.IsValidIndex(index))
 		{
-			if(!Path[index]->IsWalkable(Affiliation)) return true;
+			if (!Path[index]->IsWalkable(Affiliation)) return true;
 		}
 	}
 	return false;
@@ -106,24 +105,44 @@ void AEntity::Step()
 	ATile* NewCurrent = nullptr;
 	for (int32 i = 0; i < MovementSpeed; ++i)
 	{
-		if(!Path.IsEmpty())
+		if (!Path.IsEmpty())
 		{
 			NewCurrent = Path.Pop();
 		}
 	}
 	// can't move
-	if(!NewCurrent) return;
+	if (!NewCurrent) return;
 	// move
-	if (Affiliation == EAffiliation::Ally)
-	{
-		CurrentTile->AlliedTileEntity = nullptr;
-		NewCurrent->AlliedTileEntity = this;
-	}
-	else
-	{
-		CurrentTile->EnemyTileEntity = nullptr;
-		NewCurrent->EnemyTileEntity = this;
-	}
-	CurrentTile=NewCurrent;
+	CurrentTile->SetEntity(nullptr, Affiliation);
+	NewCurrent->SetEntity(this, Affiliation);
+	CurrentTile = NewCurrent;
 	SetActorLocation(CurrentTile->GetActorLocation());
+	RefreshSpline();
+}
+
+void AEntity::RefreshSpline()
+{
+	Spline->ClearSplinePoints(false);
+	if (Path.Num() < 1)
+	{
+		Spline->UpdateSpline();
+		NiagaraPath->SetHiddenInGame(true);
+		return;
+	}
+	Spline->AddSplinePoint(CurrentTile->GetActorLocation() + FVector(0, 0, 300),
+	                       ESplineCoordinateSpace::World, false);
+	int32 MaxSteps = 2 * MovementSpeed;
+	for (int32 i = 0; i < Path.Num(); ++i)
+	{
+		if (i >= MaxSteps) break;
+		Spline->AddSplinePoint(Path[Path.Num() - i - 1]->GetActorLocation() + FVector(0, 0, 300),
+		                       ESplineCoordinateSpace::World, false);
+	}
+	Spline->UpdateSpline();
+	NiagaraPath->SetHiddenInGame(false);
+}
+
+UCombatValues* AEntity::GetCombatValues() const
+{
+	return nullptr;
 }

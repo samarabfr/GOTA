@@ -4,6 +4,7 @@
 #include "PopulationContainer.h"
 
 #include "GOTA/CoreSystems/Faction/Settlement/SettlementBalance.h"
+#include "GOTA/CoreSystems/GameplayFramework/GameBalance.h"
 #include "Net/UnrealNetwork.h"
 
 
@@ -15,6 +16,7 @@ void UPopulationContainer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>&
 	DOREPLIFETIME(UPopulationContainer, Growth);
 	DOREPLIFETIME(UPopulationContainer, GrowthChange);
 	DOREPLIFETIME(UPopulationContainer, GrowthThreshold);
+	DOREPLIFETIME(UPopulationContainer, CombatValues);
 }
 
 bool UPopulationContainer::IsSupportedForNetworking() const
@@ -24,7 +26,8 @@ bool UPopulationContainer::IsSupportedForNetworking() const
 
 UPopulationContainer::UPopulationContainer()
 {
-	// Load the PopulationSettings asset, assuming it is stored in /Game/DataAssets/PopulationSettings
+	CombatValues = CreateDefaultSubobject<UCombatValues>("Combat Values");
+	// Load SettlementBalance to extract GrowthThreshold
 	static ConstructorHelpers::FObjectFinder<USettlementBalance> DataAsset(
 		TEXT("/Game/CoreSystems/Faction/DA_SettlementBalance"));
 	if (DataAsset.Succeeded())
@@ -34,7 +37,19 @@ UPopulationContainer::UPopulationContainer()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Population couldn't load Settlement Balance Data Asset"))
+		UE_LOG(LogTemp, Warning, TEXT("Population Container couldn't load Settlement Balance Data Asset"))
+	}
+
+	// Load GameBalance for Combat Value calculation
+	static ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAsset2(
+		TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
+	if (DataAsset2.Succeeded())
+	{
+		GameBalance = DataAsset2.Object;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Population Container couldn't load GameBalance Data Asset"))
 	}
 }
 
@@ -47,7 +62,38 @@ void UPopulationContainer::OnRep_Population(const FPopulation& OldPopulation)
 }
 
 // ---------------------------------------------------------
+// Combat Values
+
+void UPopulationContainer::RecalculateCombatValues()
+{
+	int32 Attack = Population.MoodContent * GameBalance->ContentPopAttack;
+	Attack += Population.MoodAngry * GameBalance->AngryPopAttack;
+	Attack += Population.MoodFear * GameBalance->FearPopAttack;
+	Attack += Population.Muskets * GameBalance->MusketAttack;
+	Attack += Population.Bows * GameBalance->BowAttack;
+
+	int32 Defense = Population.MoodContent * GameBalance->ContentPopDefense;
+	Defense += Population.MoodAngry * GameBalance->AngryPopDefense;
+	Defense += Population.MoodFear * GameBalance->FearPopDefense;
+	Defense += Population.MoodFear * GameBalance->ShieldDefense;
+	
+	CombatValues->SetAll(Attack, Defense, GameBalance->HumanHP, Population.Size);
+}
+
+void UPopulationContainer::DealDamage(int32 Damage)
+{
+	int32 Kills = Damage / GameBalance->HumanHP;
+	DecreaseSize(Kills);
+}
+
+// ---------------------------------------------------------
 // Changing Population Values
+
+void UPopulationContainer::AddPopulation(const FPopulation& Pop)
+{
+	Population += Pop;
+	PopulationChanged(Pop);
+}
 
 void UPopulationContainer::ChangeSize(int32 Change)
 {
@@ -75,7 +121,7 @@ void UPopulationContainer::IncreaseSize(int32 Change)
 		ChangeFollowerWeightedRandomBy(1);
 	}
 	Population.MoodContent += Effective_Change;
-	OnPopulationChanged.Broadcast(Population - OldPop);
+	PopulationChanged(Population - OldPop);
 }
 
 void UPopulationContainer::DecreaseSize(int32 Change)
@@ -92,7 +138,7 @@ void UPopulationContainer::DecreaseSize(int32 Change)
 		ChangeFollowerWeightedRandomBy(-1);
 		SubtractOneMoodWeightedRandom();
 	}
-	OnPopulationChanged.Broadcast(Population - OldPop);
+	PopulationChanged(Population - OldPop);
 }
 
 void UPopulationContainer::ChangeMaxSize(int32 Change)
@@ -112,7 +158,7 @@ void UPopulationContainer::IncreaseMaxSize(int32 Change)
 	if (Change <= 0) return;
 	FPopulation OldPop = Population;
 	Population.MaxSize += Change;
-	OnPopulationChanged.Broadcast(Population - OldPop);
+	PopulationChanged(Population - OldPop);
 }
 
 void UPopulationContainer::DecreaseMaxSize(int32 Change)
@@ -128,7 +174,7 @@ void UPopulationContainer::DecreaseMaxSize(int32 Change)
 	}
 	else
 	{
-		OnPopulationChanged.Broadcast(Population - OldPop);
+		PopulationChanged(Population - OldPop);
 	}
 }
 
@@ -169,7 +215,7 @@ void UPopulationContainer::IncreaseFollower(ECultureLoyalty Culture, int32 Chang
 	{
 		ChangeFollowerWeightedRandomBy(-1, Culture);
 	}
-	OnPopulationChanged.Broadcast(Population - OldPop);
+	PopulationChanged(Population - OldPop);
 }
 
 void UPopulationContainer::DecreaseFollower(ECultureLoyalty Culture, int32 Change)
@@ -209,7 +255,7 @@ void UPopulationContainer::DecreaseFollower(ECultureLoyalty Culture, int32 Chang
 			}
 		}
 	}
-	OnPopulationChanged.Broadcast(Population - OldPop);
+	PopulationChanged(Population - OldPop);
 }
 
 void UPopulationContainer::ChangeMood(EMood Mood, int32 Change)
@@ -271,7 +317,7 @@ void UPopulationContainer::IncreaseMood(EMood Mood, int32 Change)
 		Population.MoodFear -= FearReduce;
 		Population.MoodAngry -= Effective_Change - FearReduce;
 	}
-	OnPopulationChanged.Broadcast(Population - OldPop);
+	PopulationChanged(Population - OldPop);
 }
 
 void UPopulationContainer::DecreaseMood(EMood Mood, int32 Change)
@@ -295,7 +341,7 @@ void UPopulationContainer::DecreaseMood(EMood Mood, int32 Change)
 	{
 		Population.MoodContent += Effective_Change;
 	}
-	OnPopulationChanged.Broadcast(Population - OldPop);
+	PopulationChanged(Population - OldPop);
 }
 
 FPopulation UPopulationContainer::ExtractRandomPopForArmy(int32 Amount, USettlementBalance* Balance)
@@ -420,6 +466,12 @@ void UPopulationContainer::SubtractOneMoodWeightedRandom()
 	{
 		--Population.MoodFear;
 	}
+}
+
+void UPopulationContainer::PopulationChanged(const FPopulation& Change)
+{
+	RecalculateCombatValues();
+	OnPopulationChanged.Broadcast(Change);
 }
 
 // ---------------------------------------------------------

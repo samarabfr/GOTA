@@ -4,18 +4,27 @@
 
 #include "CoreMinimal.h"
 #include "Entity.h"
+#include "GOTA/CoreSystems/Faction/Building/PopulationContainer.h"
 #include "Army.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class GOTA_API AArmy : public AEntity
 {
 	GENERATED_BODY()
-	
-	bool IsTargetValid() const;
-	
+	AArmy();
+	bool IsTargetValid();
+
 public:
 	virtual void CalculateMovement() override;
+
+	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, Instanced)
+	UPopulationContainer* PopCon;
+
+	virtual UCombatValues* GetCombatValues() const override;
+
+	virtual void KillIndividuals(int32 Kills) override;
+
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	virtual void Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 MovementSpeed_) override;
 };

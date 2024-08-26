@@ -17,40 +17,40 @@ class GOTA_API ATileMap : public AActor
 	ATileMap();
 
 	virtual void BeginPlay() override;
-	
+
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ATile> TileClass;
-	
+
 private:
 	AGS_Ingame* GameState;
-	
+
 	UPROPERTY(Replicated)
 	FHexCoords Size;
-	
+
 	// Array for replication to clients
 	UPROPERTY(Replicated)
 	TArray<ATile*> Tiles;
-	
+
 	// Array for fast access on server
 	ATile** TilesArray;
-	
+
 	bool TryAddTile(FHexCoords HexCoords, ATile* Tile);
 
 public:
 	UPROPERTY(BlueprintReadOnly)
 	TArray<ATile*> ColonistsStarts;
-	
+
 	UPROPERTY(BlueprintReadOnly)
 	TArray<ATile*> NativesStarts;
 
 	UPROPERTY(EditDefaultsOnly)
 	UTerrainGeneratorDataAsset* TerrainGenData;
-	
+
 	void InitializeBothArrays(FHexCoords SizeInit);
 
 	ATile* SpawnNewTile(FHexCoords Coords, float Height);
-	
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	ATile* GetTile(FHexCoords HexCoords);
 
@@ -70,10 +70,11 @@ public:
 	TArray<ATile*> GetPath(ATile* Start, ATile* End, EAffiliation Affiliation);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
-	TArray<ATile*> GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation Affiliation);
+	TArray<ATile*>
+	GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation TargetAffiliation, EAffiliation Walker);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	int32 TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, int32 Amount, int32 Threshold, int32 MaxRange);
-	
+
 	void CountAllMaxEcoValues(int32& TotalMaxTrees, int32& TotalMaxWildlife, int32& TotalMaxForage);
 };

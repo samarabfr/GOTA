@@ -291,7 +291,7 @@ void ASettlement::SelectNewBuildingProject()
 	});
 	// Set from highest score
 	UBuildingProject* Highest = nullptr;
-	float LowestScore = 0;
+	float LowestScore = -MAX_FLT;
 	for (auto Score : Scores)
 	{
 		if (Score.Score > LowestScore)
@@ -362,7 +362,9 @@ void ASettlement::CalculateImportances()
 	ImportanceRatings.Stone = SettlementBalance->StoneImportance
 		* FMath::Pow(EULERS_NUMBER, -SettlementBalance->StoneImportanceDescent * StoneIncome);
 	// More aggressive => weapons more important
-	const float AngryRatio = PopulationSummary->GetMood(EMood::Angry) / PopulationSummary->Population.Size;
+	float AngryRatio = 0;
+	if (PopulationSummary->Population.Size > 0)
+		AngryRatio = PopulationSummary->GetMood(EMood::Angry) / PopulationSummary->Population.Size;
 	float WeaponsIncome = BuildingSummary->ProductionMap[EProductionType::Bowmaking] + BuildingSummary->ProductionMap[
 		EProductionType::Musketmaking];
 	ImportanceRatings.Weapons = SettlementBalance->WeaponsImportance
@@ -403,11 +405,7 @@ bool ASettlement::SpawnArmy()
 	ATile* SpawnLocation = nullptr;
 	for (ATile* Tile : ClaimedTiles)
 	{
-		if (!Tile
-			|| (Tile->AlliedTileEntity && Affiliation == EAffiliation::Ally)
-			|| (Tile->EnemyTileEntity && Affiliation == EAffiliation::Enemy))
-			continue;
-
+		if (!Tile || Tile->GetEntity(Affiliation)) continue;
 		SpawnLocation = Tile;
 		break;
 	}
@@ -416,7 +414,7 @@ bool ASettlement::SpawnArmy()
 	// spawn the army
 	AArmy* Army = Cast<AArmy>(GetWorld()->SpawnActor(ArmyClass));
 	if (!Army) return false;
-	Army->Init(Affiliation, SpawnLocation, 1);
+	Army->Init(Affiliation, SpawnLocation, 2);
 
 	// reduce Pop in every building
 	// TODO: evaluate how many pops to send

@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Combat.h"
 #include "GameFramework/PlayerController.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "PC_Ingame.generated.h"
@@ -24,4 +25,7 @@ public:
 	
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintCosmetic, Category="PlayerController")
 	void PossessGuardian(AGuardian* Guardian);
+
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintCosmetic, Category="PlayerController")
+	void WatchCombat(ACombat* Combat);
 };

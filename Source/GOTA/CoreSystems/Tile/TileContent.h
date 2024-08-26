@@ -36,7 +36,7 @@ private:
 	void UpdateForage(int32 Change);
 
 	UFUNCTION()
-	void ValidateBuildings();
+	void ValidateBuildings(ATile* Tile_);
 
 	void SpawnProps();
 
@@ -65,7 +65,7 @@ private:
 	void ValidateEverything();
 
 	UFUNCTION()
-	void ValidateMainBuilding();
+	void ValidateMainBuilding(ATile* Tile_);
 
 	void ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets);
 
@@ -78,10 +78,6 @@ private:
 
 	UPROPERTY()
 	AGS_Ingame* GameState;
-
-private:
-	template <typename T>
-	static void ShuffleTArray(TArray<T>& Array);
 
 	void CalculateTransform(const FSpawnPoint& SpawnPoint, FTransform& Transform);
 };

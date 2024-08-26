@@ -9,7 +9,7 @@ public class GOTA : ModuleRules
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[]
-			{ "Core", "CoreUObject", "Engine", "InputCore", "GameplayTags", "FastNoiseGenerator", "FastNoise" });
+			{ "Core", "CoreUObject", "Engine", "InputCore", "GameplayTags", "FastNoiseGenerator", "FastNoise", "Niagara" });
 
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });

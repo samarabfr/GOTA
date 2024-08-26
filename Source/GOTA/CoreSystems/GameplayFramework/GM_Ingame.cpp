@@ -124,6 +124,8 @@ void AGM_Ingame::CalculateTurn()
 {
 	GOTAGameState->TurnCalculationStart();
 	StartedCalculatingTurn = FDateTime::Now();
+	// Combat Phase
+	GOTAGameState->CombatSystem->TriggerAllCombats();
 	// Settlement Turns
 	for (ASettlement* Settlement : GOTAGameState->ColonistsSettlements)
 	{
@@ -133,21 +135,16 @@ void AGM_Ingame::CalculateTurn()
 	{
 		Settlement->CalculateTurn();
 	}
-	// Combat Phase
-	TSet<ATile*> CombatTiles;
-	for (AEntity* Entity : GOTAGameState->TileEntities)
-	{
-		if (Entity->ShouldCombatTrigger()) CombatTiles.Add(Entity->CurrentTile);
-	}
-	for (ATile* CombatTile : CombatTiles)
-	{
-		if (CombatTile->AlliedTileEntity) CombatTile->AlliedTileEntity->TriggerCombat();
-		if (CombatTile->EnemyTileEntity) CombatTile->EnemyTileEntity->TriggerCombat();
-	}
 	// Entity Movement
 	for (AEntity* Entity : GOTAGameState->TileEntities)
 	{
 		Entity->CalculateMovement();
+	}
+	// Check for combats next round
+	for (AEntity* Entity : GOTAGameState->TileEntities)
+	{
+		if(Entity->ShouldCombatTrigger())
+			GOTAGameState->CombatSystem->RegisterCombat(Entity->CurrentTile);
 	}
 	// Ecovalues
 	GOTAGameState->TileMap->CalculateTurn();
