@@ -162,12 +162,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
 	bool GameEnded = false;
 
-	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
-	bool GameStarted = false;
-
 	UFUNCTION(NetMulticast, Reliable)
 	void EndGame(GameEnding Ending, const FString& EndingMessage);
-
+	
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void CountIslandMaxEcoValues();
 };

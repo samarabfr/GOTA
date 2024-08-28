@@ -37,13 +37,16 @@ void AGM_Ingame::PostLogin(APlayerController* NewPlayer)
 void AGM_Ingame::Init()
 {
 	GOTAGameState = GetGameState<AGS_Ingame>();
+	// Start the Game paused
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	PlayerController->SetPause(true);
 }
 
 void AGM_Ingame::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	if (!GOTAGameState) return;
-	if (GOTAGameState->GameStarted) CheckGameEndingConditions();
+	CheckGameEndingConditions();
 	if (GOTAGameState->ElapsedTurnTime >= GOTAGameState->MaxTurnTime)
 	{
 		CalculateTurn();
@@ -59,6 +62,7 @@ void AGM_Ingame::CreateWorld()
 	WorldGen->Init(GOTAGameState->TileMap, GameInstance->IslandTileCount, GameInstance->ColonistsSettlementCount,
 	               GameInstance->NativesSettlementCount);
 	WorldGen->GenerateWorld();
+	GOTAGameState->TileMap->Init();
 }
 
 void AGM_Ingame::CreateFactions()
@@ -117,7 +121,9 @@ void AGM_Ingame::InitialPlayerControllerPossession()
 void AGM_Ingame::StartGame()
 {
 	GOTAGameState->ShouldTickTurnTime = true;
-	GOTAGameState->GameStarted = true;
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	PC->SetPause(false);
+	UE_LOG(LogTemp, Warning, TEXT("test: %d"), IsPaused())
 }
 
 void AGM_Ingame::CalculateTurn()
@@ -143,7 +149,7 @@ void AGM_Ingame::CalculateTurn()
 	// Check for combats next round
 	for (AEntity* Entity : GOTAGameState->TileEntities)
 	{
-		if(Entity->ShouldCombatTrigger())
+		if (Entity->ShouldCombatTrigger())
 			GOTAGameState->CombatSystem->RegisterCombat(Entity->CurrentTile);
 	}
 	// Ecovalues

@@ -22,6 +22,14 @@ ATileMap::ATileMap()
 	bAlwaysRelevant = true;
 }
 
+void ATileMap::Init()
+{
+	for (ATile* Tile : Tiles)
+	{
+		if (Tile) Tile->Init();
+	}
+}
+
 void ATileMap::BeginPlay()
 {
 	Super::BeginPlay();
@@ -95,8 +103,6 @@ bool ATileMap::TryAddTile(FHexCoords HexCoords, ATile* Tile)
 	if (Tile->Neighbors[3]) Tile->Neighbors[3]->Neighbors[0] = Tile;
 	if (Tile->Neighbors[4]) Tile->Neighbors[4]->Neighbors[1] = Tile;
 	if (Tile->Neighbors[5]) Tile->Neighbors[5]->Neighbors[2] = Tile;
-	// init
-	Tile->Init();
 	return true;
 }
 
@@ -215,7 +221,8 @@ TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End, EAffiliation Affiliat
 	return Path;
 }
 
-TArray<ATile*> ATileMap::GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation TargetAffiliation, EAffiliation Walker)
+TArray<ATile*> ATileMap::GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation TargetAffiliation,
+                                                            EAffiliation Walker)
 {
 	//https://www.redblobgames.com/pathfinding/a-star/introduction.html
 	TArray<ATile*> Frontier;
@@ -446,7 +453,7 @@ void ATileMap::CountAllMaxEcoValues(int32& TotalMaxTrees, int32& TotalMaxWildlif
 {
 	for (ATile* Tile : Tiles)
 	{
-		if(!Tile) continue;
+		if (!Tile) continue;
 		TotalMaxTrees += Tile->Trees->GetMaximum();
 		TotalMaxWildlife += Tile->Wildlife->GetMaximum();
 		TotalMaxForage += Tile->Forage->GetMaximum();
