@@ -23,4 +23,6 @@ public:
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
 	void SelectGuardian(UGuardianDataAsset* NewGuardian);
+
+
 };

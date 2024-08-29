@@ -6,7 +6,7 @@
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "Lobby.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class GOTA_API ULobby : public UUserWidget
 {
 	GENERATED_BODY()
