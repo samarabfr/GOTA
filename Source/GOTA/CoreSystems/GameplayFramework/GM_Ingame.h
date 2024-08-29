@@ -29,10 +29,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<ASettlement> NativeSettlementClass;
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
-	void Init();
-
+	
 	// ---------------------------------------------------------
 	// Control the Flow of the Game
 private:

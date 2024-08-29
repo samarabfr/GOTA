@@ -5,6 +5,7 @@
 
 
 #include "GOTAGameInstance.h"
+#include "LoadingManager.h"
 #include "PC_Ingame.h"
 #include "PS_Ingame.h"
 #include "GameFramework/GameStateBase.h"
@@ -24,14 +25,7 @@ AGM_Ingame::AGM_Ingame()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Failed to load GameBalance DataAsset Inside GameMode!"));
 	}
-}
 
-void AGM_Ingame::Init()
-{
-	GOTAGameState = GetGameState<AGS_Ingame>();
-	// Start the Game paused
-	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
-	PlayerController->SetPause(true);
 }
 
 // ---------------------------------------------------------
@@ -90,8 +84,10 @@ void AGM_Ingame::Tick(float DeltaSeconds)
 
 void AGM_Ingame::LoadGame()
 {
-	PauseGame();
+	//PauseGame();
+	GOTAGameState = GetGameState<AGS_Ingame>();
 	GOTAGameState->GameStatus = EGameStatus::Loading;
+	GetWorld()->SpawnActor<ALoadingManager>();
 }
 
 void AGM_Ingame::StartGame()
@@ -109,14 +105,12 @@ void AGM_Ingame::TogglePause()
 
 void AGM_Ingame::PauseGame()
 {
-	GOTAGameState->GameStatus = EGameStatus::Paused;
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	PC->SetPause(false);
 }
 
 void AGM_Ingame::UnpauseGame()
 {
-	GOTAGameState->GameStatus = EGameStatus::Running;
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
 	PC->SetPause(true);
 }

@@ -7,8 +7,15 @@
 void AGuardian::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	// Get the GameState
+	// IncreaseReplicationCount for LoadingProcess
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
+
+	MouseUtils = GetWorld()->SpawnActor<AMouseUtils>(MouseUtilsClass);
+	SetupGAM();
+}
+
+AMouseUtils* AGuardian::GetMouseUtils()
+{
+	return MouseUtils;
 }

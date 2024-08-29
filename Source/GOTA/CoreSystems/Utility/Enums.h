@@ -87,6 +87,5 @@ enum class EGameStatus : uint8
 	Lobby UMETA(DisplayName = "Lobby"),
 	Loading UMETA(DisplayName = "Loading"),
 	Running UMETA(DisplayName = "Running"),
-	Paused UMETA(DisplayName = "Paused"),
 	Ended UMETA(DisplayName = "Victory")
 };
