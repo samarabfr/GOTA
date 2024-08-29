@@ -26,6 +26,7 @@ void AGS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	DOREPLIFETIME(AGS_Ingame, TurnCounter);
 
 	DOREPLIFETIME(AGS_Ingame, CombatSystem);
+	DOREPLIFETIME(AGS_Ingame, StartParameter);
 }
 
 AGS_Ingame::AGS_Ingame()
@@ -39,18 +40,28 @@ AGS_Ingame::AGS_Ingame()
 	TotalColonialPopulation = CreateDefaultSubobject<UPopulationSummary>(TEXT("Total Colonial Population"));
 	TotalNativePopulation = CreateDefaultSubobject<UPopulationSummary>(TEXT("Total Native Population"));
 	CombatSystem = CreateDefaultSubobject<UCombatSystem>(TEXT("Combat System"));
+	StartParameter = CreateDefaultSubobject<UStartParameter>(TEXT("Start Parameter"));
+}
+
+void AGS_Ingame::BeginPlay()
+{
+	Super::BeginPlay();
+	if(HasAuthority())
+	{
+		AddReplicatedSubObject(TotalTrees);
+		AddReplicatedSubObject(TotalForage);
+		AddReplicatedSubObject(TotalWildlife);
+		AddReplicatedSubObject(TotalColonialPopulation);
+		AddReplicatedSubObject(TotalNativePopulation);
+		AddReplicatedSubObject(CombatSystem);
+		AddReplicatedSubObject(StartParameter);
+	}
+	// Spawn Static Mesh Batcher
+	StaticMeshBatcher = GetWorld()->SpawnActor<AStaticMeshBatcher>();
 }
 
 void AGS_Ingame::Init()
 {
-	AddReplicatedSubObject(TotalTrees);
-	AddReplicatedSubObject(TotalForage);
-	AddReplicatedSubObject(TotalWildlife);
-	AddReplicatedSubObject(TotalColonialPopulation);
-	AddReplicatedSubObject(TotalNativePopulation);
-	AddReplicatedSubObject(CombatSystem);
-	// Spawn Static Mesh Batcher
-	StaticMeshBatcher = GetWorld()->SpawnActor<AStaticMeshBatcher>();
 }
 
 void AGS_Ingame::Tick(float DeltaSeconds)
@@ -134,7 +145,7 @@ void AGS_Ingame::UnregisterPopConForTotals(UPopulationContainer* PopCon, EAffili
 		TotalColonialPopulation->UnregisterPopulationContainer(PopCon);
 }
 
-void AGS_Ingame::EndGame_Implementation(::GameEnding Ending, const FString& EndingMessage)
+void AGS_Ingame::EndGame_Implementation(::EGameEnding Ending, const FString& EndingMessage)
 {
 	if (GameEnded) return;
 	GameEnded = true;

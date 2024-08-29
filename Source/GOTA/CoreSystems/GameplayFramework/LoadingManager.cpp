@@ -18,7 +18,7 @@ void ALoadingManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 void ALoadingManager::Init()
 {
 	const UGOTAGameInstance* GI = Cast<UGOTAGameInstance>(GetGameInstance());
-	LoadingStatuses.SetNum(GI->PlayerCount);
+//	LoadingStatuses.SetNum(GI->PlayerCount);
 }
 
 void ALoadingManager::IncrementReplicationCount()

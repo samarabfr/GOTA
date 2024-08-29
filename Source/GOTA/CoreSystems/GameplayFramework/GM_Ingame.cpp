@@ -26,20 +26,54 @@ AGM_Ingame::AGM_Ingame()
 	}
 }
 
-void AGM_Ingame::PostLogin(APlayerController* NewPlayer)
-{
-	Super::PostLogin(NewPlayer);
-	APS_Ingame* GOTAPlayerState = NewPlayer->GetPlayerState<APS_Ingame>();
-	int32 PlayerID = GameState->PlayerArray.Num() - 1; //0-based index
-	GOTAPlayerState->SetPlayerID(PlayerID);
-}
-
 void AGM_Ingame::Init()
 {
 	GOTAGameState = GetGameState<AGS_Ingame>();
 	// Start the Game paused
 	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 	PlayerController->SetPause(true);
+}
+
+// ---------------------------------------------------------
+// Control the Flow of the Game
+
+void AGM_Ingame::PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId,
+                          FString& ErrorMessage)
+{
+	Super::PreLogin(Options, Address, UniqueId, ErrorMessage);
+	if (GetNumPlayers() >= 4)
+	{
+		ErrorMessage = TEXT("Server is full.");
+	}
+	AGS_Ingame* GS = Cast<AGS_Ingame>(GameState);
+	if (GS->GameStatus != EGameStatus::Lobby)
+	{
+		ErrorMessage = TEXT("Game is already running.");
+	}
+}
+
+void AGM_Ingame::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+	APS_Ingame* PS = Cast<APS_Ingame>(NewPlayer->PlayerState);
+	// find free GOTA ID
+	bool FoundFreeID = false;
+	int32 FreeID = -1;
+	while (!FoundFreeID)
+	{
+		FreeID++;
+		FoundFreeID = true;
+		for (APlayerState* PlayerState : GameState->PlayerArray)
+		{
+			APS_Ingame* GOTAPlayerState = Cast<APS_Ingame>(PlayerState);
+			if (GOTAPlayerState->GOTAPlayerID == FreeID)
+			{
+				FoundFreeID = false;
+				break;
+			}
+		}
+	}
+	PS->GOTAPlayerID = FreeID;
 }
 
 void AGM_Ingame::Tick(float DeltaSeconds)
@@ -54,13 +88,107 @@ void AGM_Ingame::Tick(float DeltaSeconds)
 	}
 }
 
+void AGM_Ingame::LoadGame()
+{
+	PauseGame();
+	GOTAGameState->GameStatus = EGameStatus::Loading;
+}
+
+void AGM_Ingame::StartGame()
+{
+	GOTAGameState->GameStatus = EGameStatus::Running;
+	GOTAGameState->ShouldTickTurnTime = true;
+	UnpauseGame();
+}
+
+void AGM_Ingame::TogglePause()
+{
+	if (IsPaused()) UnpauseGame();
+	else PauseGame();
+}
+
+void AGM_Ingame::PauseGame()
+{
+	GOTAGameState->GameStatus = EGameStatus::Paused;
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	PC->SetPause(false);
+}
+
+void AGM_Ingame::UnpauseGame()
+{
+	GOTAGameState->GameStatus = EGameStatus::Running;
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	PC->SetPause(true);
+}
+
+void AGM_Ingame::EndGame(EGameEnding Ending, const FString& EndingMessage)
+{
+	GOTAGameState->GameStatus = EGameStatus::Ended;
+	GOTAGameState->EndGame(Ending, EndingMessage);
+}
+
+void AGM_Ingame::CheckGameEndingConditions()
+{
+	if (GOTAGameState->GameEnded) return;
+
+	// based on SettlementPop
+	int32 ColonialPop = GOTAGameState->TotalColonialPopulation->Population.Size;
+	int32 NativePop = GOTAGameState->TotalNativePopulation->Population.Size;
+	int32 TotalPop = ColonialPop + NativePop;
+
+	if (ColonialPop == 0)
+	{
+		EndGame(EGameEnding::Victory, FString("Victory! :)"));
+		return;
+	}
+	if (NativePop == 0)
+	{
+		EndGame(EGameEnding::Defeat, FString("Defeat! :("));
+		return;
+	}
+
+	// based on Culture
+	int32 TotalColonistFollower = GOTAGameState->TotalColonialPopulation->Population.FollowerColonists
+		+ GOTAGameState->TotalNativePopulation->Population.FollowerColonists;
+	int32 TotalNativeFollower = GOTAGameState->TotalColonialPopulation->GetNativeFollowers()
+		+ GOTAGameState->TotalNativePopulation->GetNativeFollowers();
+
+	if (TotalColonistFollower == 0)
+	{
+		EndGame(EGameEnding::Victory, FString("Victory! :)"));
+		return;
+	}
+
+	if (TotalNativeFollower == 0)
+	{
+		EndGame(EGameEnding::Defeat, FString("Defeat! :("));
+		return;
+	}
+
+	//based on Ecovalues
+	float TreeRatio = static_cast<float>(GOTAGameState->IslandMaxTrees) / GOTAGameState->TotalTrees->Current;
+	float WildlifeRatio = static_cast<float>(GOTAGameState->IslandMaxWildlife) / GOTAGameState->TotalWildlife->Current;
+	float ForageRatio = static_cast<float>(GOTAGameState->IslandMaxForage) / GOTAGameState->TotalForage->Current;
+	int32 EcoUnderRatioCount = 0;
+	if (TreeRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
+	if (WildlifeRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
+	if (ForageRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
+	if (EcoUnderRatioCount >= 2)
+		EndGame(EGameEnding::Defeat, FString("Defeat! :("));
+}
+
+// ---------------------------------------------------------
+// World Setup
+
 void AGM_Ingame::CreateWorld()
 {
 	GOTAGameState->TileMap = GetWorld()->SpawnActor<ATileMap>(TileMapClass);
 	UGOTAGameInstance* GameInstance = GetGameInstance<UGOTAGameInstance>();
 	UWorldGenerator* WorldGen = NewObject<UWorldGenerator>();
-	WorldGen->Init(GOTAGameState->TileMap, GameInstance->IslandTileCount, GameInstance->ColonistsSettlementCount,
-	               GameInstance->NativesSettlementCount);
+	WorldGen->Init(GOTAGameState->TileMap,
+	               GOTAGameState->StartParameter->GetIslandSize(),
+	               GOTAGameState->StartParameter->GetStartingColonialSettlements(),
+	               1);
 	WorldGen->GenerateWorld();
 	GOTAGameState->TileMap->Init();
 }
@@ -83,27 +211,11 @@ void AGM_Ingame::CreateFactions()
 
 void AGM_Ingame::CreateGuardians()
 {
-	UGOTAGameInstance* GameInstance = GetGameInstance<UGOTAGameInstance>();
-	FVector Location = FVector(0, 0, 1000);
-	if (GameInstance->SelectedGuardian1)
+	for (APlayerState* PlayerState : GOTAGameState->PlayerArray)
 	{
-		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(GameInstance->SelectedGuardian1, Location, FRotator());
-		GOTAGameState->Guardians.Add(Guardian);
-	}
-	if (GameInstance->SelectedGuardian2)
-	{
-		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(GameInstance->SelectedGuardian2, Location, FRotator());
-		GOTAGameState->Guardians.Add(Guardian);
-	}
-	if (GameInstance->SelectedGuardian3)
-	{
-		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(GameInstance->SelectedGuardian3, Location, FRotator());
-		GOTAGameState->Guardians.Add(Guardian);
-	}
-	if (GameInstance->SelectedGuardian4)
-	{
-		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(GameInstance->SelectedGuardian4, Location, FRotator());
-		GOTAGameState->Guardians.Add(Guardian);
+		APS_Ingame* PS = Cast<APS_Ingame>(PlayerState);
+		FVector Location = FVector(0, 0, 1000);
+		GetWorld()->SpawnActor<AGuardian>(PS->SelectedGuardian->GuardianBlueprint, Location, FRotator::ZeroRotator);
 	}
 }
 
@@ -116,14 +228,6 @@ void AGM_Ingame::InitialPlayerControllerPossession()
 		APC_Ingame* PC = Cast<APC_Ingame>(UGameplayStatics::GetPlayerController(GetWorld(), i));
 		PC->PossessGuardian(GOTAGameState->Guardians[i]);
 	}
-}
-
-void AGM_Ingame::StartGame()
-{
-	GOTAGameState->ShouldTickTurnTime = true;
-	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	PC->SetPause(false);
-	UE_LOG(LogTemp, Warning, TEXT("test: %d"), IsPaused())
 }
 
 void AGM_Ingame::CalculateTurn()
@@ -161,54 +265,4 @@ void AGM_Ingame::CalculateTurn()
 	       GOTAGameState->TurnCounter)
 	GOTAGameState->IncreaseTurnCounter();
 	GOTAGameState->TurnCalculationEnd();
-}
-
-void AGM_Ingame::CheckGameEndingConditions()
-{
-	if (GOTAGameState->GameEnded) return;
-
-	// based on SettlementPop
-	int32 ColonialPop = GOTAGameState->TotalColonialPopulation->Population.Size;
-	int32 NativePop = GOTAGameState->TotalNativePopulation->Population.Size;
-	int32 TotalPop = ColonialPop + NativePop;
-
-	if (ColonialPop == 0)
-	{
-		GOTAGameState->EndGame(GameEnding::Victory, FString("Victory! :)"));
-		return;
-	}
-	if (NativePop == 0)
-	{
-		GOTAGameState->EndGame(GameEnding::Defeat, FString("Defeat! :("));
-		return;
-	}
-
-	// based on Culture
-	int32 TotalColonistFollower = GOTAGameState->TotalColonialPopulation->Population.FollowerColonists
-		+ GOTAGameState->TotalNativePopulation->Population.FollowerColonists;
-	int32 TotalNativeFollower = GOTAGameState->TotalColonialPopulation->GetNativeFollowers()
-		+ GOTAGameState->TotalNativePopulation->GetNativeFollowers();
-
-	if (TotalColonistFollower == 0)
-	{
-		GOTAGameState->EndGame(GameEnding::Victory, FString("Victory! :)"));
-		return;
-	}
-
-	if (TotalNativeFollower == 0)
-	{
-		GOTAGameState->EndGame(GameEnding::Defeat, FString("Defeat! :("));
-		return;
-	}
-
-	//based on Ecovalues
-	float TreeRatio = static_cast<float>(GOTAGameState->IslandMaxTrees) / GOTAGameState->TotalTrees->Current;
-	float WildlifeRatio = static_cast<float>(GOTAGameState->IslandMaxWildlife) / GOTAGameState->TotalWildlife->Current;
-	float ForageRatio = static_cast<float>(GOTAGameState->IslandMaxForage) / GOTAGameState->TotalForage->Current;
-	int32 EcoUnderRatioCount = 0;
-	if (TreeRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
-	if (WildlifeRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
-	if (ForageRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
-	if (EcoUnderRatioCount >= 2)
-		GOTAGameState->EndGame(GameEnding::Defeat, FString("Defeat! :("));
 }

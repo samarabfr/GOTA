@@ -12,7 +12,7 @@ UCLASS()
 class GOTA_API APC_Ingame : public APlayerController
 {
 	GENERATED_BODY()
-
+	
 public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintCosmetic, Category="PlayerController")
 	void InitUI();
