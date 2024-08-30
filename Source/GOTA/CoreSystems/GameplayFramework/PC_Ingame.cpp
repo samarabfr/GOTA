@@ -5,6 +5,7 @@
 
 void APC_Ingame::BeginPlay()
 {
+	Super::BeginPlay();
 	if (!IsLocalController()) return;
 	CreateLobbyUI();
 	DistanceUtils = GetWorld()->SpawnActor<ADistanceUtils>();
