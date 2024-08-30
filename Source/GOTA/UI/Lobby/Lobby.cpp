@@ -38,22 +38,15 @@ void ULobby::NativeConstruct()
 void ULobby::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-	TArray<bool> StillConnected;
-	StillConnected.SetNumZeroed(PlayerSlots.Num());
 	for (APlayerState* PlayerState : GameState->PlayerArray)
 	{
 		APS_Ingame* PS = Cast<APS_Ingame>(PlayerState);
 		if (!PS || !PlayerSlots.IsValidIndex(PS->GOTAPlayerID))
 			continue;
-		StillConnected[PS->GOTAPlayerID] = true;
 		if (PlayerSlots[PS->GOTAPlayerID]->CachedPlayerState != PS)
 		{
 			PlayerSlots[PS->GOTAPlayerID]->SetPlayerState(PS);
 		}
-	}
-	for (int32 i = 0; i < PlayerSlots.Num(); ++i)
-	{
-		if (!StillConnected[i])PlayerSlots[i]->SetPlayerState(nullptr);
 	}
 }
 
@@ -68,9 +61,8 @@ void ULobby::StartPressed()
 
 void ULobby::LeavePressed()
 {
-	GetWorld()->GetFirstPlayerController()->ClientTravel(
-		"/Game/UI/MainMenu/L_MainMenu?listen",
-		TRAVEL_Absolute);
+	APlayerController* PC = GetWorld()->GetFirstPlayerController();
+	PC->ClientTravel("/Game/UI/MainMenu/L_MainMenu", TRAVEL_Absolute);
 }
 
 void ULobby::ColonyCountChanged(float InValue, ETextCommit::Type CommitMethod)

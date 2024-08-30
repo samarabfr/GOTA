@@ -17,8 +17,15 @@ void UPlayerSlot::NativeConstruct()
 void UPlayerSlot::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-	if (CachedPlayerState.IsValid()) return;
-	
+	if (CachedPlayerState.IsValid())
+	{
+		SetVisibility(ESlateVisibility::Visible);
+	}
+	else
+	{
+		SetVisibility(ESlateVisibility::Hidden);
+		return;
+	}
 	if (!IsLocalPlayerState
 		&& CachedPlayerState->SelectedGuardian
 		&& CachedPlayerState->SelectedGuardian->Name != GuardianSelection->GetSelectedOption())

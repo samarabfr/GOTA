@@ -17,7 +17,7 @@ class GOTA_API AMouseUtils : public AActor
 	virtual void Tick(float DeltaSeconds) override;
 
 	UPROPERTY()
-	APC_Ingame* PlayerController = nullptr;
+	TWeakObjectPtr<APC_Ingame> PlayerController = nullptr;
 
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHoverTileChangedSig, ATile*, NewTile);

@@ -26,7 +26,7 @@ private:
 	ALoadingStatusActor* LoadingStatus = nullptr;
 	
 	UPROPERTY()
-	APC_Ingame* LocalPlayerController = nullptr;
+	TWeakObjectPtr<APC_Ingame> LocalPlayerController = nullptr;
 	
 	UPROPERTY()
 	AGM_Ingame* GameMode = nullptr;

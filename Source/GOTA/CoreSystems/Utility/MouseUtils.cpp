@@ -29,7 +29,7 @@ AMouseUtils::AMouseUtils()
 
 void AMouseUtils::Tick(float DeltaSeconds)
 {
-	if (!PlayerController)return;
+	if (!PlayerController.IsValid())return;
 	if (!PlayerController->IsLocalController())return;
 
 	FHitResult HitResult;
@@ -80,7 +80,7 @@ void AMouseUtils::AttachToTilePosition(AActor* Actor)
 void AMouseUtils::OnRep_NetLocation()
 {
 	// ignore updates on its own MouseUtils because its kinda ClientSide
-	if (PlayerController && PlayerController->IsLocalController()) return;
+	if (PlayerController.IsValid() && PlayerController->IsLocalController()) return;
 	MouseLocation->SetWorldLocation(NetTileLocation);
 }
 
@@ -92,7 +92,7 @@ void AMouseUtils::SetNetLocation_Implementation(FVector Location)
 void AMouseUtils::OnRep_NetTileLocation()
 {
 	// ignore updates on its own MouseUtils because its kinda ClientSide
-	if (PlayerController && PlayerController->IsLocalController()) return;
+	if (PlayerController.IsValid() && PlayerController->IsLocalController()) return;
 	MouseTileLocation->SetWorldLocation(NetTileLocation);
 }
 
