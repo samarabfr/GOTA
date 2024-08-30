@@ -14,9 +14,8 @@ class GOTA_API UPlayerSlot : public UUserWidget
 	bool IsLocalPlayerState = false;
 
 public:
-	UPROPERTY(BlueprintReadWrite, Category="PlayerSlot")
-	APS_Ingame* CachedPlayerState;
-
+	TWeakObjectPtr<APS_Ingame>  CachedPlayerState;
+	
 	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* GuardianSelection;
 

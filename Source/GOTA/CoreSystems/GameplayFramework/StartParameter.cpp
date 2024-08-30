@@ -7,7 +7,7 @@ void UStartParameter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	UObject::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UStartParameter, IslandSize)
-	DOREPLIFETIME(UStartParameter, StartingColonialSettlements)
+	DOREPLIFETIME(UStartParameter, Colonies)
 }
 
 bool UStartParameter::IsSupportedForNetworking() const
@@ -31,18 +31,18 @@ void UStartParameter::OnRep_IslandSize()
 	OnChanged.Broadcast(this);
 }
 
-int32 UStartParameter::GetStartingColonialSettlements()
+int32 UStartParameter::GetColonies()
 {
-	return StartingColonialSettlements;
+	return Colonies;
 }
 
-void UStartParameter::SetStartingColonialSettlements(int32 NewValue)
+void UStartParameter::SetColonies(int32 NewValue)
 {
-	StartingColonialSettlements = NewValue;
+	Colonies = NewValue;
 	OnChanged.Broadcast(this);
 }
 
-void UStartParameter::OnRep_StartingColonialSettlements()
+void UStartParameter::OnRep_Colonies()
 {
 	OnChanged.Broadcast(this);
 }

@@ -22,11 +22,11 @@ private:
 		Category="StartParameter")
 	int32 IslandSize = 800;
 
-	UPROPERTY(BlueprintGetter=GetStartingColonialSettlements,
-		BlueprintSetter=SetStartingColonialSettlements,
-		ReplicatedUsing=OnRep_StartingColonialSettlements,
+	UPROPERTY(BlueprintGetter=GetColonies,
+		BlueprintSetter=SetColonies,
+		ReplicatedUsing=OnRep_Colonies,
 		Category = "StartParameter")
-	int32 StartingColonialSettlements = 4;
+	int32 Colonies = 4;
 	
 public:
 	UFUNCTION(BlueprintGetter)
@@ -36,14 +36,14 @@ public:
 	void SetIslandSize(int32 NewValue);
 
 	UFUNCTION(BlueprintGetter)
-	int32 GetStartingColonialSettlements();
+	int32 GetColonies();
 
 	UFUNCTION(BlueprintSetter, BlueprintAuthorityOnly)
-	void SetStartingColonialSettlements(int32 NewValue);
+	void SetColonies(int32 NewValue);
 	
 	UFUNCTION()
 	void OnRep_IslandSize();
 	
 	UFUNCTION()
-	void OnRep_StartingColonialSettlements();
+	void OnRep_Colonies();
 };

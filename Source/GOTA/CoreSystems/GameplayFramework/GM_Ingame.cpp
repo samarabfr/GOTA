@@ -181,7 +181,7 @@ void AGM_Ingame::CreateWorld()
 	UWorldGenerator* WorldGen = NewObject<UWorldGenerator>();
 	WorldGen->Init(GOTAGameState->TileMap,
 	               GOTAGameState->StartParameter->GetIslandSize(),
-	               GOTAGameState->StartParameter->GetStartingColonialSettlements(),
+	               GOTAGameState->StartParameter->GetColonies(),
 	               1);
 	WorldGen->GenerateWorld();
 	GOTAGameState->TileMap->Init();
