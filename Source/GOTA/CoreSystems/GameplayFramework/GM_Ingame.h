@@ -69,13 +69,13 @@ public:
 	void CreateWorld();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
-	void CreateFactions();
+	void CreateSettlements();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void CreateGuardians();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
-	void InitialPlayerControllerPossession();
+	void InitialPossession();
 
 	// ---------------------------------------------------------
 	// Calculate Turn

@@ -19,7 +19,6 @@ ALoadingManager::ALoadingManager()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	PrimaryActorTick.bTickEvenWhenPaused = true;
-	PrimaryActorTick.TickInterval = 0.2f;
 	bReplicates = true;
 	bAlwaysRelevant = true;
 }
@@ -37,7 +36,7 @@ void ALoadingManager::BeginPlay()
 
 void ALoadingManager::Tick(float DeltaSeconds)
 {
-	Super::Tick(DeltaSeconds);  // Ensure this is called to maintain ticking
+	Super::Tick(DeltaSeconds); // Ensure this is called to maintain ticking
 
 	if (HasAuthority())
 	{
@@ -57,6 +56,46 @@ void ALoadingManager::ServerTick()
 		SpawnLoadingStatuses();
 		LoadingStatus = LoadingStatuses[0];
 	}
+	switch (LoadingStatus->CurrentStatus)
+	{
+	case ELoadingStatus::NotStarted:
+		LoadingStatus->SetCurrentStatus(ELoadingStatus::WaitForReadyForCreation);
+		break;
+
+	case ELoadingStatus::WaitForReadyForCreation:
+		if(IsEveryoneOn(ELoadingStatus::WaitForReadyForCreation))
+		{
+			GameMode->CreateWorld();
+			GameMode->CreateSettlements();
+			GameMode->CreateGuardians();
+			GameState->CountIslandMaxEcoValues();
+			LoadingStatus->SetNetRepCount(LoadingStatus->RepCount);
+			LoadingStatus->SetCurrentStatus(ELoadingStatus::WaitForReplication);
+		}
+		break;
+
+	case ELoadingStatus::WaitForReplication:
+		if(IsEveryoneOn(ELoadingStatus::WaitForReplication))
+		{
+			LocalPlayerController->CreateIngameUI();
+			GameMode->InitialPossession();
+			LoadingStatus->SetCurrentStatus(ELoadingStatus::WaitForFinished);
+		}
+		break;
+
+	case ELoadingStatus::WaitForFinished:
+		if(IsEveryoneOn(ELoadingStatus::WaitForFinished))
+		{
+			LocalPlayerController->InitInput();
+			LocalPlayerController->RemoveLoadingUI();
+			GameMode->StartGame();
+			LoadingStatus->SetCurrentStatus(ELoadingStatus::Finished);
+		}
+		break;
+		
+	default:
+		break;
+	}
 }
 
 void ALoadingManager::ClientTick()
@@ -74,6 +113,44 @@ void ALoadingManager::ClientTick()
 		else
 			return;
 	}
+
+	switch (LoadingStatus->CurrentStatus)
+	{
+	case ELoadingStatus::NotStarted:
+		LoadingStatus->SetCurrentStatus(ELoadingStatus::WaitForReadyForCreation);
+		break;
+
+	case ELoadingStatus::WaitForReadyForCreation:
+		if (LoadingStatuses[0]->CurrentStatus == ELoadingStatus::WaitForReplication)
+			LoadingStatus->SetCurrentStatus(ELoadingStatus::Replicating);
+		break;
+
+	case ELoadingStatus::Replicating:
+		if (LoadingStatuses[0]->NetRepCount > 0
+			&& LoadingStatuses[0]->NetRepCount == LoadingStatus->NetRepCount)
+			LoadingStatus->SetCurrentStatus(ELoadingStatus::WaitForReplication);
+		LoadingStatus->SetNetRepCount(LoadingStatus->RepCount);
+		break;
+
+	case ELoadingStatus::WaitForReplication:
+		if (LoadingStatuses[0]->CurrentStatus == ELoadingStatus::WaitForFinished)
+		{
+			LocalPlayerController->CreateIngameUI();
+			LoadingStatus->SetCurrentStatus(ELoadingStatus::WaitForFinished);
+		}
+		break;
+
+	case ELoadingStatus::WaitForFinished:
+		if (LoadingStatuses[0]->CurrentStatus == ELoadingStatus::Finished)
+		{
+			LocalPlayerController->InitInput();
+			LocalPlayerController->RemoveLoadingUI();
+		}
+		break;
+
+	default:
+		break;
+	}
 }
 
 void ALoadingManager::SpawnLoadingStatuses()
@@ -87,6 +164,15 @@ void ALoadingManager::SpawnLoadingStatuses()
 		LSA->GOTAPlayerID = PS->GOTAPlayerID;
 		LoadingStatuses[PS->GOTAPlayerID] = LSA;
 	}
+}
+
+bool ALoadingManager::IsEveryoneOn(ELoadingStatus Status)
+{
+	for (ALoadingStatusActor* LS : LoadingStatuses)
+	{
+		if (LS && LS->CurrentStatus != Status) return false;
+	}
+	return true;
 }
 
 

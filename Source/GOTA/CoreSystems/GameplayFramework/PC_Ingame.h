@@ -31,6 +31,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category="PlayerController")
 	void PossessGuardian(AGuardian* NewGuardian);
 
+	virtual void OnPossess(APawn* InPawn) override;
+
 	// ---------------------------------------------------------
 	// UI Stuff
 

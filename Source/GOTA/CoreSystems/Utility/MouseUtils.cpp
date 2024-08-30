@@ -2,6 +2,8 @@
 
 
 #include "MouseUtils.h"
+
+#include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "GOTA/CoreSystems/GameplayFramework/PC_Ingame.h"
 #include "Net/UnrealNetwork.h"
 
@@ -25,6 +27,14 @@ AMouseUtils::AMouseUtils()
 	MouseLocation->SetupAttachment(RootComponent);
 	MouseTileLocation = CreateDefaultSubobject<USceneComponent>("Mouse Tile Location");
 	MouseTileLocation->SetupAttachment(RootComponent);
+}
+
+void AMouseUtils::BeginPlay()
+{
+	Super::BeginPlay();
+	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
+	GameState->LoadingManager->IncrementReplicationCount();
+	
 }
 
 void AMouseUtils::Tick(float DeltaSeconds)

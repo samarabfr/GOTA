@@ -25,7 +25,6 @@ AGM_Ingame::AGM_Ingame()
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Failed to load GameBalance DataAsset Inside GameMode!"));
 	}
-
 }
 
 // ---------------------------------------------------------
@@ -84,7 +83,7 @@ void AGM_Ingame::Tick(float DeltaSeconds)
 
 void AGM_Ingame::LoadGame()
 {
-	//PauseGame();
+	PauseGame();
 	GOTAGameState = GetGameState<AGS_Ingame>();
 	GOTAGameState->GameStatus = EGameStatus::Loading;
 	GetWorld()->SpawnActor<ALoadingManager>();
@@ -106,13 +105,13 @@ void AGM_Ingame::TogglePause()
 void AGM_Ingame::PauseGame()
 {
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	PC->SetPause(false);
+	UGameplayStatics::SetGamePaused(GetWorld(), true);
 }
 
 void AGM_Ingame::UnpauseGame()
 {
 	APlayerController* PC = GetWorld()->GetFirstPlayerController();
-	PC->SetPause(true);
+	UGameplayStatics::SetGamePaused(GetWorld(), false);
 }
 
 void AGM_Ingame::EndGame(EGameEnding Ending, const FString& EndingMessage)
@@ -187,7 +186,7 @@ void AGM_Ingame::CreateWorld()
 	GOTAGameState->TileMap->Init();
 }
 
-void AGM_Ingame::CreateFactions()
+void AGM_Ingame::CreateSettlements()
 {
 	for (ATile* Start : GOTAGameState->TileMap->ColonistsStarts)
 	{
@@ -205,22 +204,26 @@ void AGM_Ingame::CreateFactions()
 
 void AGM_Ingame::CreateGuardians()
 {
+	// 4 because max players, but maybe this should be a constant somewhere
+	GOTAGameState->Guardians.SetNumZeroed(4); 
 	for (APlayerState* PlayerState : GOTAGameState->PlayerArray)
 	{
 		APS_Ingame* PS = Cast<APS_Ingame>(PlayerState);
 		FVector Location = FVector(0, 0, 1000);
-		GetWorld()->SpawnActor<AGuardian>(PS->SelectedGuardian->GuardianBlueprint, Location, FRotator::ZeroRotator);
+		AGuardian* G = GetWorld()->SpawnActor<AGuardian>(PS->SelectedGuardian->GuardianBlueprint,
+		                                                 Location, FRotator::ZeroRotator);
+		GOTAGameState->Guardians[PS->GOTAPlayerID] = G;
 	}
 }
 
-void AGM_Ingame::InitialPlayerControllerPossession()
+void AGM_Ingame::InitialPossession()
 {
 	GetNumPlayers();
-	// this makes little sense, see ticket #104
-	for (int i = 0; i < GetNumPlayers(); ++i)
+	for (APlayerState* PlayerState : GOTAGameState->PlayerArray)
 	{
-		APC_Ingame* PC = Cast<APC_Ingame>(UGameplayStatics::GetPlayerController(GetWorld(), i));
-		PC->PossessGuardian(GOTAGameState->Guardians[i]);
+		APS_Ingame* PS = Cast<APS_Ingame>(PlayerState);
+		APC_Ingame* PC = Cast<APC_Ingame>(PS->GetOwningController());
+		PC->PossessGuardian(GOTAGameState->Guardians[PS->GOTAPlayerID]);
 	}
 }
 

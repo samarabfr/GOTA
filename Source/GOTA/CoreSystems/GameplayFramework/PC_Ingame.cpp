@@ -17,6 +17,12 @@ void APC_Ingame::PossessGuardian(AGuardian* NewGuardian)
 	Guardian = NewGuardian;
 	Guardian->GetMouseUtils()->SetPlayerController(this);
 	BindToMouseUtils(Guardian->GetMouseUtils());
+}
+
+void APC_Ingame::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	if (!IsLocalController()) return;
 	DistanceUtils->AttachToActor(Guardian, FAttachmentTransformRules::SnapToTargetIncludingScale);
 }
 

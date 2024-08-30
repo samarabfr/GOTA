@@ -11,13 +11,14 @@ UCLASS()
 class GOTA_API AGuardian : public ACharacter
 {
 	GENERATED_BODY()
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AMouseUtils> MouseUtilsClass;
 
-	UPROPERTY(BlueprintGetter=GetMouseUtils)
+	UPROPERTY(BlueprintGetter=GetMouseUtils, Replicated)
 	AMouseUtils* MouseUtils;
 
 public:

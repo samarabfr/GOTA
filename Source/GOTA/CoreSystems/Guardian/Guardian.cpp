@@ -2,7 +2,15 @@
 
 
 #include "Guardian.h"
+#include "Net/UnrealNetwork.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
+
+void AGuardian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AGuardian, MouseUtils);
+}
 
 void AGuardian::BeginPlay()
 {
@@ -10,9 +18,12 @@ void AGuardian::BeginPlay()
 	// IncreaseReplicationCount for LoadingProcess
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
-
-	MouseUtils = GetWorld()->SpawnActor<AMouseUtils>(MouseUtilsClass);
-	SetupGAM();
+	
+	if (HasAuthority())
+	{
+		MouseUtils = GetWorld()->SpawnActor<AMouseUtils>(MouseUtilsClass);
+		SetupGAM();
+	}
 }
 
 AMouseUtils* AGuardian::GetMouseUtils()

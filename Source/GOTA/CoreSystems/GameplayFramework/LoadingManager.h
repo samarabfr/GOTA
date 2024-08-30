@@ -45,13 +45,10 @@ private:
 	void ClientTick();
 
 	void SpawnLoadingStatuses();
+
+	bool IsEveryoneOn(ELoadingStatus Status);
 	
 public:
 	void IncrementReplicationCount();
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="LoadingManager")
-	void InitLoadingScreen();
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="LoadingManager")
-	void RemoveLoadingScreen();
+	
 };

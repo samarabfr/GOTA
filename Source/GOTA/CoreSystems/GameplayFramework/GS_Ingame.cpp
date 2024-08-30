@@ -60,10 +60,6 @@ void AGS_Ingame::BeginPlay()
 	StaticMeshBatcher = GetWorld()->SpawnActor<AStaticMeshBatcher>();
 }
 
-void AGS_Ingame::Init()
-{
-}
-
 void AGS_Ingame::Tick(float DeltaSeconds)
 {
 	if (!ShouldTickTurnTime) return;

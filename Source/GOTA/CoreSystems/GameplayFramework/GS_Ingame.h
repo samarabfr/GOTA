@@ -26,9 +26,6 @@ class GOTA_API AGS_Ingame : public AGameState
 	virtual void BeginPlay() override;
 
 public:
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void Init();
-
 	virtual void Tick(float DeltaSeconds) override;
 
 	// ---------------------------------------------------------
