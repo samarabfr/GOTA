@@ -34,12 +34,11 @@ void AMouseUtils::BeginPlay()
 	Super::BeginPlay();
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
-	
 }
 
 void AMouseUtils::Tick(float DeltaSeconds)
 {
-	if (!PlayerController.IsValid())return;
+	if (!PlayerController)return;
 	if (!PlayerController->IsLocalController())return;
 
 	FHitResult HitResult;
@@ -90,19 +89,22 @@ void AMouseUtils::AttachToTilePosition(AActor* Actor)
 void AMouseUtils::OnRep_NetLocation()
 {
 	// ignore updates on its own MouseUtils because its kinda ClientSide
-	if (PlayerController.IsValid() && PlayerController->IsLocalController()) return;
-	MouseLocation->SetWorldLocation(NetTileLocation);
+	if (PlayerController && PlayerController->IsLocalController()) return;
+	MouseLocation->SetWorldLocation(NetLocation);
 }
 
 void AMouseUtils::SetNetLocation_Implementation(FVector Location)
 {
 	NetLocation = Location;
+	// ignore updates on its own MouseUtils because its kinda ClientSide
+	if(PlayerController && !PlayerController->IsLocalController()) return;
+	MouseLocation->SetWorldLocation(NetLocation);
 }
 
 void AMouseUtils::OnRep_NetTileLocation()
 {
 	// ignore updates on its own MouseUtils because its kinda ClientSide
-	if (PlayerController.IsValid() && PlayerController->IsLocalController()) return;
+	if (PlayerController && PlayerController->IsLocalController()) return;
 	MouseTileLocation->SetWorldLocation(NetTileLocation);
 }
 

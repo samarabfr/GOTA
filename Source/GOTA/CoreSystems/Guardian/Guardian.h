@@ -15,19 +15,8 @@ class GOTA_API AGuardian : public ACharacter
 
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AMouseUtils> MouseUtilsClass;
-
-	UPROPERTY(BlueprintGetter=GetMouseUtils, Replicated)
-	AMouseUtils* MouseUtils;
-
 public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCosmetic, Category="PlayerController")
 	void SetupGAM();
-
-	// ---------------------------------------------------------
-	// Getter & Setter
 	
-	UFUNCTION(BlueprintGetter)
-	AMouseUtils* GetMouseUtils();
 };

@@ -13,13 +13,17 @@ UCLASS()
 class GOTA_API APC_Ingame : public APlayerController
 {
 	GENERATED_BODY()
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UPROPERTY()
 	ADistanceUtils* DistanceUtils;
 
-	UPROPERTY(BlueprintGetter=GetGuardian)
+	UPROPERTY(ReplicatedUsing=OnRep_Guardian, BlueprintGetter=GetGuardian)
 	AGuardian* Guardian;
 
+	UPROPERTY(ReplicatedUsing=OnRep_MouseUtils, BlueprintGetter=GetMouseUtils)
+	AMouseUtils* MouseUtils;
+	
 	// ---------------------------------------------------------
 	// Setup
 	virtual void BeginPlay() override;
@@ -27,12 +31,9 @@ class GOTA_API APC_Ingame : public APlayerController
 public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="PlayerController")
 	void InitInput();
-
-	UFUNCTION(BlueprintCallable, Category="PlayerController")
-	void PossessGuardian(AGuardian* NewGuardian);
-
+	
 	virtual void OnPossess(APawn* InPawn) override;
-
+	
 	// ---------------------------------------------------------
 	// UI Stuff
 
@@ -55,11 +56,28 @@ public:
 	void CreateIngameUI();
 
 	UFUNCTION(BlueprintImplementableEvent, Category="PlayerController")
-	void BindToMouseUtils(AMouseUtils* MouseUtils);
+	void BindToMouseUtils(AMouseUtils* MouseUtils_);
 
 	// ---------------------------------------------------------
 	// Getter & Setter
 
 	UFUNCTION(BlueprintGetter)
 	AGuardian* GetGuardian();
+	
+	void SetGuardian(AGuardian* Guardian_);
+	
+	UFUNCTION()
+	void OnRep_Guardian();
+
+	void GuardianChanged();
+	
+	UFUNCTION(BlueprintGetter)
+	AMouseUtils* GetMouseUtils();
+	
+	void SetMouseUtils(AMouseUtils* MouseUtils_);
+
+	UFUNCTION()
+	void OnRep_MouseUtils();
+
+	void MouseUtilsChanged();
 };

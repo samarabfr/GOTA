@@ -8,8 +8,7 @@
 void AGuardian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(AGuardian, MouseUtils);
+	
 }
 
 void AGuardian::BeginPlay()
@@ -21,12 +20,6 @@ void AGuardian::BeginPlay()
 	
 	if (HasAuthority())
 	{
-		MouseUtils = GetWorld()->SpawnActor<AMouseUtils>(MouseUtilsClass);
 		SetupGAM();
 	}
-}
-
-AMouseUtils* AGuardian::GetMouseUtils()
-{
-	return MouseUtils;
 }

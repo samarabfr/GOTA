@@ -63,11 +63,12 @@ void ALoadingManager::ServerTick()
 		break;
 
 	case ELoadingStatus::WaitForReadyForCreation:
-		if(IsEveryoneOn(ELoadingStatus::WaitForReadyForCreation))
+		if (IsEveryoneOn(ELoadingStatus::WaitForReadyForCreation))
 		{
 			GameMode->CreateWorld();
 			GameMode->CreateSettlements();
 			GameMode->CreateGuardians();
+			GameMode->CreateMouseUtils();
 			GameState->CountIslandMaxEcoValues();
 			LoadingStatus->SetNetRepCount(LoadingStatus->RepCount);
 			LoadingStatus->SetCurrentStatus(ELoadingStatus::WaitForReplication);
@@ -75,7 +76,7 @@ void ALoadingManager::ServerTick()
 		break;
 
 	case ELoadingStatus::WaitForReplication:
-		if(IsEveryoneOn(ELoadingStatus::WaitForReplication))
+		if (IsEveryoneOn(ELoadingStatus::WaitForReplication))
 		{
 			LocalPlayerController->CreateIngameUI();
 			GameMode->InitialPossession();
@@ -84,7 +85,7 @@ void ALoadingManager::ServerTick()
 		break;
 
 	case ELoadingStatus::WaitForFinished:
-		if(IsEveryoneOn(ELoadingStatus::WaitForFinished))
+		if (IsEveryoneOn(ELoadingStatus::WaitForFinished))
 		{
 			LocalPlayerController->InitInput();
 			LocalPlayerController->RemoveLoadingUI();
@@ -92,7 +93,7 @@ void ALoadingManager::ServerTick()
 			LoadingStatus->SetCurrentStatus(ELoadingStatus::Finished);
 		}
 		break;
-		
+
 	default:
 		break;
 	}
@@ -101,8 +102,8 @@ void ALoadingManager::ServerTick()
 void ALoadingManager::ClientTick()
 {
 	// Check for GOTAPlayerID
-	if (GOTAPlayerID < 0)
-		GOTAPlayerID = GetWorld()->GetFirstPlayerController()->GetPlayerState<APS_Ingame>()->GOTAPlayerID;
+	if (GOTAPlayerID < 0 && LocalPlayerController.IsValid() && LocalPlayerController->GetPlayerState<APS_Ingame>())
+		GOTAPlayerID = LocalPlayerController->GetPlayerState<APS_Ingame>()->GOTAPlayerID;
 	if (GOTAPlayerID < 0)
 		return;
 	// Check for LoadingStatus

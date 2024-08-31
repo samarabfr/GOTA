@@ -83,7 +83,6 @@ void AGM_Ingame::Tick(float DeltaSeconds)
 
 void AGM_Ingame::LoadGame()
 {
-	PauseGame();
 	GOTAGameState = GetGameState<AGS_Ingame>();
 	GOTAGameState->GameStatus = EGameStatus::Loading;
 	GetWorld()->SpawnActor<ALoadingManager>();
@@ -216,6 +215,17 @@ void AGM_Ingame::CreateGuardians()
 	}
 }
 
+void AGM_Ingame::CreateMouseUtils()
+{
+	for (APlayerState* PlayerState : GOTAGameState->PlayerArray)
+	{
+		APC_Ingame* PC = Cast<APC_Ingame>(PlayerState->GetOwningController());
+		AMouseUtils* MU = GetWorld()->SpawnActor<AMouseUtils>(MouseUtilsClass);
+		MU->SetOwner(PC);
+		PC->SetMouseUtils(MU);
+	}
+}
+
 void AGM_Ingame::InitialPossession()
 {
 	GetNumPlayers();
@@ -223,7 +233,7 @@ void AGM_Ingame::InitialPossession()
 	{
 		APS_Ingame* PS = Cast<APS_Ingame>(PlayerState);
 		APC_Ingame* PC = Cast<APC_Ingame>(PS->GetOwningController());
-		PC->PossessGuardian(GOTAGameState->Guardians[PS->GOTAPlayerID]);
+		PC->Possess(GOTAGameState->Guardians[PS->GOTAPlayerID]);
 	}
 }
 

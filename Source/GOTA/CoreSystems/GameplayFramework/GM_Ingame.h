@@ -23,7 +23,10 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<ATileMap> TileMapClass;
-
+	
+	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
+	TSubclassOf<AMouseUtils> MouseUtilsClass;
+	
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<ASettlement> ColonistSettlementClass;
 
@@ -65,16 +68,14 @@ private:
 	// ---------------------------------------------------------
 	// World Setup
 public:
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void CreateWorld();
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void CreateSettlements();
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void CreateGuardians();
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
+	void CreateMouseUtils();
+
 	void InitialPossession();
 
 	// ---------------------------------------------------------

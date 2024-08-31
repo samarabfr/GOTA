@@ -17,15 +17,15 @@ class GOTA_API AMouseUtils : public AActor
 	virtual void Tick(float DeltaSeconds) override;
 
 	UPROPERTY()
-	TWeakObjectPtr<APC_Ingame> PlayerController = nullptr;
+	APC_Ingame* PlayerController = nullptr;
 
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHoverTileChangedSig, ATile*, NewTile);
 
-	UPROPERTY()
+	UPROPERTY(VisibleInstanceOnly)
 	USceneComponent* MouseLocation;
 
-	UPROPERTY()
+	UPROPERTY(VisibleInstanceOnly)
 	USceneComponent* MouseTileLocation;
 
 	UPROPERTY(BlueprintGetter=GetHoverTile)
@@ -52,7 +52,7 @@ public:
 	// ---------------------------------------------------------
 	// Replicated Locations to prevent Lag on MouseUtils
 private:
-	UPROPERTY(ReplicatedUsing=OnRep_NetLocation)
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_NetLocation)
 	FVector NetLocation;
 
 	UFUNCTION()
@@ -61,7 +61,7 @@ private:
 	UFUNCTION(Server, Unreliable)
 	void SetNetLocation(FVector Location);
 
-	UPROPERTY(ReplicatedUsing=OnRep_NetTileLocation)
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_NetTileLocation)
 	FVector NetTileLocation;
 
 	UFUNCTION()
