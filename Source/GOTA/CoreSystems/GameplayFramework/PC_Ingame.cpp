@@ -49,6 +49,7 @@ void APC_Ingame::GuardianChanged()
 	if (!Guardian) return;
 	if (!IsLocalController()) return;
 	DistanceUtils->AttachToActor(Guardian, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	
 }
 
 AMouseUtils* APC_Ingame::GetMouseUtils()
