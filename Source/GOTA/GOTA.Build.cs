@@ -20,7 +20,8 @@ public class GOTA : ModuleRules
 			"Niagara",
 			"UMG",
 			"Slate",
-			"SlateCore"
+			"SlateCore",
+			"NetCore"
 		});
 
 		// Uncomment if you are using Slate UI
