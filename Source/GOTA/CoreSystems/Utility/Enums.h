@@ -75,8 +75,17 @@ enum class EEcoValue : uint8
 };
 
 UENUM(BlueprintType)
-enum class GameEnding : uint8
+enum class EGameEnding : uint8
 {
 	Victory UMETA(DisplayName = "Victory"),
 	Defeat UMETA(DisplayName = "Defeat")
+};
+
+UENUM(BlueprintType)
+enum class EGameStatus : uint8
+{
+	Lobby UMETA(DisplayName = "Lobby"),
+	Loading UMETA(DisplayName = "Loading"),
+	Running UMETA(DisplayName = "Running"),
+	Ended UMETA(DisplayName = "Victory")
 };

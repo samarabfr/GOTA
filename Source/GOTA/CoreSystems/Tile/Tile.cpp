@@ -46,6 +46,15 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 
 ATile::ATile()
 {
+	// Replication Setup
+	bReplicates = true;
+	bAlwaysRelevant = true;
+	bReplicateUsingRegisteredSubObjectList = true;
+	// Tick Setup
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.TickInterval = 0.5f;
+	
 	// initialize neighbor array
 	for (int i = 0; i < 6; ++i)
 	{
@@ -55,12 +64,7 @@ ATile::ATile()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ROOT"));
 	SM_Hexagon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SM_Hexagon"));
 	SM_Hexagon->SetupAttachment(RootComponent);
-
-	// Replication stuff
-	bReplicates = true;
-	bReplicateUsingRegisteredSubObjectList = true;
-	bAlwaysRelevant = true;
-
+	
 	// Subobjects
 	Trees = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Trees"));
 	TreeGrowth = CreateDefaultSubobject<UGOTAAttribute>(TEXT("TreeGrowth"));
@@ -75,11 +79,12 @@ ATile::ATile()
 void ATile::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	// Get the GameState
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
 
+	// Init TileContent
 	TileContent = NewObject<UTileContent>();
 	TileContent->Init(this, GameState);
 	TileContent->SetRotation(FRotator(0, TileContentRotation, 0));

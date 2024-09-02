@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "CombatSystem.h"
+#include "StartParameter.h"
 #include "GameFramework/GameState.h"
 #include "GOTA/CoreSystems/Entity/Entity.h"
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
@@ -22,11 +23,9 @@ class GOTA_API AGS_Ingame : public AGameState
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	AGS_Ingame();
+	virtual void BeginPlay() override;
 
 public:
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void Init();
-
 	virtual void Tick(float DeltaSeconds) override;
 
 	// ---------------------------------------------------------
@@ -133,6 +132,9 @@ public:
 	// Useful Stuff
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
+	UStartParameter* StartParameter;
+
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UCombatSystem* CombatSystem;
 
 	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
@@ -154,7 +156,7 @@ public:
 	void UnregisterPopConForTotals(UPopulationContainer* PopCon, EAffiliation Affiliation);
 
 	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGameEndingSignature, GameEnding, Ending, FString, EndMessage);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGameEndingSignature, EGameEnding, Ending, FString, EndMessage);
 
 	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
 	FGameEndingSignature OnGameEnding;
@@ -162,12 +164,12 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
 	bool GameEnded = false;
 
-	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
-	bool GameStarted = false;
-
 	UFUNCTION(NetMulticast, Reliable)
-	void EndGame(GameEnding Ending, const FString& EndingMessage);
+	void EndGame(EGameEnding Ending, const FString& EndingMessage);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void CountIslandMaxEcoValues();
+
+	UPROPERTY()
+	EGameStatus GameStatus = EGameStatus::Lobby;
 };

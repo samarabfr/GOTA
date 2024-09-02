@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
+#include "GOTA/CoreSystems/Guardian/GuardianDataAsset.h"
 #include "PS_Ingame.generated.h"
+
 
 UCLASS()
 class GOTA_API APS_Ingame : public APlayerState
@@ -13,9 +15,14 @@ class GOTA_API APS_Ingame : public APlayerState
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 public:
-	UPROPERTY(BlueprintReadOnly, Replicated, Category = "PlayerState")
+	UPROPERTY(BlueprintReadOnly, Replicated)
 	int32 GOTAPlayerID = -1;
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category = "PlayerState")
-	void SetPlayerID(int32 NewPlayerID);
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	UGuardianDataAsset* SelectedGuardian;
+
+	UFUNCTION(BlueprintCallable, Server, Reliable)
+	void SelectGuardian(UGuardianDataAsset* NewGuardian);
+
+
 };
