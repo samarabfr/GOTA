@@ -13,53 +13,74 @@ class GOTA_API AGM_Ingame : public AGameMode
 {
 	GENERATED_BODY()
 	AGM_Ingame();
-	
-public:
-	virtual void PostLogin(APlayerController* NewPlayer) override;
 
+public:
 	UPROPERTY()
 	UGameBalanceDataAsset* GameBalance;
-	
+
 	UPROPERTY(BlueprintReadWrite, Category="GOTA GameMode")
 	AGS_Ingame* GOTAGameState;
 
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<ATileMap> TileMapClass;
-
+	
+	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
+	TSubclassOf<AMouseUtils> MouseUtilsClass;
+	
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<ASettlement> ColonistSettlementClass;
 
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<ASettlement> NativeSettlementClass;
+	
+	// ---------------------------------------------------------
+	// Control the Flow of the Game
+private:
+	virtual void PreLogin(const FString& Options, const FString& Address, const FUniqueNetIdRepl& UniqueId,
+	                      FString& ErrorMessage) override;
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
-	void Init();
-
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+	
 	virtual void Tick(float DeltaSeconds) override;
 
-	// ---------------------------------------------------------
-	// World Setup
-
+public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
-	void CreateWorld();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
-	void CreateFactions();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
-	void CreateGuardians();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
-	void InitialPlayerControllerPossession();
+	void LoadGame();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void StartGame();
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
+	void TogglePause();
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
+	void PauseGame();
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
+	void UnpauseGame();
+
+	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
+	void EndGame(EGameEnding Ending, const FString& EndingMessage);
+
+private:
+	void CheckGameEndingConditions();
+
+	// ---------------------------------------------------------
+	// World Setup
+public:
+	void CreateWorld();
+
+	void CreateSettlements();
+
+	void CreateGuardians();
+
+	void CreateMouseUtils();
+
+	void InitialPossession();
 
 	// ---------------------------------------------------------
 	// Calculate Turn
 private:
 	void CalculateTurn();
 	FDateTime StartedCalculatingTurn;
-
-	void CheckGameEndingConditions();
 };

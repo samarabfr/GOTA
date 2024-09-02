@@ -44,7 +44,7 @@ class GOTA_API ATile : public AActor
 	ATile();
 
 	virtual void BeginPlay() override;
-
+	
 public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	void Init();

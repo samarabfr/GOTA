@@ -8,35 +8,38 @@ void ALoadingStatusActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ALoadingStatusActor, NetworkedReplicationCount);
+	DOREPLIFETIME(ALoadingStatusActor, NetRepCount);
 	DOREPLIFETIME(ALoadingStatusActor, CurrentStatus);
 	DOREPLIFETIME(ALoadingStatusActor, GOTAPlayerID);
 }
 
 ALoadingStatusActor::ALoadingStatusActor()
 {
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.bTickEvenWhenPaused = true;
 	bReplicates = true;
 	bAlwaysRelevant = true;
 }
 
 void ALoadingStatusActor::IncreaseReplicationCount()
 {
-	ReplicationCount++;
+	++RepCount;
 }
 
-void ALoadingStatusActor::OnRep_NetworkedReplicationCount(int32 NewCount)
+void ALoadingStatusActor::OnRep_NetRepCount(int32 NewCount)
 {
+	OnChanged.Broadcast();
+}
+
+void ALoadingStatusActor::SetNetRepCount_Implementation(const int32 NewCount)
+{
+	NetRepCount = NewCount;
 	OnChanged.Broadcast();
 }
 
 void ALoadingStatusActor::OnRep_CurrentStatus(ELoadingStatus NewStatus)
 {
-	OnChanged.Broadcast();
-}
-
-void ALoadingStatusActor::SetNetworkedReplicationCount_Implementation(const int32 NewCount)
-{
-	NetworkedReplicationCount = NewCount;
 	OnChanged.Broadcast();
 }
 

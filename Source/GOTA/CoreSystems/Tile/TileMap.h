@@ -15,7 +15,11 @@ class GOTA_API ATileMap : public AActor
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	ATileMap();
-
+	
+public:
+	void Init();
+	
+private:
 	virtual void BeginPlay() override;
 
 protected:
@@ -77,4 +81,6 @@ public:
 	int32 TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, int32 Amount, int32 Threshold, int32 MaxRange);
 
 	void CountAllMaxEcoValues(int32& TotalMaxTrees, int32& TotalMaxWildlife, int32& TotalMaxForage);
+
+
 };
