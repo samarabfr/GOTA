@@ -31,29 +31,11 @@ struct FTileAsset : public FTableRowBase
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	FSpawnBias SpawnBias;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
-	bool bUseDistanceToOceanBiasMultiplier = false;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
-	UCurveFloat* DistanceToOceanBiasMultiplier = nullptr;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
-	bool bUseDistanceToRiverBiasMultiplier = false;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
-	UCurveFloat* DistanceToRiverBiasMultiplier = nullptr;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
-	bool bUseDistanceToVolcanoBiasMultiplier = false;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
-	UCurveFloat* DistanceToVolcanoBiasMultiplier = nullptr;
-
+	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	TArray<FGameplayTagRule> GameplayTagRules;
 
-	bool IsValidFor(const FGameplayTagContainer& GameplayTagContainer);
+	bool IsValidFor(const FGameplayTagContainer& GameplayTagContainer) const;
 
-	int32 GetBiasAfterMultipliers(const FTerrain& Terrain);
+	int32 GetBiasAfterMultipliers(const FTerrain& Terrain) const;
 };

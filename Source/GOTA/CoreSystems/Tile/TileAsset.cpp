@@ -1,8 +1,7 @@
 ﻿#include "TileAsset.h"
 
 
-
-bool FTileAsset::IsValidFor(const FGameplayTagContainer& GameplayTagContainer)
+bool FTileAsset::IsValidFor(const FGameplayTagContainer& GameplayTagContainer) const
 {
 	for (FGameplayTagRule Rule : GameplayTagRules)
 	{
@@ -11,22 +10,7 @@ bool FTileAsset::IsValidFor(const FGameplayTagContainer& GameplayTagContainer)
 	return true;
 }
 
-int32 FTileAsset::GetBiasAfterMultipliers(const FTerrain& Terrain)
+int32 FTileAsset::GetBiasAfterMultipliers(const FTerrain& Terrain) const
 {
-	float Bias = SpawnBias.Base;
-	// Terrain not setup correctly so its unusable
-	if(Terrain.OceanDistance < 0) return Bias;
-	if (bUseDistanceToOceanBiasMultiplier)
-	{
-		Bias *= DistanceToOceanBiasMultiplier->GetFloatValue(Terrain.OceanDistance);
-	}
-	if (bUseDistanceToRiverBiasMultiplier)
-	{
-		Bias *= DistanceToRiverBiasMultiplier->GetFloatValue(Terrain.RiverDistance);
-	}
-	if (bUseDistanceToVolcanoBiasMultiplier)
-	{
-		Bias *= DistanceToVolcanoBiasMultiplier->GetFloatValue(Terrain.VolcanoDistance);
-	}
-	return Bias;
+	return SpawnBias.GetBiasAfterMultipliers(Terrain);
 }

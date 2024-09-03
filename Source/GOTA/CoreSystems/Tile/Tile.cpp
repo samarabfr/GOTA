@@ -563,7 +563,6 @@ void ATile::ServerInitTileRotation()
 	if (Terrain.bIsRiver)
 	{
 		Rotation = FindAValidRiverConnectionRotation(TileLayout->RiverConnections);
-		UE_LOG(LogTemp, Warning, TEXT("test: %d"), Rotation)
 	}
 	else
 	{
