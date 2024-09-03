@@ -1061,5 +1061,48 @@ void UWorldGenerator::AddRiverConnectionsToOcean()
 
 void UWorldGenerator::CleanupRiverConnections()
 {
+	TArray<FGeneratedTileInfo*> Frontier;
+	for (FGeneratedTileInfo* Tile : Coast)
+	{
+		if (Tile->HasRiver)
+		{
+			Frontier.Add(Tile);
+			Tile->CleanedUpRiverConnections = true;
+		}
+	}
+	while (!Frontier.IsEmpty())
+	{
+		TArray<FGeneratedTileInfo*> NewFrontier;
+		for (FGeneratedTileInfo* FrontierTile : Frontier)
+		{
+			TArray<FGeneratedTileInfo*> ConnectedToThis;
+			for (int32 i = 0; i < 6; ++i)
+			{
+				if (FrontierTile->RiverConnections[i]
+					&& FrontierTile->Neighbors[i]
+					&& !FrontierTile->Neighbors[i]->CleanedUpRiverConnections)
+				{
+					ConnectedToThis.Add(FrontierTile->Neighbors[i]);
+					if (!NewFrontier.Contains(FrontierTile->Neighbors[i]))
+						NewFrontier.Add(FrontierTile->Neighbors[i]);
+				}
+			}
+			for (FGeneratedTileInfo* Connected : ConnectedToThis)
+			{
+				for (int32 i = 0; i < 6; ++i)
+				{
+					if (Connected->RiverConnections[i]
+						&& Connected->Neighbors[i]
+						&& ConnectedToThis.Contains(Connected->Neighbors[i]))
+					{
+						Connected->RiverConnections[i] = false;
+						Connected->Neighbors[i]->RiverConnections[(i + 3) % 6] = false;
+					}
+				}
+			}
+			FrontierTile->CleanedUpRiverConnections = true;
+		}
+		Frontier = NewFrontier;
+	}
 	// TODO cleanup River connections upstream so two rivers that flow together don't connect to each other twice
 }
