@@ -26,7 +26,7 @@ void ATileMap::Init()
 {
 	for (ATile* Tile : Tiles)
 	{
-		if (Tile) Tile->Init();
+		if (Tile) Tile->ServerInit();
 	}
 }
 

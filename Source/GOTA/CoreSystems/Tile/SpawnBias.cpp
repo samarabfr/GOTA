@@ -1,19 +1,8 @@
-﻿#include "TileAsset.h"
+﻿#include "SpawnBias.h"
 
-
-
-bool FTileAsset::IsValidFor(const FGameplayTagContainer& GameplayTagContainer)
+int32 FSpawnBias::GetBiasAfterMultipliers(const FTerrain& Terrain) const
 {
-	for (FGameplayTagRule Rule : GameplayTagRules)
-	{
-		if (!Rule.IsValid(GameplayTagContainer)) return false;
-	}
-	return true;
-}
-
-int32 FTileAsset::GetBiasAfterMultipliers(const FTerrain& Terrain)
-{
-	float Bias = SpawnBias.Base;
+	float Bias = Base;
 	// Terrain not setup correctly so its unusable
 	if(Terrain.OceanDistance < 0) return Bias;
 	if (bUseDistanceToOceanBiasMultiplier)

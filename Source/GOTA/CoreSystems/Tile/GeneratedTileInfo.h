@@ -47,4 +47,8 @@ struct FGeneratedTileInfo
 	bool IsNativeStart = false;
 	
 	int32 ColonistsDistance = MAX_int32;
+
+	TArray<bool> RiverConnections;
+
+	bool CleanedUpRiverConnections = false;
 };

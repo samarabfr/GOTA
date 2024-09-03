@@ -4,33 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Terrain.h"
-#include "GameplayTagContainer.h"
-#include "GameplayTagRule.h"
-#include "SpawnBias.h"
 #include "GameFramework/Actor.h"
-#include "TileAsset.generated.h"
-
-UENUM(BlueprintType)
-enum class ERotationMode : uint8
-{
-	SpawnPointRotation UMETA(DisplayName = "Default Spawn Point Rotation"),
-	Random90Degree UMETA(DisplayName = "90 Degree Random"),
-	Random360Degree UMETA(DisplayName = "360 Degree Random"),
-};
+#include "SpawnBias.generated.h"
 
 USTRUCT(BlueprintType)
-struct FTileAsset : public FTableRowBase
+struct FSpawnBias : public FTableRowBase
 {
 	GENERATED_BODY()
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	UStaticMesh* StaticMesh = nullptr;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	ERotationMode RotationMode = ERotationMode::SpawnPointRotation;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	FSpawnBias SpawnBias;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
+	int32 Base = 100;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
 	bool bUseDistanceToOceanBiasMultiplier = false;
@@ -50,10 +33,5 @@ struct FTileAsset : public FTableRowBase
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
 	UCurveFloat* DistanceToVolcanoBiasMultiplier = nullptr;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	TArray<FGameplayTagRule> GameplayTagRules;
-
-	bool IsValidFor(const FGameplayTagContainer& GameplayTagContainer);
-
-	int32 GetBiasAfterMultipliers(const FTerrain& Terrain);
+	int32 GetBiasAfterMultipliers(const FTerrain& Terrain) const;
 };

@@ -5,13 +5,14 @@
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "HexCoords.h"
-#include "SpawnPointLayout.h"
+#include "SpawnLayout.h"
 #include "TileContent.h"
 #include "TileGraphicsDataAsset.h"
 #include "TileAssetWithPosition.h"
 #include "TileLayout.h"
 #include "BiomesDataAsset.h"
 #include "EcoSystemDataAsset.h"
+#include "Terrain.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/CoreSystems/Entity/Entity.h"
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttributeLimited.h"
@@ -44,10 +45,10 @@ class GOTA_API ATile : public AActor
 	ATile();
 
 	virtual void BeginPlay() override;
-	
+
 public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
-	void Init();
+	void ServerInit();
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, ReplicatedUsing=OnRep_GameplayTags, Category="Tile")
 	FGameplayTagContainer GameplayTags;
@@ -62,71 +63,18 @@ public:
 	FHexCoords HexCoords;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
-	TArray<ATile*> Neighbors; // 0 = North, 1 = NorthEast, 2 = SouthEast, 3 = South, 4 = SouthWest, 5 = NorthWest
+	TArray<ATile*> Neighbors;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetIsRiver, Replicated, Category="Tile")
-	bool bIsRiver;
 
-	UFUNCTION(BlueprintSetter)
-	void SetIsRiver(bool IsRiver);
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	UBiomesDataAsset* DA_Biomes;
-
-	UPROPERTY(BlueprintReadwrite, BlueprintSetter=SetBiome, Replicated, Category="Tile")
-	EBiome Biome = EBiome::Gras;
-
-	UFUNCTION(BlueprintSetter)
-	void SetBiome(EBiome NewBiome);
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetOceanDistance, Replicated, Category="Tile")
-	int32 OceanDistance = -1;
-
-	UFUNCTION(BlueprintSetter)
-	void SetOceanDistance(int32 NewOceanDistance);
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetNormalizedOceanDistance, Replicated,
-		Category="Tile")
-	float NormalizedOceanDistance = -1;
-
-	UFUNCTION(BlueprintSetter)
-	void SetNormalizedOceanDistance(float NewNormalizedOceanDistance);
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetRiverDistance, Replicated, Category="Tile")
-	int32 RiverDistance = -1;
-
-	UFUNCTION(BlueprintSetter)
-	void SetRiverDistance(int32 NewRiverDistance);
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetNormalizedRiverDistance, Replicated,
-		Category="Tile")
-	float NormalizedRiverDistance = -1;
-
-	UFUNCTION(BlueprintSetter)
-	void SetNormalizedRiverDistance(float NewNormalizedRiverDistance);
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetVolcanoDistance, Replicated, Category="Tile")
-	int32 VolcanoDistance = -1;
-
-	UFUNCTION(BlueprintSetter)
-	void SetVolcanoDistance(int32 NewVolcanoDistance);
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadwrite, BlueprintSetter=SetNormalizedVolcanoDistance, Replicated,
-		Category="Tile")
-	float NormalizedVolcanoDistance = -1;
-
-	UFUNCTION(BlueprintSetter)
-	void SetNormalizedVolcanoDistance(float NewNormalizedVolcanoDistance);
-
-	UPROPERTY()
-	FOnChangedSignature OnDistancesChanged;
-
+	// ------------------------Entity---------------------------
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintGetter=GetAlliedEntity, Replicated, Category="Tile")
 	AEntity* AlliedEntity;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintGetter=GetEnemyEntity, Replicated, Category="Tile")
 	AEntity* EnemyEntity;
+
+	AEntity* GetEntityByAffiliation(EAffiliation Affiliation) const;
 
 public:
 	UPROPERTY(BlueprintAssignable)
@@ -210,15 +158,6 @@ public:
 	void Unbuild();
 
 	// ---------------------------------------------------------
-	// Weird solution for the Guardian is in X range for animation performance
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Tile")
-	void OnEnteringActiveRangeOfGuardian();
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="Tile")
-	void OnLeavingActiveRangeOfGuardian();
-
-	// ---------------------------------------------------------
 	// Ecosystem and calculate Turn 
 
 	void CalculateTurn();
@@ -274,64 +213,85 @@ public:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	UGOTAAttribute* WildlifeGrowthChange;
 
-	// ---------------------------------------------------------
-	// TileLayout & TileContent and graphics relevant
+	// -----------------------Graphics--------------------------
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Graphics")
+	UPROPERTY(EditDefaultsOnly, Category="Tile")
+	UTileGraphicsDataAsset* DA_TileGraphics;
+private:
+	UPROPERTY(EditDefaultsOnly, Category="Tile")
 	UStaticMeshComponent* SM_Hexagon;
 
-	UPROPERTY(BlueprintReadWrite, Category="Tile Graphics")
-	UTileContent* TileContent;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Graphics")
-	UTileGraphicsDataAsset* DA_TileGraphics;
-
-	UPROPERTY(BlueprintReadOnly, Category="Tile Graphics")
-	FTileLayout TileLayout;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, ReplicatedUsing=OnRep_SpawnPointLayout, Category="Tile Graphics")
-	FSpawnPointLayout SpawnPointLayout;
+	UPROPERTY(ReplicatedUsing=InitHexagonMesh)
+	UStaticMesh* HexagonMesh;
 
 	UFUNCTION()
-	void OnRep_SpawnPointLayout();
+	void InitHexagonMesh();
 
-	UPROPERTY()
-	FOnChangedSignature OnSpawnPointLayoutChanged;
-
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_TileContentRotation)
-	float TileContentRotation = 0.0;
+	/* -----------------------Terrain---------------------------
+	 * Terrain is only Set in TerrainInit (called by WorldGen) and nowhere else.
+	 * No Value of Terrain is allowed to change after TerrainInit was called.
+	 * IDK how we could enforce it on compiler level tho
+	 */
+	UPROPERTY(EditDefaultsOnly, Category="Tile")
+	UBiomesDataAsset* DA_Biomes;
+	
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=TerrainClientInit, Category="Tile")
+	FTerrain Terrain;
 
 	UFUNCTION()
-	void OnRep_TileContentRotation();
+	void TerrainClientInit();
+
+public:
+	void TerrainServerInit(const FTerrain& Terrain_);
 
 private:
-	EBiome MaterialBiome = EBiome::Gras;
+	void UpdateHexagonMaterial();
 
-	// Check if anything needs to be changed and do that
-	void RefreshTileLayout();
+	// ------------------TileContent--------------------
+private:
+	UPROPERTY()
+	UTileContent* TileContent;
 
-	void RecalculateTileLayout();
+	void InitTileContent();
 
-	void ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints);
+	UPROPERTY(ReplicatedUsing=ClientInitTileRotation)
+	float TileRotation = 0.0;
 
-	FTileLayout* FindNewValidTileLayout();
+	UFUNCTION()
+	void ClientInitTileRotation();
+	void ServerInitTileRotation();
+
+	// ---------------------TileLayout--------------------
+	
+	FTileLayout* TileLayout;
+	
+	void InitTileLayout();
+
+	FTileLayout* FindTileLayout();
 
 	bool IsValidTileLayout(const FTileLayout* Layout) const;
 
 	// Returns -1 when none found, returns rotation ID (0-5) if one is found
 	int32 FindAValidRiverConnectionRotation(const TArray<bool> Connections) const;
 
-	void UpdateRiverConnections();
+	// ---------------------SpawnLayout--------------------
 
-	UPROPERTY(VisibleInstanceOnly)
-	TArray<bool> RiverConnections;
+	UPROPERTY(VisibleInstanceOnly, Category="Tile")
+	USpawnLayoutDataAsset* SpawnLayoutDataAsset;
 
 public:
-	UFUNCTION(BlueprintImplementableEvent, Category="Tile Graphics")
-	void UpdateHexagonMaterial();
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_SpawnPointLayout, Category="Tile")
+	FSpawnLayout SpawnLayout;
 
-	// ---------------------------------------------------------
-	// Getter & Setter
+private:
+	void SetSpawnLayout(const FSpawnLayout& SpawnLayout_);
 
-	AEntity* GetEntityByAffiliation(EAffiliation Affiliation) const;
+	UFUNCTION()
+	void OnRep_SpawnPointLayout();
+
+	void ValidateSpawnLayout();
+
+	void ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints);
+
+	USpawnLayoutDataAsset* FindSpawnLayoutDataAsset();
 };

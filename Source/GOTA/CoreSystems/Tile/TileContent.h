@@ -1,5 +1,6 @@
 ﻿#pragma once
-#include "SpawnPointLayout.h"
+
+#include "Terrain.h"
 #include "TileAssetSpawn.h"
 #include "TileContent.generated.h"
 
@@ -13,35 +14,33 @@ class GOTA_API UTileContent : public UObject
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="TileContent")
-	void OnEnteringActiveRangeOfGuardian();
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="TileContent")
-	void OnLeavingActiveRangeOfGuardian();
-
 	void Init(ATile* Tile_, AGS_Ingame* GameState_);
 
 	void SetRotation(FRotator Rotator);
 
+	void OnSpawnPointLayoutChanged();
+
+	void SetTerrain(const FTerrain& Terrain_);
+	
 private:
-	void DespawnEverything();
+	void DespawnEveryTileAsset();
 
 	UFUNCTION()
 	void UpdateTrees(int32 Change);
-
-	UFUNCTION()
-	void RedoTreeAssets();
+	
+	void NullEveryTileAsset();
 
 	UFUNCTION()
 	void UpdateForage(int32 Change);
-
-	UFUNCTION()
+	
 	void ValidateBuildings(ATile* Tile_);
 
 	void SpawnProps();
 
 	UPROPERTY()
 	ATile* Tile;
+	
+	FTerrain Terrain;
 
 	TArray<FTileAssetSpawn> TreeTileAssetSpawns;
 
@@ -59,12 +58,8 @@ private:
 	void SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<FSpawnPoint> SpawnPoints);
 
 	UFUNCTION()
-	void OnSpawnPointLayoutChanged();
-
-	UFUNCTION()
 	void ValidateEverything();
-
-	UFUNCTION()
+	
 	void ValidateMainBuilding(ATile* Tile_);
 
 	void ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets);

@@ -56,7 +56,7 @@ void ADistanceUtils::UpdateDistanceToTiles()
 		{
 			if (ATile* Tile = GameState->TileMap->GetTile(Coords))
 			{
-				Tile->OnEnteringActiveRangeOfGuardian();
+				// Tile->OnEnteringActiveRangeOfGuardian();
 			}
 		}
 	}
@@ -66,7 +66,7 @@ void ADistanceUtils::UpdateDistanceToTiles()
 		{
 			if (ATile* Tile = GameState->TileMap->GetTile(Coords))
 			{
-				Tile->OnLeavingActiveRangeOfGuardian();
+				// Tile->OnLeavingActiveRangeOfGuardian();
 			}
 		}
 	}
