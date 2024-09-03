@@ -56,6 +56,8 @@ ATile::ATile()
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
+	NetUpdateFrequency = 1.0f;
+
 	// Tick Setup
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
@@ -513,8 +515,6 @@ void ATile::TerrainServerInit(const FTerrain& Terrain_)
 {
 	FTerrain OldTerrain = Terrain;
 	Terrain = Terrain_;
-	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, Terrain, this);
-	GameplayTags.RemoveTag(DA_Biomes->AllBiomes);
 	GameplayTags.AddTag(DA_Biomes->EnumToTag[Terrain_.Biome]);
 	TerrainClientInit();
 	InitTileLayout();
@@ -682,9 +682,9 @@ USpawnLayoutDataAsset* ATile::FindSpawnLayoutDataAsset()
 	TArray<USpawnLayoutDataAsset*> PossibleLayouts;
 	for (USpawnLayoutDataAsset* DA_SpawnLayout : TileLayout->SpawnLayouts)
 	{
-		if(DA_SpawnLayout->IsValidFor(GameplayTags)) PossibleLayouts.Add(DA_SpawnLayout);
+		if (DA_SpawnLayout->IsValidFor(GameplayTags)) PossibleLayouts.Add(DA_SpawnLayout);
 	}
-	if(PossibleLayouts.Num() <= 0) return nullptr;
+	if (PossibleLayouts.Num() <= 0) return nullptr;
 	// Weighted Random to select a SpawnLayout
 	int32 TotalBias = 0;
 	for (USpawnLayoutDataAsset* DA_SpawnLayout : PossibleLayouts)
