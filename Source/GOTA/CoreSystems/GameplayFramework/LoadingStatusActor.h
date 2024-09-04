@@ -54,7 +54,11 @@ public:
 private:
 	UFUNCTION()
 	void OnRep_CurrentStatus(ELoadingStatus NewStatus);
+	
 public:
-	UFUNCTION(Server, Reliable)
 	void SetCurrentStatus(const ELoadingStatus NewStatus);
+	
+private:
+	UFUNCTION(Server, Reliable)
+	void SetCurrentStatusServer(const ELoadingStatus NewStatus);
 };

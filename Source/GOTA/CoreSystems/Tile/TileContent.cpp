@@ -10,24 +10,28 @@ void UTileContent::Init(ATile* Tile_, AGS_Ingame* GameState_)
 {
 	GameState = GameState_;
 	Tile = Tile_;
-	Tile->OnSpawnPointLayoutChanged.AddDynamic(this, &UTileContent::OnSpawnPointLayoutChanged);
 	Tile->OnGameplayTagsChanged.AddDynamic(this, &UTileContent::ValidateEverything);
-	Tile->Trees->OnChanged.AddDynamic(this, &UTileContent::UpdateTrees);
-	Tile->Forage->OnChanged.AddDynamic(this, &UTileContent::UpdateForage);
-	Tile->OnBuildingChanged.AddDynamic(this, &UTileContent::ValidateBuildings);
-	Tile->OnBuildingChanged.AddDynamic(this, &UTileContent::ValidateMainBuilding);
-	Tile->OnDistancesChanged.AddDynamic(this, &UTileContent::RedoTreeAssets); // all tree assets need to be rechosen 
+	Tile->EcoValues->OnTreesChanged.AddDynamic(this, &UTileContent::UpdateTrees);
+	Tile->EcoValues->OnForageChanged.AddDynamic(this, &UTileContent::UpdateForage);
 	OnSpawnPointLayoutChanged();
 }
 
 void UTileContent::SetRotation(FRotator Rotator)
 {
 	Rotation = Rotator;
-	DespawnEverything();
+	DespawnEveryTileAsset();
 	ValidateEverything();
 }
 
-void UTileContent::DespawnEverything()
+void UTileContent::SetTerrain(const FTerrain& Terrain_)
+{
+	Terrain = Terrain_;
+	DespawnEveryTileAsset();
+	NullEveryTileAsset();
+	ValidateEverything();
+}
+
+void UTileContent::DespawnEveryTileAsset()
 {
 	for (FTileAssetSpawn& TileAsset : TreeTileAssetSpawns)
 	{
@@ -55,7 +59,7 @@ void UTileContent::UpdateTrees(int32 Change)
 	{
 		if (TileAssetSpawn.bIsSpawned) ++CountHowManyAreSpawned;
 	}
-	int8 RealChange = Tile->Trees->Current - CountHowManyAreSpawned;
+	int8 RealChange = Tile->EcoValues->GetTrees() - CountHowManyAreSpawned;
 	if (RealChange == 0) return;
 	int32 Counter = 0;
 	// increase the amount of visible trees
@@ -83,15 +87,25 @@ void UTileContent::UpdateTrees(int32 Change)
 	}
 }
 
-void UTileContent::RedoTreeAssets()
+void UTileContent::NullEveryTileAsset()
 {
 	for (FTileAssetSpawn& TileAssetSpawn : TreeTileAssetSpawns)
 	{
-		DespawnTileAsset(TileAssetSpawn);
 		TileAssetSpawn.TileAsset = nullptr;
 	}
-	ValidateTileAssets(TreeTileAssetSpawns, Tile->DA_TileGraphics->TreeAssets);
-	UpdateTrees(0);
+	for (FTileAssetSpawn& TileAssetSpawn : PropTileAssetSpawns)
+	{
+		TileAssetSpawn.TileAsset = nullptr;
+	}
+	for (FTileAssetSpawn& TileAssetSpawn : BuildingTileAssetSpawns)
+	{
+		TileAssetSpawn.TileAsset = nullptr;
+	}
+	for (FTileAssetSpawn& TileAssetSpawn : ForageTileAssetSpawns)
+	{
+		TileAssetSpawn.TileAsset = nullptr;
+	}
+	MainBuilding.TileAsset = nullptr;
 }
 
 void UTileContent::UpdateForage(int32 Change)
@@ -101,7 +115,7 @@ void UTileContent::UpdateForage(int32 Change)
 	{
 		if (TileAssetSpawn.bIsSpawned) ++CountHowManyAreSpawned;
 	}
-	int8 RealChange = Tile->Forage->Current / 4 - CountHowManyAreSpawned;
+	int8 RealChange = Tile->EcoValues->GetForage() / 4 - CountHowManyAreSpawned;
 	if (RealChange == 0) return;
 	int32 Counter = 0;
 	// increase the amount of visible forage
@@ -131,19 +145,19 @@ void UTileContent::UpdateForage(int32 Change)
 
 void UTileContent::OnSpawnPointLayoutChanged()
 {
-	BringArrayToCorrectSize(TreeTileAssetSpawns, Tile->SpawnPointLayout.Trees.Num());
-	SetSpawnPointsOnArray(TreeTileAssetSpawns, Tile->SpawnPointLayout.Trees);
+	BringArrayToCorrectSize(TreeTileAssetSpawns, Tile->SpawnLayout.Trees.Num());
+	SetSpawnPointsOnArray(TreeTileAssetSpawns, Tile->SpawnLayout.Trees);
 
-	BringArrayToCorrectSize(PropTileAssetSpawns, Tile->SpawnPointLayout.Props.Num());
-	SetSpawnPointsOnArray(PropTileAssetSpawns, Tile->SpawnPointLayout.Props);
+	BringArrayToCorrectSize(PropTileAssetSpawns, Tile->SpawnLayout.Props.Num());
+	SetSpawnPointsOnArray(PropTileAssetSpawns, Tile->SpawnLayout.Props);
 
-	BringArrayToCorrectSize(BuildingTileAssetSpawns, Tile->SpawnPointLayout.Buildings.Num());
-	SetSpawnPointsOnArray(BuildingTileAssetSpawns, Tile->SpawnPointLayout.Buildings);
+	BringArrayToCorrectSize(BuildingTileAssetSpawns, Tile->SpawnLayout.Buildings.Num());
+	SetSpawnPointsOnArray(BuildingTileAssetSpawns, Tile->SpawnLayout.Buildings);
 
-	BringArrayToCorrectSize(ForageTileAssetSpawns, Tile->SpawnPointLayout.Forage.Num());
-	SetSpawnPointsOnArray(ForageTileAssetSpawns, Tile->SpawnPointLayout.Forage);
+	BringArrayToCorrectSize(ForageTileAssetSpawns, Tile->SpawnLayout.Forage.Num());
+	SetSpawnPointsOnArray(ForageTileAssetSpawns, Tile->SpawnLayout.Forage);
 
-	MainBuilding.SpawnPoint = Tile->SpawnPointLayout.MainBuilding;
+	MainBuilding.SpawnPoint = Tile->SpawnLayout.MainBuilding;
 	if (MainBuilding.TileAsset)
 	{
 		if (MainBuilding.TileAsset->RotationMode == ERotationMode::Random360Degree)
@@ -351,10 +365,7 @@ void UTileContent::FindRandomValidAssets(const int32 Amount, const UDataTable* D
 	int32 TotalBias = 0;
 	for (FTileAsset* Asset : PossibleAssets)
 	{
-		TotalBias += Asset->GetBiasAfterMultipliers(
-			Tile->OceanDistance,
-			Tile->RiverDistance,
-			Tile->VolcanoDistance);
+		TotalBias += Asset->GetBiasAfterMultipliers(Terrain);
 	}
 	// Randomly select the assets based on their spawn bias
 	for (int32 i = 0; i < Amount; i++)
@@ -362,10 +373,7 @@ void UTileContent::FindRandomValidAssets(const int32 Amount, const UDataTable* D
 		int32 Count = FMath::RandRange(0, TotalBias - 1);
 		for (FTileAsset* Asset : PossibleAssets)
 		{
-			int32 SpawnBias = Asset->GetBiasAfterMultipliers(
-				Tile->OceanDistance,
-				Tile->RiverDistance,
-				Tile->VolcanoDistance);
+			int32 SpawnBias = Asset->GetBiasAfterMultipliers(Terrain);
 			if (Count < SpawnBias)
 			{
 				OutFoundAssets.Add(Asset);

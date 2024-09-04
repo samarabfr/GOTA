@@ -46,6 +46,7 @@ void ALoadingManager::Tick(float DeltaSeconds)
 	{
 		ClientTick();
 	}
+	GracePeriodTime += DeltaSeconds;
 }
 
 void ALoadingManager::ServerTick()
@@ -81,15 +82,18 @@ void ALoadingManager::ServerTick()
 			LocalPlayerController->CreateIngameUI();
 			GameMode->InitialPossession();
 			LoadingStatus->SetCurrentStatus(ELoadingStatus::WaitForFinished);
+			GameState->TileMap->MaxAllEcoValues();
+			GracePeriodTime = 0.0;
 		}
 		break;
 
 	case ELoadingStatus::WaitForFinished:
-		if (IsEveryoneOn(ELoadingStatus::WaitForFinished))
+		if (IsEveryoneOn(ELoadingStatus::WaitForFinished) && GracePeriodTime > 2)
 		{
 			LocalPlayerController->InitInput();
 			LocalPlayerController->RemoveLoadingUI();
 			GameMode->StartGame();
+			GameState->TileMap->EnableTick();
 			LoadingStatus->SetCurrentStatus(ELoadingStatus::Finished);
 		}
 		break;
@@ -146,6 +150,7 @@ void ALoadingManager::ClientTick()
 		{
 			LocalPlayerController->InitInput();
 			LocalPlayerController->RemoveLoadingUI();
+			GameState->TileMap->EnableTick();
 		}
 		break;
 

@@ -49,6 +49,7 @@ void UWorldGenerator::GenerateWorld()
 	GenerateBeaches();
 	GenerateMountains();
 	GenerateRivers();
+	CalculateRiverConnections();
 	GenerateStartingPositions();
 	SpawnTiles();
 }
@@ -175,8 +176,8 @@ void UWorldGenerator::FillArrays()
 {
 	for (FGeneratedTileInfo& Tile : GTiles)
 	{
-		if(Tile.IsLand) Land.Add(&Tile);
-		if(Tile.IsLand && Tile.OceanDistance == 1) Coast.Add(&Tile);
+		if (Tile.IsLand) Land.Add(&Tile);
+		if (Tile.IsLand && Tile.OceanDistance == 1) Coast.Add(&Tile);
 	}
 }
 
@@ -654,14 +655,17 @@ void UWorldGenerator::SpawnTiles()
 			float Height = FMath::TruncToFloat(Tile.Height / TerrainGenData->HeightStep) * TerrainGenData->HeightStep;
 			Height += TerrainGenData->HeightOffset;
 			ATile* NewTile = TileMap->SpawnNewTile(Tile.HexCoords, Height);
-			NewTile->SetNormalizedOceanDistance(static_cast<float>(Tile.OceanDistance) / MaxOceanDistance);
-			NewTile->SetNormalizedRiverDistance(static_cast<float>(Tile.RiverDistance) / MaxRiverDistance);
-			NewTile->SetNormalizedVolcanoDistance(static_cast<float>(Tile.VolcanoDistance) / MaxVolcanoDistance);
-			NewTile->SetOceanDistance(Tile.OceanDistance);
-			NewTile->SetRiverDistance(Tile.RiverDistance);
-			NewTile->SetVolcanoDistance(Tile.VolcanoDistance);
-			NewTile->SetBiome(Tile.Biome);
-			NewTile->SetIsRiver(Tile.HasRiver);
+			FTerrain Terrain = FTerrain();
+			Terrain.NormalizedOceanDistance = static_cast<float>(Tile.OceanDistance) / MaxOceanDistance;
+			Terrain.NormalizedRiverDistance = static_cast<float>(Tile.RiverDistance) / MaxRiverDistance;
+			Terrain.NormalizedVolcanoDistance = static_cast<float>(Tile.VolcanoDistance) / MaxVolcanoDistance;
+			Terrain.OceanDistance = Tile.OceanDistance;
+			Terrain.RiverDistance = Tile.RiverDistance;
+			Terrain.VolcanoDistance = Tile.VolcanoDistance;
+			Terrain.Biome = Tile.Biome;
+			Terrain.bIsRiver = Tile.HasRiver;
+			Terrain.RiverConnections = Tile.RiverConnections;
+			NewTile->TerrainServerInit(Terrain);
 			if (Tile.IsColonistStart) TileMap->ColonistsStarts.Add(NewTile);
 			else if (Tile.IsNativeStart) TileMap->NativesStarts.Add(NewTile);
 		}
@@ -855,7 +859,7 @@ void UWorldGenerator::GenerateNativesStartingPositions()
 	// Apply to tiles
 	for (FGeneratedTileInfo* Tile : NativesStarts)
 	{
-		if(!Tile) continue;
+		if (!Tile) continue;
 		Tile->IsNativeStart = true;
 	}
 }
@@ -943,9 +947,10 @@ void UWorldGenerator::GenerateNativesFinalStartingPositions()
 				}
 			}
 			// Volcano
-			if(Iteration > TerrainGenData->IterationsStarts / 2)
+			if (Iteration > TerrainGenData->IterationsStarts / 2)
 			{
-				FVector2D Delta = UHexCoordsFunctions::HexCoordsToVector2D(Volcano->HexCoords) - CurrentStartPositions[i];
+				FVector2D Delta = UHexCoordsFunctions::HexCoordsToVector2D(Volcano->HexCoords) - CurrentStartPositions[
+					i];
 				float Distance = Delta.Length() * 0.01f; // factor because of cm
 				if (Distance > 0)
 				{
@@ -958,7 +963,7 @@ void UWorldGenerator::GenerateNativesFinalStartingPositions()
 		// Apply max force
 		for (int32 i = 0; i < NativesCount; ++i)
 		{
-			if(Forces[i].Length() > TerrainGenData->MaxForce)
+			if (Forces[i].Length() > TerrainGenData->MaxForce)
 			{
 				Forces[i].Normalize();
 				Forces[i] *= TerrainGenData->MaxForce;
@@ -1014,4 +1019,90 @@ float UWorldGenerator::CalculateNativesStartScoreForTile(FGeneratedTileInfo* New
 		NativesStartsCoastFactor;
 	// solution
 	return SmallestNativesTileScore + SmallestColonistsTileScore + OceanDistanceScore;
+}
+
+void UWorldGenerator::CalculateRiverConnections()
+{
+	for (FGeneratedTileInfo& Tile : GTiles)
+	{
+		for (int32 i = 0; i < 6; ++i)
+		{
+			if (!Tile.Neighbors[i] || !Tile.Neighbors[i]->IsLand) Tile.RiverConnections.Add(false);
+			else Tile.RiverConnections.Add(Tile.Neighbors[i]->HasRiver);
+		}
+	}
+	CleanupRiverConnections();
+	AddRiverConnectionsToOcean();
+}
+
+void UWorldGenerator::AddRiverConnectionsToOcean()
+{
+	for (FGeneratedTileInfo* Tile : Coast)
+	{
+		if (Tile->HasRiver)
+		{
+			TArray<int32> PossibleNullConnections;
+			int RealCount = 0;
+			for (int i = 0; i < 6; ++i)
+			{
+				if (Tile->RiverConnections[i]) ++RealCount;
+				if (!Tile->Neighbors[i] || !Tile->Neighbors[i]->IsLand) PossibleNullConnections.Add(i);
+			}
+			while (RealCount < 3 && PossibleNullConnections.Num() > 0)
+			{
+				int32 NullConnection = PossibleNullConnections[FMath::RandRange(0, PossibleNullConnections.Num() - 1)];
+				PossibleNullConnections.Remove(NullConnection);
+				Tile->RiverConnections[NullConnection] = true;
+				RealCount++;
+			}
+		}
+	}
+}
+
+void UWorldGenerator::CleanupRiverConnections()
+{
+	TArray<FGeneratedTileInfo*> Frontier;
+	for (FGeneratedTileInfo* Tile : Coast)
+	{
+		if (Tile->HasRiver)
+		{
+			Frontier.Add(Tile);
+			Tile->CleanedUpRiverConnections = true;
+		}
+	}
+	while (!Frontier.IsEmpty())
+	{
+		TArray<FGeneratedTileInfo*> NewFrontier;
+		for (FGeneratedTileInfo* FrontierTile : Frontier)
+		{
+			TArray<FGeneratedTileInfo*> ConnectedToThis;
+			for (int32 i = 0; i < 6; ++i)
+			{
+				if (FrontierTile->RiverConnections[i]
+					&& FrontierTile->Neighbors[i]
+					&& !FrontierTile->Neighbors[i]->CleanedUpRiverConnections)
+				{
+					ConnectedToThis.Add(FrontierTile->Neighbors[i]);
+					if (!NewFrontier.Contains(FrontierTile->Neighbors[i]))
+						NewFrontier.Add(FrontierTile->Neighbors[i]);
+				}
+			}
+			for (FGeneratedTileInfo* Connected : ConnectedToThis)
+			{
+				for (int32 i = 0; i < 6; ++i)
+				{
+					if (Connected->RiverConnections[i]
+						&& Connected->Neighbors[i]
+						&& ConnectedToThis.Contains(Connected->Neighbors[i]))
+					{
+						Connected->RiverConnections[i] = false;
+						Connected->Neighbors[i]->RiverConnections[(i + 3) % 6] = false;
+					}
+				}
+			}
+			FrontierTile->CleanedUpRiverConnections = true;
+		}
+		Frontier = NewFrontier;
+	}
+	// TODO cleanup River connections upstream so two rivers that flow together don't connect to each other twice
 }

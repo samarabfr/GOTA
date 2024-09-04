@@ -20,13 +20,38 @@ ATileMap::ATileMap()
 {
 	bReplicates = true;
 	bAlwaysRelevant = true;
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 }
 
 void ATileMap::Init()
 {
 	for (ATile* Tile : Tiles)
 	{
-		if (Tile) Tile->Init();
+		if (!Tile) continue;
+		// set neighbors on new tile
+		FHexCoords HexCoords = Tile->HexCoords;
+		Tile->Neighbors[0] = GetTileFast(FHexCoords(HexCoords.Q + 0, HexCoords.R - 1));
+		Tile->Neighbors[1] = GetTileFast(FHexCoords(HexCoords.Q + 1, HexCoords.R - 1));
+		Tile->Neighbors[2] = GetTileFast(FHexCoords(HexCoords.Q + 1, HexCoords.R - 0));
+		Tile->Neighbors[3] = GetTileFast(FHexCoords(HexCoords.Q - 0, HexCoords.R + 1));
+		Tile->Neighbors[4] = GetTileFast(FHexCoords(HexCoords.Q - 1, HexCoords.R + 1));
+		Tile->Neighbors[5] = GetTileFast(FHexCoords(HexCoords.Q - 1, HexCoords.R + 0));
+		Tile->ServerInit();
+	}
+}
+
+void ATileMap::EnableTick()
+{
+	SetActorTickEnabled(true);
+}
+
+void ATileMap::MaxAllEcoValues()
+{
+	for (ATile* Tile : Tiles)
+	{
+		if (!Tile) continue;
+		Tile->EcoValues->MaxALlValues();
 	}
 }
 
@@ -35,6 +60,23 @@ void ATileMap::BeginPlay()
 	Super::BeginPlay();
 
 	GameState = GetWorld()->GetGameState<AGS_Ingame>();
+}
+
+void ATileMap::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	int32 CountTileTicked = 0;
+	while (CountTileTicked < TileTicksPerFrame)
+	{
+		if (ATile* Tile = Tiles[IndexPosition])
+		{
+			Tile->GOTATick();
+			++CountTileTicked;
+		}
+		++IndexPosition;
+		if (IndexPosition >= Tiles.Num())
+			IndexPosition = 0;
+	}
 }
 
 void ATileMap::InitializeBothArrays(FHexCoords SizeInit)
@@ -89,20 +131,6 @@ bool ATileMap::TryAddTile(FHexCoords HexCoords, ATile* Tile)
 	Tiles[HexCoords.Q * Size.R + HexCoords.R] = Tile;
 	TilesArray[HexCoords.Q * Size.R + HexCoords.R] = Tile;
 	Tile->HexCoords = HexCoords;
-	// set neighbors on new tile
-	Tile->Neighbors[0] = GetTileFast(FHexCoords(HexCoords.Q, HexCoords.R - 1));
-	Tile->Neighbors[1] = GetTileFast(FHexCoords(HexCoords.Q + 1, HexCoords.R - 1));
-	Tile->Neighbors[2] = GetTileFast(FHexCoords(HexCoords.Q + 1, HexCoords.R));
-	Tile->Neighbors[3] = GetTileFast(FHexCoords(HexCoords.Q, HexCoords.R + 1));
-	Tile->Neighbors[4] = GetTileFast(FHexCoords(HexCoords.Q - 1, HexCoords.R + 1));
-	Tile->Neighbors[5] = GetTileFast(FHexCoords(HexCoords.Q - 1, HexCoords.R));
-	// set new tile on neighbors
-	if (Tile->Neighbors[0]) Tile->Neighbors[0]->Neighbors[3] = Tile;
-	if (Tile->Neighbors[1]) Tile->Neighbors[1]->Neighbors[4] = Tile;
-	if (Tile->Neighbors[2]) Tile->Neighbors[2]->Neighbors[5] = Tile;
-	if (Tile->Neighbors[3]) Tile->Neighbors[3]->Neighbors[0] = Tile;
-	if (Tile->Neighbors[4]) Tile->Neighbors[4]->Neighbors[1] = Tile;
-	if (Tile->Neighbors[5]) Tile->Neighbors[5]->Neighbors[2] = Tile;
 	return true;
 }
 
@@ -158,26 +186,6 @@ ATile* ATileMap::GetRandomTile()
 		}
 	}
 	return nullptr;
-}
-
-void ATileMap::CalculateTurn()
-{
-	ATile::bFreezeGrowthChanges = true;
-	for (ATile* Tile : Tiles)
-	{
-		if (Tile) Tile->CalculateTurn();
-	}
-	ATile::bFreezeGrowthChanges = false;
-	for (ATile* Tile : Tiles)
-	{
-		if (Tile)
-		{
-			Tile->CalculateTreeGrowthChange();
-			Tile->CalculateWildlifeGrowthChange();
-			Tile->CalculateForageChange();
-			Tile->CalculatePopulationGrowthChange();
-		}
-	}
 }
 
 TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End, EAffiliation Affiliation)
@@ -273,7 +281,6 @@ TArray<ATile*> ATileMap::GetPathToNearestAffiliatedBuilding(ATile* Start, EAffil
 int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, int32 Amount, int32 Threshold,
                                   int32 MaxRange)
 {
-	int32 _;
 	int32 AmountReduced = 0;
 	TArray<ATile*> Border;
 	TArray<bool> AlreadyChecked;
@@ -300,13 +307,13 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 				switch (EcoValue)
 				{
 				case EEcoValue::Tree:
-					NeighborValue = NeighborTile->Trees->Current;
+					NeighborValue = NeighborTile->EcoValues->GetTrees();
 					break;
 				case EEcoValue::Wildlife:
-					NeighborValue = NeighborTile->Wildlife->Current;
+					NeighborValue = NeighborTile->EcoValues->GetWildlife();
 					break;
 				case EEcoValue::Forage:
-					NeighborValue = NeighborTile->Forage->Current;
+					NeighborValue = NeighborTile->EcoValues->GetForage();
 					break;
 				}
 				if (NeighborValue > Threshold)
@@ -338,13 +345,13 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 					switch (EcoValue)
 					{
 					case EEcoValue::Tree:
-						BorderTileEcoValue = Border[i]->Trees->Current;
+						BorderTileEcoValue = Border[i]->EcoValues->GetTrees();
 						break;
 					case EEcoValue::Wildlife:
-						BorderTileEcoValue = Border[i]->Wildlife->Current;
+						BorderTileEcoValue = Border[i]->EcoValues->GetWildlife();
 						break;
 					case EEcoValue::Forage:
-						BorderTileEcoValue = Border[i]->Forage->Current;
+						BorderTileEcoValue = Border[i]->EcoValues->GetForage();
 						break;
 					}
 					if (BorderTileEcoValue > TempThreshold)
@@ -361,13 +368,13 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 				switch (EcoValue)
 				{
 				case EEcoValue::Tree:
-					Border[i]->Trees->Subtract(TileValueReducedCount[i], _);
+					Border[i]->EcoValues->SubtractTrees(TileValueReducedCount[i]);
 					break;
 				case EEcoValue::Wildlife:
-					Border[i]->Wildlife->Subtract(TileValueReducedCount[i], _);
+					Border[i]->EcoValues->SubtractWildlife(TileValueReducedCount[i]);
 					break;
 				case EEcoValue::Forage:
-					Border[i]->Forage->Subtract(TileValueReducedCount[i], _);
+					Border[i]->EcoValues->SubtractForage(TileValueReducedCount[i]);
 					break;
 				}
 				AmountReduced += TileValueReducedCount[i];
@@ -381,13 +388,13 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 			switch (EcoValue)
 			{
 			case EEcoValue::Tree:
-				Value = BorderTile->Trees->Current;
+				Value = BorderTile->EcoValues->GetTrees();
 				break;
 			case EEcoValue::Wildlife:
-				Value = BorderTile->Wildlife->Current;
+				Value = BorderTile->EcoValues->GetWildlife();
 				break;
 			case EEcoValue::Forage:
-				Value = BorderTile->Forage->Current;
+				Value = BorderTile->EcoValues->GetForage();
 				break;
 			}
 			if (Value > Threshold)
@@ -395,13 +402,13 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 				switch (EcoValue)
 				{
 				case EEcoValue::Tree:
-					BorderTile->Trees->Subtract(Value - Threshold, _);
+					BorderTile->EcoValues->SubtractTrees(Value - Threshold);
 					break;
 				case EEcoValue::Wildlife:
-					BorderTile->Wildlife->Subtract(Value - Threshold, _);
+					BorderTile->EcoValues->SubtractWildlife(Value - Threshold);
 					break;
 				case EEcoValue::Forage:
-					BorderTile->Forage->Subtract(Value - Threshold, _);
+					BorderTile->EcoValues->SubtractForage(Value - Threshold);
 					break;
 				}
 				AmountReduced += Value - Threshold;
@@ -427,13 +434,13 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 					switch (EcoValue)
 					{
 					case EEcoValue::Tree:
-						NeighborValue = NeighborTile->Trees->Current;
+						NeighborValue = NeighborTile->EcoValues->GetTrees();
 						break;
 					case EEcoValue::Wildlife:
-						NeighborValue = NeighborTile->Wildlife->Current;
+						NeighborValue = NeighborTile->EcoValues->GetWildlife();
 						break;
 					case EEcoValue::Forage:
-						NeighborValue = NeighborTile->Forage->Current;
+						NeighborValue = NeighborTile->EcoValues->GetForage();
 						break;
 					}
 					if (NeighborValue > Threshold)
@@ -454,8 +461,8 @@ void ATileMap::CountAllMaxEcoValues(int32& TotalMaxTrees, int32& TotalMaxWildlif
 	for (ATile* Tile : Tiles)
 	{
 		if (!Tile) continue;
-		TotalMaxTrees += Tile->Trees->GetMaximum();
-		TotalMaxWildlife += Tile->Wildlife->GetMaximum();
-		TotalMaxForage += Tile->Forage->GetMaximum();
+		TotalMaxTrees += Tile->EcoValues->GetMaxTrees();
+		TotalMaxWildlife += Tile->EcoValues->GetMaxWildlife();
+		TotalMaxForage += Tile->EcoValues->GetMaxForage();
 	}
 }

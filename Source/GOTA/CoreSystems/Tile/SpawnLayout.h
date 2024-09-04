@@ -5,18 +5,13 @@
 #include "CoreMinimal.h"
 #include "SpawnPoint.h"
 #include "GameFramework/Actor.h"
-#include "SpawnPointLayout.generated.h"
+#include "SpawnLayout.generated.h"
 
 USTRUCT(BlueprintType)
-struct FSpawnPointLayout
+struct FSpawnLayout
 {
 	GENERATED_BODY()
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	FName Name;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	int32 SpawnBias = 100;
-
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	FSpawnPoint MainBuilding;
 

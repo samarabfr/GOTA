@@ -3,8 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Terrain.h"
 #include "GameplayTagContainer.h"
 #include "GameplayTagRule.h"
+#include "SpawnBias.h"
 #include "GameFramework/Actor.h"
 #include "TileAsset.generated.h"
 
@@ -21,43 +23,19 @@ struct FTileAsset : public FTableRowBase
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Graphics")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	UStaticMesh* StaticMesh = nullptr;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Graphics")
-	USkeletalMesh* SkeletalMesh = nullptr;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Graphics")
-	UAnimSequence* Animation = nullptr;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Graphics")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	ERotationMode RotationMode = ERotationMode::SpawnPointRotation;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
-	int32 SpawnBias = 1;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
-	bool bUseDistanceToOceanBiasMultiplier = false;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
-	UCurveFloat* DistanceToOceanBiasMultiplier = nullptr;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
-	bool bUseDistanceToRiverBiasMultiplier = false;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
-	UCurveFloat* DistanceToRiverBiasMultiplier = nullptr;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
-	bool bUseDistanceToVolcanoBiasMultiplier = false;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Bias")
-	UCurveFloat* DistanceToVolcanoBiasMultiplier = nullptr;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category = "Spawn Condition")
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	FSpawnBias SpawnBias;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	TArray<FGameplayTagRule> GameplayTagRules;
 
-	bool IsValidFor(const FGameplayTagContainer& GameplayTagContainer);
+	bool IsValidFor(const FGameplayTagContainer& GameplayTagContainer) const;
 
-	int32 GetBiasAfterMultipliers(int32 OceanDistance, int32 RiverDistance, int32 VolcanoDistance);
+	int32 GetBiasAfterMultipliers(const FTerrain& Terrain) const;
 };

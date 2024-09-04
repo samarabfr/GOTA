@@ -6,9 +6,9 @@
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
-
-bool ATile::bFreezeGrowthChanges = false;
+#include "Net/Core/PushModel/PushModel.h"
 
 // ---------------------------------------------------------
 // Initialisation and core variables
@@ -16,32 +16,28 @@ bool ATile::bFreezeGrowthChanges = false;
 void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	FDoRepLifetimeParams Params;
+	Params.bIsPushBased = true;
 
-	DOREPLIFETIME(ATile, HexCoords);
-	DOREPLIFETIME(ATile, Claimant);
-	DOREPLIFETIME(ATile, Trees);
-	DOREPLIFETIME(ATile, TreeGrowth);
-	DOREPLIFETIME(ATile, TreeGrowthChange);
-	DOREPLIFETIME(ATile, Forage);
-	DOREPLIFETIME(ATile, ForageChange);
-	DOREPLIFETIME(ATile, Wildlife);
-	DOREPLIFETIME(ATile, WildlifeGrowth);
-	DOREPLIFETIME(ATile, WildlifeGrowthChange);
+	Params.Condition = COND_InitialOnly;
+	Params.RepNotifyCondition = REPNOTIFY_Always;
+	DOREPLIFETIME_WITH_PARAMS(ATile, HexCoords, Params);
+	DOREPLIFETIME_WITH_PARAMS(ATile, Neighbors, Params);
+	DOREPLIFETIME_WITH_PARAMS(ATile, Terrain, Params);
+	DOREPLIFETIME_WITH_PARAMS(ATile, TileRotation, Params);
+	DOREPLIFETIME_WITH_PARAMS(ATile, HexagonMesh, Params);
+
+	Params.Condition = COND_None;
+	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
+	DOREPLIFETIME_WITH_PARAMS(ATile, SpawnLayout, Params);
+	
+	DOREPLIFETIME_WITH_PARAMS(ATile, EcoValues, Params);
+	
+	DOREPLIFETIME(ATile, GameplayTags);
 	DOREPLIFETIME(ATile, Building);
-	DOREPLIFETIME(ATile, Neighbors);
+	DOREPLIFETIME(ATile, Claimant);
 	DOREPLIFETIME(ATile, AlliedEntity);
 	DOREPLIFETIME(ATile, EnemyEntity);
-	DOREPLIFETIME(ATile, bIsRiver);
-	DOREPLIFETIME(ATile, Biome);
-	DOREPLIFETIME(ATile, OceanDistance);
-	DOREPLIFETIME(ATile, VolcanoDistance);
-	DOREPLIFETIME(ATile, NormalizedOceanDistance);
-	DOREPLIFETIME(ATile, NormalizedRiverDistance);
-	DOREPLIFETIME(ATile, NormalizedVolcanoDistance);
-	DOREPLIFETIME(ATile, RiverDistance);
-	DOREPLIFETIME(ATile, SpawnPointLayout);
-	DOREPLIFETIME(ATile, GameplayTags);
-	DOREPLIFETIME(ATile, TileContentRotation);
 }
 
 ATile::ATile()
@@ -50,131 +46,42 @@ ATile::ATile()
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
+	NetUpdateFrequency = 1.0f;
+
 	// Tick Setup
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
 	PrimaryActorTick.TickInterval = 0.5f;
-	
+
 	// initialize neighbor array
-	for (int i = 0; i < 6; ++i)
-	{
-		Neighbors.Add(nullptr);
-	}
+	Neighbors.SetNumZeroed(6);
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ROOT"));
 	SM_Hexagon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SM_Hexagon"));
 	SM_Hexagon->SetupAttachment(RootComponent);
-	
-	// Subobjects
-	Trees = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Trees"));
-	TreeGrowth = CreateDefaultSubobject<UGOTAAttribute>(TEXT("TreeGrowth"));
-	TreeGrowthChange = CreateDefaultSubobject<UGOTAAttribute>(TEXT("TreeGrowthChange"));
-	Forage = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Forage"));
-	ForageChange = CreateDefaultSubobject<UGOTAAttribute>(TEXT("ForageChange"));
-	Wildlife = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Wildlife"));
-	WildlifeGrowth = CreateDefaultSubobject<UGOTAAttribute>(TEXT("WildlifeGrowth"));
-	WildlifeGrowthChange = CreateDefaultSubobject<UGOTAAttribute>(TEXT("WildlifeGrowthChange"));
+
+	EcoValues = CreateDefaultSubobject<UEcoValues>(TEXT("EcoValues"));
 }
 
 void ATile::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	// Get the GameState
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
-
-	// Init TileContent
-	TileContent = NewObject<UTileContent>();
-	TileContent->Init(this, GameState);
-	TileContent->SetRotation(FRotator(0, TileContentRotation, 0));
-	UpdateHexagonMaterial();
-
-	if (HasAuthority())
-	{
-		AddReplicatedSubObject(Trees);
-		AddReplicatedSubObject(TreeGrowth);
-		AddReplicatedSubObject(TreeGrowthChange);
-		AddReplicatedSubObject(Forage);
-		AddReplicatedSubObject(ForageChange);
-		AddReplicatedSubObject(Wildlife);
-		AddReplicatedSubObject(WildlifeGrowth);
-		AddReplicatedSubObject(WildlifeGrowthChange);
-	}
 }
 
-void ATile::Init()
+void ATile::ServerInit()
 {
-	Trees->OnChanged.AddDynamic(this, &ATile::CalculateTreeGrowthChangeWithNeighbors);
-	Forage->OnChanged.AddDynamic(this, &ATile::CalculateForageChangeWithNeighbors);
-	Forage->SetMaximum(BalanceData->MaxForage);
-	Forage->SetCurrent(BalanceData->StartingForage);
-	Wildlife->OnChanged.AddDynamic(this, &ATile::CalculateWildlifeGrowthChangeWithNeighbors);
-	Wildlife->SetMaximum(BalanceData->MaxWildlife);
-	Wildlife->SetCurrent(BalanceData->StartingWildlife);
-	RecalculateTileLayout();
-	Trees->SetCurrent(BalanceData->StartingTrees);
-	SetBiome(Biome);
+	AddReplicatedSubObject(EcoValues);
+
+	EcoValues->OnTreesChanged.AddDynamic(this, &ATile::AddTreesToNeighbors);
+	EcoValues->OnWildlifeChanged.AddDynamic(this, &ATile::AddWildlifeToNeighbors);
+	EcoValues->OnForageChanged.AddDynamic(this, &ATile::AddForageToNeighbors);
 }
 
 void ATile::OnRep_GameplayTags()
 {
 	OnGameplayTagsChanged.Broadcast();
-}
-
-void ATile::SetIsRiver(bool IsRiver)
-{
-	bIsRiver = IsRiver;
-	RecalculateTileLayout();
-	for (ATile* Tile : Neighbors)
-	{
-		if (Tile) Tile->RecalculateTileLayout();
-	}
-}
-
-void ATile::SetBiome(EBiome NewBiome)
-{
-	GameplayTags.RemoveTag(DA_Biomes->AllBiomes);
-	GameplayTags.AddTag(DA_Biomes->EnumToTag[NewBiome]);
-	OnGameplayTagsChanged.Broadcast();
-	Biome = NewBiome;
-	RecalculateTileLayout();
-}
-
-void ATile::SetOceanDistance(int32 NewOceanDistance)
-{
-	OceanDistance = NewOceanDistance;
-	OnDistancesChanged.Broadcast();
-}
-
-void ATile::SetNormalizedOceanDistance(float NewNormalizedOceanDistance)
-{
-	NormalizedOceanDistance = NewNormalizedOceanDistance;
-	OnDistancesChanged.Broadcast();
-}
-
-void ATile::SetRiverDistance(int32 NewRiverDistance)
-{
-	RiverDistance = NewRiverDistance;
-	OnDistancesChanged.Broadcast();
-}
-
-void ATile::SetNormalizedRiverDistance(float NewNormalizedRiverDistance)
-{
-	NormalizedRiverDistance = NewNormalizedRiverDistance;
-	OnDistancesChanged.Broadcast();
-}
-
-void ATile::SetVolcanoDistance(int32 NewVolcanoDistance)
-{
-	VolcanoDistance = NewVolcanoDistance;
-	OnDistancesChanged.Broadcast();
-}
-
-void ATile::SetNormalizedVolcanoDistance(float NewNormalizedVolcanoDistance)
-{
-	NormalizedVolcanoDistance = NewNormalizedVolcanoDistance;
-	OnDistancesChanged.Broadcast();
 }
 
 AEntity* ATile::GetAlliedEntity()
@@ -203,14 +110,14 @@ void ATile::SetEnemyEntity(AEntity* NewEnemyEntity)
 
 AEntity* ATile::GetEntity(EAffiliation Affiliation)
 {
-	if(Affiliation == EAffiliation::Ally)
+	if (Affiliation == EAffiliation::Ally)
 		return GetAlliedEntity();
 	return GetEnemyEntity();
 }
 
 void ATile::SetEntity(AEntity* NewEntity, EAffiliation Affiliation)
 {
-	if(Affiliation == EAffiliation::Ally)
+	if (Affiliation == EAffiliation::Ally)
 		SetAlliedEntity(NewEntity);
 	else
 		SetEnemyEntity(NewEntity);
@@ -227,6 +134,13 @@ bool ATile::IsWalkable(EAffiliation Affiliation) const
 		return !EnemyEntity;
 	}
 	return false;
+}
+
+AEntity* ATile::GetEntityByAffiliation(EAffiliation Affiliation) const
+{
+	if (Affiliation == EAffiliation::Ally) return AlliedEntity;
+	if (Affiliation == EAffiliation::Enemy) return EnemyEntity;
+	return nullptr;
 }
 
 // ---------------------------------------------------------
@@ -359,12 +273,9 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 	// Replication stuff
 	AddReplicatedSubObject(Building);
 	AddReplicatedSubObject(Building->PopContainer);
-	// Population stuff
-	Building->PopContainer->OnPopulationChanged.AddDynamic(this, &ATile::CalculatePopulationGrowthChangeWithNeighbors);
-	CalculatePopulationGrowthChangeWithNeighbors(FPopulation());
 	// Set Graphics
 	OnBuildingChanged.Broadcast(this);
-	RecalculateTileLayout();
+	InitTileLayout();
 	return true;
 }
 
@@ -399,292 +310,156 @@ void ATile::Unbuild()
 	Building = nullptr;
 	// Set Graphics
 	OnBuildingChanged.Broadcast(this);
-	RecalculateTileLayout();
+	InitTileLayout();
 }
 
-// ---------------------------------------------------------
-// Ecosystem and calculate Turn 
+// -------------------Ecosystem-------------------------
 
-void ATile::CalculateTurn()
+void ATile::GOTATick()
 {
-	int32 _;
-	// apply TreeGrowthChange
-	TreeGrowth->Add(TreeGrowthChange->Current, _);
-	// grow trees
-	if (TreeGrowth->Current > BalanceData->TreeGrowthThreshold)
+	if(LastTick < 0)
 	{
-		const int32 TreeGrowCount = TreeGrowth->Current / BalanceData->TreeGrowthThreshold;
-		Trees->Add(TreeGrowCount, _);
-		TreeGrowth->Subtract(TreeGrowCount * BalanceData->TreeGrowthThreshold, _);
-	}
-	// apply ForageChange
-	int32 ForageEffectiveChange = 0;
-	Forage->Add(ForageChange->Current, ForageEffectiveChange);
-	// wildlife starvation
-	if (ForageEffectiveChange < 0)
-	{
-		Wildlife->Add(ForageEffectiveChange, _);
-	}
-	// apply WildlifeGrowthChange
-	WildlifeGrowth->Add(WildlifeGrowthChange->Current, _);
-	// grow Wildlife
-	if (WildlifeGrowth->Current > BalanceData->WildlifeGrowthThreshold)
-	{
-		const int32 WildlifeGrowCount = WildlifeGrowth->Current / BalanceData->WildlifeGrowthThreshold;
-		Wildlife->Add(WildlifeGrowCount, _);
-		WildlifeGrowth->Subtract(WildlifeGrowCount * BalanceData->WildlifeGrowthThreshold, _);
-	}
-	if (!Building) return;
-	// apply PopulationGrowthChange
-	Building->PopContainer->Growth += Building->PopContainer->GrowthChange;
-	// grow Population
-	if (Building->PopContainer->Growth > Building->PopContainer->GrowthThreshold)
-	{
-		const int32 PopulationGrowCount = Building->PopContainer->Growth / Building->PopContainer->GrowthThreshold;
-		Building->PopContainer->IncreaseSize(PopulationGrowCount);
-		Building->PopContainer->Growth -= PopulationGrowCount * Building->PopContainer->GrowthThreshold;
-	}
-}
-
-void ATile::CalculateTreeGrowthChange()
-{
-	TreeGrowthChange->SetCurrent(0);
-	int32 _;
-	for (int i = 0; i < 6; ++i)
-	{
-		if (Neighbors[i])
-		{
-			TreeGrowthChange->Add(Neighbors[i]->Trees->Current, _);
-		}
-	}
-	TreeGrowthChange->Add(Trees->Current, _);
-}
-
-void ATile::CalculateTreeGrowthChangeWithNeighbors(int32 Change)
-{
-	if (bFreezeGrowthChanges) return;
-
-	CalculateTreeGrowthChange();
-	for (int i = 0; i < 6; ++i)
-	{
-		if (Neighbors[i]) Neighbors[i]->CalculateTreeGrowthChange();
-	}
-}
-
-void ATile::CalculateForageChange()
-{
-	ForageChange->SetCurrent(0);
-	int32 _;
-	for (int i = 0; i < 6; ++i)
-	{
-		if (Neighbors[i])
-		{
-			ForageChange->Add(Neighbors[i]->Trees->Current * BalanceData->ForagePerNeighboringTree, _);
-			ForageChange->Add(Neighbors[i]->ForageChange->Current * BalanceData->ForagePerNeighboringForage, _);
-		}
-	}
-	ForageChange->Add(Trees->Current * BalanceData->ForagePerTree, _);
-	ForageChange->Add(ForageChange->Current * BalanceData->ForagePerForage, _);
-	ForageChange->Subtract(Wildlife->Current, _);
-}
-
-void ATile::CalculateForageChangeWithNeighbors(int32 Change)
-{
-	if (bFreezeGrowthChanges) return;
-
-	CalculateForageChange();
-	for (int i = 0; i < 6; ++i)
-	{
-		if (Neighbors[i]) Neighbors[i]->CalculateForageChange();
-	}
-}
-
-void ATile::CalculateWildlifeGrowthChange()
-{
-	WildlifeGrowthChange->SetCurrent(0);
-	int32 _;
-	for (int i = 0; i < 6; ++i)
-	{
-		if (Neighbors[i])
-		{
-			WildlifeGrowthChange->Add(Neighbors[i]->Wildlife->Current, _);
-		}
-	}
-	WildlifeGrowthChange->Add(Wildlife->Current, _);
-}
-
-void ATile::CalculateWildlifeGrowthChangeWithNeighbors(int32 Change)
-{
-	if (bFreezeGrowthChanges) return;
-
-	CalculateWildlifeGrowthChange();
-	for (int i = 0; i < 6; ++i)
-	{
-		if (Neighbors[i]) Neighbors[i]->CalculateWildlifeGrowthChange();
-	}
-}
-
-void ATile::CalculatePopulationGrowthChange()
-{
-	if (!Building) return;
-
-	Building->PopContainer->GrowthChange = 0;
-	for (int i = 0; i < 6; ++i)
-	{
-		if (Neighbors[i] && Neighbors[i]->Building)
-		{
-			Building->PopContainer->GrowthChange += Neighbors[i]->Building->PopContainer->Population.Size;
-		}
-	}
-	Building->PopContainer->GrowthChange += Building->PopContainer->Population.Size;
-}
-
-void ATile::CalculatePopulationGrowthChangeWithNeighbors(FPopulation Change)
-{
-	if (bFreezeGrowthChanges) return;
-
-	CalculatePopulationGrowthChange();
-	for (int i = 0; i < 6; ++i)
-	{
-		if (Neighbors[i]) Neighbors[i]->CalculatePopulationGrowthChange();
-	}
-}
-
-// ---------------------------------------------------------
-// TileLayout & TileContent and graphics relevant
-
-void ATile::OnRep_SpawnPointLayout()
-{
-	OnSpawnPointLayoutChanged.Broadcast();
-}
-
-void ATile::OnRep_TileContentRotation()
-{
-	if (TileContent) TileContent->SetRotation(FRotator(0, TileContentRotation, 0));
-}
-
-void ATile::RefreshTileLayout()
-{
-	if (SM_Hexagon->GetStaticMesh() != TileLayout.HexagonMesh)
-	{
-		SM_Hexagon->SetStaticMesh(TileLayout.HexagonMesh);
-		UpdateHexagonMaterial();
-		MaterialBiome = Biome;
-		int32 Rotation = 0;
-		if (bIsRiver)
-		{
-			Rotation = FindAValidRiverConnectionRotation(TileLayout.RiverConnections);
-		}
-		else
-		{
-			Rotation = FMath::RandRange(0, 5);
-		}
-		SM_Hexagon->SetRelativeRotation(FRotator(0, Rotation * -60, 0));
-		TileContent->SetRotation(FRotator(0, Rotation * -60, 0));
-		TileContentRotation = Rotation * -60;
-	}
-	if (MaterialBiome != Biome)
-	{
-		UpdateHexagonMaterial();
-		MaterialBiome = Biome;
-	}
-}
-
-void ATile::RecalculateTileLayout()
-{
-	UpdateRiverConnections();
-	if (IsValidTileLayout(&TileLayout))
-	{
-		RefreshTileLayout();
+		LastTick =  GetWorld()->GetTimeSeconds();
 		return;
 	}
-	FTileLayout* NewLayout = FindNewValidTileLayout();
+	double DeltaSeconds = GetWorld()->GetTimeSeconds() - LastTick;
+	if (HasAuthority())
+		EcoValues->ServerTick(DeltaSeconds);
+	else
+		EcoValues->ClientTick(DeltaSeconds);
+	LastTick = GetWorld()->GetTimeSeconds();
+}
+
+void ATile::AddTreesToNeighbors(int32 Change)
+{
+	ForceNetUpdate();
+	for (int i = 0; i < 6; ++i)
+	{
+		if (Neighbors[i]) Neighbors[i]->EcoValues->AddNeighborTrees(Change);
+	}
+}
+
+void ATile::AddWildlifeToNeighbors(int32 Change)
+{
+	ForceNetUpdate();
+	for (int i = 0; i < 6; ++i)
+	{
+		if (Neighbors[i]) Neighbors[i]->EcoValues->AddNeighborWildlife(Change);
+	}
+}
+
+void ATile::AddForageToNeighbors(int32 Change)
+{
+	ForceNetUpdate();
+	for (int i = 0; i < 6; ++i)
+	{
+		if (Neighbors[i]) Neighbors[i]->EcoValues->AddNeighborForage(Change);
+	}
+}
+
+// -----------------------Graphics--------------------------
+
+void ATile::InitHexagonMesh()
+{
+	SM_Hexagon->SetStaticMesh(HexagonMesh);
+	if (HexagonMesh) UpdateHexagonMaterial();
+}
+
+// -----------------------Terrain---------------------------
+
+void ATile::TerrainClientInit()
+{
+	if (!TileContent) InitTileContent();
+	TileContent->SetTerrain(Terrain);
+	UpdateHexagonMaterial();
+	EcoValues->Init(Terrain.Biome);
+}
+
+void ATile::TerrainServerInit(const FTerrain& Terrain_)
+{
+	FTerrain OldTerrain = Terrain;
+	Terrain = Terrain_;
+	GameplayTags.AddTag(DA_Biomes->EnumToTag[Terrain_.Biome]);
+	TerrainClientInit();
+	InitTileLayout();
+}
+
+// ReSharper disable once CppMemberFunctionMayBeConst
+void ATile::UpdateHexagonMaterial()
+{
+	switch (Terrain.Biome)
+	{
+	case EBiome::Gras:
+		SM_Hexagon->SetMaterial(0, DA_TileGraphics->M_Grass);
+		break;
+	case EBiome::Beach:
+		SM_Hexagon->SetMaterial(0, DA_TileGraphics->M_Beach);
+		break;
+	case EBiome::Mountain:
+		SM_Hexagon->SetMaterial(0, DA_TileGraphics->M_Mountain);
+		break;
+	case EBiome::Volcano:
+		SM_Hexagon->SetMaterial(0, DA_TileGraphics->M_Volcano);
+		break;
+	}
+}
+
+// ------------------TileContent--------------------
+
+void ATile::InitTileContent()
+{
+	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
+	TileContent = NewObject<UTileContent>();
+	TileContent->Init(this, GameState);
+}
+
+void ATile::ClientInitTileRotation()
+{
+	if (!TileContent) InitTileContent();
+	const FRotator Rotator = FRotator(0, TileRotation, 0);
+	TileContent->SetRotation(Rotator);
+	SM_Hexagon->SetRelativeRotation(Rotator);
+}
+
+void ATile::ServerInitTileRotation()
+{
+	int32 Rotation = 0;
+	if (Terrain.bIsRiver)
+	{
+		Rotation = FindAValidRiverConnectionRotation(TileLayout->RiverConnections);
+	}
+	else
+	{
+		Rotation = FMath::RandRange(0, 5);
+	}
+	TileRotation = Rotation * -60;
+	ClientInitTileRotation();
+}
+
+// ---------------------TileLayout--------------------
+
+void ATile::InitTileLayout()
+{
+	FTileLayout* NewLayout = FindTileLayout();
 	if (!NewLayout) return;
-	TileLayout = *NewLayout;
-	// Select random SpawnPointLayout
-	FSpawnPointLayout SPL;
-	// weighted random to figure out which one to take
-	// Calculate TotalBias for the weighted random selection
-	int32 TotalBias = 0;
-	for (FSpawnPointLayout SpawnPointsLayout : TileLayout.SpawnPointsLayouts)
-	{
-		TotalBias += SpawnPointsLayout.SpawnBias;
-	}
-	// Randomly select the TileLayout based on their spawn bias
-	int Count = FMath::RandRange(0, TotalBias - 1);
-	for (FSpawnPointLayout SpawnPointsLayout : TileLayout.SpawnPointsLayouts)
-	{
-		if (Count < SpawnPointsLayout.SpawnBias)
-		{
-			SPL = SpawnPointsLayout;
-			break;
-		}
-		Count -= SpawnPointsLayout.SpawnBias;
-	}
-	ApplySpawnChances(SPL.Trees);
-	ApplySpawnChances(SPL.Forage);
-	ApplySpawnChances(SPL.Props);
-	ApplySpawnChances(SPL.Buildings);
-	SpawnPointLayout = SPL;
-	OnSpawnPointLayoutChanged.Broadcast();
-	Trees->SetMaximum(SpawnPointLayout.Trees.Num());
-	Trees->SetCurrent(BalanceData->StartingTrees);
-	RefreshTileLayout();
+	TileLayout = NewLayout;
+	HexagonMesh = NewLayout->HexagonMesh;
+	InitHexagonMesh();
+	ServerInitTileRotation();
+	ValidateSpawnLayout();
 }
 
-void ATile::ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints)
+FTileLayout* ATile::FindTileLayout()
 {
-	// Check for Spawnpoints to remove
-	for (int i = SpawnPoints.Num() - 1; i >= 0; --i)
-	{
-		if (SpawnPoints[i].SpawnChance != 100 && SpawnPoints[i].SpawnChance <= FMath::RandRange(0, 99))
-		{
-			SpawnPoints.RemoveAt(i);
-		}
-	}
-}
-
-FTileLayout* ATile::FindNewValidTileLayout()
-{
-	FString ContextString;
+	FString _;
 	TArray<FTileLayout*> AllRows;
-	DA_TileGraphics->TileLayouts->GetAllRows<FTileLayout>(ContextString, AllRows);
-	TArray<FTileLayout*> PossibleLayouts;
+	DA_TileGraphics->TileLayouts->GetAllRows<FTileLayout>(_, AllRows);
+
 	for (FTileLayout* Row : AllRows)
 	{
 		if (IsValidTileLayout(Row))
 		{
-			PossibleLayouts.Add(Row);
-		}
-	}
-	// No valid Layout found, so we use Default
-	if (PossibleLayouts.IsEmpty())
-	{
-		FName DefaultName = "Default";
-		UE_LOG(LogTemp, Warning, TEXT("Had to Default TileLayout on (%d:%d)"), HexCoords.Q, HexCoords.R);
-		return DA_TileGraphics->TileLayouts->FindRow<FTileLayout>(DefaultName, ContextString);
-	}
-	// weighted random to figure out which one to take
-	// Calculate TotalBias for the weighted random selection
-	int32 TotalBias = 0;
-	for (FTileLayout* TL : PossibleLayouts)
-	{
-		for (FSpawnPointLayout SpawnPointsLayout : TL->SpawnPointsLayouts)
-		{
-			TotalBias += SpawnPointsLayout.SpawnBias;
-		}
-	}
-	// Randomly select the TileLayout based on their spawn bias
-	int Count = FMath::RandRange(0, TotalBias - 1);
-	for (FTileLayout* TL : PossibleLayouts)
-	{
-		for (FSpawnPointLayout SpawnPointsLayout : TL->SpawnPointsLayouts)
-		{
-			if (Count < SpawnPointsLayout.SpawnBias)
-			{
-				return TL;
-			}
-			Count -= SpawnPointsLayout.SpawnBias;
+			return Row;
 		}
 	}
 	return nullptr;
@@ -693,25 +468,10 @@ FTileLayout* ATile::FindNewValidTileLayout()
 bool ATile::IsValidTileLayout(const FTileLayout* Layout) const
 {
 	// Tile has River but Row doesn't allow that
-	if (bIsRiver != Layout->HasRiver) return false;
-	// Tile has no Building but Row doesn't allow that
-	if (!Building && !Layout->AllowNoBuilding) return false;
-	// Tile has Native Building but Row doesn't allow that
-	if (Building
-		&& Building->DataAsset->FactionStyle == EFaction::Natives
-		&& !Layout->AllowNativesBuilding)
-		return false;
-	// Tile has Colonists Building but Row doesn't allow that
-	if (Building
-		&& Building->DataAsset->FactionStyle == EFaction::Colonists
-		&& !Layout->AllowColonistBuilding)
-		return false;
-	// Row doesn't allow this biome
-	if (!Layout->AllowedBiomes.Contains(Biome)) return false;
+	if (Terrain.bIsRiver != Layout->HasRiver) return false;
 	// Is a river but can't find a working Rotation
-	if (bIsRiver && FindAValidRiverConnectionRotation(Layout->RiverConnections) < 0) return false;
-	// This layout has no SpawnPointLayout
-	if (Layout->SpawnPointsLayouts.IsEmpty()) return false;
+	if (Terrain.bIsRiver && FindAValidRiverConnectionRotation(Layout->RiverConnections) < 0)
+		return false;
 	return true;
 }
 
@@ -723,7 +483,7 @@ int32 ATile::FindAValidRiverConnectionRotation(const TArray<bool> Connections) c
 		bool ThisRotationWorks = true;
 		for (int i = 0; i < 6; ++i)
 		{
-			if (RiverConnections[i] != Connections[(i + Rotation) % 6])
+			if (Terrain.RiverConnections[i] != Connections[(i + Rotation) % 6])
 			{
 				ThisRotationWorks = false;
 				break;
@@ -734,34 +494,76 @@ int32 ATile::FindAValidRiverConnectionRotation(const TArray<bool> Connections) c
 	return -1;
 }
 
-void ATile::UpdateRiverConnections()
+// ---------------------SpawnLayout--------------------
+
+void ATile::SetSpawnLayout(const FSpawnLayout& SpawnLayout_)
 {
-	// Reset The Array
-	RiverConnections.Empty();
-	RiverConnections.SetNum(6);
-	if (!bIsRiver) return;
-	TArray<int32> PossibleNullConnections;
-	int32 RealCount = 0;
-	for (int32 i = 0; i < 6; ++i)
+	if (!TileContent) InitTileContent();
+	SpawnLayout = SpawnLayout_;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, SpawnLayout, this)
+	TileContent->OnSpawnPointLayoutChanged();
+}
+
+void ATile::OnRep_SpawnPointLayout()
+{
+	if (!TileContent) InitTileContent();
+	TileContent->OnSpawnPointLayoutChanged();
+}
+
+void ATile::ValidateSpawnLayout()
+{
+	// check if current SpawnPointLayout still works
+	if (SpawnLayoutDataAsset && SpawnLayoutDataAsset->IsValidFor(GameplayTags)) return;
+	SpawnLayoutDataAsset = FindSpawnLayoutDataAsset();
+	FSpawnLayout SL;
+	if (SpawnLayoutDataAsset)
+		SL = SpawnLayoutDataAsset->SpawnLayout;
+	else
+		SL = FSpawnLayout();
+	ApplySpawnChances(SL.Trees);
+	ApplySpawnChances(SL.Forage);
+	ApplySpawnChances(SL.Props);
+	ApplySpawnChances(SL.Buildings);
+	SetSpawnLayout(SL);
+	EcoValues->SetMaxValues(SpawnLayout.Trees.Num(), Terrain.Biome);
+}
+
+void ATile::ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints)
+{
+	// Check for Spawn points to remove
+	for (int i = SpawnPoints.Num() - 1; i >= 0; --i)
 	{
-		RiverConnections[i] = Neighbors[i] && Neighbors[i]->bIsRiver;
-		if (RiverConnections[i]) ++RealCount;
-		if (!Neighbors[i]) PossibleNullConnections.Add(i);
-	}
-	if (RealCount == 0) return;
-	// we are under 3 connections and have possible null connects
-	while (RealCount < 3 && PossibleNullConnections.Num() > 0)
-	{
-		int32 NullConnection = PossibleNullConnections[FMath::RandRange(0, PossibleNullConnections.Num() - 1)];
-		PossibleNullConnections.Remove(NullConnection);
-		RiverConnections[NullConnection] = true;
-		RealCount++;
+		if (SpawnPoints[i].SpawnChance != 100 && SpawnPoints[i].SpawnChance <= FMath::RandRange(0, 99))
+		{
+			SpawnPoints.RemoveAt(i);
+		}
 	}
 }
 
-AEntity* ATile::GetEntityByAffiliation(EAffiliation Affiliation) const
+USpawnLayoutDataAsset* ATile::FindSpawnLayoutDataAsset()
 {
-	if (Affiliation == EAffiliation::Ally) return AlliedEntity;
-	if (Affiliation == EAffiliation::Enemy) return EnemyEntity;
+	// Find Valid Spawn Layouts
+	TArray<USpawnLayoutDataAsset*> PossibleLayouts;
+	for (USpawnLayoutDataAsset* DA_SpawnLayout : TileLayout->SpawnLayouts)
+	{
+		if (DA_SpawnLayout->IsValidFor(GameplayTags)) PossibleLayouts.Add(DA_SpawnLayout);
+	}
+	if (PossibleLayouts.Num() <= 0) return nullptr;
+	// Weighted Random to select a SpawnLayout
+	int32 TotalBias = 0;
+	for (USpawnLayoutDataAsset* DA_SpawnLayout : PossibleLayouts)
+	{
+		TotalBias += DA_SpawnLayout->SpawnBias.GetBiasAfterMultipliers(Terrain);
+	}
+	int Count = FMath::RandRange(0, TotalBias - 1);
+	for (USpawnLayoutDataAsset* DA_SpawnLayout : PossibleLayouts)
+	{
+		int32 Bias = DA_SpawnLayout->SpawnBias.GetBiasAfterMultipliers(Terrain);
+		if (Count < Bias)
+		{
+			return DA_SpawnLayout;
+		}
+		Count -= Bias;
+	}
 	return nullptr;
 }

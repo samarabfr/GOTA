@@ -17,6 +17,6 @@ class GOTA_API AGuardian : public ACharacter
 
 public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCosmetic, Category="PlayerController")
-	void SetupGAM();
+	void SetupGAM(AMouseUtils* MouseUtils_);
 	
 };

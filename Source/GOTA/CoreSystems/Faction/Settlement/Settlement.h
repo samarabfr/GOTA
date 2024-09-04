@@ -11,6 +11,7 @@
 #include "SettlementImportanceRatings.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/CoreSystems/Entity/Army.h"
+#include "GOTA/CoreSystems/Faction/Attribute/GOTAAttributeLimited.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "Settlement.generated.h"
 

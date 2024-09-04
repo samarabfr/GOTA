@@ -134,4 +134,10 @@ private:
 	void GenerateNativesFinalStartingPositions();
 
 	float CalculateNativesStartScoreForTile(FGeneratedTileInfo* NewNativesStart, TArray<FGeneratedTileInfo*> NewNativesStarts);
+
+	void CalculateRiverConnections();
+
+	void AddRiverConnectionsToOcean();
+	
+	void CleanupRiverConnections();
 };
