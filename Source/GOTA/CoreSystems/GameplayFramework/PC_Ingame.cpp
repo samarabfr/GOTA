@@ -49,7 +49,7 @@ void APC_Ingame::GuardianChanged()
 	if (!Guardian) return;
 	if (!IsLocalController()) return;
 	DistanceUtils->AttachToActor(Guardian, FAttachmentTransformRules::SnapToTargetIncludingScale);
-	
+	if(MouseUtils) Guardian->SetupGAM(MouseUtils);
 }
 
 AMouseUtils* APC_Ingame::GetMouseUtils()
@@ -74,5 +74,6 @@ void APC_Ingame::MouseUtilsChanged()
 	{
 		MouseUtils->SetPlayerController(this);
 		BindToMouseUtils(MouseUtils);
+		if(Guardian) Guardian->SetupGAM(MouseUtils);
 	}
 }

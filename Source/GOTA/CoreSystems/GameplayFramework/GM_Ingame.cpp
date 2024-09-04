@@ -92,7 +92,6 @@ void AGM_Ingame::StartGame()
 {
 	GOTAGameState->GameStatus = EGameStatus::Running;
 	GOTAGameState->ShouldTickTurnTime = true;
-	UnpauseGame();
 }
 
 void AGM_Ingame::TogglePause()
@@ -263,8 +262,6 @@ void AGM_Ingame::CalculateTurn()
 		if (Entity->ShouldCombatTrigger())
 			GOTAGameState->CombatSystem->RegisterCombat(Entity->CurrentTile);
 	}
-	// Ecovalues
-	GOTAGameState->TileMap->CalculateTurn();
 	// Finished
 	FTimespan TimeSpan = FDateTime::Now() - StartedCalculatingTurn;
 	UE_LOG(LogTemp, Warning, TEXT("It took %d ms to calculate the %d turn."),

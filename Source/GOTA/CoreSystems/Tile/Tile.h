@@ -11,12 +11,10 @@
 #include "TileAssetWithPosition.h"
 #include "TileLayout.h"
 #include "BiomesDataAsset.h"
-#include "EcoSystemDataAsset.h"
+#include "EcoValues.h"
 #include "Terrain.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/CoreSystems/Entity/Entity.h"
-#include "GOTA/CoreSystems/Faction/Attribute/GOTAAttributeLimited.h"
-#include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Tile.generated.h"
 
@@ -157,66 +155,30 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	void Unbuild();
 
-	// ---------------------------------------------------------
-	// Ecosystem and calculate Turn 
-
-	void CalculateTurn();
-
-	void CalculateTreeGrowthChange();
-
-	UFUNCTION()
-	void CalculateTreeGrowthChangeWithNeighbors(int32 Change);
-
-	void CalculateForageChange();
-
-	UFUNCTION()
-	void CalculateForageChangeWithNeighbors(int32 Change);
-
-	void CalculateWildlifeGrowthChange();
-
-	UFUNCTION()
-	void CalculateWildlifeGrowthChangeWithNeighbors(int32 Change);
-
-	void CalculatePopulationGrowthChange();
-
-	UFUNCTION()
-	void CalculatePopulationGrowthChangeWithNeighbors(FPopulation Change);
-
-protected:
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	UEcoSystemDataAsset* BalanceData;
-
+	// -------------------Ecosystem-------------------------
+private:
+	double LastTick = -1.0;
+	
 public:
-	static bool bFreezeGrowthChanges;
+	void GOTATick();
+	
+	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
+	UEcoValues* EcoValues;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
-	UGOTAAttributeLimited* Trees;
+	UFUNCTION()
+	void AddTreesToNeighbors(int32 Change);
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
-	UGOTAAttribute* TreeGrowth;
+	UFUNCTION()
+	void AddWildlifeToNeighbors(int32 Change);
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
-	UGOTAAttribute* TreeGrowthChange;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
-	UGOTAAttributeLimited* Forage;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
-	UGOTAAttribute* ForageChange;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
-	UGOTAAttributeLimited* Wildlife;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
-	UGOTAAttribute* WildlifeGrowth;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
-	UGOTAAttribute* WildlifeGrowthChange;
+	UFUNCTION()
+	void AddForageToNeighbors(int32 Change);
 
 	// -----------------------Graphics--------------------------
-
+public:
 	UPROPERTY(EditDefaultsOnly, Category="Tile")
 	UTileGraphicsDataAsset* DA_TileGraphics;
+
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Tile")
 	UStaticMeshComponent* SM_Hexagon;
@@ -234,7 +196,7 @@ private:
 	 */
 	UPROPERTY(EditDefaultsOnly, Category="Tile")
 	UBiomesDataAsset* DA_Biomes;
-	
+
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=TerrainClientInit, Category="Tile")
 	FTerrain Terrain;
 
@@ -262,9 +224,9 @@ private:
 	void ServerInitTileRotation();
 
 	// ---------------------TileLayout--------------------
-	
+
 	FTileLayout* TileLayout;
-	
+
 	void InitTileLayout();
 
 	FTileLayout* FindTileLayout();

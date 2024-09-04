@@ -22,6 +22,8 @@ public:
 	TArray<ALoadingStatusActor*> LoadingStatuses;
 	
 private:
+	double GracePeriodTime;
+	
 	UPROPERTY()
 	ALoadingStatusActor* LoadingStatus = nullptr;
 	

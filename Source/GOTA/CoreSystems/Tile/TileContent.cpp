@@ -11,8 +11,8 @@ void UTileContent::Init(ATile* Tile_, AGS_Ingame* GameState_)
 	GameState = GameState_;
 	Tile = Tile_;
 	Tile->OnGameplayTagsChanged.AddDynamic(this, &UTileContent::ValidateEverything);
-	Tile->Trees->OnChanged.AddDynamic(this, &UTileContent::UpdateTrees);
-	Tile->Forage->OnChanged.AddDynamic(this, &UTileContent::UpdateForage);
+	Tile->EcoValues->OnTreesChanged.AddDynamic(this, &UTileContent::UpdateTrees);
+	Tile->EcoValues->OnForageChanged.AddDynamic(this, &UTileContent::UpdateForage);
 	OnSpawnPointLayoutChanged();
 }
 
@@ -59,7 +59,7 @@ void UTileContent::UpdateTrees(int32 Change)
 	{
 		if (TileAssetSpawn.bIsSpawned) ++CountHowManyAreSpawned;
 	}
-	int8 RealChange = Tile->Trees->Current - CountHowManyAreSpawned;
+	int8 RealChange = Tile->EcoValues->GetTrees() - CountHowManyAreSpawned;
 	if (RealChange == 0) return;
 	int32 Counter = 0;
 	// increase the amount of visible trees
@@ -115,7 +115,7 @@ void UTileContent::UpdateForage(int32 Change)
 	{
 		if (TileAssetSpawn.bIsSpawned) ++CountHowManyAreSpawned;
 	}
-	int8 RealChange = Tile->Forage->Current / 4 - CountHowManyAreSpawned;
+	int8 RealChange = Tile->EcoValues->GetForage() / 4 - CountHowManyAreSpawned;
 	if (RealChange == 0) return;
 	int32 Counter = 0;
 	// increase the amount of visible forage

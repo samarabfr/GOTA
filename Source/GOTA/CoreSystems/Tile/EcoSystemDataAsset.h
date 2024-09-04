@@ -4,50 +4,68 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "EcoSystemDataAsset.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class GOTA_API UEcoSystemDataAsset : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 
 public:
+	// --------------------Max Modifiers-----------------------
+
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	int32 StartingTrees;
+	TMap<EBiome, float> MaxForagePerBiome;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	float MaxForagePerMaxTree;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	float MaxWildlifePerForage;
+
+	// -----------------GrowthThresholds-----------------------
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	float TreeGrowthThreshold;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	float WildlifeGrowthThreshold;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	float ForageGrowthThreshold;
 	
+	// ---------------------Base Growth------------------------
+
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	int32 MaxTrees;
+	TMap<EBiome, float> BaseTreeGrowthPerBiome;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	TMap<EBiome, float> BaseWildlifeGrowthPerBiome;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
+	TMap<EBiome, float> BaseForageGrowthPerBiome;
 	
+	// ------------------Growth Modifiers----------------------
+
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	int32 TreeGrowthThreshold; 
-	
+	float TreeGrowthPerOwnTree;
+
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	int32 StartingForage;
-	
+	float TreeGrowthPerNeighborTree;
+
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	int32 MaxForage; 
-	
+	float WildlifeGrowthPerOwnWildlife;
+
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	float ForagePerTree; 
-	
+	float WildlifeGrowthPerNeighborWildlife;
+
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	float ForagePerForage; 
-	
+	float ForageGrowthPerOwnForage;
+
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	float ForagePerNeighboringTree; 
-	
+	float ForageGrowthPerNeighborForage;
+
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	float ForagePerNeighboringForage;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	int32 StartingWildlife;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	int32 MaxWildlife;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	int32 WildlifeGrowthThreshold; 
+	float ForageGrowthPerOwnTree;
 };

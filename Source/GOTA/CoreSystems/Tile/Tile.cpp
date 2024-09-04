@@ -6,10 +6,9 @@
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
-
-bool ATile::bFreezeGrowthChanges = false;
 
 // ---------------------------------------------------------
 // Initialisation and core variables
@@ -17,30 +16,13 @@ bool ATile::bFreezeGrowthChanges = false;
 void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(ATile, HexCoords);
-	DOREPLIFETIME(ATile, Neighbors);
-	DOREPLIFETIME(ATile, GameplayTags);
-
-	DOREPLIFETIME(ATile, Trees);
-	DOREPLIFETIME(ATile, TreeGrowth);
-	DOREPLIFETIME(ATile, TreeGrowthChange);
-	DOREPLIFETIME(ATile, Forage);
-	DOREPLIFETIME(ATile, ForageChange);
-	DOREPLIFETIME(ATile, Wildlife);
-	DOREPLIFETIME(ATile, WildlifeGrowth);
-	DOREPLIFETIME(ATile, WildlifeGrowthChange);
-
-	DOREPLIFETIME(ATile, Building);
-	DOREPLIFETIME(ATile, Claimant);
-	DOREPLIFETIME(ATile, AlliedEntity);
-	DOREPLIFETIME(ATile, EnemyEntity);
-
 	FDoRepLifetimeParams Params;
 	Params.bIsPushBased = true;
 
 	Params.Condition = COND_InitialOnly;
 	Params.RepNotifyCondition = REPNOTIFY_Always;
+	DOREPLIFETIME_WITH_PARAMS(ATile, HexCoords, Params);
+	DOREPLIFETIME_WITH_PARAMS(ATile, Neighbors, Params);
 	DOREPLIFETIME_WITH_PARAMS(ATile, Terrain, Params);
 	DOREPLIFETIME_WITH_PARAMS(ATile, TileRotation, Params);
 	DOREPLIFETIME_WITH_PARAMS(ATile, HexagonMesh, Params);
@@ -48,6 +30,14 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(ATile, SpawnLayout, Params);
+	
+	DOREPLIFETIME_WITH_PARAMS(ATile, EcoValues, Params);
+	
+	DOREPLIFETIME(ATile, GameplayTags);
+	DOREPLIFETIME(ATile, Building);
+	DOREPLIFETIME(ATile, Claimant);
+	DOREPLIFETIME(ATile, AlliedEntity);
+	DOREPLIFETIME(ATile, EnemyEntity);
 }
 
 ATile::ATile()
@@ -70,15 +60,7 @@ ATile::ATile()
 	SM_Hexagon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("SM_Hexagon"));
 	SM_Hexagon->SetupAttachment(RootComponent);
 
-	// Subobjects
-	Trees = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Trees"));
-	TreeGrowth = CreateDefaultSubobject<UGOTAAttribute>(TEXT("TreeGrowth"));
-	TreeGrowthChange = CreateDefaultSubobject<UGOTAAttribute>(TEXT("TreeGrowthChange"));
-	Forage = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Forage"));
-	ForageChange = CreateDefaultSubobject<UGOTAAttribute>(TEXT("ForageChange"));
-	Wildlife = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Wildlife"));
-	WildlifeGrowth = CreateDefaultSubobject<UGOTAAttribute>(TEXT("WildlifeGrowth"));
-	WildlifeGrowthChange = CreateDefaultSubobject<UGOTAAttribute>(TEXT("WildlifeGrowthChange"));
+	EcoValues = CreateDefaultSubobject<UEcoValues>(TEXT("EcoValues"));
 }
 
 void ATile::BeginPlay()
@@ -90,23 +72,11 @@ void ATile::BeginPlay()
 
 void ATile::ServerInit()
 {
-	AddReplicatedSubObject(Trees);
-	AddReplicatedSubObject(TreeGrowth);
-	AddReplicatedSubObject(TreeGrowthChange);
-	AddReplicatedSubObject(Forage);
-	AddReplicatedSubObject(ForageChange);
-	AddReplicatedSubObject(Wildlife);
-	AddReplicatedSubObject(WildlifeGrowth);
-	AddReplicatedSubObject(WildlifeGrowthChange);
+	AddReplicatedSubObject(EcoValues);
 
-	Trees->OnChanged.AddDynamic(this, &ATile::CalculateTreeGrowthChangeWithNeighbors);
-	Forage->OnChanged.AddDynamic(this, &ATile::CalculateForageChangeWithNeighbors);
-	Forage->SetMaximum(BalanceData->MaxForage);
-	Forage->SetCurrent(BalanceData->StartingForage);
-	Wildlife->OnChanged.AddDynamic(this, &ATile::CalculateWildlifeGrowthChangeWithNeighbors);
-	Wildlife->SetMaximum(BalanceData->MaxWildlife);
-	Wildlife->SetCurrent(BalanceData->StartingWildlife);
-	Trees->SetCurrent(BalanceData->StartingTrees);
+	EcoValues->OnTreesChanged.AddDynamic(this, &ATile::AddTreesToNeighbors);
+	EcoValues->OnWildlifeChanged.AddDynamic(this, &ATile::AddWildlifeToNeighbors);
+	EcoValues->OnForageChanged.AddDynamic(this, &ATile::AddForageToNeighbors);
 }
 
 void ATile::OnRep_GameplayTags()
@@ -303,9 +273,6 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 	// Replication stuff
 	AddReplicatedSubObject(Building);
 	AddReplicatedSubObject(Building->PopContainer);
-	// Population stuff
-	Building->PopContainer->OnPopulationChanged.AddDynamic(this, &ATile::CalculatePopulationGrowthChangeWithNeighbors);
-	CalculatePopulationGrowthChangeWithNeighbors(FPopulation());
 	// Set Graphics
 	OnBuildingChanged.Broadcast(this);
 	InitTileLayout();
@@ -346,151 +313,47 @@ void ATile::Unbuild()
 	InitTileLayout();
 }
 
-// ---------------------------------------------------------
-// Ecosystem and calculate Turn 
+// -------------------Ecosystem-------------------------
 
-void ATile::CalculateTurn()
+void ATile::GOTATick()
 {
-	int32 _;
-	// apply TreeGrowthChange
-	TreeGrowth->Add(TreeGrowthChange->Current, _);
-	// grow trees
-	if (TreeGrowth->Current > BalanceData->TreeGrowthThreshold)
+	if(LastTick < 0)
 	{
-		const int32 TreeGrowCount = TreeGrowth->Current / BalanceData->TreeGrowthThreshold;
-		Trees->Add(TreeGrowCount, _);
-		TreeGrowth->Subtract(TreeGrowCount * BalanceData->TreeGrowthThreshold, _);
+		LastTick =  GetWorld()->GetTimeSeconds();
+		return;
 	}
-	// apply ForageChange
-	int32 ForageEffectiveChange = 0;
-	Forage->Add(ForageChange->Current, ForageEffectiveChange);
-	// wildlife starvation
-	if (ForageEffectiveChange < 0)
+	double DeltaSeconds = GetWorld()->GetTimeSeconds() - LastTick;
+	if (HasAuthority())
+		EcoValues->ServerTick(DeltaSeconds);
+	else
+		EcoValues->ClientTick(DeltaSeconds);
+	LastTick = GetWorld()->GetTimeSeconds();
+}
+
+void ATile::AddTreesToNeighbors(int32 Change)
+{
+	ForceNetUpdate();
+	for (int i = 0; i < 6; ++i)
 	{
-		Wildlife->Add(ForageEffectiveChange, _);
-	}
-	// apply WildlifeGrowthChange
-	WildlifeGrowth->Add(WildlifeGrowthChange->Current, _);
-	// grow Wildlife
-	if (WildlifeGrowth->Current > BalanceData->WildlifeGrowthThreshold)
-	{
-		const int32 WildlifeGrowCount = WildlifeGrowth->Current / BalanceData->WildlifeGrowthThreshold;
-		Wildlife->Add(WildlifeGrowCount, _);
-		WildlifeGrowth->Subtract(WildlifeGrowCount * BalanceData->WildlifeGrowthThreshold, _);
-	}
-	if (!Building) return;
-	// apply PopulationGrowthChange
-	Building->PopContainer->Growth += Building->PopContainer->GrowthChange;
-	// grow Population
-	if (Building->PopContainer->Growth > Building->PopContainer->GrowthThreshold)
-	{
-		const int32 PopulationGrowCount = Building->PopContainer->Growth / Building->PopContainer->GrowthThreshold;
-		Building->PopContainer->IncreaseSize(PopulationGrowCount);
-		Building->PopContainer->Growth -= PopulationGrowCount * Building->PopContainer->GrowthThreshold;
+		if (Neighbors[i]) Neighbors[i]->EcoValues->AddNeighborTrees(Change);
 	}
 }
 
-void ATile::CalculateTreeGrowthChange()
+void ATile::AddWildlifeToNeighbors(int32 Change)
 {
-	TreeGrowthChange->SetCurrent(0);
-	int32 _;
+	ForceNetUpdate();
 	for (int i = 0; i < 6; ++i)
 	{
-		if (Neighbors[i])
-		{
-			TreeGrowthChange->Add(Neighbors[i]->Trees->Current, _);
-		}
-	}
-	TreeGrowthChange->Add(Trees->Current, _);
-}
-
-void ATile::CalculateTreeGrowthChangeWithNeighbors(int32 Change)
-{
-	if (bFreezeGrowthChanges) return;
-
-	CalculateTreeGrowthChange();
-	for (int i = 0; i < 6; ++i)
-	{
-		if (Neighbors[i]) Neighbors[i]->CalculateTreeGrowthChange();
+		if (Neighbors[i]) Neighbors[i]->EcoValues->AddNeighborWildlife(Change);
 	}
 }
 
-void ATile::CalculateForageChange()
+void ATile::AddForageToNeighbors(int32 Change)
 {
-	ForageChange->SetCurrent(0);
-	int32 _;
+	ForceNetUpdate();
 	for (int i = 0; i < 6; ++i)
 	{
-		if (Neighbors[i])
-		{
-			ForageChange->Add(Neighbors[i]->Trees->Current * BalanceData->ForagePerNeighboringTree, _);
-			ForageChange->Add(Neighbors[i]->ForageChange->Current * BalanceData->ForagePerNeighboringForage, _);
-		}
-	}
-	ForageChange->Add(Trees->Current * BalanceData->ForagePerTree, _);
-	ForageChange->Add(ForageChange->Current * BalanceData->ForagePerForage, _);
-	ForageChange->Subtract(Wildlife->Current, _);
-}
-
-void ATile::CalculateForageChangeWithNeighbors(int32 Change)
-{
-	if (bFreezeGrowthChanges) return;
-
-	CalculateForageChange();
-	for (int i = 0; i < 6; ++i)
-	{
-		if (Neighbors[i]) Neighbors[i]->CalculateForageChange();
-	}
-}
-
-void ATile::CalculateWildlifeGrowthChange()
-{
-	WildlifeGrowthChange->SetCurrent(0);
-	int32 _;
-	for (int i = 0; i < 6; ++i)
-	{
-		if (Neighbors[i])
-		{
-			WildlifeGrowthChange->Add(Neighbors[i]->Wildlife->Current, _);
-		}
-	}
-	WildlifeGrowthChange->Add(Wildlife->Current, _);
-}
-
-void ATile::CalculateWildlifeGrowthChangeWithNeighbors(int32 Change)
-{
-	if (bFreezeGrowthChanges) return;
-
-	CalculateWildlifeGrowthChange();
-	for (int i = 0; i < 6; ++i)
-	{
-		if (Neighbors[i]) Neighbors[i]->CalculateWildlifeGrowthChange();
-	}
-}
-
-void ATile::CalculatePopulationGrowthChange()
-{
-	if (!Building) return;
-
-	Building->PopContainer->GrowthChange = 0;
-	for (int i = 0; i < 6; ++i)
-	{
-		if (Neighbors[i] && Neighbors[i]->Building)
-		{
-			Building->PopContainer->GrowthChange += Neighbors[i]->Building->PopContainer->Population.Size;
-		}
-	}
-	Building->PopContainer->GrowthChange += Building->PopContainer->Population.Size;
-}
-
-void ATile::CalculatePopulationGrowthChangeWithNeighbors(FPopulation Change)
-{
-	if (bFreezeGrowthChanges) return;
-
-	CalculatePopulationGrowthChange();
-	for (int i = 0; i < 6; ++i)
-	{
-		if (Neighbors[i]) Neighbors[i]->CalculatePopulationGrowthChange();
+		if (Neighbors[i]) Neighbors[i]->EcoValues->AddNeighborForage(Change);
 	}
 }
 
@@ -509,6 +372,7 @@ void ATile::TerrainClientInit()
 	if (!TileContent) InitTileContent();
 	TileContent->SetTerrain(Terrain);
 	UpdateHexagonMaterial();
+	EcoValues->Init(Terrain.Biome);
 }
 
 void ATile::TerrainServerInit(const FTerrain& Terrain_)
@@ -661,7 +525,7 @@ void ATile::ValidateSpawnLayout()
 	ApplySpawnChances(SL.Props);
 	ApplySpawnChances(SL.Buildings);
 	SetSpawnLayout(SL);
-	Trees->SetMaximum(SpawnLayout.Trees.Num());
+	EcoValues->SetMaxValues(SpawnLayout.Trees.Num(), Terrain.Biome);
 }
 
 void ATile::ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints)

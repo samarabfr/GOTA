@@ -15,18 +15,27 @@ class GOTA_API ATileMap : public AActor
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	ATileMap();
-	
+
 public:
 	void Init();
+	void EnableTick();
+	void MaxAllEcoValues();
 	
 private:
 	virtual void BeginPlay() override;
+	
+	UPROPERTY(EditDefaultsOnly, Category="TileMap")
+	int32 TileTicksPerFrame;
+
+	int32 IndexPosition = 0;
+	virtual void Tick(float DeltaSeconds) override;
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ATile> TileClass;
 
 private:
+	UPROPERTY()
 	AGS_Ingame* GameState;
 
 	UPROPERTY(Replicated)
@@ -67,9 +76,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	ATile* GetRandomTile();
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
-	void CalculateTurn();
-
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	TArray<ATile*> GetPath(ATile* Start, ATile* End, EAffiliation Affiliation);
 
@@ -81,6 +87,4 @@ public:
 	int32 TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, int32 Amount, int32 Threshold, int32 MaxRange);
 
 	void CountAllMaxEcoValues(int32& TotalMaxTrees, int32& TotalMaxWildlife, int32& TotalMaxForage);
-
-
 };

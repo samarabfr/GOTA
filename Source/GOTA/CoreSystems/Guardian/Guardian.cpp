@@ -17,9 +17,4 @@ void AGuardian::BeginPlay()
 	// IncreaseReplicationCount for LoadingProcess
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
-	
-	if (HasAuthority())
-	{
-		SetupGAM();
-	}
 }
