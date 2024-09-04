@@ -95,6 +95,18 @@ void ALoadingManager::ServerTick()
 			GameMode->StartGame();
 			GameState->TileMap->EnableTick();
 			LoadingStatus->SetCurrentStatus(ELoadingStatus::Finished);
+			GracePeriodTime = 0.0;
+		}
+		break;
+
+	case ELoadingStatus::Finished:
+		if (GracePeriodTime > 2)
+		{
+			for (ALoadingStatusActor* LoadingStatusActor : LoadingStatuses)
+			{
+				if (LoadingStatusActor) LoadingStatusActor->Destroy();
+			}
+			Destroy();
 		}
 		break;
 
