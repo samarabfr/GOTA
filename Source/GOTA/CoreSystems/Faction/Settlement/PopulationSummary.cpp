@@ -24,10 +24,10 @@ void UPopulationSummary::OnRep_Population(const FPopulation& OldPopulation)
 FPopulation UPopulationSummary::ExtractArmyPopulation(USettlementBalance* Balance)
 {
 	FPopulation Return;
-	TArray<UPopulationContainer*> EligiblePopCons;
+	TArray<UPopulation*> EligiblePopCons;
 	TArray<int32> EligiblePop;
 	int32 EligiblePopTotal = 0;
-	for (UPopulationContainer* PopCon : PopCons)
+	for (UPopulation* PopCon : PopCons)
 	{
 		if (PopCon->GetSize() >= Balance->MinBuildingPopToJoinArmy)
 		{
@@ -41,7 +41,7 @@ FPopulation UPopulationSummary::ExtractArmyPopulation(USettlementBalance* Balanc
 	//figure out how big the army should be
 	float ArmyPercentage = FMath::RandRange(Balance->MinRatioOfEligiblePopJoiningArmy,
 	                                        Balance->MaxRatioOfEligiblePopJoiningArmy);
-	int32 ArmySize = EligiblePopTotal * ArmyPercentage + Population.MoodAngry * Balance->BonusArmySizePerAngryPop;
+	int32 ArmySize = EligiblePopTotal * ArmyPercentage + Population.Angry * Balance->BonusArmySizePerAngryPop;
 	if (ArmySize > EligiblePopTotal)ArmySize = EligiblePopTotal;
 	//figure out where we should remove pop
 	int32 SelectedPops = 0;
@@ -74,10 +74,9 @@ FPopulation UPopulationSummary::ExtractArmyPopulation(USettlementBalance* Balanc
 // ---------------------------------------------------------
 // Keeping Track of Population Changes
 
-void UPopulationSummary::RegisterPopulationContainer(UPopulationContainer* PopulationContainer)
+void UPopulationSummary::RegisterPopulationContainer(UPopulation* PopulationContainer)
 {
 	PopulationContainer->OnPopulationChanged.AddDynamic(this, &UPopulationSummary::UpdatePopulation);
-	PopulationContainer->DefaultCulture = DefaultCulture;
 	UpdatePopulation(PopulationContainer->Population);
 	PopCons.Add(PopulationContainer);
 }
@@ -88,7 +87,7 @@ void UPopulationSummary::RegisterPopulationSummary(UPopulationSummary* Populatio
 	UpdatePopulation(PopulationSummary->Population);
 }
 
-void UPopulationSummary::UnregisterPopulationContainer(UPopulationContainer* PopulationContainer)
+void UPopulationSummary::UnregisterPopulationContainer(UPopulation* PopulationContainer)
 {
 	PopulationContainer->OnPopulationChanged.RemoveDynamic(this, &UPopulationSummary::UpdatePopulation);
 	UpdatePopulation(-PopulationContainer->Population);
@@ -104,42 +103,12 @@ void UPopulationSummary::UnregisterPopulationSummary(UPopulationSummary* Populat
 void UPopulationSummary::UpdatePopulation(FPopulation Change)
 {
 	Population += Change;
-	ECultureLoyalty NewLargest = Population.GetLargestCulture();
-	if (NewLargest != DefaultCulture)SetDefaultCulture(NewLargest);
 	OnPopulationChanged.Broadcast(Change);
-}
-
-void UPopulationSummary::SetDefaultCulture(ECultureLoyalty Culture)
-{
-	DefaultCulture = Culture;
-	for (UPopulationContainer* PopCon : PopCons)
-	{
-		PopCon->DefaultCulture = Culture;
-	}
 }
 
 // ---------------------------------------------------------
 // Getters
 
-int32 UPopulationSummary::GetFollower(ECultureLoyalty Culture) const
-{
-	return Population.GetFollower(Culture);
-}
-
-int32 UPopulationSummary::GetNativeFollowers()
-{
-	return Population.GetNativeFollowers();
-}
-
-void UPopulationSummary::GetAllFollower(int32& Guardian1, int32& Guardian2, int32& Guardian3, int32& Guardian4,
-                                        int32& Colonists)
-{
-	Colonists = Population.FollowerColonists;
-	Guardian1 = Population.FollowerGuardian1;
-	Guardian2 = Population.FollowerGuardian2;
-	Guardian3 = Population.FollowerGuardian3;
-	Guardian4 = Population.FollowerGuardian4;
-}
 
 int32 UPopulationSummary::GetMood(EMood Mood)
 {
@@ -148,7 +117,7 @@ int32 UPopulationSummary::GetMood(EMood Mood)
 
 void UPopulationSummary::GetAllMood(int32& Content, int32& Angry, int32& Fear)
 {
-	Content = Population.MoodContent;
-	Angry = Population.MoodAngry;
-	Fear = Population.MoodFear;
+	Content = Population.GetContentMood();
+	Angry = Population.Angry;
+	Fear = Population.Fear;
 }

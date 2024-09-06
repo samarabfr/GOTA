@@ -110,7 +110,7 @@ void ACombat::BuildingChanged(ATile* Tile)
 	CalcKills();
 	// register to delegates, unregister not necessary
 	if (!Tile->Building) return;
-	Tile->Building->PopContainer->CombatValues->OnChanged.AddDynamic(this, &ACombat::CombatValuesChanged);
+//	Tile->Building->PopContainer->CombatValues->OnChanged.AddDynamic(this, &ACombat::CombatValuesChanged);
 }
 
 void ACombat::CombatValuesChanged(UCombatValues* CombatValues)
@@ -153,6 +153,7 @@ void ACombat::CalcAttackDefense()
 			EnemyAttack += CV->GetAttack();
 			EnemyDefense += CV->GetDefense();
 		}
+		/*
 		if (CombatTile.Tile->Building
 			&& CombatTile.Tile->GetClaimant())
 		{
@@ -168,6 +169,7 @@ void ACombat::CalcAttackDefense()
 				EnemyDefense += CV->GetDefense();
 			}
 		}
+		*/
 	}
 }
 
@@ -242,15 +244,18 @@ void ACombat::SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft
 			&& CombatTile.Tile->GetClaimant()->Affiliation == Receiver
 			&& CombatTile.Tile->Building->PopContainer->GetSize() > 0)
 		{
+			/*
 			BuildingPopCombatTiles.Add(&CombatTile);
 			UCombatValues* CV = CombatTile.Tile->Building->GetCombatValues();
 			TotalHP += CV->GetHP();
+			*/
 		}
 	}
 	if (TotalHP <= 0) return;
 	// entities
 	int32 Damage = DamageLeft;
 	// spread damage based on total hp ratio
+	/*
 	for (FCombatTile* BuildingPopCombatTile : BuildingPopCombatTiles)
 	{
 		UCombatValues* CV = BuildingPopCombatTile->Tile->Building->GetCombatValues();
@@ -281,6 +286,7 @@ void ACombat::SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft
 			}
 		}
 	}
+	*/
 }
 
 void ACombat::SpreadDamageToBuildings(EAffiliation Receiver, int32& DamageLeft)

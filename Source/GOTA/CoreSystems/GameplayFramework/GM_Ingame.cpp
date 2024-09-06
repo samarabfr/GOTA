@@ -138,24 +138,6 @@ void AGM_Ingame::CheckGameEndingConditions()
 		return;
 	}
 
-	// based on Culture
-	int32 TotalColonistFollower = GOTAGameState->TotalColonialPopulation->Population.FollowerColonists
-		+ GOTAGameState->TotalNativePopulation->Population.FollowerColonists;
-	int32 TotalNativeFollower = GOTAGameState->TotalColonialPopulation->GetNativeFollowers()
-		+ GOTAGameState->TotalNativePopulation->GetNativeFollowers();
-
-	if (TotalColonistFollower == 0)
-	{
-		EndGame(EGameEnding::Victory, FString("Victory! :)"));
-		return;
-	}
-
-	if (TotalNativeFollower == 0)
-	{
-		EndGame(EGameEnding::Defeat, FString("Defeat! :("));
-		return;
-	}
-
 	//based on Ecovalues
 	float TreeRatio = static_cast<float>(GOTAGameState->IslandMaxTrees) / GOTAGameState->TotalTrees->Current;
 	float WildlifeRatio = static_cast<float>(GOTAGameState->IslandMaxWildlife) / GOTAGameState->TotalWildlife->Current;

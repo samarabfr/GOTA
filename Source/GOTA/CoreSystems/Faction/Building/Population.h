@@ -2,79 +2,107 @@
 
 #pragma once
 
-#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "CoreMinimal.h"
+#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Population.generated.h"
 
-USTRUCT(BlueprintType)
-struct FPopulation : public FTableRowBase
+UCLASS(Blueprintable)
+class GOTA_API UPopulation : public UObject
 {
 	GENERATED_BODY()
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual bool IsSupportedForNetworking() const override;
+	UPopulation();
 
-	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 Size = 0;
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangedSig, UPopulation*, New);
 
-	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 MaxSize = 0;
+public:
+	UPROPERTY(BlueprintAssignable, Category="Population")
+	FOnChangedSig OnChanged;
 
-	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 FollowerColonists = 0;
+	// ------------------Population Values----------------------
+private:
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category = "Population")
+	int16 Size = 0;
 
-	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 FollowerGuardian1 = 0;
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category = "Population")
+	int16 MaxSize = 0;
 
-	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 FollowerGuardian2 = 0;
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category = "Population")
+	int16 Angry = 0;
 
-	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 FollowerGuardian3 = 0;
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category = "Population")
+	int16 Fear = 0;
 
-	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 FollowerGuardian4 = 0;
+	// ---------------Changing Population Values-----------------------
+public:
+	void ChangeSize(const int16 Change);
 
-	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 MoodContent = 0;
+	void IncreaseSize(const int16 Change);
 
-	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 MoodAngry = 0;
+	void DecreaseSize(const int16 Change);
 
-	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 MoodFear = 0;
+	void ChangeMaxSize(const int16 Change);
 
-	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 Bows = 0;
+	void IncreaseMaxSize(const int16 Change);
 
-	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 Muskets = 0;
+	void DecreaseMaxSize(const int16 Change);
 
-	UPROPERTY(BlueprintReadWrite, VisibleInstanceOnly, Category = "Population")
-	int32 Shields = 0;
+	void ChangeMood(const EMood Mood, const int16 Change);
 
-	void SetFollower(ECultureLoyalty Culture, int32 Value);
+	void IncreaseMood(const EMood Mood, const int16 Change);
 
-	void SetMood(EMood Mood, int32 Value);
+	void DecreaseMood(const EMood Mood, const int16 Change);
 
-	int32 GetFollower(ECultureLoyalty Culture) const;
+	void IncreaseAngry(const int16 Change);
 
-	int32 GetNativeFollowers() const;
+	void DecreaseAngry(const int16 Change);
 
-	int32 GetMood(EMood Mood) const;
+	void IncreaseFear(const int16 Change);
 
-	ECultureLoyalty GetLargestCulture() const;
+	void DecreaseFear(const int16 Change);
 
-	int32 SumFollower() const;
+private:
+	void SubtractOneMoodWeightedRandom();
+	void Changed();
+
+	// ---------------------------Growth----------------------------
+private:
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category = "Population")
+	float GrowthProgress = 0;
+
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category = "Population")
+	float Growth = 0;
+
+	UPROPERTY(VisibleInstanceOnly, Category = "Population")
+	float GrowthThreshold = 0;
+
+	// --------------------Getters and Setters----------------------
+public:
+	int16 GetSize() const { return Size; }
 	
-	int32 SumMood() const;
+	int16 GetMaxSize() const { return MaxSize; }
 
-	bool AnyBiggerThan(const FPopulation& Other) const;
-	
-	FPopulation operator+(const FPopulation& Other) const;
+	int16 GetAngry() const { return Angry; }
 
-	FPopulation operator+=(const FPopulation& Other);
+	int16 GetFear() const { return Fear; }
 
-	FPopulation operator-(const FPopulation& Other) const;
+	float GetGrowthProgress() const { return GrowthProgress; }
 
-	FPopulation operator-() const;
-	
-	FPopulation operator-=(const FPopulation& Other);
+	float GetGrowth() const { return Growth; }
+
+	float GetGrowthThreshold() const { return GrowthThreshold; }
+
+	int16 GetContentMood() const;
+
+	int16 GetMood(const EMood Mood) const;
+
+	void GetAllMood(int16& Content_, int16& Angry_, int16& Fear_) const;
+
+	// --------------------Operators-----------------------
+
+	UPopulation& operator+=(const UPopulation& Other);
+
+	UPopulation& operator-=(const UPopulation& Other);
 };

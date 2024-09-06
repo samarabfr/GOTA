@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SettlementBalance.h"
-#include "GOTA/CoreSystems/Faction/Building/PopulationContainer.h"
+#include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "PopulationSummary.generated.h"
 
 UCLASS()
@@ -15,35 +15,35 @@ class GOTA_API UPopulationSummary : public UObject
 	virtual bool IsSupportedForNetworking() const override;
 
 	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnFPopulationChangedSig, FPopulation, ChangedBy);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangedSig, UPopulationSummary*, New);
 
 	UPROPERTY()
-	TArray<UPopulationContainer*> PopCons;
-	ECultureLoyalty DefaultCulture = ECultureLoyalty::Colonists;
+	TArray<UPopulation*> PopCons;
 
 public:
 	UPROPERTY(BlueprintAssignable, Category="Population")
-	FOnFPopulationChangedSig OnPopulationChanged;
+	FOnChangedSig OnChanged;
 
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Population, BlueprintReadOnly, Category = "Population")
-	FPopulation Population;
+	UPROPERTY(VisibleInstanceOnly, Category = "Population")
+	int32 Size = 0;
 
-	UFUNCTION()
-	void OnRep_Population(const FPopulation& OldPopulation);
+	UPROPERTY(VisibleInstanceOnly, Category = "Population")
+	int32 Angry = 0;
 
-	FPopulation ExtractArmyPopulation(USettlementBalance* Balance);
+	UPROPERTY(VisibleInstanceOnly, Category = "Population")
+	int32 Fear = 0;
 
 	// ---------------------------------------------------------
 	// Keeping Track of Population Changes
 
 	UFUNCTION(BlueprintCallable)
-	void RegisterPopulationContainer(UPopulationContainer* PopulationContainer);
+	void RegisterPopulationContainer(UPopulation* PopulationContainer);
 
 	UFUNCTION(BlueprintCallable)
 	void RegisterPopulationSummary(UPopulationSummary* PopulationSummary);
 
 	UFUNCTION(BlueprintCallable)
-	void UnregisterPopulationContainer(UPopulationContainer* PopulationContainer);
+	void UnregisterPopulationContainer(UPopulation* PopulationContainer);
 
 	UFUNCTION(BlueprintCallable)
 	void UnregisterPopulationSummary(UPopulationSummary* PopulationSummary);
@@ -51,19 +51,8 @@ public:
 	UFUNCTION()
 	void UpdatePopulation(FPopulation Change);
 
-	void SetDefaultCulture(ECultureLoyalty Culture);
-
 	// ---------------------------------------------------------
 	// Getters
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Population")
-	int32 GetFollower(ECultureLoyalty Culture) const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "Population")
-	int32 GetNativeFollowers();
-
-	UFUNCTION(BlueprintCallable, Category = "Population")
-	void GetAllFollower(int32& Guardian1, int32& Guardian2, int32& Guardian3, int32& Guardian4, int32& Colonists);
 
 	UFUNCTION(BlueprintCallable, Category = "Population")
 	int32 GetMood(EMood Mood);

@@ -22,7 +22,7 @@ bool UBuilding::IsSupportedForNetworking() const
 
 UBuilding::UBuilding()
 {
-	PopContainer = CreateDefaultSubobject<UPopulationContainer>(TEXT("Population"));
+	PopContainer = CreateDefaultSubobject<UPopulation>(TEXT("Population"));
 	PopContainer->OnPopulationChanged.AddDynamic(this, &UBuilding::UpdateProduction);
 }
 
@@ -60,9 +60,4 @@ void UBuilding::SetupProduction(const FBuildingTierData* TierData)
 	int32 OldProduction = Production;
 	Production = ProductionPerThreshold * (PopContainer->Population.Size / PopulationThreshold);
 	OnProductionChanged.Broadcast(Production - OldProduction, ProductionType);
-}
-
-UCombatValues* UBuilding::GetCombatValues()
-{
-	return PopContainer->CombatValues;
 }

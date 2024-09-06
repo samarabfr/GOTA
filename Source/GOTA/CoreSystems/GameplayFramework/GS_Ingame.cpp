@@ -125,7 +125,7 @@ void AGS_Ingame::RegisterNativeSettlementForTotalsUpdates(UPopulationSummary* Po
 	TotalNativePopulation->RegisterPopulationSummary(Population);
 }
 
-void AGS_Ingame::RegisterPopConForTotals(UPopulationContainer* PopCon, EAffiliation Affiliation)
+void AGS_Ingame::RegisterPopConForTotals(UPopulation* PopCon, EAffiliation Affiliation)
 {
 	if (Affiliation == EAffiliation::Ally)
 		TotalNativePopulation->RegisterPopulationContainer(PopCon);
@@ -133,7 +133,7 @@ void AGS_Ingame::RegisterPopConForTotals(UPopulationContainer* PopCon, EAffiliat
 		TotalColonialPopulation->RegisterPopulationContainer(PopCon);
 }
 
-void AGS_Ingame::UnregisterPopConForTotals(UPopulationContainer* PopCon, EAffiliation Affiliation)
+void AGS_Ingame::UnregisterPopConForTotals(UPopulation* PopCon, EAffiliation Affiliation)
 {
 	if (Affiliation == EAffiliation::Ally)
 		TotalNativePopulation->UnregisterPopulationContainer(PopCon);

@@ -152,8 +152,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void RegisterNativeSettlementForTotalsUpdates(UPopulationSummary* Population);
 
-	void RegisterPopConForTotals(UPopulationContainer* PopCon, EAffiliation Affiliation);
-	void UnregisterPopConForTotals(UPopulationContainer* PopCon, EAffiliation Affiliation);
+	void RegisterPopConForTotals(UPopulation* PopCon, EAffiliation Affiliation);
+	void UnregisterPopConForTotals(UPopulation* PopCon, EAffiliation Affiliation);
 
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGameEndingSignature, EGameEnding, Ending, FString, EndMessage);

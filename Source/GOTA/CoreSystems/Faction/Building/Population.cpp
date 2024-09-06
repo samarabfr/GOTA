@@ -1,227 +1,237 @@
-﻿#include "Population.h"
+// Fill out your copyright notice in the Description page of Project Settings.
 
 
-void FPopulation::SetFollower(ECultureLoyalty Culture, int32 Value)
+#include "Population.h"
+#include "GOTA/CoreSystems/Faction/Settlement/SettlementBalance.h"
+#include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
+
+void UPopulation::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
-	switch (Culture)
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	FDoRepLifetimeParams Params;
+	Params.bIsPushBased = true;
+	Params.Condition = COND_None;
+	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
+	DOREPLIFETIME_WITH_PARAMS(UPopulation, Size, Params);
+	DOREPLIFETIME_WITH_PARAMS(UPopulation, MaxSize, Params);
+	DOREPLIFETIME_WITH_PARAMS(UPopulation, Angry, Params);
+	DOREPLIFETIME_WITH_PARAMS(UPopulation, Fear, Params);
+	DOREPLIFETIME_WITH_PARAMS(UPopulation, GrowthProgress, Params);
+	DOREPLIFETIME_WITH_PARAMS(UPopulation, Growth, Params);
+}
+
+bool UPopulation::IsSupportedForNetworking() const
+{
+	return true;
+}
+
+UPopulation::UPopulation()
+{
+	// Load SettlementBalance to extract GrowthThreshold
+	static ConstructorHelpers::FObjectFinder<USettlementBalance> DataAsset(
+		TEXT("/Game/CoreSystems/Faction/DA_SettlementBalance"));
+	if (DataAsset.Succeeded())
 	{
-	case ECultureLoyalty::Colonists:
-		FollowerColonists = Value;
-		return;
-	case ECultureLoyalty::Guardian1:
-		FollowerGuardian1 = Value;
-		return;
-	case ECultureLoyalty::Guardian2:
-		FollowerGuardian2 = Value;
-		return;
-	case ECultureLoyalty::Guardian3:
-		FollowerGuardian3 = Value;
-		return;
-	case ECultureLoyalty::Guardian4:
-		FollowerGuardian4 = Value;
-	default: ;
+		USettlementBalance* SettlementBalance = DataAsset.Object;
+		GrowthThreshold = SettlementBalance->PopulationGrowthThreshold;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Population Container couldn't load Settlement Balance Data Asset"))
 	}
 }
 
-void FPopulation::SetMood(EMood Mood, int32 Value)
+// ---------------Changing Population Values-----------------------
+
+void UPopulation::ChangeSize(const int16 Change)
+{
+	if (Change > 0)
+		IncreaseSize(Change);
+	else if (Change < 0)
+		DecreaseSize(-Change);
+}
+
+void UPopulation::IncreaseSize(const int16 Change)
+{
+	if (Change <= 0 || Size == MaxSize) return;
+	Size = Size + Change > MaxSize ? MaxSize : Size + Change;
+	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Size, this)
+	Changed();
+}
+
+void UPopulation::DecreaseSize(const int16 Change)
+{
+	if (Change <= 0 || Size == 0) return;
+	const int16 OldSize = Size;
+	Size = Size - Change < 0 ? 0 : Size - Change;
+	for (int16 i = 0; i < OldSize - Size; ++i)
+	{
+		SubtractOneMoodWeightedRandom();
+	}
+	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Size, this)
+	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Angry, this)
+	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Fear, this)
+	Changed();
+}
+
+void UPopulation::ChangeMaxSize(const int16 Change)
+{
+	if (Change > 0)
+		IncreaseMaxSize(Change);
+	else if (Change < 0)
+		DecreaseMaxSize(-Change);
+}
+
+void UPopulation::IncreaseMaxSize(const int16 Change)
+{
+	if (Change <= 0) return;
+	MaxSize += Change;
+	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, MaxSize, this)
+	Changed();
+}
+
+void UPopulation::DecreaseMaxSize(const int16 Change)
+{
+	if (Change <= 0 || MaxSize == 0) return;
+	MaxSize = MaxSize - Change < 0 ? 0 : MaxSize - Change;
+	if (MaxSize < Size)
+		DecreaseSize(Size - MaxSize);
+	else
+		Changed();
+	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, MaxSize, this)
+}
+
+void UPopulation::ChangeMood(const EMood Mood, const int16 Change)
+{
+	if (Change > 0)
+		IncreaseMood(Mood, Change);
+	else if (Change < 0)
+		DecreaseMood(Mood, -Change);
+}
+
+void UPopulation::IncreaseMood(const EMood Mood, const int16 Change)
+{
+	if (Mood == EMood::Angry)
+		IncreaseAngry(Change);
+	else if (Mood == EMood::Fear)
+		IncreaseFear(Change);
+}
+
+void UPopulation::DecreaseMood(const EMood Mood, const int16 Change)
+{
+	if (Mood == EMood::Angry)
+		DecreaseAngry(Change);
+	else if (Mood == EMood::Fear)
+		DecreaseFear(Change);
+}
+
+void UPopulation::IncreaseAngry(const int16 Change)
+{
+	if (Change <= 0 || Angry == Size) return;
+	Angry = Angry + Change > Size ? Size : Angry + Change;
+	if (Angry + Fear > Size)
+	{
+		Fear = Size - Angry;
+		MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Fear, this)
+	}
+	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Angry, this)
+	Changed();
+}
+
+void UPopulation::DecreaseAngry(const int16 Change)
+{
+	if (Change <= 0 || Angry == 0) return;
+	Angry = Angry - Change < 0 ? 0 : Angry - Change;
+	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Angry, this)
+	Changed();
+}
+
+void UPopulation::IncreaseFear(const int16 Change)
+{
+	if (Change <= 0 || Fear == Size) return;
+	Fear = Fear + Change > Size ? Size : Fear + Change;
+	if (Fear + Angry > Size)
+	{
+		Angry = Size - Fear;
+		MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Angry, this)
+	}
+	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Fear, this)
+	Changed();
+}
+
+void UPopulation::DecreaseFear(const int16 Change)
+{
+	if (Change <= 0 || Fear == 0) return;
+	Fear = Fear - Change < 0 ? 0 : Fear - Change;
+	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Fear, this)
+	Changed();
+}
+
+void UPopulation::SubtractOneMoodWeightedRandom()
+{
+	if (FMath::RandRange(0, Size - 1) > Fear)
+		--Fear;
+	else
+		--Angry;
+}
+
+void UPopulation::Changed()
+{
+	OnChanged.Broadcast(this);
+}
+
+// ---------------------------------------------------------
+// Getters and Setters
+
+int16 UPopulation::GetContentMood() const
+{
+	return Size - Angry - Fear;
+}
+
+int16 UPopulation::GetMood(const EMood Mood) const
 {
 	switch (Mood)
 	{
 	case EMood::Content:
-		MoodContent = Value;
-		return;
+		return GetContentMood();
 	case EMood::Angry:
-		MoodAngry = Value;
-		return;
+		return Angry;
 	case EMood::Fear:
-		MoodFear = Value;
-		return;
-	default: ;
-	}
-}
-
-int32 FPopulation::GetFollower(ECultureLoyalty Culture) const
-{
-	switch (Culture)
-	{
-	case ECultureLoyalty::Colonists:
-		return FollowerColonists;
-	case ECultureLoyalty::Guardian1:
-		return FollowerGuardian1;
-	case ECultureLoyalty::Guardian2:
-		return FollowerGuardian2;
-	case ECultureLoyalty::Guardian3:
-		return FollowerGuardian3;
-	case ECultureLoyalty::Guardian4:
-		return FollowerGuardian4;
+		return Fear;
 	default:
 		return -1;
 	}
 }
 
-int32 FPopulation::GetNativeFollowers() const
+void UPopulation::GetAllMood(int16& Content_, int16& Angry_, int16& Fear_) const
 {
-	return FollowerGuardian1 + FollowerGuardian2 + FollowerGuardian3 + FollowerGuardian4;
+	Content_ = GetContentMood();
+	Fear_ = Fear;
+	Angry_ = Angry;
 }
 
+// --------------------Operators-----------------------
 
-int32 FPopulation::GetMood(EMood Mood) const
-{
-	switch (Mood)
-	{
-	case EMood::Content:
-		return MoodContent;
-	case EMood::Angry:
-		return MoodAngry;
-	case EMood::Fear:
-		return MoodFear;
-	default:
-		return -1;
-	}
-}
-
-ECultureLoyalty FPopulation::GetLargestCulture() const
-{
-	ECultureLoyalty Largest = ECultureLoyalty::Colonists;
-	int32 LargestNum = FollowerColonists;
-	if(FollowerGuardian1 > LargestNum)
-	{
-		LargestNum = FollowerGuardian1;
-		Largest = ECultureLoyalty::Guardian1;
-	}
-	if(FollowerGuardian2 > LargestNum)
-	{
-		LargestNum = FollowerGuardian2;
-		Largest = ECultureLoyalty::Guardian2;
-	}
-	if(FollowerGuardian3 > LargestNum)
-	{
-		LargestNum = FollowerGuardian3;
-		Largest = ECultureLoyalty::Guardian3;
-	}
-	if(FollowerGuardian4 > LargestNum)
-	{
-		Largest = ECultureLoyalty::Guardian4;
-	}
-	return Largest;
-}
-
-int32 FPopulation::SumFollower() const
-{
-	return FollowerColonists + FollowerGuardian1 + FollowerGuardian2 + FollowerGuardian3 + FollowerGuardian4;
-}
-
-int32 FPopulation::SumMood() const
-{
-	return MoodContent + MoodAngry + MoodFear;
-}
-
-bool FPopulation::AnyBiggerThan(const FPopulation& Other) const
-{
-	return this->Size > Other.Size
-		|| this->MaxSize > Other.MaxSize
-		|| this->FollowerColonists > Other.FollowerColonists
-		|| this->FollowerGuardian1 > Other.FollowerGuardian1
-		|| this->FollowerGuardian2 > Other.FollowerGuardian2
-		|| this->FollowerGuardian3 > Other.FollowerGuardian3
-		|| this->FollowerGuardian4 > Other.FollowerGuardian4
-		|| this->MoodContent > Other.MoodContent
-		|| this->MoodAngry > Other.MoodAngry
-		|| this->MoodFear > Other.MoodFear
-		|| this->Bows > Other.Bows
-		|| this->Muskets > Other.Muskets
-		|| this->Shields > Other.Shields;
-}
-
-FPopulation FPopulation::operator+(const FPopulation& Other) const
-{
-	FPopulation Result;
-	Result.Size = this->Size + Other.Size;
-	Result.MaxSize = this->MaxSize + Other.MaxSize;
-	Result.FollowerColonists = this->FollowerColonists + Other.FollowerColonists;
-	Result.FollowerGuardian1 = this->FollowerGuardian1 + Other.FollowerGuardian1;
-	Result.FollowerGuardian2 = this->FollowerGuardian2 + Other.FollowerGuardian2;
-	Result.FollowerGuardian3 = this->FollowerGuardian3 + Other.FollowerGuardian3;
-	Result.FollowerGuardian4 = this->FollowerGuardian4 + Other.FollowerGuardian4;
-	Result.MoodContent = this->MoodContent + Other.MoodContent;
-	Result.MoodAngry = this->MoodAngry + Other.MoodAngry;
-	Result.MoodFear = this->MoodFear + Other.MoodFear;
-	Result.Bows = this->Bows + Other.Bows;
-	Result.Muskets = this->Muskets + Other.Muskets;
-	Result.Shields = this->Shields + Other.Shields;
-	return Result;
-}
-
-FPopulation FPopulation::operator+=(const FPopulation& Other)
+// Compound addition operator
+UPopulation& UPopulation::operator+=(const UPopulation& Other)
 {
 	this->Size += Other.Size;
 	this->MaxSize += Other.MaxSize;
-	this->FollowerColonists += Other.FollowerColonists;
-	this->FollowerGuardian1 += Other.FollowerGuardian1;
-	this->FollowerGuardian2 += Other.FollowerGuardian2;
-	this->FollowerGuardian3 += Other.FollowerGuardian3;
-	this->FollowerGuardian4 += Other.FollowerGuardian4;
-	this->MoodContent += Other.MoodContent;
-	this->MoodAngry += Other.MoodAngry;
-	this->MoodFear += Other.MoodFear;
-	this->Bows += Other.Bows;
-	this->Muskets += Other.Muskets;
-	this->Shields += Other.Shields;
-	return *this;
+	this->Angry += Other.Angry;
+	this->Fear += Other.Fear;
+	Changed();
+	return *this; // Return a reference to *this for chaining
 }
 
-FPopulation FPopulation::operator-(const FPopulation& Other) const
-{
-	FPopulation Result;
-	Result.Size = this->Size - Other.Size;
-	Result.MaxSize = this->MaxSize - Other.MaxSize;
-	Result.FollowerColonists = this->FollowerColonists - Other.FollowerColonists;
-	Result.FollowerGuardian1 = this->FollowerGuardian1 - Other.FollowerGuardian1;
-	Result.FollowerGuardian2 = this->FollowerGuardian2 - Other.FollowerGuardian2;
-	Result.FollowerGuardian3 = this->FollowerGuardian3 - Other.FollowerGuardian3;
-	Result.FollowerGuardian4 = this->FollowerGuardian4 - Other.FollowerGuardian4;
-	Result.MoodContent = this->MoodContent - Other.MoodContent;
-	Result.MoodAngry = this->MoodAngry - Other.MoodAngry;
-	Result.MoodFear = this->MoodFear - Other.MoodFear;
-	Result.Bows = this->Bows - Other.Bows;
-	Result.Muskets = this->Muskets - Other.Muskets;
-	Result.Shields = this->Shields - Other.Shields;
-	return Result;
-}
-
-FPopulation FPopulation::operator-() const
-{
-	FPopulation Result;
-	Result.Size = -this->Size;
-	Result.MaxSize = -this->MaxSize;
-	Result.FollowerColonists = -this->FollowerColonists;
-	Result.FollowerGuardian1 = -this->FollowerGuardian1;
-	Result.FollowerGuardian2 = -this->FollowerGuardian2;
-	Result.FollowerGuardian3 = -this->FollowerGuardian3;
-	Result.FollowerGuardian4 = -this->FollowerGuardian4;
-	Result.MoodContent = -this->MoodContent;
-	Result.MoodAngry = -this->MoodAngry;
-	Result.MoodFear = -this->MoodFear;
-	Result.Bows = -this->Bows;
-	Result.Muskets = -this->Muskets;
-	Result.Shields = -this->Shields;
-	return Result;
-}
-
-FPopulation FPopulation::operator-=(const FPopulation& Other)
+// Compound subtraction operator
+UPopulation& UPopulation::operator-=(const UPopulation& Other)
 {
 	this->Size -= Other.Size;
 	this->MaxSize -= Other.MaxSize;
-	this->FollowerColonists -= Other.FollowerColonists;
-	this->FollowerGuardian1 -= Other.FollowerGuardian1;
-	this->FollowerGuardian2 -= Other.FollowerGuardian2;
-	this->FollowerGuardian3 -= Other.FollowerGuardian3;
-	this->FollowerGuardian4 -= Other.FollowerGuardian4;
-	this->MoodContent -= Other.MoodContent;
-	this->MoodAngry -= Other.MoodAngry;
-	this->MoodFear -= Other.MoodFear;
-	this->Bows -= Other.Bows;
-	this->Muskets -= Other.Muskets;
-	this->Shields -= Other.Shields;
-	return *this;
+	this->Angry -= Other.Angry;
+	this->Fear -= Other.Fear;
+	Changed();
+	return *this; // Return a reference to *this for chaining
 }

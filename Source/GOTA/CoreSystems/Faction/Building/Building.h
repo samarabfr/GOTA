@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "BuildingTierData.h"
-#include "PopulationContainer.h"
+#include "Population.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Building.generated.h"
 
@@ -26,7 +26,7 @@ public:
 	UBuildingDataAsset* DataAsset;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Instanced, Category="Building")
-	UPopulationContainer* PopContainer;
+	UPopulation* PopContainer;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Category="Building")
 	int32 Tier = 1;
@@ -58,6 +58,4 @@ public:
 	void UpdateProduction(FPopulation Change);
 	
 	void SetupProduction(const FBuildingTierData* TierData);
-
-	UCombatValues* GetCombatValues();
 };
