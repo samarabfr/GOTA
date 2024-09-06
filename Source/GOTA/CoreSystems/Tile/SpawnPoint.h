@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TileAssetDA.h"
 #include "GameFramework/Actor.h"
 #include "SpawnPoint.generated.h"
 
@@ -11,12 +12,16 @@ struct FSpawnPoint
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	FVector LocationOnTile = FVector(0, 0, 0);
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	float Rotation = 0.0f;
 
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly)
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	uint8 SpawnChance = 100;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly,
+		meta = (ToolTip = "Picks full random out of this Array if it isn't empty."))
+	TArray<UTileAssetDA*> ForcedAssets;
 };

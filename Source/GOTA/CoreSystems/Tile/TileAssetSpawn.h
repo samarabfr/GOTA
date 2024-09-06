@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SpawnPoint.h"
-#include "TileAsset.h"
+#include "TileAssetDA.h"
 
 struct FTileAssetSpawn
 {
@@ -12,7 +12,7 @@ struct FTileAssetSpawn
 	
 	bool bIsSpawned = false;
 
-	FTileAsset* TileAsset = nullptr;
+	UTileAssetDA* TileAsset = nullptr;
 
 	FPrimitiveInstanceId InstanceId;
 };

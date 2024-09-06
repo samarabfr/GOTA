@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TileAssetDA.h"
 #include "Engine/DataAsset.h"
 #include "TileGraphicsDataAsset.generated.h"
 
@@ -36,6 +37,24 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Asset DataTables")
 	UDataTable* ForageAssets;
 
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Asset")
+	UTileAssetDA* DefaultTileAsset;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Asset")
+	TArray<UTileAssetDA*> MainBuildingTileAssets;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Asset")
+	TArray<UTileAssetDA*> BuildingTileAssets;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Asset")
+	TArray<UTileAssetDA*> TreeTileAssets;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Asset")
+	TArray<UTileAssetDA*> PropTileAssets;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Asset")
+	TArray<UTileAssetDA*> ForageTileAssets;
+	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Graphics")
 	UDataTable* TileLayouts;
 

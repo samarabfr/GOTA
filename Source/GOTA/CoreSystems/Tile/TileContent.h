@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Terrain.h"
+#include "TileAssetDA.h"
 #include "TileAssetSpawn.h"
 #include "TileContent.generated.h"
 
@@ -62,14 +63,14 @@ private:
 	
 	void ValidateMainBuilding(ATile* Tile_);
 
-	void ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets);
+	void ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const TArray<UTileAssetDA*>& Assets);
 
 	void SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn);
 
 	void DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn);
 
-	void FindRandomValidAssets(int32 Amount, const UDataTable* DataTable,
-	                           TArray<FTileAsset*>& OutFoundAssets) const;
+	void FindRandomValidAssets(int32 Amount, const TArray<UTileAssetDA*>& AssetArray,
+	                           TArray<UTileAssetDA*>& OutFoundAssets) const;
 
 	UPROPERTY()
 	AGS_Ingame* GameState;

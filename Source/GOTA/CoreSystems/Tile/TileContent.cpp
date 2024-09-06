@@ -160,14 +160,7 @@ void UTileContent::OnSpawnPointLayoutChanged()
 	MainBuilding.SpawnPoint = Tile->SpawnLayout.MainBuilding;
 	if (MainBuilding.TileAsset)
 	{
-		if (MainBuilding.TileAsset->RotationMode == ERotationMode::Random360Degree)
-		{
-			MainBuilding.SpawnPoint.Rotation = FMath::RandRange(0, 359);
-		}
-		else if (MainBuilding.TileAsset->RotationMode == ERotationMode::Random90Degree)
-		{
-			MainBuilding.SpawnPoint.Rotation = 90 * FMath::RandRange(0, 3);
-		}
+		MainBuilding.SpawnPoint.Rotation += MainBuilding.TileAsset->GetRotationAfterMode();
 	}
 	if (MainBuilding.bIsSpawned)
 	{
@@ -203,14 +196,7 @@ void UTileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<
 		Array[i].SpawnPoint = SpawnPoints[i];
 		if (Array[i].TileAsset)
 		{
-			if (Array[i].TileAsset->RotationMode == ERotationMode::Random360Degree)
-			{
-				Array[i].SpawnPoint.Rotation = FMath::RandRange(0, 359);
-			}
-			else if (Array[i].TileAsset->RotationMode == ERotationMode::Random90Degree)
-			{
-				Array[i].SpawnPoint.Rotation = 90 * FMath::RandRange(0, 3);
-			}
+			Array[i].SpawnPoint.Rotation += Array[i].TileAsset->GetRotationAfterMode();
 		}
 		if (Array[i].bIsSpawned)
 		{
@@ -224,13 +210,13 @@ void UTileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<
 
 void UTileContent::ValidateEverything()
 {
-	ValidateTileAssets(TreeTileAssetSpawns, Tile->DA_TileGraphics->TreeAssets);
+	ValidateTileAssets(TreeTileAssetSpawns, Tile->DA_TileGraphics->TreeTileAssets);
 	UpdateTrees(0);
-	ValidateTileAssets(PropTileAssetSpawns, Tile->DA_TileGraphics->PropAssets);
+	ValidateTileAssets(PropTileAssetSpawns, Tile->DA_TileGraphics->PropTileAssets);
 	SpawnProps();
-	ValidateTileAssets(BuildingTileAssetSpawns, Tile->DA_TileGraphics->BuildingAssets);
+	ValidateTileAssets(BuildingTileAssetSpawns, Tile->DA_TileGraphics->BuildingTileAssets);
 	ValidateBuildings(Tile);
-	ValidateTileAssets(ForageTileAssetSpawns, Tile->DA_TileGraphics->ForageAssets);
+	ValidateTileAssets(ForageTileAssetSpawns, Tile->DA_TileGraphics->ForageTileAssets);
 	UpdateForage(0);
 	ValidateMainBuilding(Tile);
 }
@@ -239,7 +225,7 @@ void UTileContent::ValidateMainBuilding(ATile* Tile_)
 {
 	if (Tile->Building)
 	{
-		MainBuilding.TileAsset = &(Tile->Building->DataAsset->GetTierData(Tile->Building->Tier)->MainBuildingAsset);
+		MainBuilding.TileAsset = Tile->DA_TileGraphics->DefaultTileAsset;
 		SpawnTileAsset(MainBuilding);
 	}
 	else
@@ -274,7 +260,7 @@ void UTileContent::ValidateBuildings(ATile* Tile_)
 	}
 }
 
-void UTileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDataTable* Assets)
+void UTileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const TArray<UTileAssetDA*>& Assets)
 {
 	// Remove Invalid and count how many new Assets we need
 	int32 NewAssetsNeeded = 0;
@@ -284,32 +270,32 @@ void UTileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDat
 		{
 			NewAssetsNeeded++;
 		}
-		else if (!TileAssetSpawn.TileAsset->IsValidFor(Tile->GameplayTags))
+		else if (!TileAssetSpawn.TileAsset->IsValidFor(Tile->GameplayTags)
+			|| TileAssetSpawn.SpawnPoint.ForcedAssets.Num() > 0
+			&& !TileAssetSpawn.SpawnPoint.ForcedAssets.Contains(TileAssetSpawn.TileAsset))
 		{
 			NewAssetsNeeded++;
 			DespawnTileAsset(TileAssetSpawn);
 			TileAssetSpawn.TileAsset = nullptr;
 		}
+		if (!TileAssetSpawn.TileAsset && TileAssetSpawn.SpawnPoint.ForcedAssets.Num() > 0)
+		{
+			// Needs asset and is using Forced Asset
+			TileAssetSpawn.TileAsset = TileAssetSpawn.SpawnPoint.ForcedAssets
+				[FMath::RandRange(0, TileAssetSpawn.SpawnPoint.ForcedAssets.Num() - 1)];
+			TileAssetSpawn.SpawnPoint.Rotation += TileAssetSpawn.TileAsset->GetRotationAfterMode();
+		}
 	}
 	// Get new Assets and put them on the Array
-	TArray<FTileAsset*> OutFoundAssets;
+	TArray<UTileAssetDA*> OutFoundAssets;
 	FindRandomValidAssets(NewAssetsNeeded, Assets, OutFoundAssets);
+	if (OutFoundAssets.Num() != NewAssetsNeeded) return;
 	for (FTileAssetSpawn& TileAssetSpawn : Array)
 	{
 		if (!TileAssetSpawn.TileAsset)
 		{
 			TileAssetSpawn.TileAsset = OutFoundAssets.Pop();
-			if (TileAssetSpawn.TileAsset)
-			{
-				if (TileAssetSpawn.TileAsset->RotationMode == ERotationMode::Random360Degree)
-				{
-					TileAssetSpawn.SpawnPoint.Rotation = FMath::RandRange(0, 359);
-				}
-				else if (TileAssetSpawn.TileAsset->RotationMode == ERotationMode::Random90Degree)
-				{
-					TileAssetSpawn.SpawnPoint.Rotation = 90 * FMath::RandRange(0, 3);
-				}
-			}
+			TileAssetSpawn.SpawnPoint.Rotation += TileAssetSpawn.TileAsset->GetRotationAfterMode();
 		}
 	}
 }
@@ -317,7 +303,7 @@ void UTileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const UDat
 void UTileContent::SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
 {
 	// already spawned
-	if (FTileAssetSpawn.bIsSpawned) return;
+	if (FTileAssetSpawn.bIsSpawned || !FTileAssetSpawn.TileAsset) return;
 	FTransform T = FTransform();
 	CalculateTransform(FTileAssetSpawn.SpawnPoint, T);
 	FTileAssetSpawn.InstanceId = GameState->StaticMeshBatcher->AddStaticMeshInstance(
@@ -334,36 +320,25 @@ void UTileContent::DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
 	FTileAssetSpawn.bIsSpawned = false;
 }
 
-void UTileContent::FindRandomValidAssets(const int32 Amount, const UDataTable* DataTable,
-                                         TArray<FTileAsset*>& OutFoundAssets) const
+void UTileContent::FindRandomValidAssets(const int32 Amount, const TArray<UTileAssetDA*>& AssetArray,
+                                         TArray<UTileAssetDA*>& OutFoundAssets) const
 {
 	if (Amount <= 0) return;
-	FString _;
-	TArray<FTileAsset*> AllAssets;
-	DataTable->GetAllRows(_, AllAssets);
-
 	// First Filter Through the Input Array to find out which Assets are valid for this Tile
-	TArray<FTileAsset*> PossibleAssets;
-	for (FTileAsset* Asset : AllAssets)
+	TArray<UTileAssetDA*> PossibleAssets;
+	for (UTileAssetDA* Asset : AssetArray)
 	{
-		bool bValid = true;
-		for (FGameplayTagRule Rule : Asset->GameplayTagRules)
-		{
-			if (!Rule.IsValid(Tile->GameplayTags))
-			{
-				bValid = false;
-				break; // Break if any rule is invalid
-			}
-		}
-		if (bValid)
+		if (Asset->IsValidFor(Tile->GameplayTags))
 		{
 			PossibleAssets.Add(Asset);
 		}
 	}
-	if (PossibleAssets.IsEmpty()) return;
+	// Use Default if no Possible Assets could be found
+	if (PossibleAssets.IsEmpty())
+		PossibleAssets.Add(Tile->DA_TileGraphics->DefaultTileAsset);
 	// Calculate TotalBias for the weighted random selection
 	int32 TotalBias = 0;
-	for (FTileAsset* Asset : PossibleAssets)
+	for (UTileAssetDA* Asset : PossibleAssets)
 	{
 		TotalBias += Asset->GetBiasAfterMultipliers(Terrain);
 	}
@@ -371,7 +346,7 @@ void UTileContent::FindRandomValidAssets(const int32 Amount, const UDataTable* D
 	for (int32 i = 0; i < Amount; i++)
 	{
 		int32 Count = FMath::RandRange(0, TotalBias - 1);
-		for (FTileAsset* Asset : PossibleAssets)
+		for (UTileAssetDA* Asset : PossibleAssets)
 		{
 			int32 SpawnBias = Asset->GetBiasAfterMultipliers(Terrain);
 			if (Count < SpawnBias)
