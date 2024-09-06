@@ -7,7 +7,7 @@
 #include "BuildingProject.h"
 #include "BuildingProjectScore.h"
 #include "SettlementBalance.h"
-#include "PopulationSummary.h"
+#include "SettlementPopulation.h"
 #include "SettlementImportanceRatings.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/CoreSystems/Entity/Army.h"
@@ -39,8 +39,8 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
 	FGameplayTagContainer GameplayTags;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Settlement")
-	UPopulationSummary* PopulationSummary;
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Settlement")
+	USettlementPopulation* PopulationSummary;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Settlement")
 	UGOTAAttributeLimited* Expansion;

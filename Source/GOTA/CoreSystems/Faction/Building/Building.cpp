@@ -23,7 +23,7 @@ bool UBuilding::IsSupportedForNetworking() const
 UBuilding::UBuilding()
 {
 	PopContainer = CreateDefaultSubobject<UPopulation>(TEXT("Population"));
-	PopContainer->OnPopulationChanged.AddDynamic(this, &UBuilding::UpdateProduction);
+//	PopContainer->OnPopulationChanged.AddDynamic(this, &UBuilding::UpdateProduction);
 }
 
 bool UBuilding::CanUpgrade()
@@ -35,29 +35,8 @@ bool UBuilding::CanUpgrade()
 void UBuilding::Upgrade()
 {
 	FBuildingTierData* NewTierData = DataAsset->GetTierData(Tier + 1);
-	SetupProduction(NewTierData);
-	PopContainer->ChangeMaxSize(NewTierData->Housing - PopContainer->Population.MaxSize);
+//	SetupProduction(NewTierData);
+//	PopContainer->ChangeMaxSize(NewTierData->Housing - PopContainer->Population.MaxSize);
 	++Tier;
 }
 
-void UBuilding::UpdateProduction(FPopulation Change)
-{
-	if(PopulationThreshold <= 0) return;
-	int32 OldProduction = Production;
-	Production = ProductionPerThreshold * (PopContainer->Population.Size / PopulationThreshold);
-	if (OldProduction != Production)
-	{
-		OnProductionChanged.Broadcast(Production - OldProduction, ProductionType);
-	}
-}
-
-void UBuilding::SetupProduction(const FBuildingTierData* TierData)
-{
-	PopulationThreshold = TierData->PopulationThreshold;
-	ProductionPerThreshold = TierData->ProductionPerThreshold;
-	ProductionType = TierData->ProductionType;
-	// can't use UpdateProduction() because it should always call the delegate in this case
-	int32 OldProduction = Production;
-	Production = ProductionPerThreshold * (PopContainer->Population.Size / PopulationThreshold);
-	OnProductionChanged.Broadcast(Production - OldProduction, ProductionType);
-}

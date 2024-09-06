@@ -14,29 +14,48 @@ class GOTA_API UPopulation : public UObject
 	virtual bool IsSupportedForNetworking() const override;
 	UPopulation();
 
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangedSig, UPopulation*, New);
-
-public:
-	UPROPERTY(BlueprintAssignable, Category="Population")
-	FOnChangedSig OnChanged;
-
-	// ------------------Population Values----------------------
+	// ------------------Variable Definition----------------------
 private:
-	UPROPERTY(VisibleInstanceOnly, Replicated, Category = "Population")
+	UPROPERTY(VisibleInstanceOnly, Category = "Population")
+	EFaction Faction = EFaction::NONE;
+
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Size, Category = "Population")
 	int16 Size = 0;
 
-	UPROPERTY(VisibleInstanceOnly, Replicated, Category = "Population")
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_MaxSize, Category = "Population")
 	int16 MaxSize = 0;
 
-	UPROPERTY(VisibleInstanceOnly, Replicated, Category = "Population")
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Angry, Category = "Population")
 	int16 Angry = 0;
 
-	UPROPERTY(VisibleInstanceOnly, Replicated, Category = "Population")
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Fear, Category = "Population")
 	int16 Fear = 0;
 
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category = "Population")
+	float GrowthProgress = 0;
+
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category = "Population")
+	float Growth = 0;
+
+	UPROPERTY(VisibleInstanceOnly, Category = "Population")
+	float GrowthThreshold = 0;
+
 	// ---------------Changing Population Values-----------------------
+	UFUNCTION()
+	void OnRep_Size(const int16 OldValue);
+
+	UFUNCTION()
+	void OnRep_MaxSize(const int16 OldValue);
+
+	UFUNCTION()
+	void OnRep_Angry(const int16 OldValue);
+
+	UFUNCTION()
+	void OnRep_Fear(const int16 OldValue);
+
 public:
+	void SetFaction(EFaction NewFaction);
+
 	void ChangeSize(const int16 Change);
 
 	void IncreaseSize(const int16 Change);
@@ -64,24 +83,24 @@ public:
 	void DecreaseFear(const int16 Change);
 
 private:
-	void SubtractOneMoodWeightedRandom();
-	void Changed();
+	void SubtractMoodWeightedRandom(const int16 Change);
 
-	// ---------------------------Growth----------------------------
-private:
-	UPROPERTY(VisibleInstanceOnly, Replicated, Category = "Population")
-	float GrowthProgress = 0;
+	// ------------------Delegates----------------------
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInt16ChangedSig, int16, ChangedBy);
 
-	UPROPERTY(VisibleInstanceOnly, Replicated, Category = "Population")
-	float Growth = 0;
-
-	UPROPERTY(VisibleInstanceOnly, Category = "Population")
-	float GrowthThreshold = 0;
+public:
+	FOnInt16ChangedSig OnSizeChanged;
+	FOnInt16ChangedSig OnMaxSizeChanged;
+	FOnInt16ChangedSig OnAngryChanged;
+	FOnInt16ChangedSig OnFearChanged;
 
 	// --------------------Getters and Setters----------------------
 public:
+	EFaction GetFaction() const { return Faction; }
+
 	int16 GetSize() const { return Size; }
-	
+
 	int16 GetMaxSize() const { return MaxSize; }
 
 	int16 GetAngry() const { return Angry; }
@@ -99,10 +118,4 @@ public:
 	int16 GetMood(const EMood Mood) const;
 
 	void GetAllMood(int16& Content_, int16& Angry_, int16& Fear_) const;
-
-	// --------------------Operators-----------------------
-
-	UPopulation& operator+=(const UPopulation& Other);
-
-	UPopulation& operator-=(const UPopulation& Other);
 };

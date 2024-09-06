@@ -105,7 +105,7 @@ float UBuildingProject::CalculateScore()
 				MaxIncomeDiff -= PreviousMaxIncome;
 			}
 			// Pop
-			CurrentPop = Tile->Building->PopContainer->Population.Size;
+			CurrentPop = Tile->Building->PopContainer->GetSize();
 			// Housing
 			MaxHousingDiff -= PreviousTierData->Housing;
 			FreeHousing = PreviousTierData->Housing - CurrentPop;

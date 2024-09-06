@@ -53,18 +53,11 @@ void AArmy::KillIndividuals(int32 Kills)
 void AArmy::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-	if (HasAuthority())
-	{
-		GetWorld()->GetGameState<AGS_Ingame>()->UnregisterPopConForTotals(PopCon, GetAffiliation());
-	}
 }
 
 void AArmy::Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 MovementSpeed_)
 {
 	Super::Init(Affiliation_, CurrentTile_, MovementSpeed_);
-	GetWorld()->GetGameState<AGS_Ingame>()->RegisterPopConForTotals(PopCon, Affiliation_);
 	PopCon->DecreaseSize(100);
-	FPopulation RandomPop = FPopulation();
-	RandomPop.Size = FMath::RandRange(5, 10);
-	PopCon->AddPopulation(RandomPop);
+	PopCon->IncreaseSize(FMath::RandRange(3,10));
 }

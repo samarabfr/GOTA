@@ -5,11 +5,11 @@
 #include "CoreMinimal.h"
 #include "CombatSystem.h"
 #include "StartParameter.h"
+#include "TotalPopulation.h"
 #include "GameFramework/GameState.h"
 #include "GOTA/CoreSystems/Entity/Entity.h"
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
-#include "GOTA/CoreSystems/Faction/Settlement/PopulationSummary.h"
-#include "GOTA/CoreSystems/Faction/Settlement/SettlementBalance.h"
+#include "GOTA/CoreSystems/Faction/Settlement/SettlementPopulation.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "GOTA/CoreSystems/Utility/StaticMeshBatcher.h"
@@ -55,11 +55,11 @@ public:
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UGOTAAttribute* TotalWildlife;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
-	UPopulationSummary* TotalColonialPopulation;
+	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+	UTotalPopulation* TotalColonialPopulation;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
-	UPopulationSummary* TotalNativePopulation;
+	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+	UTotalPopulation* TotalNativePopulation;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	int32 IslandMaxTrees;
@@ -145,16 +145,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void RegisterTileForTotalsUpdates(ATile* Tile);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void RegisterColonialSettlementForTotalsUpdates(UPopulationSummary* Population);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void RegisterNativeSettlementForTotalsUpdates(UPopulationSummary* Population);
-
-	void RegisterPopConForTotals(UPopulation* PopCon, EAffiliation Affiliation);
-	void UnregisterPopConForTotals(UPopulation* PopCon, EAffiliation Affiliation);
-
+	
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGameEndingSignature, EGameEnding, Ending, FString, EndMessage);
 

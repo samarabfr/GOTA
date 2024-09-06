@@ -1,6 +1,29 @@
 ﻿#pragma once
 
 UENUM(BlueprintType)
+enum class EAffiliation : uint8
+{
+	Ally UMETA(DisplayName = "Ally"),
+	Enemy UMETA(DisplayName = "Enemy")
+};
+
+inline EAffiliation operator!(EAffiliation Affiliation)
+{
+	if(Affiliation == EAffiliation::Ally)
+		return EAffiliation::Enemy;
+	return EAffiliation::Ally;
+}
+
+UENUM(BlueprintType)
+enum class EFaction : uint8
+{
+	NONE UMETA(DisplayName = "NONE"),
+	Colonists UMETA(DisplayName = "Colonists"),
+	Natives UMETA(DisplayName = "Natives"),
+	Guardians UMETA(DisplayName = "Guardians")
+};
+
+UENUM(BlueprintType)
 enum class EProductionType : uint8
 {
 	Foraging UMETA(DisplayName = "Foraging"),
@@ -33,28 +56,6 @@ enum class EMood : uint8
 	Angry UMETA(DisplayName = "Angry"),
 	Fear UMETA(DisplayName = "Fear"),
 	MAX UMETA(Hidden) // Sentinel value for enum size
-};
-
-UENUM(BlueprintType)
-enum class EAffiliation : uint8
-{
-	Ally UMETA(DisplayName = "Ally"),
-	Enemy UMETA(DisplayName = "Enemy")
-};
-
-inline EAffiliation operator!(EAffiliation Affiliation)
-{
-	if(Affiliation == EAffiliation::Ally)
-		return EAffiliation::Enemy;
-	return EAffiliation::Ally;
-}
-
-UENUM(BlueprintType)
-enum class EFaction : uint8
-{
-	Colonists UMETA(DisplayName = "Colonists"),
-	Natives UMETA(DisplayName = "Natives"),
-	Guardians UMETA(DisplayName = "Guardians")
 };
 
 UENUM(BlueprintType)

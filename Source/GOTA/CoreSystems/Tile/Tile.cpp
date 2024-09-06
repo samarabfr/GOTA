@@ -265,7 +265,7 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 		Claimant->OnBuildingAdded(Building);
 	}
 	Building->PopContainer->ChangeMaxSize(BuildingDataAsset->TierOne.Housing);
-	Building->SetupProduction(&BuildingDataAsset->TierOne);
+//	Building->SetupProduction(&BuildingDataAsset->TierOne);
 	// Add Building related GameplayTags
 	GameplayTags.AppendTags(BuildingDataAsset->TierOne.GameplayTags);
 	OnGameplayTagsChanged.Broadcast();

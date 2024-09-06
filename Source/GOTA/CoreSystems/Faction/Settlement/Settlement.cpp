@@ -15,7 +15,6 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(ASettlement, PopulationSummary);
 	DOREPLIFETIME(ASettlement, BuildingSummary);
 	DOREPLIFETIME(ASettlement, CurrentBuildingProject);
 	DOREPLIFETIME(ASettlement, Food);
@@ -42,7 +41,7 @@ ASettlement::ASettlement()
 	Food = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Food"));
 	Wood = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Wood"));
 	Stone = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Stone"));
-	PopulationSummary = CreateDefaultSubobject<UPopulationSummary>(TEXT("Population"));
+	PopulationSummary = CreateDefaultSubobject<USettlementPopulation>(TEXT("Population"));
 	BuildingSummary = CreateDefaultSubobject<UBuildingSummary>(TEXT("Production"));
 	Expansion = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Expansion"));
 	CurrentBuildingProject = CreateDefaultSubobject<UBuildingProject>(TEXT("Current Building Project"));
@@ -64,7 +63,6 @@ void ASettlement::BeginPlay()
 		AddReplicatedSubObject(Food);
 		AddReplicatedSubObject(Wood);
 		AddReplicatedSubObject(Stone);
-		AddReplicatedSubObject(PopulationSummary);
 		AddReplicatedSubObject(BuildingSummary);
 		AddReplicatedSubObject(Expansion);
 		AddReplicatedSubObject(CurrentBuildingProject);
@@ -94,13 +92,13 @@ void ASettlement::CalculateTurn()
 
 void ASettlement::OnBuildingAdded(UBuilding* Building)
 {
-	PopulationSummary->RegisterPopulationContainer(Building->PopContainer);
+	PopulationSummary->RegisterPop(Building->PopContainer);
 	BuildingSummary->RegisterBuildingProduction(Building);
 }
 
 void ASettlement::OnBuildingRemoved(UBuilding* Building)
 {
-	PopulationSummary->UnregisterPopulationContainer(Building->PopContainer);
+	PopulationSummary->UnregisterPop(Building->PopContainer);
 	BuildingSummary->UnregisterBuildingProduction(Building);
 }
 
@@ -363,8 +361,8 @@ void ASettlement::CalculateImportances()
 		* FMath::Pow(EULERS_NUMBER, -SettlementBalance->StoneImportanceDescent * StoneIncome);
 	// More aggressive => weapons more important
 	float AngryRatio = 0;
-	if (PopulationSummary->Population.Size > 0)
-		AngryRatio = PopulationSummary->GetMood(EMood::Angry) / PopulationSummary->Population.Size;
+	if (PopulationSummary->GetSize() > 0)
+		AngryRatio = PopulationSummary->GetAngry() / PopulationSummary->GetSize();
 	float WeaponsIncome = BuildingSummary->ProductionMap[EProductionType::Bowmaking] + BuildingSummary->ProductionMap[
 		EProductionType::Musketmaking];
 	ImportanceRatings.Weapons = SettlementBalance->WeaponsImportance
@@ -376,7 +374,7 @@ void ASettlement::CalculateImportances()
 
 void ASettlement::FigureOutSendingArmy()
 {
-	if (PopulationSummary->Population.Size < SettlementBalance->MinimumPopulationToSpawnArmy) return;
+	if (PopulationSummary->GetSize() < SettlementBalance->MinimumPopulationToSpawnArmy) return;
 
 	// roll if army should spawn
 	if (CalculateArmySpawnChance() < FMath::RandRange(0, 99)) return;
@@ -387,10 +385,10 @@ void ASettlement::FigureOutSendingArmy()
 float ASettlement::CalculateArmySpawnChance()
 {
 	// angry ratio
-	const float AngryRatio = PopulationSummary->GetMood(EMood::Angry) / PopulationSummary->Population.Size;
+	const float AngryRatio = PopulationSummary->GetAngry() / PopulationSummary->GetSize();
 	const float AngryRatioImpact = AngryRatio * SettlementBalance->AggressiveMoodMaximumImpact;
 	// Pop over high
-	float PopOverHigh = PopulationSummary->Population.Size - SettlementBalance->HighPopulationThreshold;
+	float PopOverHigh = PopulationSummary->GetSize() - SettlementBalance->HighPopulationThreshold;
 	PopOverHigh = FMath::Max(PopOverHigh, 0);
 	const float PopOverHighImpact = PopOverHigh * SettlementBalance->HighPopulationImpact;
 	// spawn chance

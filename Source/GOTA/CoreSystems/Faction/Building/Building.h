@@ -54,8 +54,4 @@ public:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Replicated, Category="Building")
 	EProductionType ProductionType = EProductionType::MAX;
 	
-	UFUNCTION()
-	void UpdateProduction(FPopulation Change);
-	
-	void SetupProduction(const FBuildingTierData* TierData);
 };

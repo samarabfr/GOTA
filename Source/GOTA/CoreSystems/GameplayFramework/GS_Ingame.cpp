@@ -17,9 +17,6 @@ void AGS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	DOREPLIFETIME(AGS_Ingame, IslandMaxWildlife);
 	DOREPLIFETIME(AGS_Ingame, IslandMaxForage);
 
-	DOREPLIFETIME(AGS_Ingame, TotalColonialPopulation);
-	DOREPLIFETIME(AGS_Ingame, TotalNativePopulation);
-
 	DOREPLIFETIME(AGS_Ingame, MaxTurnTime);
 	DOREPLIFETIME(AGS_Ingame, IsCalculatingTurn);
 	DOREPLIFETIME(AGS_Ingame, ShouldTickTurnTime);
@@ -37,8 +34,8 @@ AGS_Ingame::AGS_Ingame()
 	TotalTrees = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Trees"));
 	TotalForage = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Forage"));
 	TotalWildlife = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Wildlife"));
-	TotalColonialPopulation = CreateDefaultSubobject<UPopulationSummary>(TEXT("Total Colonial Population"));
-	TotalNativePopulation = CreateDefaultSubobject<UPopulationSummary>(TEXT("Total Native Population"));
+	TotalColonialPopulation = CreateDefaultSubobject<UTotalPopulation>(TEXT("Total Colonial Population"));
+	TotalNativePopulation = CreateDefaultSubobject<UTotalPopulation>(TEXT("Total Native Population"));
 	CombatSystem = CreateDefaultSubobject<UCombatSystem>(TEXT("Combat System"));
 	StartParameter = CreateDefaultSubobject<UStartParameter>(TEXT("Start Parameter"));
 }
@@ -51,8 +48,6 @@ void AGS_Ingame::BeginPlay()
 		AddReplicatedSubObject(TotalTrees);
 		AddReplicatedSubObject(TotalForage);
 		AddReplicatedSubObject(TotalWildlife);
-		AddReplicatedSubObject(TotalColonialPopulation);
-		AddReplicatedSubObject(TotalNativePopulation);
 		AddReplicatedSubObject(CombatSystem);
 		AddReplicatedSubObject(StartParameter);
 	}
@@ -109,36 +104,9 @@ void AGS_Ingame::TurnCalculationEnd()
 	OnTurnCalculationEnd.Broadcast();
 }
 
-
 void AGS_Ingame::TogglePause()
 {
 	ShouldTickTurnTime = !ShouldTickTurnTime;
-}
-
-void AGS_Ingame::RegisterColonialSettlementForTotalsUpdates(UPopulationSummary* Population)
-{
-	TotalColonialPopulation->RegisterPopulationSummary(Population);
-}
-
-void AGS_Ingame::RegisterNativeSettlementForTotalsUpdates(UPopulationSummary* Population)
-{
-	TotalNativePopulation->RegisterPopulationSummary(Population);
-}
-
-void AGS_Ingame::RegisterPopConForTotals(UPopulation* PopCon, EAffiliation Affiliation)
-{
-	if (Affiliation == EAffiliation::Ally)
-		TotalNativePopulation->RegisterPopulationContainer(PopCon);
-	if (Affiliation == EAffiliation::Enemy)
-		TotalColonialPopulation->RegisterPopulationContainer(PopCon);
-}
-
-void AGS_Ingame::UnregisterPopConForTotals(UPopulation* PopCon, EAffiliation Affiliation)
-{
-	if (Affiliation == EAffiliation::Ally)
-		TotalNativePopulation->UnregisterPopulationContainer(PopCon);
-	if (Affiliation == EAffiliation::Enemy)
-		TotalColonialPopulation->UnregisterPopulationContainer(PopCon);
 }
 
 void AGS_Ingame::EndGame_Implementation(::EGameEnding Ending, const FString& EndingMessage)
