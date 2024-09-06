@@ -3,7 +3,7 @@
 
 #include "TotalPopulation.generated.h"
 
-UCLASS(Blueprintable)
+UCLASS()
 class GOTA_API UTotalPopulation : public UObject
 {
 	GENERATED_BODY()

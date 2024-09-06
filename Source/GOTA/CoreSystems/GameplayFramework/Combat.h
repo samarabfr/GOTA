@@ -15,6 +15,7 @@ class GOTA_API ACombat : public AActor
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	ACombat();
+	virtual void BeginPlay() override;
 
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMeshComponent* MainMesh;
@@ -51,13 +52,13 @@ class GOTA_API ACombat : public AActor
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintGetter=GetAlliedBuildingKills)
 	int32 AlliedBuildingKills = 0;
-	
+
 	UPROPERTY(VisibleInstanceOnly, BlueprintGetter=GetEnemyPopKills)
 	int32 EnemyPopKills = 0;
-	
+
 	UPROPERTY(VisibleInstanceOnly, BlueprintGetter=GetEnemyBuildingKills)
 	int32 EnemyBuildingKills = 0;
-	
+
 	bool DoesCombatTilesContain(ATile* Tile);
 
 	void AddCombatTile(FCombatTile CombatTile);
@@ -94,7 +95,7 @@ private:
 	void SpreadDamageToBuildings(EAffiliation Receiver, int32& DamageLeft);
 
 	void CountKills();
-	
+
 public:
 	void TriggerCombat();
 
@@ -126,13 +127,13 @@ public:
 
 	UFUNCTION(BlueprintGetter)
 	int32 GetAlliedPopKills() const;
-	
+
 	UFUNCTION(BlueprintGetter)
 	int32 GetAlliedBuildingKills() const;
-	
+
 	UFUNCTION(BlueprintGetter)
 	int32 GetEnemyPopKills() const;
-	
+
 	UFUNCTION(BlueprintGetter)
 	int32 GetEnemyBuildingKills() const;
 };

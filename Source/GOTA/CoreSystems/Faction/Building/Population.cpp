@@ -29,18 +29,9 @@ bool UPopulation::IsSupportedForNetworking() const
 
 UPopulation::UPopulation()
 {
-	// Load SettlementBalance to extract GrowthThreshold
 	static ConstructorHelpers::FObjectFinder<USettlementBalance> DataAsset(
 		TEXT("/Game/CoreSystems/Faction/DA_SettlementBalance"));
-	if (DataAsset.Succeeded())
-	{
-		USettlementBalance* SettlementBalance = DataAsset.Object;
-		GrowthThreshold = SettlementBalance->PopulationGrowthThreshold;
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Population Container couldn't load Settlement Balance Data Asset"))
-	}
+	GrowthThreshold = DataAsset.Object->PopulationGrowthThreshold;
 }
 
 // ---------------Changing Population Values-----------------------

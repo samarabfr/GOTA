@@ -13,20 +13,18 @@ ACombat::ACombat()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
-	// Load GameBalance for Combat Value calculation
-	static ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAsset2(
-		TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
-	if (DataAsset2.Succeeded())
-	{
-		GameBalance = DataAsset2.Object;
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Combat System couldn't load GameBalance Data Asset"))
-	}
+	
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	MainMesh = CreateDefaultSubobject<UStaticMeshComponent>("Main Mesh");
 	MainMesh->SetupAttachment(RootComponent);
+}
+
+void ACombat::BeginPlay()
+{
+	Super::BeginPlay();
+	static ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAssetFinder(
+	TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
+	GameBalance = DataAssetFinder.Object;
 }
 
 bool ACombat::DoesCombatTilesContain(ATile* Tile)
@@ -110,7 +108,7 @@ void ACombat::BuildingChanged(ATile* Tile)
 	CalcKills();
 	// register to delegates, unregister not necessary
 	if (!Tile->Building) return;
-//	Tile->Building->PopContainer->CombatValues->OnChanged.AddDynamic(this, &ACombat::CombatValuesChanged);
+	//	Tile->Building->PopContainer->CombatValues->OnChanged.AddDynamic(this, &ACombat::CombatValuesChanged);
 }
 
 void ACombat::CombatValuesChanged(UCombatValues* CombatValues)

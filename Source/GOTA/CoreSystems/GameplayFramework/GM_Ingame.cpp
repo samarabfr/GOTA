@@ -15,16 +15,9 @@
 
 AGM_Ingame::AGM_Ingame()
 {
-	ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAssetFinder(
+	static ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAssetFinder(
 		TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
-	if (DataAssetFinder.Succeeded())
-	{
-		GameBalance = DataAssetFinder.Object;
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to load GameBalance DataAsset Inside GameMode!"));
-	}
+	GameBalance = DataAssetFinder.Object;
 }
 
 // ---------------------------------------------------------
