@@ -38,6 +38,9 @@ public:
 	UDataTable* ForageAssets;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Asset")
+	UTileAssetDA* DefaultTileAsset;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Asset")
 	TArray<UTileAssetDA*> MainBuildingTileAssets;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Asset")

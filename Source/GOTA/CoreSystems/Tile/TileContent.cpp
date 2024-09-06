@@ -225,8 +225,8 @@ void UTileContent::ValidateMainBuilding(ATile* Tile_)
 {
 	if (Tile->Building)
 	{
-		//	MainBuilding.TileAsset = &(Tile->Building->DataAsset->GetTierData(Tile->Building->Tier)->MainBuildingAsset);
-		//	SpawnTileAsset(MainBuilding);
+		MainBuilding.TileAsset = Tile->DA_TileGraphics->DefaultTileAsset;
+		SpawnTileAsset(MainBuilding);
 	}
 	else
 	{
@@ -324,7 +324,6 @@ void UTileContent::FindRandomValidAssets(const int32 Amount, const TArray<UTileA
                                          TArray<UTileAssetDA*>& OutFoundAssets) const
 {
 	if (Amount <= 0) return;
-
 	// First Filter Through the Input Array to find out which Assets are valid for this Tile
 	TArray<UTileAssetDA*> PossibleAssets;
 	for (UTileAssetDA* Asset : AssetArray)
@@ -334,7 +333,9 @@ void UTileContent::FindRandomValidAssets(const int32 Amount, const TArray<UTileA
 			PossibleAssets.Add(Asset);
 		}
 	}
-	if (PossibleAssets.IsEmpty()) return;
+	// Use Default if no Possible Assets could be found
+	if (PossibleAssets.IsEmpty())
+		PossibleAssets.Add(Tile->DA_TileGraphics->DefaultTileAsset);
 	// Calculate TotalBias for the weighted random selection
 	int32 TotalBias = 0;
 	for (UTileAssetDA* Asset : PossibleAssets)
