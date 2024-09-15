@@ -217,15 +217,6 @@ void AGM_Ingame::CalculateTurn()
 	StartedCalculatingTurn = FDateTime::Now();
 	// Combat Phase
 	GOTAGameState->CombatSystem->TriggerAllCombats();
-	// Settlement Turns
-	for (ASettlement* Settlement : GOTAGameState->ColonistsSettlements)
-	{
-		Settlement->CalculateTurn();
-	}
-	for (ASettlement* Settlement : GOTAGameState->NativeSettlements)
-	{
-		Settlement->CalculateTurn();
-	}
 	// Entity Movement
 	for (AEntity* Entity : GOTAGameState->TileEntities)
 	{

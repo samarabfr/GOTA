@@ -22,12 +22,12 @@ public:
 	FOnAnythingChangedSignature OnChanged;
 	
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Building")
-	TMap<EProductionType, int32> ProductionMap;
+	TMap<EProductionType, float> ProductionMap;
 	
 	void RegisterBuildingProduction(UBuilding* Building);
 	
 	void UnregisterBuildingProduction(UBuilding* Building);
 
 	UFUNCTION()
-	void UpdateBuildingProduction(int32 Change, EProductionType Type);
+	void UpdateBuildingProduction(float Change, EProductionType Type);
 };

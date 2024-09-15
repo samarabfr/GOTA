@@ -289,6 +289,7 @@ void ACombat::SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft
 
 void ACombat::SpreadDamageToBuildings(EAffiliation Receiver, int32& DamageLeft)
 {
+	/*
 	if (DamageLeft <= 0) return;
 	int32 BuildingTierHP = GameBalance->BuildingTierHP;
 	// get combat tiles with Receiver Building Pop
@@ -332,6 +333,7 @@ void ACombat::SpreadDamageToBuildings(EAffiliation Receiver, int32& DamageLeft)
 			}
 		}
 	}
+	*/
 }
 
 void ACombat::CountKills()

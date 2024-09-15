@@ -21,10 +21,4 @@ struct FSettlementImportanceRatings
 	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "ImportanceRating")
 	float Stone = 0;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "ImportanceRating")
-	float Weapons = 0;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "ImportanceRating")
-	float Shields = 0;
 };

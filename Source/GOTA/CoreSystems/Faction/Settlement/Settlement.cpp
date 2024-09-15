@@ -17,16 +17,19 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 	DOREPLIFETIME(ASettlement, BuildingSummary);
 	DOREPLIFETIME(ASettlement, CurrentBuildingProject);
-	DOREPLIFETIME(ASettlement, Food);
-	DOREPLIFETIME(ASettlement, Wood);
-	DOREPLIFETIME(ASettlement, Stone);
-	DOREPLIFETIME(ASettlement, Expansion);
-	DOREPLIFETIME(ASettlement, PrimaryCulture);
+	DOREPLIFETIME(ASettlement, Resources);
 	DOREPLIFETIME(ASettlement, Affiliation);
 }
 
 ASettlement::ASettlement()
 {
+	bReplicates = true;
+	bReplicateUsingRegisteredSubObjectList = true;
+
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.TickInterval = 0.5;
+	
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	ISM_ClaimWalls = CreateDefaultSubobject<UInstancedStaticMeshComponent>("Claim Walls");
 	ISM_ClaimWalls->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -34,16 +37,9 @@ ASettlement::ASettlement()
 	ISM_ClaimWallsRiver = CreateDefaultSubobject<UInstancedStaticMeshComponent>("Claim Walls River");
 	ISM_ClaimWallsRiver->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	ISM_ClaimWallsRiver->SetupAttachment(RootComponent);
-
-	// Replication stuff
-	bReplicates = true;
-	bReplicateUsingRegisteredSubObjectList = true;
-	Food = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Food"));
-	Wood = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Wood"));
-	Stone = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Stone"));
+	
 	PopulationSummary = CreateDefaultSubobject<USettlementPopulation>(TEXT("Population"));
 	BuildingSummary = CreateDefaultSubobject<UBuildingSummary>(TEXT("Production"));
-	Expansion = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Expansion"));
 	CurrentBuildingProject = CreateDefaultSubobject<UBuildingProject>(TEXT("Current Building Project"));
 }
 
@@ -60,13 +56,18 @@ void ASettlement::BeginPlay()
 	{
 		ISM_ClaimWalls->SetStaticMesh(ClaimMesh);
 
-		AddReplicatedSubObject(Food);
-		AddReplicatedSubObject(Wood);
-		AddReplicatedSubObject(Stone);
 		AddReplicatedSubObject(BuildingSummary);
-		AddReplicatedSubObject(Expansion);
 		AddReplicatedSubObject(CurrentBuildingProject);
 	}
+}
+
+void ASettlement::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	GenerateIncome(DeltaSeconds);
+	FigureOutBuilding();
+	FigureOutSendingArmy();
 }
 
 void ASettlement::SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject)
@@ -82,12 +83,11 @@ void ASettlement::SetCurrentBuildingProject(UBuildingProject* NewCurrentBuilding
 	}
 }
 
-void ASettlement::CalculateTurn()
+void ASettlement::GenerateIncome(float DeltaSeconds)
 {
-	GenerateBaseIncome();
-	GenerateBuildingIncome();
-	FigureOutBuilding();
-	FigureOutSendingArmy();
+	Resources.Food += DeltaSeconds * BuildingSummary->ProductionMap[EProductionType::Food];
+	Resources.Wood += DeltaSeconds * BuildingSummary->ProductionMap[EProductionType::Wood];
+	Resources.Stone += DeltaSeconds * BuildingSummary->ProductionMap[EProductionType::Stone];
 }
 
 void ASettlement::OnBuildingAdded(UBuilding* Building)
@@ -178,77 +178,6 @@ bool ASettlement::ClaimRandomTile()
 	return false;
 }
 
-void ASettlement::GenerateBuildingIncomeAlly()
-{
-	int32 _;
-	// Trees
-	Wood->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Tree,
-	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Woodcutting),
-	                                     SettlementBalance->NativeTreeThreshold,
-	                                     SettlementBalance->NativeMaxRange), _);
-	// Wildlife
-	Food->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Wildlife,
-	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Hunting),
-	                                     SettlementBalance->NativeWildlifeThreshold,
-	                                     SettlementBalance->NativeMaxRange), _);
-	// Forage
-	Food->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Forage,
-	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Foraging),
-	                                     SettlementBalance->NativeForageThreshold,
-	                                     SettlementBalance->NativeMaxRange), _);
-}
-
-void ASettlement::GenerateBuildingIncomeEnemy()
-{
-	int32 _;
-	// Trees
-	Wood->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Tree,
-	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Woodcutting),
-	                                     0,
-	                                     SettlementBalance->ColonistMaxRange), _);
-	// Wildlife
-	Food->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Wildlife,
-	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Hunting),
-	                                     0,
-	                                     SettlementBalance->ColonistMaxRange), _);
-	// Forage
-	Food->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Forage,
-	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Foraging),
-	                                     0,
-	                                     SettlementBalance->ColonistMaxRange), _);
-}
-
-void ASettlement::GenerateBaseIncome()
-{
-	// Reached Expansion threshhold, base income +1
-	if (Expansion->GetCurrent() == Expansion->GetMaximum())
-	{
-		ClaimRandomTile();
-		Expansion->SetCurrent(1);
-		Expansion->SetMaximum(FMath::TruncToInt32(
-			SettlementBalance->ClaimPrice.GetRichCurveConst()->Eval(ClaimedTiles.Num())));
-	}
-	else
-	{
-		int32 _;
-		Expansion->Add(1, _);
-	}
-}
-
-void ASettlement::GenerateBuildingIncome()
-{
-	int32 _;
-	Expansion->Add(*BuildingSummary->ProductionMap.Find(EProductionType::Expansion), _);
-	if (Affiliation == EAffiliation::Ally)
-	{
-		GenerateBuildingIncomeAlly();
-	}
-	else
-	{
-		GenerateBuildingIncomeEnemy();
-	}
-}
-
 void ASettlement::FigureOutBuilding()
 {
 	if (CurrentBuildingProject && CurrentBuildingProject->IsPossible())
@@ -279,15 +208,14 @@ void ASettlement::SelectNewBuildingProject()
 		Scores.Add(FBuildingProjectScore(BuildingProject,
 		                                 BuildingProject->CalculateScore(),
 		                                 BuildingProject->Data,
-		                                 BuildingProject->CalculateProjectTime(),
-		                                 BuildingProject->Tier));
+		                                 BuildingProject->CalculateProjectTime()));
 	}
 	// sort by highest score
 	Scores.Sort([](const FBuildingProjectScore& A, const FBuildingProjectScore& B)
 	{
 		return A.Score > B.Score;
 	});
-	// Set from highest score
+	// Set from the highest score
 	UBuildingProject* Highest = nullptr;
 	float LowestScore = -MAX_FLT;
 	for (auto Score : Scores)
@@ -312,30 +240,10 @@ void ASettlement::FillBuildingPool()
 		for (UBuildingDataAsset* PossibleBuilding : PossibleBuildings)
 		{
 			UBuildingProject* BuildingProject = NewObject<UBuildingProject>();
-			BuildingProject->Init(this, PossibleBuilding, 1, ClaimedTile);
+			BuildingProject->Init(this, PossibleBuilding, ClaimedTile);
 			BuildingProjectPool.Add(BuildingProject);
 		}
 		break;
-	}
-	// look for ugprades
-	for (ATile* ClaimedTile : ClaimedTiles)
-	{
-		if (!ClaimedTile->Building) continue;
-
-		// tier 2 is next and enabled
-		if (ClaimedTile->Building->Tier == 1 && ClaimedTile->Building->DataAsset->TierTwo.TierEnabled)
-		{
-			UBuildingProject* BuildingProject = NewObject<UBuildingProject>();
-			BuildingProject->Init(this, ClaimedTile->Building->DataAsset, 2, ClaimedTile);
-			BuildingProjectPool.Add(BuildingProject);
-		}
-		// tier 3 is next and enabled
-		else if (ClaimedTile->Building->Tier == 2 && ClaimedTile->Building->DataAsset->TierThree.TierEnabled)
-		{
-			UBuildingProject* BuildingProject = NewObject<UBuildingProject>();
-			BuildingProject->Init(this, ClaimedTile->Building->DataAsset, 3, ClaimedTile);
-			BuildingProjectPool.Add(BuildingProject);
-		}
 	}
 }
 
@@ -344,32 +252,17 @@ void ASettlement::CalculateImportances()
 	// The less income, the more important
 	// TODO: make functions of income calc
 	// food
-	float FoodIncome = BuildingSummary->ProductionMap[EProductionType::Hunting];
-	FoodIncome += BuildingSummary->ProductionMap[EProductionType::Foraging]
-		* SettlementBalance->ForagingFoodToWoodRatio;
+	float FoodIncome = BuildingSummary->ProductionMap[EProductionType::Food];
 	ImportanceRatings.Food = SettlementBalance->FoodImportance
 		* FMath::Pow(EULERS_NUMBER, -SettlementBalance->FoodImportanceDescent * FoodIncome);
 	// wood
-	float WoodIncome = BuildingSummary->ProductionMap[EProductionType::Woodcutting];
-	WoodIncome += BuildingSummary->ProductionMap[EProductionType::Foraging]
-		* (1 - SettlementBalance->ForagingFoodToWoodRatio);
+	float WoodIncome = BuildingSummary->ProductionMap[EProductionType::Wood];
 	ImportanceRatings.Wood = SettlementBalance->WoodImportance
 		* FMath::Pow(EULERS_NUMBER, -SettlementBalance->WoodImportanceDescent * WoodIncome);
 	// stone
-	float StoneIncome = BuildingSummary->ProductionMap[EProductionType::Stonecutting];
+	float StoneIncome = BuildingSummary->ProductionMap[EProductionType::Stone];
 	ImportanceRatings.Stone = SettlementBalance->StoneImportance
 		* FMath::Pow(EULERS_NUMBER, -SettlementBalance->StoneImportanceDescent * StoneIncome);
-	// More aggressive => weapons more important
-	float AngryRatio = 0;
-	if (PopulationSummary->GetSize() > 0)
-		AngryRatio = PopulationSummary->GetAngry() / PopulationSummary->GetSize();
-	float WeaponsIncome = BuildingSummary->ProductionMap[EProductionType::Bowmaking] + BuildingSummary->ProductionMap[
-		EProductionType::Musketmaking];
-	ImportanceRatings.Weapons = SettlementBalance->WeaponsImportance
-		* FMath::Pow(EULERS_NUMBER, -SettlementBalance->WeaponsImportanceDescent * WeaponsIncome) * (1 + AngryRatio);
-	float ShieldsIncome = BuildingSummary->ProductionMap[EProductionType::Shieldmaking];
-	ImportanceRatings.Shields = SettlementBalance->ShieldsImportance
-		* FMath::Pow(EULERS_NUMBER, -SettlementBalance->ShieldsImportanceDescent * ShieldsIncome) * (1 + AngryRatio);
 }
 
 void ASettlement::FigureOutSendingArmy()

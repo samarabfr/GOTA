@@ -2,6 +2,8 @@
 
 
 #include "Building.h"
+
+#include "BuildingDataAsset.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -28,4 +30,15 @@ bool UBuilding::IsSupportedForNetworking() const
 UBuilding::UBuilding()
 {
 	Population = CreateDefaultSubobject<UPopulation>(TEXT("Population"));
+	Population->OnSizeChanged.AddDynamic(this, &UBuilding::PopSizeChanged);
+}
+
+float UBuilding::GetCurrentProduction() const
+{
+	return DataAsset->ProductionRate * Population->GetSize();
+}
+
+void UBuilding::PopSizeChanged(int16 Change)
+{
+	OnProductionChanged.Broadcast(DataAsset->ProductionRate * Change, DataAsset->ProductionType);
 }

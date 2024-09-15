@@ -23,7 +23,4 @@ struct FBuildingProjectScore
 	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	int32 ProjectTime = 0; // for debugging
-	
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	int32 Tier = 0; // for debugging
 };

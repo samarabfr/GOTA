@@ -25,9 +25,6 @@ public:
 	UBuildingDataAsset* Data;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Building Project")
-	int32 Tier = -1;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Building Project")
 	ATile* Tile;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Building Project")
@@ -47,5 +44,5 @@ public:
 	int32 CalculateProjectTime();
 
 	UFUNCTION(BlueprintCallable, Category="Building Project")
-	void Init(ASettlement* Builder_, UBuildingDataAsset* Data_, int32 Tier_, ATile* Tile_);
+	void Init(ASettlement* Builder_, UBuildingDataAsset* Data_, ATile* Tile_);
 };

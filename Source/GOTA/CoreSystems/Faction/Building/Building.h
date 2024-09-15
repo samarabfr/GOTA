@@ -23,4 +23,14 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UPopulation* Population;
+
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnProductionChangedSig, float, Change, EProductionType, ProductionType);
+
+	FOnProductionChangedSig OnProductionChanged;
+
+	float GetCurrentProduction() const;
+
+	UFUNCTION()
+	void PopSizeChanged(int16 Change);
 };

@@ -26,12 +26,11 @@ class ASettlement : public AActor
 	// Setup
 	virtual void BeginPlay() override;
 
+	virtual void Tick(float DeltaSeconds) override;
+
 public:
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Settlement")
 	USettlementBalance* SettlementBalance;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category="Settlement")
-	ECultureLoyalty PrimaryCulture = ECultureLoyalty::MAX;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category="Settlement")
 	EAffiliation Affiliation;
@@ -42,17 +41,8 @@ public:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Settlement")
 	USettlementPopulation* PopulationSummary;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Settlement")
-	UGOTAAttributeLimited* Expansion;
-
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
-	UGOTAAttribute* Food;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
-	UGOTAAttribute* Wood;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
-	UGOTAAttribute* Stone;
+	FGameResources Resources;
 
 	UPROPERTY(VisibleInstanceOnly, Instanced, BlueprintReadWrite, BlueprintSetter=SetCurrentBuildingProject, Replicated,
 		Category="Settlement")
@@ -73,8 +63,7 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject);
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
-	void CalculateTurn();
+	void GenerateIncome(float DeltaSeconds);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
 	void OnBuildingAdded(UBuilding* Building);
@@ -125,14 +114,6 @@ private:
 
 	UPROPERTY()
 	TArray<UBuildingDataAsset*> PossibleBuildings;
-
-	void GenerateBuildingIncomeAlly();
-
-	void GenerateBuildingIncomeEnemy();
-
-	void GenerateBaseIncome();
-
-	void GenerateBuildingIncome();
 
 	void FigureOutBuilding();
 

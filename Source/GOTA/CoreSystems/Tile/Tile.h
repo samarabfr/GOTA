@@ -147,12 +147,6 @@ public:
 	bool TryBuild(UBuildingDataAsset* BuildingDataAsset);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
-	bool CanUpgrade();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
-	bool TryUpgrade();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	void Unbuild();
 
 	// -------------------Ecosystem-------------------------

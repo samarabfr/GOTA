@@ -264,10 +264,9 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 	{
 		Claimant->OnBuildingAdded(Building);
 	}
-	Building->Population->ChangeMaxSize(BuildingDataAsset->TierOne.Housing);
-//	Building->SetupProduction(&BuildingDataAsset->TierOne);
+	Building->Population->ChangeMaxSize(BuildingDataAsset->Housing);
 	// Add Building related GameplayTags
-	GameplayTags.AppendTags(BuildingDataAsset->TierOne.GameplayTags);
+	GameplayTags.AppendTags(BuildingDataAsset->Tags);
 	OnGameplayTagsChanged.Broadcast();
 	// Replication stuff
 	AddReplicatedSubObject(Building);
@@ -275,21 +274,6 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 	// Set Graphics
 	OnBuildingChanged.Broadcast(this);
 	InitTileLayout();
-	return true;
-}
-
-bool ATile::CanUpgrade()
-{
-	return Building->CanUpgrade();
-}
-
-bool ATile::TryUpgrade()
-{
-	if (!Building || !Building->CanUpgrade()) return false;
-	GameplayTags.RemoveTags(Building->DataAsset->GetTierData(Building->Tier)->GameplayTags);
-	Building->Upgrade();
-	GameplayTags.AppendTags(Building->DataAsset->GetTierData(Building->Tier)->GameplayTags);
-	OnBuildingChanged.Broadcast(this);
 	return true;
 }
 

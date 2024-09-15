@@ -3,8 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BuildingTierData.h"
+#include "GameplayTagContainer.h"
 #include "Engine/DataAsset.h"
+#include "GOTA/CoreSystems/Faction/Settlement/GameResources.h"
+#include "GOTA/CoreSystems/Tile/GameplayTagRule.h"
+#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "BuildingDataAsset.generated.h"
 
 UCLASS()
@@ -31,4 +34,10 @@ public:
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	int32 Housing;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	EProductionType ProductionType;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	float ProductionRate;
 };

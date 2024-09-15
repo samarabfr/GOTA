@@ -17,7 +17,7 @@ class GOTA_API UPopulation : public UObject
 	// ------------------Variable Definition----------------------
 private:
 	UPROPERTY(VisibleInstanceOnly, Category = "Population")
-	EFaction Faction = EFaction::NONE;
+	EFaction Faction = EFaction::None;
 
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Size, Category = "Population")
 	int16 Size = 0;

@@ -12,7 +12,6 @@ void UBuildingProject::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 
 	DOREPLIFETIME(UBuildingProject, Builder);
 	DOREPLIFETIME(UBuildingProject, Data);
-	DOREPLIFETIME(UBuildingProject, Tier);
 	DOREPLIFETIME(UBuildingProject, Tile);
 	DOREPLIFETIME(UBuildingProject, Cost);
 }
@@ -26,19 +25,12 @@ bool UBuildingProject::IsPossible()
 {
 	if (!Builder) return false;
 	if (!Tile) return false;
-	if (Tier < 1) return false;
 
 	//Tile is not claimed by the Builder of this project
 	if (Tile->GetClaimant() != Builder) return false;
 
 	//want to build a new building, but tile already has a building
-	if (Tier == 1 && Tile->Building) return false;
-
-	//want to upgrade a building but there is no building
-	if (Tier > 1 && !Tile->Building) return false;
-
-	//want to upgrade a building, but the tier of the building is not the previous tier of this project
-	if (Tier > 1 && Tile->Building->Tier != Tier - 1) return false;
+	if (Tile->Building) return false;
 
 	// Building takes infinitely long to build
 	if (CalculateProjectTime() == MAX_int32) return false;
@@ -48,30 +40,18 @@ bool UBuildingProject::IsPossible()
 
 bool UBuildingProject::CanAfford() const
 {
-	if (Cost.Wood > Builder->Wood->Current) return false;
-	if (Cost.Stone > Builder->Stone->Current) return false;
+	if (Cost.Wood > Builder->Resources.Wood) return false;
+	if (Cost.Stone > Builder->Resources.Stone) return false;
 	return true;
 }
 
 bool UBuildingProject::TryBuilding()
 {
 	// Trying to build a new building
-	if (Tier == 1)
+	if (Tile->TryBuild(Data))
 	{
-		if (Tile->TryBuild(Data))
-		{
-			int32 EC = 0;
-			if (Cost.Wood > 0) Builder->Wood->Subtract(Cost.Wood, EC);
-			if (Cost.Stone > 0) Builder->Stone->Subtract(Cost.Stone, EC);
-			return true;
-		}
-	}
-	// Trying to upgrade a Building
-	if (Tile->TryUpgrade())
-	{
-		int32 EC = 0;
-		if (Cost.Wood > 0) Builder->Wood->Subtract(Cost.Wood, EC);
-		if (Cost.Stone > 0) Builder->Stone->Subtract(Cost.Stone, EC);
+		if (Cost.Wood > 0) Builder->Resources.Wood -= Cost.Wood;
+		if (Cost.Stone > 0) Builder->Resources.Stone -= Cost.Stone;
 		return true;
 	}
 	return false;
@@ -80,88 +60,24 @@ bool UBuildingProject::TryBuilding()
 float UBuildingProject::CalculateScore()
 {
 	// costs
-	int32 ProjectTime = CalculateProjectTime();
+	float ProjectTime = CalculateProjectTime();
 	const float CostScore = FMath::Pow(EULERS_NUMBER, -0.1 * ProjectTime);
 	// gains
 	float GainsScore = 0;
-	FBuildingTierData* TierData = Data->GetTierData(Tier);
-	if (TierData && TierData->TierEnabled)
+	// Calculate GainScore
+	// income
+	const float MaxIncome = Data->Housing *  Data->ProductionRate;
+	if (Data->ProductionType == EProductionType::Food)
 	{
-		const int32 CountThresholdMet = TierData->Housing / TierData->PopulationThreshold;
-		int32 MaxIncomeDiff = CountThresholdMet * TierData->ProductionPerThreshold;
-		int32 MaxHousingDiff = TierData->Housing;
-		float FreeHousing = 0;
-		float CurrentPop = 0;
-		// subtract income from previous tier
-		if (Tier > 1)
-		{
-			FBuildingTierData* PreviousTierData = Data->GetTierData(Tier - 1);
-			// income
-			if (PreviousTierData && PreviousTierData->TierEnabled)
-			{
-				const int32 PreviousCountThresholdMet = PreviousTierData->Housing / PreviousTierData->
-					PopulationThreshold;
-				const int32 PreviousMaxIncome = PreviousCountThresholdMet * PreviousTierData->ProductionPerThreshold;
-				MaxIncomeDiff -= PreviousMaxIncome;
-			}
-			// Pop
-			CurrentPop = Tile->Building->Population->GetSize();
-			// Housing
-			MaxHousingDiff -= PreviousTierData->Housing;
-			FreeHousing = PreviousTierData->Housing - CurrentPop;
-		}
-		// Calculate GainScore
-		// income
-		if (TierData->ProductionType == EProductionType::Foraging)
-		{
-			const float MaxFoodIncome = MaxIncomeDiff * Builder->SettlementBalance->ForagingFoodToWoodRatio;
-			const float MaxWoodIncome = MaxIncomeDiff * (1 - Builder->SettlementBalance->ForagingFoodToWoodRatio);
-			GainsScore = Builder->ImportanceRatings.Food * MaxFoodIncome;
-			GainsScore += Builder->ImportanceRatings.Wood * MaxWoodIncome;
-		}
-		else if (TierData->ProductionType == EProductionType::Woodcutting)
-		{
-			GainsScore = Builder->ImportanceRatings.Wood * MaxIncomeDiff;
-		}
-		else if (TierData->ProductionType == EProductionType::Hunting)
-		{
-			GainsScore = Builder->ImportanceRatings.Food * MaxIncomeDiff;
-		}
-		else if (TierData->ProductionType == EProductionType::Stonecutting)
-		{
-			GainsScore = Builder->ImportanceRatings.Stone * MaxIncomeDiff;
-		}
-		else if (TierData->ProductionType == EProductionType::Bowmaking)
-		{
-			GainsScore = Builder->ImportanceRatings.Weapons * MaxIncomeDiff;
-		}
-		else if (TierData->ProductionType == EProductionType::Musketmaking)
-		{
-			GainsScore = Builder->ImportanceRatings.Weapons * MaxIncomeDiff;
-		}
-		else if (TierData->ProductionType == EProductionType::Shieldmaking)
-		{
-			GainsScore = Builder->ImportanceRatings.Shields * MaxIncomeDiff;
-		}
-		// Pop
-		GainsScore += Builder->SettlementBalance->CurrentPopImportance * CurrentPop;
-		// Housing
-		float HousingImportanceRating = Builder->SettlementBalance->HousingImportance
-			* FMath::Pow(EULERS_NUMBER, -Builder->SettlementBalance->HousingImportanceDescent * FreeHousing);
-		GainsScore += HousingImportanceRating * MaxHousingDiff;
-		// Building already exists malus
-		if(Tier == 1)
-		{
-			for (ATile* ClaimedTile : Builder->ClaimedTiles)
-			{
-				if(ClaimedTile
-					&& ClaimedTile->Building
-					&& ClaimedTile->Building->DataAsset == Data)
-				{
-					GainsScore -= Builder->SettlementBalance->BuildingAlreadyExistsMalus;
-				}
-			}
-		}
+		GainsScore = Builder->ImportanceRatings.Food * MaxIncome;
+	}
+	if (Data->ProductionType == EProductionType::Wood)
+	{
+		GainsScore = Builder->ImportanceRatings.Wood * MaxIncome;
+	}
+	if (Data->ProductionType == EProductionType::Stone)
+	{
+		GainsScore = Builder->ImportanceRatings.Food * MaxIncome;
 	}
 
 	// result
@@ -174,10 +90,8 @@ int32 UBuildingProject::CalculateProjectTime()
 	TArray<int32> Times;
 	// Time to get all the food
 	int32 FoodTime = MAX_int32;
-	float FoodIncome = Builder->BuildingSummary->ProductionMap[EProductionType::Hunting];
-	FoodIncome += Builder->BuildingSummary->ProductionMap[EProductionType::Foraging]
-		* Builder->SettlementBalance->ForagingFoodToWoodRatio;
-	const float MoreFoodNeeded = FMath::Max(0, Cost.Food - Builder->Food->Current);
+	float FoodIncome = Builder->BuildingSummary->ProductionMap[EProductionType::Food];
+	const float MoreFoodNeeded = FMath::Max(0, Cost.Food - Builder->Resources.Food);
 	if (MoreFoodNeeded == 0)
 		FoodTime = 0;
 	else if (MoreFoodNeeded > 0 && FoodIncome > 0)
@@ -185,10 +99,8 @@ int32 UBuildingProject::CalculateProjectTime()
 	Times.Add(FoodTime);
 	// Time to get all the wood
 	int32 WoodTime = MAX_int32;
-	float WoodIncome = Builder->BuildingSummary->ProductionMap[EProductionType::Woodcutting];
-	WoodIncome += Builder->BuildingSummary->ProductionMap[EProductionType::Foraging]
-		* (1 - Builder->SettlementBalance->ForagingFoodToWoodRatio);
-	const float MoreWoodNeeded = FMath::Max(0, Cost.Wood - Builder->Wood->Current);
+	float WoodIncome = Builder->BuildingSummary->ProductionMap[EProductionType::Wood];
+	const float MoreWoodNeeded = FMath::Max(0, Cost.Wood - Builder->Resources.Wood);
 	if (MoreWoodNeeded == 0)
 		WoodTime = 0;
 	else if (MoreWoodNeeded > 0 && WoodIncome > 0)
@@ -196,8 +108,8 @@ int32 UBuildingProject::CalculateProjectTime()
 	Times.Add(WoodTime);
 	// Time to get all the stone
 	int32 StoneTime = MAX_int32;
-	float StoneIncome = Builder->BuildingSummary->ProductionMap[EProductionType::Stonecutting];
-	const float MoreStoneNeeded = FMath::Max(0, Cost.Stone - Builder->Stone->Current);
+	float StoneIncome = Builder->BuildingSummary->ProductionMap[EProductionType::Stone];
+	const float MoreStoneNeeded = FMath::Max(0, Cost.Stone - Builder->Resources.Stone);
 	if (MoreStoneNeeded == 0)
 		StoneTime = 0;
 	else if (MoreStoneNeeded > 0 && StoneIncome > 0)
@@ -207,11 +119,10 @@ int32 UBuildingProject::CalculateProjectTime()
 	return FMath::Max(Times);
 }
 
-void UBuildingProject::Init(ASettlement* Builder_, UBuildingDataAsset* Data_, int32 Tier_, ATile* Tile_)
+void UBuildingProject::Init(ASettlement* Builder_, UBuildingDataAsset* Data_, ATile* Tile_)
 {
 	Builder = Builder_;
 	Data = Data_;
-	Tier = Tier_;
 	Tile = Tile_;
-	Cost = Data->GetTierData(Tier)->Cost;
+	Cost = Data->Cost;
 }
