@@ -3,10 +3,8 @@
 
 #include "BuildingDataAsset.h"
 
-FBuildingTierData* UBuildingDataAsset::GetTierData(int32 Tier)
+UBuildingDataAsset::UBuildingDataAsset()
 {
-	if(Tier == 1) return &TierOne;
-	if(Tier == 2) return &TierTwo;
-	if(Tier == 3) return &TierThree;
-	return nullptr;
+	Name = "Unnamed";
+	Housing = 0;
 }

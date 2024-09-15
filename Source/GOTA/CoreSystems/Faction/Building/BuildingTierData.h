@@ -35,4 +35,6 @@ struct GOTA_API FBuildingTierData
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	int32 ProductionPerThreshold = -1;
+
+	
 };

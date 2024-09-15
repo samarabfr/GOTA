@@ -2,17 +2,22 @@
 
 
 #include "Building.h"
-#include "BuildingDataAsset.h"
 #include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	FDoRepLifetimeParams Params;
+	Params.bIsPushBased = true;
 
-	DOREPLIFETIME(UBuilding, PopContainer);
-	DOREPLIFETIME(UBuilding, Production);
-	DOREPLIFETIME(UBuilding, Tier);
-	DOREPLIFETIME(UBuilding, DataAsset);
+	Params.Condition = COND_InitialOnly;
+	Params.RepNotifyCondition = REPNOTIFY_Always;
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, DataAsset, Params);
+
+	Params.Condition = COND_None;
+	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, Population, Params);
 }
 
 bool UBuilding::IsSupportedForNetworking() const
@@ -22,21 +27,5 @@ bool UBuilding::IsSupportedForNetworking() const
 
 UBuilding::UBuilding()
 {
-	PopContainer = CreateDefaultSubobject<UPopulation>(TEXT("Population"));
-//	PopContainer->OnPopulationChanged.AddDynamic(this, &UBuilding::UpdateProduction);
+	Population = CreateDefaultSubobject<UPopulation>(TEXT("Population"));
 }
-
-bool UBuilding::CanUpgrade()
-{
-	FBuildingTierData* NewTierData = DataAsset->GetTierData(Tier + 1);
-	return NewTierData && NewTierData->Housing > 0;
-}
-
-void UBuilding::Upgrade()
-{
-	FBuildingTierData* NewTierData = DataAsset->GetTierData(Tier + 1);
-//	SetupProduction(NewTierData);
-//	PopContainer->ChangeMaxSize(NewTierData->Housing - PopContainer->Population.MaxSize);
-	++Tier;
-}
-

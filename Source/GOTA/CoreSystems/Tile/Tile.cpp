@@ -264,14 +264,14 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
 	{
 		Claimant->OnBuildingAdded(Building);
 	}
-	Building->PopContainer->ChangeMaxSize(BuildingDataAsset->TierOne.Housing);
+	Building->Population->ChangeMaxSize(BuildingDataAsset->TierOne.Housing);
 //	Building->SetupProduction(&BuildingDataAsset->TierOne);
 	// Add Building related GameplayTags
 	GameplayTags.AppendTags(BuildingDataAsset->TierOne.GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
 	// Replication stuff
 	AddReplicatedSubObject(Building);
-	AddReplicatedSubObject(Building->PopContainer);
+	AddReplicatedSubObject(Building->Population);
 	// Set Graphics
 	OnBuildingChanged.Broadcast(this);
 	InitTileLayout();

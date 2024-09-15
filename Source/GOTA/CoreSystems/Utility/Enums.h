@@ -17,36 +17,22 @@ inline EAffiliation operator!(EAffiliation Affiliation)
 UENUM(BlueprintType)
 enum class EFaction : uint8
 {
-	NONE UMETA(DisplayName = "NONE"),
+	None UMETA(DisplayName = "None"),
 	Colonists UMETA(DisplayName = "Colonists"),
 	Natives UMETA(DisplayName = "Natives"),
-	Guardians UMETA(DisplayName = "Guardians")
+	Guardians UMETA(DisplayName = "Guardians"),
+	Enum_Length UMETA(Hidden)
 };
 
 UENUM(BlueprintType)
 enum class EProductionType : uint8
 {
-	Foraging UMETA(DisplayName = "Foraging"),
-	Woodcutting UMETA(DisplayName = "Woodcutting"),
-	Hunting UMETA(DisplayName = "Hunting"),
-	Converting UMETA(DisplayName = "Converting"),
-	Expansion UMETA(DisplayName = "Expansion"),
-	Stonecutting UMETA(DisplayName = "Stonecutting"),
-	Musketmaking UMETA(DisplayName = "Musketmaking"),
-	Shieldmaking UMETA(DisplayName = "Shieldmaking"),
-	Bowmaking UMETA(DisplayName = "Bowmaking"),
-	MAX UMETA(Hidden) // Sentinel value for enum size
-};
-
-UENUM(BlueprintType)
-enum class ECultureLoyalty : uint8
-{
-	Colonists UMETA(DisplayName = "Colonists"),
-	Guardian1 UMETA(DisplayName = "Guardian1"),
-	Guardian2 UMETA(DisplayName = "Guardian2"),
-	Guardian3 UMETA(DisplayName = "Guardian3"),
-	Guardian4 UMETA(DisplayName = "Guardian4"),
-	MAX UMETA(Hidden) // Sentinel value for enum size
+	None UMETA(DisplayName = "None"),
+	Food UMETA(DisplayName = "Food"),
+	Wood UMETA(DisplayName = "Wood"),
+	Stone UMETA(DisplayName = "Stone"),
+	XPForGuardians UMETA(DisplayName = "XP For Guardians"),
+	Enum_Length UMETA(Hidden)
 };
 
 UENUM(BlueprintType)
@@ -55,7 +41,7 @@ enum class EMood : uint8
 	Content UMETA(DisplayName = "Content"),
 	Angry UMETA(DisplayName = "Angry"),
 	Fear UMETA(DisplayName = "Fear"),
-	MAX UMETA(Hidden) // Sentinel value for enum size
+	Enum_Length UMETA(Hidden)
 };
 
 UENUM(BlueprintType)

@@ -13,7 +13,7 @@ ACombat::ACombat()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
-	
+
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	MainMesh = CreateDefaultSubobject<UStaticMeshComponent>("Main Mesh");
 	MainMesh->SetupAttachment(RootComponent);
@@ -23,7 +23,7 @@ void ACombat::BeginPlay()
 {
 	Super::BeginPlay();
 	static ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAssetFinder(
-	TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
+		TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
 	GameBalance = DataAssetFinder.Object;
 }
 
@@ -240,7 +240,7 @@ void ACombat::SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft
 		if (CombatTile.Tile->Building
 			&& CombatTile.Tile->GetClaimant()
 			&& CombatTile.Tile->GetClaimant()->Affiliation == Receiver
-			&& CombatTile.Tile->Building->PopContainer->GetSize() > 0)
+			&& CombatTile.Tile->Building->Population->GetSize() > 0)
 		{
 			/*
 			BuildingPopCombatTiles.Add(&CombatTile);
@@ -376,7 +376,7 @@ void ACombat::TriggerCombat()
 		}
 		if (Tile->Building)
 		{
-			Tile->Building->PopContainer->DecreaseSize(CombatTile.BuildingPopKills);
+			Tile->Building->Population->DecreaseSize(CombatTile.BuildingPopKills);
 			if (CombatTile.BuildingDowngrade > 0) Tile->Unbuild(); // TODO: Downgrade instead
 		}
 	}

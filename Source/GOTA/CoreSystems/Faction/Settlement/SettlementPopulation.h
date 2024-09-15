@@ -6,6 +6,8 @@
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "SettlementPopulation.generated.h"
 
+class AGS_Ingame;
+
 UCLASS()
 class GOTA_API USettlementPopulation : public UObject
 {
@@ -16,6 +18,9 @@ class GOTA_API USettlementPopulation : public UObject
 
 	UPROPERTY()
 	TArray<UPopulation*> Populations;
+
+	UPROPERTY()
+	AGS_Ingame* GameState;
 
 	// ------------------Tracking Changes----------------
 public:

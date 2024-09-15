@@ -2,6 +2,8 @@
 
 #include "SettlementPopulation.h"
 
+#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
+
 // ------------------Tracking Changes----------------
 
 void USettlementPopulation::RegisterPop(UPopulation* Pop)
@@ -15,13 +17,12 @@ void USettlementPopulation::RegisterPop(UPopulation* Pop)
 	Pop->OnFearChanged.AddDynamic(this, &USettlementPopulation::UpdateFear);
 	UpdateFear(Pop->GetFear());
 	Populations.Add(Pop);
-	/*
+	
 	if (!GameState) GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	if (Pop->GetFaction() == EFaction::Colonists)
 		GameState->TotalColonialPopulation->RegisterPop(Pop);
 	else if (Pop->GetFaction() == EFaction::Natives)
 		GameState->TotalNativePopulation->RegisterPop(Pop);
-		*/
 }
 
 void USettlementPopulation::UnregisterPop(UPopulation* Pop)
@@ -35,12 +36,11 @@ void USettlementPopulation::UnregisterPop(UPopulation* Pop)
 	Pop->OnFearChanged.RemoveDynamic(this, &USettlementPopulation::UpdateFear);
 	UpdateFear(-Pop->GetFear());
 	Populations.Remove(Pop);
-	/*
+
 	if (Pop->GetFaction() == EFaction::Colonists)
 		GameState->TotalColonialPopulation->UnregisterPop(Pop);
 	else if (Pop->GetFaction() == EFaction::Natives)
 		GameState->TotalNativePopulation->UnregisterPop(Pop);
-	*/
 }
 
 void USettlementPopulation::UpdateSize(int16 ChangedBy)

@@ -11,6 +11,7 @@ UCLASS()
 class GOTA_API UBuildingDataAsset : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
+	UBuildingDataAsset();
 	
 public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
@@ -18,18 +19,16 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	FText Description;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	EFaction FactionStyle;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	FBuildingTierData TierOne;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	FBuildingTierData TierTwo;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	FBuildingTierData TierThree;
 	
-	FBuildingTierData* GetTierData(int32 Tier);
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	FGameplayTagContainer Tags;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	TArray<FGameplayTagRule> PlacementRules;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	FGameResources Cost;
+	
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	int32 Housing;
 };

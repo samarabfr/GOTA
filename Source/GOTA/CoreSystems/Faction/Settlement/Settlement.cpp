@@ -92,13 +92,13 @@ void ASettlement::CalculateTurn()
 
 void ASettlement::OnBuildingAdded(UBuilding* Building)
 {
-	PopulationSummary->RegisterPop(Building->PopContainer);
+	PopulationSummary->RegisterPop(Building->Population);
 	BuildingSummary->RegisterBuildingProduction(Building);
 }
 
 void ASettlement::OnBuildingRemoved(UBuilding* Building)
 {
-	PopulationSummary->UnregisterPop(Building->PopContainer);
+	PopulationSummary->UnregisterPop(Building->Population);
 	BuildingSummary->UnregisterBuildingProduction(Building);
 }
 
@@ -420,7 +420,7 @@ bool ASettlement::SpawnArmy()
 	for (ATile* Tile : ClaimedTiles)
 	{
 		if (!Tile || !Tile->Building) continue;
-		Tile->Building->PopContainer->ChangeSize(-1);
+		Tile->Building->Population->ChangeSize(-1);
 	}
 
 	return true;
