@@ -115,28 +115,4 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
 	float StoneImportanceDescent = 0.1;
-
-	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
-	float WeaponsImportance = 1;
-
-	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
-	float WeaponsImportanceDescent = 0.1;
-
-	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
-	float ShieldsImportance = 1;
-
-	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
-	float ShieldsImportanceDescent = 0.1;
-
-	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
-	float HousingImportance = 1;
-
-	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
-	float HousingImportanceDescent = 0.1;
-
-	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
-	float CurrentPopImportance = 1;
-
-	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
-	float BuildingAlreadyExistsMalus = 3;
 };

@@ -215,7 +215,6 @@ void ASettlement::FillBuildingPool()
 void ASettlement::CalculateImportances()
 {
 	// The less income, the more important
-	// TODO: make functions of income calc
 	// food
 	float FoodIncome = BuildingSummary->ProductionMap[EProductionType::Food];
 	ImportanceRatings.Food = SettlementSettings->FoodImportance
