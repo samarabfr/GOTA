@@ -78,6 +78,9 @@ void ASettlement::StartingSetup(ATile* SpawnTile)
 	const TArray<UBuildingDataAsset*>& StartingBuildings = Affiliation == EAffiliation::Enemy
 		                                                       ? SettlementSettings->C_StartingBuildings
 		                                                       : SettlementSettings->N_StartingBuildings;
+	GameplayTags = Affiliation == EAffiliation::Enemy
+		               ? SettlementSettings->C_GameplayTags
+		               : SettlementSettings->N_GameplayTags;
 	Resources += StartingResources;
 	SpawnTile->TryBuild(StartingBuildings[0], this);
 	for (int32 i = 1; i < StartingBuildings.Num(); ++i)

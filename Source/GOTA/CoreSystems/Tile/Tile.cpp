@@ -271,6 +271,7 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset, ASettlement* Builder
 	
 	OnGameplayTagsChanged.Broadcast();
 	OnBuildingChanged.Broadcast(this);
+	ValidateSpawnLayout();
 	return true;
 }
 
@@ -288,6 +289,7 @@ void ATile::Unbuild()
 	RemoveReplicatedSubObject(Building->Population);
 	Building = nullptr;
 	OnBuildingChanged.Broadcast(this);
+	ValidateSpawnLayout();
 }
 
 // -------------------Ecosystem-------------------------
