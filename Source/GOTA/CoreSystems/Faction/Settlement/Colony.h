@@ -20,6 +20,9 @@ class AColony : public ASettlement
 	// --------------------Building project----------------------
 public:
 	UPROPERTY()
+	TArray<UBuildingDataAsset*> PossibleBuildings;
+	
+	UPROPERTY()
 	TArray<UBuildingProject*> BuildingProjectPool;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")

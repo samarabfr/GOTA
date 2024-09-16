@@ -8,6 +8,7 @@ AColony::AColony()
 	Affiliation = EAffiliation::Enemy;
 	
 	CurrentBuildingProject = CreateDefaultSubobject<UBuildingProject>(TEXT("Current Building Project"));
+	PossibleBuildings = SettlementSettings->C_PossibleBuildings;
 }
 
 void AColony::Tick(float DeltaSeconds)
@@ -94,8 +95,8 @@ void AColony::FillBuildingPool()
 {
 	BuildingProjectPool.Empty();
 	// If there is a free building slot, add all possible Buildings to the pool
-	Algo::RandomShuffle(ClaimedTiles);
-	for (ATile* ClaimedTile : ClaimedTiles)
+	Algo::RandomShuffle(BorderingUnclaimedTiles);
+	for (ATile* ClaimedTile : BorderingUnclaimedTiles)
 	{
 		if (ClaimedTile->Building) continue;
 		for (UBuildingDataAsset* PossibleBuilding : PossibleBuildings)

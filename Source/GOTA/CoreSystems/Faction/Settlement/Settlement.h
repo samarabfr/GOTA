@@ -56,10 +56,6 @@ protected:
 	
 	// -------------------Building-------------------------
 public:
-
-	UPROPERTY()
-	TArray<UBuildingDataAsset*> PossibleBuildings;
-
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
 	UBuildingSummary* BuildingSummary;
 

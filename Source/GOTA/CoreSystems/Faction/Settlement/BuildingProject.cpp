@@ -27,9 +27,6 @@ bool UBuildingProject::IsPossible()
 	if (!Builder) return false;
 	if (!Tile) return false;
 
-	//Tile is not claimed by the Builder of this project
-	if (Tile->GetClaimant() != Builder) return false;
-
 	//want to build a new building, but tile already has a building
 	if (Tile->Building) return false;
 
