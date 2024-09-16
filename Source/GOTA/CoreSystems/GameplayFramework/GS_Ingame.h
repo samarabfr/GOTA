@@ -94,7 +94,7 @@ public:
 	float ElapsedTurnTime;
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Replicated, Category="GOTAGameState")
-	float MaxTurnTime;
+	float MaxTurnTime = 200;
 
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
 	bool IsCalculatingTurn = false;
