@@ -18,8 +18,10 @@ protected:
 	ASettlement();
 
 	virtual void BeginPlay() override;
-
 	virtual void Tick(float DeltaSeconds) override;
+
+public:
+	void EnableTick();
 
 public:
 	UPROPERTY()

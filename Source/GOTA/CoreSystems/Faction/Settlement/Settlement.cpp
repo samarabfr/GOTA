@@ -66,6 +66,11 @@ void ASettlement::Tick(float DeltaSeconds)
 	FigureOutSendingArmy();
 }
 
+void ASettlement::EnableTick()
+{
+	SetActorTickEnabled(true);
+}
+
 void ASettlement::StartingSetup(ATile* SpawnTile)
 {
 	const FGameResources& StartingResources = Affiliation == EAffiliation::Enemy
@@ -84,6 +89,10 @@ void ASettlement::StartingSetup(ATile* SpawnTile)
 		if (BorderingUnclaimedTiles.Num() <= 0) break;
 		BorderingUnclaimedTiles[FMath::RandRange(0, BorderingUnclaimedTiles.Num() - 1)]
 			->TryBuild(StartingBuildings[i], this);
+	}
+	for (ATile* Tile : ClaimedTiles)
+	{
+		Tile->Building->Population->ChangeSize(100);
 	}
 }
 

@@ -9,7 +9,9 @@
 #include "GameFramework/GameState.h"
 #include "GOTA/CoreSystems/Entity/Entity.h"
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
 #include "GOTA/CoreSystems/Faction/Settlement/SettlementPopulation.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "GOTA/CoreSystems/Utility/StaticMeshBatcher.h"
@@ -35,10 +37,10 @@ public:
 	ATileMap* TileMap;
 
 	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
-	TArray<ASettlement*> ColonistsSettlements;
+	TArray<AColony*> Colonies;
 
 	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
-	TArray<ASettlement*> NativeSettlements;
+	ATribe* Tribe;
 
 	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
 	TArray<AGuardian*> Guardians;

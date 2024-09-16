@@ -163,16 +163,13 @@ void AGM_Ingame::CreateSettlements()
 {
 	for (ATile* Start : GOTAGameState->TileMap->ColonistsStarts)
 	{
-		ASettlement* Settlement = GetWorld()->SpawnActor<AColony>();
-		Settlement->StartingSetup(Start);
-		GOTAGameState->ColonistsSettlements.Add(Settlement);
+		AColony* Colony = GetWorld()->SpawnActor<AColony>();
+		Colony->StartingSetup(Start);
+		GOTAGameState->Colonies.Add(Colony);
 	}
-	for (ATile* Start : GOTAGameState->TileMap->NativesStarts)
-	{
-		ASettlement* Settlement = GetWorld()->SpawnActor<ATribe>();
-		Settlement->StartingSetup(Start);
-		GOTAGameState->NativeSettlements.Add(Settlement);
-	}
+	ATribe* Tribe = GetWorld()->SpawnActor<ATribe>();
+	Tribe->StartingSetup(GOTAGameState->TileMap->NativesStarts[0]);
+	GOTAGameState->Tribe = Tribe;
 }
 
 void AGM_Ingame::CreateGuardians()
