@@ -4,11 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "BuildingSummary.h"
-#include "BuildingProject.h"
-#include "BuildingProjectScore.h"
 #include "SettlementSettings.h"
 #include "SettlementPopulation.h"
-#include "SettlementImportanceRatings.h"
 #include "GameFramework/Actor.h"
 #include "Settlement.generated.h"
 
@@ -16,9 +13,8 @@ UCLASS(Abstract, Blueprintable)
 class ASettlement : public AActor
 {
 	GENERATED_BODY()
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
 protected:
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	ASettlement();
 
 	virtual void BeginPlay() override;
@@ -58,8 +54,6 @@ protected:
 	
 	// -------------------Building-------------------------
 public:
-	UPROPERTY()
-	TArray<UBuildingProject*> BuildingProjectPool;
 
 	UPROPERTY()
 	TArray<UBuildingDataAsset*> PossibleBuildings;
@@ -67,28 +61,9 @@ public:
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
 	UBuildingSummary* BuildingSummary;
 
-	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
-	UBuildingProject* CurrentBuildingProject;
-
-	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	FSettlementImportanceRatings ImportanceRatings;
-
-	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	TArray<FBuildingProjectScore> Scores;
-
-	void SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject);
-
 	void OnBuildingAdded(UBuilding* Building, ATile* Tile);
 
 	void OnBuildingRemoved(UBuilding* Building, ATile* Tile);
-
-	void FigureOutBuilding();
-
-	void SelectNewBuildingProject();
-
-	void FillBuildingPool();
-
-	void CalculateImportances();
 
 	// -------------------Army??-------------------------
 private:

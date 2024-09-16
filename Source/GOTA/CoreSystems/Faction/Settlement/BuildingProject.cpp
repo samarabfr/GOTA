@@ -2,7 +2,8 @@
 
 
 #include "BuildingProject.h"
-#include "Settlement.h"
+
+#include "Colony.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "Net/UnrealNetwork.h"
 
@@ -119,7 +120,7 @@ int32 UBuildingProject::CalculateProjectTime()
 	return FMath::Max(Times);
 }
 
-void UBuildingProject::Init(ASettlement* Builder_, UBuildingDataAsset* Data_, ATile* Tile_)
+void UBuildingProject::Init(AColony* Builder_, UBuildingDataAsset* Data_, ATile* Tile_)
 {
 	Builder = Builder_;
 	Data = Data_;

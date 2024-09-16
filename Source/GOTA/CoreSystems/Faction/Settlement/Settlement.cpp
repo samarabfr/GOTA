@@ -22,7 +22,6 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(ASettlement, BuildingSummary, Params);
-	DOREPLIFETIME_WITH_PARAMS(ASettlement, CurrentBuildingProject, Params);
 	DOREPLIFETIME_WITH_PARAMS(ASettlement, Resources, Params);
 }
 
@@ -41,7 +40,6 @@ ASettlement::ASettlement()
 
 	PopulationSummary = CreateDefaultSubobject<USettlementPopulation>(TEXT("Population"));
 	BuildingSummary = CreateDefaultSubobject<UBuildingSummary>(TEXT("Production"));
-	CurrentBuildingProject = CreateDefaultSubobject<UBuildingProject>(TEXT("Current Building Project"));
 
 	// Load Settlement Settings DataAsset
 	ConstructorHelpers::FObjectFinder<USettlementSettings> DataAsset(
@@ -57,7 +55,6 @@ void ASettlement::BeginPlay()
 	if (HasAuthority())
 	{
 		AddReplicatedSubObject(BuildingSummary);
-		AddReplicatedSubObject(CurrentBuildingProject);
 	}
 }
 
@@ -66,7 +63,6 @@ void ASettlement::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	GenerateIncome(DeltaSeconds);
-	FigureOutBuilding();
 	FigureOutSendingArmy();
 }
 
@@ -117,19 +113,6 @@ void ASettlement::RefreshBorderingUnclaimedTiles()
 
 // -------------------Building-------------------------
 
-void ASettlement::SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject)
-{
-	if (CurrentBuildingProject)
-	{
-		RemoveReplicatedSubObject(CurrentBuildingProject);
-	}
-	CurrentBuildingProject = NewCurrentBuildingProject;
-	if (CurrentBuildingProject)
-	{
-		AddReplicatedSubObject(CurrentBuildingProject);
-	}
-}
-
 void ASettlement::OnBuildingAdded(UBuilding* Building, ATile* Tile)
 {
 	PopulationSummary->RegisterPop(Building->Population);
@@ -144,92 +127,6 @@ void ASettlement::OnBuildingRemoved(UBuilding* Building, ATile* Tile)
 	BuildingSummary->UnregisterBuildingProduction(Building);
 	ClaimedTiles.Remove(Tile);
 	RefreshBorderingUnclaimedTiles();
-}
-
-void ASettlement::FigureOutBuilding()
-{
-	if (CurrentBuildingProject && CurrentBuildingProject->IsPossible())
-	{
-		if (CurrentBuildingProject->CanAfford())
-		{
-			CurrentBuildingProject->TryBuilding();
-			SetCurrentBuildingProject(nullptr);
-			SelectNewBuildingProject();
-		}
-	}
-	else
-	{
-		SetCurrentBuildingProject(nullptr);
-		SelectNewBuildingProject();
-	}
-}
-
-void ASettlement::SelectNewBuildingProject()
-{
-	CalculateImportances();
-	FillBuildingPool();
-	if (BuildingProjectPool.IsEmpty()) return;
-	// calculate scores
-	Scores.Empty();
-	for (UBuildingProject* BuildingProject : BuildingProjectPool)
-	{
-		Scores.Add(FBuildingProjectScore(BuildingProject,
-		                                 BuildingProject->CalculateScore(),
-		                                 BuildingProject->Data,
-		                                 BuildingProject->CalculateProjectTime()));
-	}
-	// sort by highest score
-	Scores.Sort([](const FBuildingProjectScore& A, const FBuildingProjectScore& B)
-	{
-		return A.Score > B.Score;
-	});
-	// Set from the highest score
-	UBuildingProject* Highest = nullptr;
-	float LowestScore = -MAX_FLT;
-	for (auto Score : Scores)
-	{
-		if (Score.Score > LowestScore)
-		{
-			LowestScore = Score.Score;
-			Highest = Score.BuildingProject;
-		}
-	}
-	SetCurrentBuildingProject(Highest);
-}
-
-void ASettlement::FillBuildingPool()
-{
-	BuildingProjectPool.Empty();
-	// If there is a free building slot, add all possible Buildings to the pool
-	Algo::RandomShuffle(ClaimedTiles);
-	for (ATile* ClaimedTile : ClaimedTiles)
-	{
-		if (ClaimedTile->Building) continue;
-		for (UBuildingDataAsset* PossibleBuilding : PossibleBuildings)
-		{
-			UBuildingProject* BuildingProject = NewObject<UBuildingProject>();
-			BuildingProject->Init(this, PossibleBuilding, ClaimedTile);
-			BuildingProjectPool.Add(BuildingProject);
-		}
-		break;
-	}
-}
-
-void ASettlement::CalculateImportances()
-{
-	// The less income, the more important
-	// food
-	float FoodIncome = BuildingSummary->ProductionMap[EProductionType::Food];
-	ImportanceRatings.Food = SettlementSettings->FoodImportance
-		* FMath::Pow(EULERS_NUMBER, -SettlementSettings->FoodImportanceDescent * FoodIncome);
-	// wood
-	float WoodIncome = BuildingSummary->ProductionMap[EProductionType::Wood];
-	ImportanceRatings.Wood = SettlementSettings->WoodImportance
-		* FMath::Pow(EULERS_NUMBER, -SettlementSettings->WoodImportanceDescent * WoodIncome);
-	// stone
-	float StoneIncome = BuildingSummary->ProductionMap[EProductionType::Stone];
-	ImportanceRatings.Stone = SettlementSettings->StoneImportance
-		* FMath::Pow(EULERS_NUMBER, -SettlementSettings->StoneImportanceDescent * StoneIncome);
 }
 
 // -------------------Army??-------------------------

@@ -3,12 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "SettlementImportanceRatings.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "BuildingProject.generated.h"
 
-class ASettlement;
+class AColony;
 
 UCLASS(Blueprintable)
 class GOTA_API UBuildingProject : public UObject
@@ -19,7 +18,7 @@ class GOTA_API UBuildingProject : public UObject
 
 public:
 	UPROPERTY( BlueprintReadOnly, Replicated, Category="Building Project")
-	ASettlement* Builder;
+	AColony* Builder;
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Building Project")
 	UBuildingDataAsset* Data;
@@ -44,5 +43,5 @@ public:
 	int32 CalculateProjectTime();
 
 	UFUNCTION(BlueprintCallable, Category="Building Project")
-	void Init(ASettlement* Builder_, UBuildingDataAsset* Data_, ATile* Tile_);
+	void Init(AColony* Builder_, UBuildingDataAsset* Data_, ATile* Tile_);
 };
