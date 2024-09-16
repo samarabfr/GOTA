@@ -11,12 +11,14 @@ struct FGameResources
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Graphics")
+	UPROPERTY(EditAnywhere, Category = "Resources")
 	int32 Food = 0;
 
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Graphics")
+	UPROPERTY(EditAnywhere, Category = "Resources")
 	int32 Wood = 0;
 	
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Graphics")
+	UPROPERTY(EditAnywhere, Category = "Resources")
 	int32 Stone = 0;
+	
+	FGameResources& operator+=(const FGameResources& Addend);
 };

@@ -13,51 +13,42 @@ class GOTA_API UTileGraphicsDataAsset : public UPrimaryDataAsset
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Biome Material Instances")
+	UPROPERTY(EditDefaultsOnly, Category="Biome Material Instances")
 	UMaterialInstance* M_Grass;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Biome Material Instances")
+	UPROPERTY(EditDefaultsOnly, Category="Biome Material Instances")
 	UMaterialInstance* M_Beach;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Biome Material Instances")
+	UPROPERTY(EditDefaultsOnly, Category="Biome Material Instances")
 	UMaterialInstance* M_Mountain;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Biome Material Instances")
+	UPROPERTY(EditDefaultsOnly, Category="Biome Material Instances")
 	UMaterialInstance* M_Volcano;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Asset DataTables")
-	UDataTable* BuildingAssets;
+	UPROPERTY(EditDefaultsOnly, Category="Claim Meshes")
+	UStaticMesh* ClaimMesh;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Asset DataTables")
-	UDataTable* TreeAssets;
+	UPROPERTY(EditDefaultsOnly, Category="Claim Meshes")
+	UStaticMesh* ClaimMeshRiver;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Asset DataTables")
-	UDataTable* PropAssets;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Asset DataTables")
-	UDataTable* ForageAssets;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Asset")
+	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
 	UTileAssetDA* DefaultTileAsset;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Asset")
+	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
 	TArray<UTileAssetDA*> MainBuildingTileAssets;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Asset")
+	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
 	TArray<UTileAssetDA*> BuildingTileAssets;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Asset")
+	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
 	TArray<UTileAssetDA*> TreeTileAssets;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Asset")
+	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
 	TArray<UTileAssetDA*> PropTileAssets;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Asset")
+	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
 	TArray<UTileAssetDA*> ForageTileAssets;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Graphics")
+	UPROPERTY(EditDefaultsOnly, Category="Tile Graphics")
 	UDataTable* TileLayouts;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile Graphics")
-	TArray<FSpawnPoint> ClaimFlagSpawnPoints;
 };

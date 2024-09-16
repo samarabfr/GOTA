@@ -6,13 +6,10 @@
 #include "BuildingSummary.h"
 #include "BuildingProject.h"
 #include "BuildingProjectScore.h"
-#include "SettlementBalance.h"
+#include "SettlementSettings.h"
 #include "SettlementPopulation.h"
 #include "SettlementImportanceRatings.h"
 #include "GameFramework/Actor.h"
-#include "GOTA/CoreSystems/Entity/Army.h"
-#include "GOTA/CoreSystems/Faction/Attribute/GOTAAttributeLimited.h"
-#include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "Settlement.generated.h"
 
 UCLASS(Abstract, Blueprintable)
@@ -20,100 +17,70 @@ class ASettlement : public AActor
 {
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
+protected:
 	ASettlement();
 
-	// ---------------------------------------------------------
-	// Setup
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaSeconds) override;
 
 public:
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Settlement")
-	USettlementBalance* SettlementBalance;
+	UPROPERTY()
+	USettlementSettings* SettlementSettings;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category="Settlement")
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
 	EAffiliation Affiliation;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
 	FGameplayTagContainer GameplayTags;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category="Settlement")
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
 	USettlementPopulation* PopulationSummary;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
 	FGameResources Resources;
 
-	UPROPERTY(VisibleInstanceOnly, Instanced, BlueprintReadWrite, BlueprintSetter=SetCurrentBuildingProject, Replicated,
-		Category="Settlement")
-	UBuildingProject* CurrentBuildingProject;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
-	UBuildingSummary* BuildingSummary;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Settlement")
-	TArray<ATile*> ClaimedTiles;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Settlement")
-	FSettlementImportanceRatings ImportanceRatings;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Settlement")
-	TArray<FBuildingProjectScore> Scores;
-
-	UFUNCTION(BlueprintSetter)
-	void SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject);
+	void StartingSetup(ATile* SpawnTile);
 
 	void GenerateIncome(float DeltaSeconds);
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
-	void OnBuildingAdded(UBuilding* Building);
+	// -------------------Claims-------------------------
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
-	void OnBuildingRemoved(UBuilding* Building);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
-	void LostClaim(ATile* Tile);
-
-	FPrimitiveInstanceId AddClaimMeshInstance(FTransform& Transform);
-	void RemoveClaimMeshInstance(FPrimitiveInstanceId InstanceId);
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
-	void InitialStartingSetup(ATile* SpawnTile);
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
+	TArray<ATile*> ClaimedTiles;
 
 protected:
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AArmy> ArmyClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	UStaticMesh* ClaimMesh;
-
-	UPROPERTY(EditDefaultsOnly)
-	UStaticMesh* ClaimMeshRiver;
-
 	UPROPERTY()
-	UInstancedStaticMeshComponent* ISM_ClaimWalls;
+	TArray<ATile*> BorderingUnclaimedTiles;
 
-	UPROPERTY()
-	UInstancedStaticMeshComponent* ISM_ClaimWallsRiver;
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
-	void ClaimTile(ATile* Tile);
-
-	UFUNCTION(BlueprintCallable)
-	bool ClaimRandomTile();
-
-private:	
-	UPROPERTY()
-	TSet<ATile*> BorderingUnclaimedTiles;
-
-	UPROPERTY()
-	ATileMap* TileMap;
-
+	void RefreshBorderingUnclaimedTiles();
+	
+	// -------------------Building-------------------------
+public:
 	UPROPERTY()
 	TArray<UBuildingProject*> BuildingProjectPool;
 
 	UPROPERTY()
 	TArray<UBuildingDataAsset*> PossibleBuildings;
+
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
+	UBuildingSummary* BuildingSummary;
+
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
+	UBuildingProject* CurrentBuildingProject;
+
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
+	FSettlementImportanceRatings ImportanceRatings;
+
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
+	TArray<FBuildingProjectScore> Scores;
+
+	void SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject);
+
+	void OnBuildingAdded(UBuilding* Building, ATile* Tile);
+
+	void OnBuildingRemoved(UBuilding* Building, ATile* Tile);
 
 	void FigureOutBuilding();
 
@@ -123,6 +90,8 @@ private:
 
 	void CalculateImportances();
 
+	// -------------------Army??-------------------------
+private:
 	void FigureOutSendingArmy();
 
 	float CalculateArmySpawnChance();

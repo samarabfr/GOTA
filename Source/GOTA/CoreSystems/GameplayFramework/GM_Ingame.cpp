@@ -2,20 +2,20 @@
 
 
 #include "GM_Ingame.h"
-
-
 #include "GOTAGameInstance.h"
 #include "LoadingManager.h"
 #include "PC_Ingame.h"
 #include "PS_Ingame.h"
 #include "GameFramework/GameStateBase.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
 #include "GOTA/CoreSystems/Tile/WorldGenerator.h"
 #include "Kismet/GameplayStatics.h"
 
 AGM_Ingame::AGM_Ingame()
 {
-	static ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAssetFinder(
+	ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAssetFinder(
 		TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
 	GameBalance = DataAssetFinder.Object;
 }
@@ -163,14 +163,14 @@ void AGM_Ingame::CreateSettlements()
 {
 	for (ATile* Start : GOTAGameState->TileMap->ColonistsStarts)
 	{
-		ASettlement* Settlement = GetWorld()->SpawnActor<ASettlement>(ColonistSettlementClass);
-		Settlement->InitialStartingSetup(Start);
+		ASettlement* Settlement = GetWorld()->SpawnActor<AColony>();
+		Settlement->StartingSetup(Start);
 		GOTAGameState->ColonistsSettlements.Add(Settlement);
 	}
 	for (ATile* Start : GOTAGameState->TileMap->NativesStarts)
 	{
-		ASettlement* Settlement = GetWorld()->SpawnActor<ASettlement>(NativeSettlementClass);
-		Settlement->InitialStartingSetup(Start);
+		ASettlement* Settlement = GetWorld()->SpawnActor<ATribe>();
+		Settlement->StartingSetup(Start);
 		GOTAGameState->NativeSettlements.Add(Settlement);
 	}
 }

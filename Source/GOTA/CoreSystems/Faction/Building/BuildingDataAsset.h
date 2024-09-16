@@ -24,7 +24,7 @@ public:
 	FText Description;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
-	FGameplayTagContainer Tags;
+	FGameplayTagContainer GameplayTags;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
 	TArray<FGameplayTagRule> PlacementRules;

@@ -48,7 +48,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	void ServerInit();
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, ReplicatedUsing=OnRep_GameplayTags, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_GameplayTags, Category="Tile")
 	FGameplayTagContainer GameplayTags;
 
 	UFUNCTION()
@@ -62,8 +62,11 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	TArray<ATile*> Neighbors;
-
-
+	
+private:
+	UPROPERTY()
+	AGS_Ingame* GameState;
+	
 	// ------------------------Entity---------------------------
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintGetter=GetAlliedEntity, Replicated, Category="Tile")
@@ -144,7 +147,7 @@ public:
 	bool CanBuild();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
-	bool TryBuild(UBuildingDataAsset* BuildingDataAsset);
+	bool TryBuild(UBuildingDataAsset* BuildingDataAsset, ASettlement* Builder);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	void Unbuild();

@@ -27,12 +27,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<AMouseUtils> MouseUtilsClass;
 	
-	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
-	TSubclassOf<ASettlement> ColonistSettlementClass;
-
-	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
-	TSubclassOf<ASettlement> NativeSettlementClass;
-	
 	// ---------------------------------------------------------
 	// Control the Flow of the Game
 private:

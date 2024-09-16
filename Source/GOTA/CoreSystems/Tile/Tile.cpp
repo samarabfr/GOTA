@@ -29,30 +29,26 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(ATile, SpawnLayout, Params);
-	
 	DOREPLIFETIME_WITH_PARAMS(ATile, EcoValues, Params);
+	DOREPLIFETIME_WITH_PARAMS(ATile, GameplayTags, Params);
+	DOREPLIFETIME_WITH_PARAMS(ATile, Building, Params);
+	DOREPLIFETIME_WITH_PARAMS(ATile, Claimant, Params);
 	
-	DOREPLIFETIME(ATile, GameplayTags);
-	DOREPLIFETIME(ATile, Building);
-	DOREPLIFETIME(ATile, Claimant);
 	DOREPLIFETIME(ATile, AlliedEntity);
 	DOREPLIFETIME(ATile, EnemyEntity);
 }
 
 ATile::ATile()
 {
-	// Replication Setup
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
 	NetUpdateFrequency = 1.0f;
 
-	// Tick Setup
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	PrimaryActorTick.TickInterval = 0.5f;
 
-	// initialize neighbor array
 	Neighbors.SetNumZeroed(6);
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ROOT"));
@@ -65,7 +61,7 @@ ATile::ATile()
 void ATile::BeginPlay()
 {
 	Super::BeginPlay();
-	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
+	GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
 }
 
@@ -186,13 +182,15 @@ void ATile::UpdateClaimWalls()
 					Transform.SetLocation(GetActorLocation());
 					Transform.SetRotation(
 						FRotator(0, 60 * i, 0).Quaternion());
-					ClaimWallsInstanceIds.Add(i, Claimant->AddClaimMeshInstance(Transform));
+					ClaimWallsInstanceIds.Add(i, GameState->StaticMeshBatcher->AddStaticMeshInstance(
+						                          DA_TileGraphics->ClaimMesh, Transform));
 				}
 			}
 			else if (ClaimWallsInstanceIds.Contains(i))
 			{
 				// Should NOT have flag in this direction
-				Claimant->RemoveClaimMeshInstance(*ClaimWallsInstanceIds.Find(i));
+				GameState->StaticMeshBatcher->RemoveStaticMeshInstance(
+					DA_TileGraphics->ClaimMesh, *ClaimWallsInstanceIds.Find(i));
 				ClaimWallsInstanceIds.Remove(i);
 			}
 		}
@@ -202,7 +200,7 @@ void ATile::UpdateClaimWalls()
 		// remove all flags
 		for (TTuple<uint8, FPrimitiveInstanceId> Tuple : ClaimWallsInstanceIds)
 		{
-			Claimant->RemoveClaimMeshInstance(Tuple.Value);
+			GameState->StaticMeshBatcher->RemoveStaticMeshInstance(DA_TileGraphics->ClaimMesh,Tuple.Value);
 		}
 		ClaimWallsInstanceIds.Empty();
 	}
@@ -219,7 +217,7 @@ bool ATile::TryClaim(ASettlement* PotentialClaimant)
 	Claimant = PotentialClaimant;
 	if (Building)
 	{
-		Claimant->OnBuildingAdded(Building);
+		Claimant->OnBuildingAdded(Building, this);
 	}
 	GameplayTags.AppendTags(Claimant->GameplayTags);
 	UpdateClaimWallsWithNeighbors();
@@ -232,9 +230,8 @@ void ATile::Unclaim()
 	if (!Claimant) return;
 	if (Building)
 	{
-		Claimant->OnBuildingRemoved(Building);
+		Claimant->OnBuildingRemoved(Building, this);
 	}
-	Claimant->LostClaim(this);
 	GameplayTags.RemoveTags(Claimant->GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
 	Claimant = nullptr;
@@ -253,56 +250,49 @@ bool ATile::CanBuild()
 	return !Building;
 }
 
-bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
+bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset, ASettlement* Builder)
 {
-	// There is already a Building, can't build here
-	if (Building) return false;
-	// Create Building Object
+	if (!CanBuild() || !Builder) return false;
 	Building = NewObject<UBuilding>();
 	Building->DataAsset = BuildingDataAsset;
-	if (Claimant)
-	{
-		Claimant->OnBuildingAdded(Building);
-	}
 	Building->Population->ChangeMaxSize(BuildingDataAsset->Housing);
-	// Add Building related GameplayTags
-	GameplayTags.AppendTags(BuildingDataAsset->Tags);
-	OnGameplayTagsChanged.Broadcast();
-	// Replication stuff
 	AddReplicatedSubObject(Building);
 	AddReplicatedSubObject(Building->Population);
-	// Set Graphics
+	
+	SetClaimant(Builder);
+	Claimant->OnBuildingAdded(Building, this);
+	
+	GameplayTags.AppendTags(Claimant->GameplayTags);
+	GameplayTags.AppendTags(BuildingDataAsset->GameplayTags);
+	
+	OnGameplayTagsChanged.Broadcast();
 	OnBuildingChanged.Broadcast(this);
-	InitTileLayout();
 	return true;
 }
 
 
 void ATile::Unbuild()
 {
-	// there is no Building
 	if (!Building) return;
 	if (Claimant)
 	{
-		Claimant->OnBuildingRemoved(Building);
+		Claimant->OnBuildingRemoved(Building, this);
 	}
-	// Remove Building related GameplayTags
-	GameplayTags.RemoveTag(FGameplayTag::RequestGameplayTag(FName("Building")));
+	GameplayTags.RemoveTags(Building->DataAsset->GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
-	// Destroy the Object
+	RemoveReplicatedSubObject(Building);
+	RemoveReplicatedSubObject(Building->Population);
 	Building = nullptr;
-	// Set Graphics
 	OnBuildingChanged.Broadcast(this);
-	InitTileLayout();
 }
 
 // -------------------Ecosystem-------------------------
 
 void ATile::GOTATick()
 {
-	if(LastTick < 0)
+	if (LastTick < 0)
 	{
-		LastTick =  GetWorld()->GetTimeSeconds();
+		LastTick = GetWorld()->GetTimeSeconds();
 		return;
 	}
 	double DeltaSeconds = GetWorld()->GetTimeSeconds() - LastTick;
@@ -391,7 +381,6 @@ void ATile::UpdateHexagonMaterial()
 
 void ATile::InitTileContent()
 {
-	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	TileContent = NewObject<UTileContent>();
 	TileContent->Init(this, GameState);
 }

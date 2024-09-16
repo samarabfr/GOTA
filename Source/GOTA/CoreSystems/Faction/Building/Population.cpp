@@ -2,7 +2,7 @@
 
 
 #include "Population.h"
-#include "GOTA/CoreSystems/Faction/Settlement/SettlementBalance.h"
+#include "GOTA/CoreSystems/Faction/Settlement/SettlementSettings.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -29,8 +29,8 @@ bool UPopulation::IsSupportedForNetworking() const
 
 UPopulation::UPopulation()
 {
-	static ConstructorHelpers::FObjectFinder<USettlementBalance> DataAsset(
-		TEXT("/Game/CoreSystems/Faction/DA_SettlementBalance"));
+	ConstructorHelpers::FObjectFinder<USettlementSettings> DataAsset(
+		TEXT("/Game/CoreSystems/Faction/DA_SettlementSettings"));
 	GrowthThreshold = DataAsset.Object->PopulationGrowthThreshold;
 }
 
