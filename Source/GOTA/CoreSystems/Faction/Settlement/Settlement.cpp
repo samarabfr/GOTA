@@ -79,12 +79,12 @@ void ASettlement::StartingSetup(ATile* SpawnTile)
 		                                                       ? SettlementSettings->C_StartingBuildings
 		                                                       : SettlementSettings->N_StartingBuildings;
 	Resources += StartingResources;
-	SpawnTile->TryBuild(StartingBuildings[0], TODO);
+	SpawnTile->TryBuild(StartingBuildings[0], this);
 	for (int32 i = 1; i < StartingBuildings.Num(); ++i)
 	{
 		if (BorderingUnclaimedTiles.Num() <= 0) break;
 		BorderingUnclaimedTiles[FMath::RandRange(0, BorderingUnclaimedTiles.Num() - 1)]
-			->TryBuild(StartingBuildings[i], TODO);
+			->TryBuild(StartingBuildings[i], this);
 	}
 }
 

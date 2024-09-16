@@ -48,7 +48,7 @@ bool UBuildingProject::CanAfford() const
 bool UBuildingProject::TryBuilding()
 {
 	// Trying to build a new building
-	if (Tile->TryBuild(Data, TODO))
+	if (Tile->TryBuild(Data, Builder))
 	{
 		if (Cost.Wood > 0) Builder->Resources.Wood -= Cost.Wood;
 		if (Cost.Stone > 0) Builder->Resources.Stone -= Cost.Stone;
