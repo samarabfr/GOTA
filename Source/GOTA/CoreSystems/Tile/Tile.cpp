@@ -264,6 +264,10 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset, ASettlement* Builder
 	
 	GameplayTags.AppendTags(Claimant->GameplayTags);
 	GameplayTags.AppendTags(BuildingDataAsset->GameplayTags);
+
+	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, GameplayTags, this);
+	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, Claimant, this);
+	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, Building, this);
 	
 	OnGameplayTagsChanged.Broadcast();
 	OnBuildingChanged.Broadcast(this);
