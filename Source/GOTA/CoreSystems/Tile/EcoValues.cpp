@@ -108,7 +108,7 @@ void UEcoValues::SetMaxValues(int32 NewMaxTrees, EBiome Biome)
 	// Set Max Trees
 	MaxTrees = NewMaxTrees;
 	if (MaxTrees < 0) MaxTrees = 0;
-	if (Trees > MaxTrees) Trees = MaxTrees;
+	if (Trees > MaxTrees) SubtractTrees(Trees - MaxTrees);
 	MARK_PROPERTY_DIRTY_FROM_NAME(UEcoValues, MaxTrees, this)
 	// Set Max Forage
 	MaxForage = 0;
