@@ -130,34 +130,19 @@ void UEcoValues::MaxALlValues()
 	SetForage(MaxForage);
 }
 
-void UEcoValues::AddNeighborTrees(int32 Amount)
+void UEcoValues::NeighborChangedTrees(int32 Amount)
 {
 	TreeGrowth += Amount * DA_EcoSystem->TreeGrowthPerNeighborTree;
 }
 
-void UEcoValues::AddNeighborWildlife(int32 Amount)
+void UEcoValues::NeighborChangedWildlife(int32 Amount)
 {
 	WildlifeGrowth += Amount * DA_EcoSystem->WildlifeGrowthPerNeighborWildlife;
 }
 
-void UEcoValues::AddNeighborForage(int32 Amount)
+void UEcoValues::NeighborChangedForage(int32 Amount)
 {
 	ForageGrowth += Amount * DA_EcoSystem->ForageGrowthPerNeighborForage;
-}
-
-void UEcoValues::SubtractNeighborTrees(int32 Amount)
-{
-	TreeGrowth -= Amount * DA_EcoSystem->TreeGrowthPerNeighborTree;
-}
-
-void UEcoValues::SubtractNeighborWildlife(int32 Amount)
-{
-	WildlifeGrowth -= Amount * DA_EcoSystem->WildlifeGrowthPerNeighborWildlife;
-}
-
-void UEcoValues::SubtractNeighborForage(int32 Amount)
-{
-	ForageGrowth -= Amount * DA_EcoSystem->ForageGrowthPerNeighborForage;
 }
 
 // -------------------OnChange-------------------------

@@ -26,13 +26,9 @@ public:
 	void SetMaxValues(int32 NewMaxTrees, EBiome Biome);
 	void MaxALlValues();
 	
-	void AddNeighborTrees(int32 Amount);
-	void AddNeighborWildlife(int32 Amount);
-	void AddNeighborForage(int32 Amount);
-
-	void SubtractNeighborTrees(int32 Amount);
-	void SubtractNeighborWildlife(int32 Amount);
-	void SubtractNeighborForage(int32 Amount);
+	void NeighborChangedTrees(int32 Amount);
+	void NeighborChangedWildlife(int32 Amount);
+	void NeighborChangedForage(int32 Amount);
 
 	// -------------------OnChange-------------------------
 private:

@@ -314,7 +314,7 @@ void ATile::AddTreesToNeighbors(int32 Change)
 	ForceNetUpdate();
 	for (int i = 0; i < 6; ++i)
 	{
-		if (Neighbors[i]) Neighbors[i]->EcoValues->AddNeighborTrees(Change);
+		if (Neighbors[i]) Neighbors[i]->EcoValues->NeighborChangedTrees(Change);
 	}
 }
 
@@ -323,7 +323,7 @@ void ATile::AddWildlifeToNeighbors(int32 Change)
 	ForceNetUpdate();
 	for (int i = 0; i < 6; ++i)
 	{
-		if (Neighbors[i]) Neighbors[i]->EcoValues->AddNeighborWildlife(Change);
+		if (Neighbors[i]) Neighbors[i]->EcoValues->NeighborChangedWildlife(Change);
 	}
 }
 
@@ -332,7 +332,7 @@ void ATile::AddForageToNeighbors(int32 Change)
 	ForceNetUpdate();
 	for (int i = 0; i < 6; ++i)
 	{
-		if (Neighbors[i]) Neighbors[i]->EcoValues->AddNeighborForage(Change);
+		if (Neighbors[i]) Neighbors[i]->EcoValues->NeighborChangedForage(Change);
 	}
 }
 

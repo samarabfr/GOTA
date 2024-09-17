@@ -96,8 +96,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Tile")
 	bool IsWalkable(EAffiliation Affiliation) const;
 
-	// ---------------------------------------------------------
-	// Claimant and claiming
+	// -------------------Claimant and claiming-------------------
 
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintSetter=SetClaimant, BlueprintGetter=GetClaimant,
@@ -131,8 +130,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	void Unclaim();
 
-	// ---------------------------------------------------------
-	// Building
+	// -----------------------Building---------------------
 
 	UPROPERTY(VisibleInstanceOnly, Instanced, BlueprintReadWrite, ReplicatedUsing=OnRep_Building, Category="Tile")
 	UBuilding* Building;
@@ -152,7 +150,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	void Unbuild();
 
-	// -------------------Ecosystem-------------------------
+	// -------------------Ticking-------------------------
 private:
 	double LastTick = -1.0;
 	
