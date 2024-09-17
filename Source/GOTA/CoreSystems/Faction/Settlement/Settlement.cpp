@@ -63,7 +63,6 @@ void ASettlement::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	GenerateIncome(DeltaSeconds);
-	FigureOutSendingArmy();
 }
 
 void ASettlement::EnableTick()
