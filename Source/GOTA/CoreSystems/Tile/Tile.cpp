@@ -33,7 +33,7 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME_WITH_PARAMS(ATile, GameplayTags, Params);
 	DOREPLIFETIME_WITH_PARAMS(ATile, Building, Params);
 	DOREPLIFETIME_WITH_PARAMS(ATile, Claimant, Params);
-	
+
 	DOREPLIFETIME(ATile, AlliedEntity);
 	DOREPLIFETIME(ATile, EnemyEntity);
 }
@@ -56,9 +56,9 @@ ATile::ATile()
 	SM_Hexagon->SetupAttachment(RootComponent);
 
 	EcoValues = CreateDefaultSubobject<UEcoValues>(TEXT("EcoValues"));
-	EcoValues->OnTreesChanged.AddDynamic(this, &ATile::AddTreesToNeighbors);
-	EcoValues->OnWildlifeChanged.AddDynamic(this, &ATile::AddWildlifeToNeighbors);
-	EcoValues->OnForageChanged.AddDynamic(this, &ATile::AddForageToNeighbors);
+	EcoValues->OnTreesChanged.AddDynamic(this, &ATile::TreesChanged);
+	EcoValues->OnWildlifeChanged.AddDynamic(this, &ATile::WildlifeChanged);
+	EcoValues->OnForageChanged.AddDynamic(this, &ATile::ForageChanged);
 }
 
 void ATile::BeginPlay()
@@ -153,7 +153,7 @@ void ATile::SetClaimant(ASettlement* NewClaimant)
 
 void ATile::OnRep_Claimant(ASettlement* NewClaimant)
 {
-	if(!GameState) GameState = GetWorld()->GetGameState<AGS_Ingame>();
+	if (!GameState) GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	UpdateClaimWallsWithNeighbors();
 }
 
@@ -200,7 +200,7 @@ void ATile::UpdateClaimWalls()
 		// remove all flags
 		for (TTuple<uint8, FPrimitiveInstanceId> Tuple : ClaimWallsInstanceIds)
 		{
-			GameState->StaticMeshBatcher->RemoveStaticMeshInstance(DA_TileGraphics->ClaimMesh,Tuple.Value);
+			GameState->StaticMeshBatcher->RemoveStaticMeshInstance(DA_TileGraphics->ClaimMesh, Tuple.Value);
 		}
 		ClaimWallsInstanceIds.Empty();
 	}
@@ -240,11 +240,6 @@ void ATile::Unclaim()
 // ---------------------------------------------------------
 // Building
 
-void ATile::OnRep_Building()
-{
-	OnBuildingChanged.Broadcast(this);
-}
-
 bool ATile::CanBuild()
 {
 	return !Building;
@@ -258,19 +253,19 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset, ASettlement* Builder
 	Building->Population->ChangeMaxSize(BuildingDataAsset->Housing);
 	AddReplicatedSubObject(Building);
 	AddReplicatedSubObject(Building->Population);
-	
+
 	SetClaimant(Builder);
 	Claimant->OnBuildingAdded(Building, this);
-	
+
 	GameplayTags.AppendTags(Claimant->GameplayTags);
 	GameplayTags.AppendTags(BuildingDataAsset->GameplayTags);
 
 	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, GameplayTags, this);
 	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, Claimant, this);
 	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, Building, this);
-	
+
 	OnGameplayTagsChanged.Broadcast();
-	OnBuildingChanged.Broadcast(this);
+	BuildingChanged();
 	ValidateSpawnLayout();
 	return true;
 }
@@ -288,8 +283,27 @@ void ATile::Unbuild()
 	RemoveReplicatedSubObject(Building);
 	RemoveReplicatedSubObject(Building->Population);
 	Building = nullptr;
-	OnBuildingChanged.Broadcast(this);
+	BuildingChanged();
 	ValidateSpawnLayout();
+}
+
+void ATile::OnRep_Building()
+{
+	BuildingChanged();
+}
+
+void ATile::BuildingChanged()
+{
+	OnBuildingChanged.Broadcast(this);
+	if (Building)
+	{
+		Building->Population->OnSizeChanged.AddDynamic(this, &ATile::PopSizeChanged);
+		for (ATile* Neighbor : Neighbors)
+		{
+			if (Neighbor && Neighbor->Building)
+				Building->Population->NeighborChangedPopSize(Neighbor->Building->Population->GetSize());
+		}
+	}
 }
 
 // -------------------Ecosystem-------------------------
@@ -303,13 +317,28 @@ void ATile::GOTATick()
 	}
 	double DeltaSeconds = GetWorld()->GetTimeSeconds() - LastTick;
 	if (HasAuthority())
+	{
 		EcoValues->ServerTick(DeltaSeconds);
+		if (Building) Building->Population->ServerTick(DeltaSeconds);
+	}
 	else
+	{
 		EcoValues->ClientTick(DeltaSeconds);
+		if (Building) Building->Population->ClientTick(DeltaSeconds);
+	}
 	LastTick = GetWorld()->GetTimeSeconds();
 }
 
-void ATile::AddTreesToNeighbors(int32 Change)
+void ATile::PopSizeChanged(const int16 Change)
+{
+	ForceNetUpdate();
+	for (int i = 0; i < 6; ++i)
+	{
+		if (Neighbors[i] && Neighbors[i]->Building) Neighbors[i]->Building->Population->NeighborChangedPopSize(Change);
+	}
+}
+
+void ATile::TreesChanged(const int32 Change)
 {
 	ForceNetUpdate();
 	for (int i = 0; i < 6; ++i)
@@ -318,7 +347,7 @@ void ATile::AddTreesToNeighbors(int32 Change)
 	}
 }
 
-void ATile::AddWildlifeToNeighbors(int32 Change)
+void ATile::WildlifeChanged(const int32 Change)
 {
 	ForceNetUpdate();
 	for (int i = 0; i < 6; ++i)
@@ -327,7 +356,7 @@ void ATile::AddWildlifeToNeighbors(int32 Change)
 	}
 }
 
-void ATile::AddForageToNeighbors(int32 Change)
+void ATile::ForageChanged(const int32 Change)
 {
 	ForceNetUpdate();
 	for (int i = 0; i < 6; ++i)
@@ -388,7 +417,7 @@ void ATile::UpdateHexagonMaterial()
 void ATile::InitTileContent()
 {
 	TileContent = NewObject<UTileContent>();
-	if(!GameState) GameState = GetWorld()->GetGameState<AGS_Ingame>();
+	if (!GameState) GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	TileContent->Init(this, GameState);
 }
 

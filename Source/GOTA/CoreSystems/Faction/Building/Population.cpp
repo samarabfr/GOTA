@@ -19,7 +19,6 @@ void UPopulation::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME_WITH_PARAMS(UPopulation, Angry, Params)
 	DOREPLIFETIME_WITH_PARAMS(UPopulation, Fear, Params)
 	DOREPLIFETIME_WITH_PARAMS(UPopulation, GrowthProgress, Params)
-	DOREPLIFETIME_WITH_PARAMS(UPopulation, Growth, Params)
 }
 
 bool UPopulation::IsSupportedForNetworking() const
@@ -31,30 +30,31 @@ UPopulation::UPopulation()
 {
 	ConstructorHelpers::FObjectFinder<USettlementSettings> DataAsset(
 		TEXT("/Game/CoreSystems/Faction/DA_SettlementSettings"));
-	GrowthThreshold = DataAsset.Object->PopulationGrowthThreshold;
+	SettlementSettings = DataAsset.Object;
+}
+
+void UPopulation::ServerTick(const float DeltaSeconds)
+{
+	ClientTick(DeltaSeconds);
+
+	if (GrowthProgress >= SettlementSettings->PopulationGrowthThreshold)
+	{
+		int32 Count = GrowthProgress / SettlementSettings->PopulationGrowthThreshold;
+		IncreaseSize(Count);
+		GrowthProgress -= Count * SettlementSettings->PopulationGrowthThreshold;
+		MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, GrowthProgress, this)
+	}
+}
+
+void UPopulation::ClientTick(const float DeltaSeconds)
+{
+	if (Size == MaxSize)
+		GrowthProgress = 0.0f;
+	else
+		GrowthProgress += Growth * DeltaSeconds;
 }
 
 // ---------------Changing Population Values-----------------------
-
-void UPopulation::OnRep_Size(const int16 OldValue)
-{
-	OnSizeChanged.Broadcast(Size - OldValue);
-}
-
-void UPopulation::OnRep_MaxSize(const int16 OldValue)
-{
-	OnMaxSizeChanged.Broadcast(MaxSize - OldValue);
-}
-
-void UPopulation::OnRep_Angry(const int16 OldValue)
-{
-	OnAngryChanged.Broadcast(Angry - OldValue);
-}
-
-void UPopulation::OnRep_Fear(const int16 OldValue)
-{
-	OnFearChanged.Broadcast(Fear - OldValue);
-}
 
 void UPopulation::SetFaction(EFaction NewFaction)
 {
@@ -75,7 +75,7 @@ void UPopulation::IncreaseSize(const int16 Change)
 	const int16 OldSize = Size;
 	Size = Size + Change > MaxSize ? MaxSize : Size + Change;
 	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Size, this)
-	OnSizeChanged.Broadcast(Size - OldSize);
+	SizeChanged(Size - OldSize);
 }
 
 void UPopulation::DecreaseSize(const int16 Change)
@@ -85,7 +85,7 @@ void UPopulation::DecreaseSize(const int16 Change)
 	Size = Size - Change < 0 ? 0 : Size - Change;
 	SubtractMoodWeightedRandom(OldSize - Size);
 	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Size, this)
-	OnSizeChanged.Broadcast(Size - OldSize);
+	SizeChanged(Size - OldSize);
 }
 
 void UPopulation::ChangeMaxSize(const int16 Change)
@@ -101,7 +101,7 @@ void UPopulation::IncreaseMaxSize(const int16 Change)
 	if (Change <= 0) return;
 	MaxSize += Change;
 	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, MaxSize, this)
-	OnMaxSizeChanged.Broadcast(Change);
+	MaxSizeChanged(Change);
 }
 
 void UPopulation::DecreaseMaxSize(const int16 Change)
@@ -112,7 +112,7 @@ void UPopulation::DecreaseMaxSize(const int16 Change)
 	if (MaxSize < Size)
 		DecreaseSize(Size - MaxSize);
 	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, MaxSize, this)
-	OnMaxSizeChanged.Broadcast(MaxSize - OldMaxSize);
+	MaxSizeChanged(MaxSize - OldMaxSize);
 }
 
 void UPopulation::ChangeMood(const EMood Mood, const int16 Change)
@@ -149,10 +149,10 @@ void UPopulation::IncreaseAngry(const int16 Change)
 		const int16 OldFear = Fear;
 		Fear = Size - Angry;
 		MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Fear, this)
-		OnFearChanged.Broadcast(Fear - OldFear);
+		FearChanged(Fear - OldFear);
 	}
 	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Angry, this)
-	OnAngryChanged.Broadcast(Angry - OldAngry);
+	AngryChanged(Angry - OldAngry);
 }
 
 void UPopulation::DecreaseAngry(const int16 Change)
@@ -161,7 +161,7 @@ void UPopulation::DecreaseAngry(const int16 Change)
 	const int16 OldAngry = Angry;
 	Angry = Angry - Change < 0 ? 0 : Angry - Change;
 	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Angry, this)
-	OnAngryChanged.Broadcast(Angry - OldAngry);
+	AngryChanged(Angry - OldAngry);
 }
 
 void UPopulation::IncreaseFear(const int16 Change)
@@ -174,10 +174,10 @@ void UPopulation::IncreaseFear(const int16 Change)
 		const int16 OldAngry = Angry;
 		Angry = Size - Fear;
 		MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Angry, this)
-		OnAngryChanged.Broadcast(Angry - OldAngry);
+		AngryChanged(Angry - OldAngry);
 	}
 	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Fear, this)
-	OnFearChanged.Broadcast(Fear - OldFear);
+	FearChanged(Fear - OldFear);
 }
 
 void UPopulation::DecreaseFear(const int16 Change)
@@ -186,7 +186,7 @@ void UPopulation::DecreaseFear(const int16 Change)
 	const int16 OldFear = Fear;
 	Fear = Fear - Change < 0 ? 0 : Fear - Change;
 	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Fear, this)
-	OnFearChanged.Broadcast(Fear - OldFear);
+	FearChanged(Fear - OldFear);
 }
 
 void UPopulation::SubtractMoodWeightedRandom(const int16 Change)
@@ -204,17 +204,68 @@ void UPopulation::SubtractMoodWeightedRandom(const int16 Change)
 	if (Angry != OldAngry)
 	{
 		MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Angry, this)
-		OnFearChanged.Broadcast(Angry - OldAngry);
+		AngryChanged(Angry - OldAngry);
 	}
 	if (Fear != OldFear)
 	{
 		MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, Fear, this)
-		OnFearChanged.Broadcast(Fear - OldFear);
+		FearChanged(Fear - OldFear);
 	}
+}
+
+void UPopulation::OnRep_Size(const int16 OldValue)
+{
+	SizeChanged(Size - OldValue);
+}
+
+void UPopulation::OnRep_MaxSize(const int16 OldValue)
+{
+	MaxSizeChanged(Size - OldValue);
+}
+
+void UPopulation::OnRep_Angry(const int16 OldValue)
+{
+	AngryChanged(Size - OldValue);
+}
+
+void UPopulation::OnRep_Fear(const int16 OldValue)
+{
+	FearChanged(Size - OldValue);
+}
+
+void UPopulation::NeighborChangedPopSize(int16 Amount)
+{
+	Growth += Amount * SettlementSettings->PopGrowthPerNeighborPop;
+}
+
+void UPopulation::SizeChanged(const int16 Change)
+{
+	Growth += Change * SettlementSettings->PopGrowthPerOwnPop;
+	OnSizeChanged.Broadcast(Change);
+}
+
+void UPopulation::MaxSizeChanged(const int16 Change)
+{
+	OnMaxSizeChanged.Broadcast(Change);
+}
+
+void UPopulation::AngryChanged(const int16 Change)
+{
+	OnAngryChanged.Broadcast(Change);
+}
+
+void UPopulation::FearChanged(const int16 Change)
+{
+	OnFearChanged.Broadcast(Change);
 }
 
 // ---------------------------------------------------------
 // Getters and Setters
+
+float UPopulation::GetGrowthThreshold() const
+{
+	return SettlementSettings->PopulationGrowthThreshold;
+}
 
 int16 UPopulation::GetContentMood() const
 {

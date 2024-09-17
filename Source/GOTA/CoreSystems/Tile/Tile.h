@@ -18,6 +18,7 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Tile.generated.h"
 
+class UBuildingDataAsset;
 class UBuilding;
 class ASettlement;
 
@@ -131,24 +132,20 @@ public:
 	void Unclaim();
 
 	// -----------------------Building---------------------
-
-	UPROPERTY(VisibleInstanceOnly, Instanced, BlueprintReadWrite, ReplicatedUsing=OnRep_Building, Category="Tile")
+	
+	bool CanBuild();
+	bool TryBuild(UBuildingDataAsset* BuildingDataAsset, ASettlement* Builder);
+	void Unbuild();
+	
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Building, Category="Tile")
 	UBuilding* Building;
 
 	UFUNCTION()
 	void OnRep_Building();
 
-	UPROPERTY(BlueprintAssignable)
+	void BuildingChanged();
+	
 	FOnTileChangedSignature OnBuildingChanged;
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
-	bool CanBuild();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
-	bool TryBuild(UBuildingDataAsset* BuildingDataAsset, ASettlement* Builder);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
-	void Unbuild();
 
 	// -------------------Ticking-------------------------
 private:
@@ -156,18 +153,21 @@ private:
 	
 public:
 	void GOTATick();
+
+	UFUNCTION()
+	void PopSizeChanged(const int16 Change);
 	
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	UEcoValues* EcoValues;
 
 	UFUNCTION()
-	void AddTreesToNeighbors(int32 Change);
+	void TreesChanged(const int32 Change);
 
 	UFUNCTION()
-	void AddWildlifeToNeighbors(int32 Change);
+	void WildlifeChanged(const int32 Change);
 
 	UFUNCTION()
-	void AddForageToNeighbors(int32 Change);
+	void ForageChanged(const int32 Change);
 
 	// -----------------------Graphics--------------------------
 public:

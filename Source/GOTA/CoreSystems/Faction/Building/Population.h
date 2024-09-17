@@ -6,6 +6,8 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Population.generated.h"
 
+class USettlementSettings;
+
 UCLASS(Blueprintable)
 class GOTA_API UPopulation : public UObject
 {
@@ -13,9 +15,16 @@ class GOTA_API UPopulation : public UObject
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
 	UPopulation();
-
+	
+public:
+	void ServerTick(const float DeltaSeconds);
+	void ClientTick(const float DeltaSeconds);
+	
 	// ------------------Variable Definition----------------------
 private:
+	UPROPERTY()
+	USettlementSettings* SettlementSettings;
+
 	UPROPERTY(VisibleInstanceOnly, Category = "Population")
 	EFaction Faction = EFaction::None;
 
@@ -32,26 +41,12 @@ private:
 	int16 Fear = 0;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category = "Population")
-	float GrowthProgress = 0;
-
-	UPROPERTY(VisibleInstanceOnly, Replicated, Category = "Population")
-	float Growth = 0;
+	float GrowthProgress = 0.0f;
 
 	UPROPERTY(VisibleInstanceOnly, Category = "Population")
-	float GrowthThreshold = 0;
+	float Growth = 0.0f;
 
 	// ---------------Changing Population Values-----------------------
-	UFUNCTION()
-	void OnRep_Size(const int16 OldValue);
-
-	UFUNCTION()
-	void OnRep_MaxSize(const int16 OldValue);
-
-	UFUNCTION()
-	void OnRep_Angry(const int16 OldValue);
-
-	UFUNCTION()
-	void OnRep_Fear(const int16 OldValue);
 
 public:
 	void SetFaction(EFaction NewFaction);
@@ -85,6 +80,27 @@ public:
 private:
 	void SubtractMoodWeightedRandom(const int16 Change);
 
+	UFUNCTION()
+	void OnRep_Size(const int16 OldValue);
+
+	UFUNCTION()
+	void OnRep_MaxSize(const int16 OldValue);
+
+	UFUNCTION()
+	void OnRep_Angry(const int16 OldValue);
+
+	UFUNCTION()
+	void OnRep_Fear(const int16 OldValue);
+	
+public:
+	void NeighborChangedPopSize(int16 Amount);
+	
+private:
+	void SizeChanged(const int16 Change);
+	void MaxSizeChanged(const int16 Change);
+	void AngryChanged(const int16 Change);
+	void FearChanged(const int16 Change);
+
 	// ------------------Delegates----------------------
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInt16ChangedSig, int16, ChangedBy);
@@ -111,7 +127,7 @@ public:
 
 	float GetGrowth() const { return Growth; }
 
-	float GetGrowthThreshold() const { return GrowthThreshold; }
+	float GetGrowthThreshold() const;
 
 	int16 GetContentMood() const;
 

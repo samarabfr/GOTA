@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "GOTA/CoreSystems/Entity/Army.h"
-#include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
+#include "GameResources.h"
 #include "SettlementSettings.generated.h"
+
+class AArmy;
+class UBuildingDataAsset;
 
 UCLASS(Blueprintable)
 class GOTA_API USettlementSettings : public UPrimaryDataAsset
@@ -43,6 +45,12 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Population")
 	int32 PopulationGrowthThreshold;
+
+	UPROPERTY(EditDefaultsOnly, Category="Population")
+	float PopGrowthPerOwnPop;
+
+	UPROPERTY(EditDefaultsOnly, Category="Population")
+	float PopGrowthPerNeighborPop;
 
 	UPROPERTY(EditDefaultsOnly, Category="EcoValues")
 	int32 NativeTreeThreshold;
