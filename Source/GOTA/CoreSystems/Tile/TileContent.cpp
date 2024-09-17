@@ -223,7 +223,8 @@ void UTileContent::ValidateEverything()
 
 void UTileContent::ValidateMainBuilding(ATile* Tile_)
 {
-	if (Tile->Building)
+	FGameplayTag BuildingTag = FGameplayTag::RequestGameplayTag(FName("Building"));
+	if (Tile_->GameplayTags.HasTag(BuildingTag))
 	{
 		MainBuilding.TileAsset = Tile->DA_TileGraphics->DefaultTileAsset;
 		SpawnTileAsset(MainBuilding);
@@ -244,7 +245,8 @@ void UTileContent::SpawnProps()
 
 void UTileContent::ValidateBuildings(ATile* Tile_)
 {
-	if (Tile_->Building)
+	FGameplayTag BuildingTag = FGameplayTag::RequestGameplayTag(FName("Building"));
+	if (Tile_->GameplayTags.HasTag(BuildingTag))
 	{
 		for (FTileAssetSpawn& TileAssetSpawn : BuildingTileAssetSpawns)
 		{
