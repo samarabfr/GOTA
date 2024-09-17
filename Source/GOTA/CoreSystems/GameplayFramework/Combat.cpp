@@ -17,14 +17,15 @@ ACombat::ACombat()
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	MainMesh = CreateDefaultSubobject<UStaticMeshComponent>("Main Mesh");
 	MainMesh->SetupAttachment(RootComponent);
+
+	ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAssetFinder(
+	TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
+	GameBalance = DataAssetFinder.Object;
 }
 
 void ACombat::BeginPlay()
 {
 	Super::BeginPlay();
-	static ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAssetFinder(
-		TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
-	GameBalance = DataAssetFinder.Object;
 }
 
 bool ACombat::DoesCombatTilesContain(ATile* Tile)

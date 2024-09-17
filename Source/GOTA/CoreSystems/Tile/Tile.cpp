@@ -56,6 +56,9 @@ ATile::ATile()
 	SM_Hexagon->SetupAttachment(RootComponent);
 
 	EcoValues = CreateDefaultSubobject<UEcoValues>(TEXT("EcoValues"));
+	EcoValues->OnTreesChanged.AddDynamic(this, &ATile::AddTreesToNeighbors);
+	EcoValues->OnWildlifeChanged.AddDynamic(this, &ATile::AddWildlifeToNeighbors);
+	EcoValues->OnForageChanged.AddDynamic(this, &ATile::AddForageToNeighbors);
 }
 
 void ATile::BeginPlay()
@@ -68,10 +71,6 @@ void ATile::BeginPlay()
 void ATile::ServerInit()
 {
 	AddReplicatedSubObject(EcoValues);
-
-	EcoValues->OnTreesChanged.AddDynamic(this, &ATile::AddTreesToNeighbors);
-	EcoValues->OnWildlifeChanged.AddDynamic(this, &ATile::AddWildlifeToNeighbors);
-	EcoValues->OnForageChanged.AddDynamic(this, &ATile::AddForageToNeighbors);
 }
 
 void ATile::OnRep_GameplayTags()
@@ -154,6 +153,7 @@ void ATile::SetClaimant(ASettlement* NewClaimant)
 
 void ATile::OnRep_Claimant(ASettlement* NewClaimant)
 {
+	if(!GameState) GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	UpdateClaimWallsWithNeighbors();
 }
 
@@ -388,6 +388,7 @@ void ATile::UpdateHexagonMaterial()
 void ATile::InitTileContent()
 {
 	TileContent = NewObject<UTileContent>();
+	if(!GameState) GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	TileContent->Init(this, GameState);
 }
 
