@@ -62,12 +62,4 @@ public:
 	void OnBuildingAdded(UBuilding* Building, ATile* Tile);
 
 	void OnBuildingRemoved(UBuilding* Building, ATile* Tile);
-
-	// -------------------Army??-------------------------
-private:
-	void FigureOutSendingArmy();
-
-	float CalculateArmySpawnChance();
-
-	bool SpawnArmy();
 };
