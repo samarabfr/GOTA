@@ -242,7 +242,7 @@ void ATile::Unclaim()
 
 bool ATile::CanBuild()
 {
-	return !Building;
+	return !Building && Terrain.Biome != EBiome::Volcano;
 }
 
 bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset, ASettlement* Builder)
