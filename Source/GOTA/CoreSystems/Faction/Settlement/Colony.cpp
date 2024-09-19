@@ -6,7 +6,7 @@
 AColony::AColony()
 {
 	Affiliation = EAffiliation::Enemy;
-	
+
 	CurrentBuildingProject = CreateDefaultSubobject<UBuildingProject>(TEXT("Current Building Project"));
 	PossibleBuildings = SettlementSettings->C_PossibleBuildings;
 }
@@ -14,7 +14,7 @@ AColony::AColony()
 void AColony::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	
+
 	FigureOutBuilding();
 }
 
@@ -63,6 +63,8 @@ void AColony::SelectNewBuildingProject()
 	CalculateImportances();
 	FillBuildingPool();
 	if (BuildingProjectPool.IsEmpty()) return;
+	SetCurrentBuildingProject(BuildingProjectPool[FMath::RandRange(0, BuildingProjectPool.Num() - 1)]);
+	/*
 	// calculate scores
 	Scores.Empty();
 	for (UBuildingProject* BuildingProject : BuildingProjectPool)
@@ -89,6 +91,7 @@ void AColony::SelectNewBuildingProject()
 		}
 	}
 	SetCurrentBuildingProject(Highest);
+	*/
 }
 
 void AColony::FillBuildingPool()
