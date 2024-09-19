@@ -102,13 +102,13 @@ public:
 
 	// ------------------------Civilians---------------------------
 private:
-	UPROPERTY()
+	UPROPERTY(VisibleInstanceOnly)
 	TArray<ACivilian*> Civilians;
 
 public:
 	bool AcceptsCivilian() const;
 	void AddCivilian(ACivilian* Civilian);
-	void RemoveCivilian(ACivilian* Civilian);
+	void RemoveCivilian(const ACivilian* Civilian);
 
 	// -------------------Claimant and claiming-------------------
 

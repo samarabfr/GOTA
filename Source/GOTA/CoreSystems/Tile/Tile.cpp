@@ -164,9 +164,12 @@ void ATile::AddCivilian(ACivilian* Civilian)
 	}
 }
 
-void ATile::RemoveCivilian(ACivilian* Civilian)
+void ATile::RemoveCivilian(const ACivilian* Civilian)
 {
-	Civilians.Remove(Civilian);
+	for (ACivilian* Slot : Civilians)
+	{
+		if(Slot == Civilian) Slot = nullptr;
+	}
 }
 
 AEntity* ATile::GetEntityByAffiliation(EAffiliation Affiliation) const
