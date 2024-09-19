@@ -18,7 +18,7 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 
 	Params.Condition = COND_InitialOnly;
 	Params.RepNotifyCondition = REPNOTIFY_Always;
-	DOREPLIFETIME_WITH_PARAMS(UBuilding, DataAsset, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, Settings, Params);
 
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
@@ -36,23 +36,33 @@ UBuilding::UBuilding()
 	Population->OnSizeChanged.AddDynamic(this, &UBuilding::PopSizeChanged);
 }
 
-void UBuilding::ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile)
+void UBuilding::ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile, ASettlement* Settlement)
 {
-	DataAsset = DataAsset_;
-	Population->ChangeMaxSize(DataAsset->Housing);
-	if (DataAsset->CivilianEntityClass)
+	Settings = DataAsset_;
+	Population->ChangeMaxSize(Settings->Housing);
+	if (Settings->CivilianClass)
 	{
-		Civilian = Tile->GetWorld()->SpawnActor<ACivilian>(DataAsset->CivilianEntityClass);
-		Civilian->SetActorLocation(Tile->GetActorLocation());
+		Civilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);
+		Civilian->Init(Settlement, Tile, GetCivilianWorkRate(), Settings->WorkAmountPerCycle, GetCivilianMovementRate());
 	}
 }
 
 float UBuilding::GetCurrentProduction() const
 {
-	return DataAsset->ProductionRate * Population->GetSize();
+	return Settings->ProductionRate * Population->GetSize();
 }
 
 void UBuilding::PopSizeChanged(int16 Change)
 {
-	OnProductionChanged.Broadcast(DataAsset->ProductionRate * Change, DataAsset->ProductionType);
+	OnProductionChanged.Broadcast(Settings->ProductionRate * Change, Settings->ProductionType);
+}
+
+float UBuilding::GetCivilianWorkRate() const
+{
+	return 100 / Settings->SecondsPerWorkCycle;
+}
+
+float UBuilding::GetCivilianMovementRate() const
+{
+	return 100 / Settings->SecondsPerMove;
 }

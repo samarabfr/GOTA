@@ -18,6 +18,7 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Tile.generated.h"
 
+class ACivilian;
 class UBuildingDataAsset;
 class UBuilding;
 class ASettlement;
@@ -96,6 +97,18 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category="Tile")
 	bool IsWalkable(EAffiliation Affiliation) const;
+
+	bool AcceptsEntity(EEntityType EntityType) const;
+
+	// ------------------------Civilians---------------------------
+private:
+	UPROPERTY()
+	TArray<ACivilian*> Civilians;
+
+public:
+	bool AcceptsCivilian() const;
+	void AddCivilian(ACivilian* Civilian);
+	void RemoveCivilian(ACivilian* Civilian);
 
 	// -------------------Claimant and claiming-------------------
 

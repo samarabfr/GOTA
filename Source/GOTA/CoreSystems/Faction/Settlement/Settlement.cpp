@@ -120,6 +120,11 @@ void ASettlement::RefreshBorderingUnclaimedTiles()
 	}
 }
 
+bool ASettlement::IsBorderingUnclaimedTile(const ATile* Tile) const
+{
+	return BorderingUnclaimedTiles.Contains(Tile);
+}
+
 // -------------------Building-------------------------
 
 void ASettlement::OnBuildingAdded(UBuilding* Building, ATile* Tile)

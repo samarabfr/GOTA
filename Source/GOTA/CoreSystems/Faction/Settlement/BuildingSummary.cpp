@@ -27,14 +27,14 @@ void UBuildingSummary::RegisterBuildingProduction(UBuilding* Building)
 {
 	if (!Building) return;
 	Building->OnProductionChanged.AddDynamic(this, &UBuildingSummary::UpdateBuildingProduction);
-	UpdateBuildingProduction(Building->GetCurrentProduction(), Building->DataAsset->ProductionType);
+	UpdateBuildingProduction(Building->GetCurrentProduction(), Building->Settings->ProductionType);
 }
 
 void UBuildingSummary::UnregisterBuildingProduction(UBuilding* Building)
 {
 	if (!Building) return;
 	Building->OnProductionChanged.RemoveDynamic(this, &UBuildingSummary::UpdateBuildingProduction);
-	UpdateBuildingProduction(-Building->GetCurrentProduction(), Building->DataAsset->ProductionType);
+	UpdateBuildingProduction(-Building->GetCurrentProduction(), Building->Settings->ProductionType);
 }
 
 void UBuildingSummary::UpdateBuildingProduction(float Change, EProductionType Type)

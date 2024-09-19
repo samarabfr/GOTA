@@ -51,4 +51,7 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Tile Graphics")
 	UDataTable* TileLayouts;
+
+	UPROPERTY(EditDefaultsOnly, Category="Tile Entities")
+	TArray<FVector> CivilianSlots;
 };

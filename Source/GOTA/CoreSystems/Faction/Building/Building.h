@@ -4,6 +4,7 @@
 
 #include "Building.generated.h"
 
+class ASettlement;
 class ATile;
 class UPopulation;
 class ACivilian;
@@ -18,10 +19,10 @@ class GOTA_API UBuilding : public UObject
 	UBuilding();
 
 public:
-	void ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile);
+	void ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile, ASettlement* Settlement);
 	
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
-	UBuildingDataAsset* DataAsset;
+	UBuildingDataAsset* Settings;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UPopulation* Population;
@@ -40,4 +41,7 @@ public:
 	
 	UPROPERTY()
 	ACivilian* Civilian;
+	
+	float GetCivilianWorkRate() const;
+	float GetCivilianMovementRate() const;
 };

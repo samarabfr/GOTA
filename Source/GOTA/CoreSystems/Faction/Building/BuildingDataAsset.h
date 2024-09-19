@@ -45,12 +45,15 @@ public:
 
 	//--------------------------Civilian Entity-------------------
 	
-	UPROPERTY(EditDefaultsOnly, Category="Civilian Entity")
-	TSubclassOf<ACivilian> CivilianEntityClass;
+	UPROPERTY(EditDefaultsOnly, Category="Civilian")
+	TSubclassOf<ACivilian> CivilianClass;
 
-	UPROPERTY(EditDefaultsOnly, Category="Civilian Entity")
-	float SecondsPerCycle;
+	UPROPERTY(EditDefaultsOnly, Category="Civilian")
+	float SecondsPerWorkCycle;
 
-	UPROPERTY(EditDefaultsOnly, Category="Civilian Entity")
-	int16 ProductionPerCycle;	
+	UPROPERTY(EditDefaultsOnly, Category="Civilian")
+	int32 WorkAmountPerCycle;
+
+	UPROPERTY(EditDefaultsOnly, Category="Civilian")
+	float SecondsPerMove;	
 };

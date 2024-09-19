@@ -76,3 +76,18 @@ enum class EGameStatus : uint8
 	Running UMETA(DisplayName = "Running"),
 	Ended UMETA(DisplayName = "Victory")
 };
+
+UENUM()
+enum class ECivilianStatus : uint8
+{
+	Idle UMETA(DisplayName = "Idle"),
+	Moving UMETA(DisplayName = "Moving"),
+	Working UMETA(DisplayName = "Working")
+};
+
+UENUM()
+enum class EEntityType : uint8
+{
+	Civilian UMETA(DisplayName = "Civilian"),
+	Military UMETA(DisplayName = "Military")
+};

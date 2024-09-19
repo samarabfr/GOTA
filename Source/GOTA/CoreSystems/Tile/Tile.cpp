@@ -2,6 +2,8 @@
 
 
 #include "Tile.h"
+
+#include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
@@ -71,6 +73,7 @@ void ATile::BeginPlay()
 void ATile::ServerInit()
 {
 	AddReplicatedSubObject(EcoValues);
+	Civilians.SetNumZeroed(DA_TileGraphics->CivilianSlots.Num());
 }
 
 void ATile::OnRep_GameplayTags()
@@ -128,6 +131,42 @@ bool ATile::IsWalkable(EAffiliation Affiliation) const
 		return !EnemyEntity;
 	}
 	return false;
+}
+
+bool ATile::AcceptsEntity(EEntityType EntityType) const
+{
+	if(EntityType == EEntityType::Civilian)
+		return AcceptsCivilian();
+	return false; // TODO: implement acceptsMilitary
+}
+
+bool ATile::AcceptsCivilian() const
+{
+	if (Terrain.Biome == EBiome::Volcano)
+		return false;
+	for (const ACivilian* Civilian : Civilians)
+	{
+		if (!Civilian) return true;
+	}
+	return false;
+}
+
+void ATile::AddCivilian(ACivilian* Civilian)
+{
+	for (int32 i = 0; i < Civilians.Num(); ++i)
+	{
+		if (!Civilians[i])
+		{
+			Civilians[i] = Civilian;
+			Civilian->SetActorLocation(DA_TileGraphics->CivilianSlots[i] + GetActorLocation());
+			return;
+		}
+	}
+}
+
+void ATile::RemoveCivilian(ACivilian* Civilian)
+{
+	Civilians.Remove(Civilian);
 }
 
 AEntity* ATile::GetEntityByAffiliation(EAffiliation Affiliation) const
@@ -249,7 +288,7 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset, ASettlement* Builder
 {
 	if (!CanBuild() || !Builder) return false;
 	Building = NewObject<UBuilding>();
-	Building->ServerInit(BuildingDataAsset, this);
+	Building->ServerInit(BuildingDataAsset, this, Builder);
 	AddReplicatedSubObject(Building);
 	AddReplicatedSubObject(Building->Population);
 
@@ -277,7 +316,7 @@ void ATile::Unbuild()
 	{
 		Claimant->OnBuildingRemoved(Building, this);
 	}
-	GameplayTags.RemoveTags(Building->DataAsset->GameplayTags);
+	GameplayTags.RemoveTags(Building->Settings->GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
 	RemoveReplicatedSubObject(Building);
 	RemoveReplicatedSubObject(Building->Population);

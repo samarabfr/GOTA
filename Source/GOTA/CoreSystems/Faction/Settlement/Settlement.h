@@ -53,6 +53,9 @@ protected:
 	TArray<ATile*> BorderingUnclaimedTiles;
 
 	void RefreshBorderingUnclaimedTiles();
+
+public:
+	bool IsBorderingUnclaimedTile(const ATile* Tile) const;
 	
 	// -------------------Building-------------------------
 public:

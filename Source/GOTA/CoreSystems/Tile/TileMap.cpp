@@ -188,6 +188,50 @@ ATile* ATileMap::GetRandomTile()
 	return nullptr;
 }
 
+TArray<ATile*> ATileMap::FindPathToNearestTile(ATile* Origin, const EEntityType EntityType,
+                                               const std::function<bool(const ATile*)>& Condition = [](const ATile*)
+                                               {
+	                                               return true;
+                                               })
+{
+	if (!Origin) return TArray<ATile*>();
+	TArray<ATile*> Frontier;
+	Frontier.Add(Origin);
+	TMap<ATile*, ATile*> CameFrom;
+	CameFrom.Add(Origin, nullptr);
+	ATile* End = nullptr;
+	// form flow field
+	while (!Frontier.IsEmpty())
+	{
+		ATile* Current = Frontier[0];
+		Frontier.Remove(Current);
+		if (Condition(Current))
+		{
+			// found target Tile
+			End = Current;
+			break;
+		}
+		for (ATile* Next : Current->Neighbors)
+		{
+			if (Next && Next->AcceptsEntity(EntityType) && !CameFrom.Contains(Next))
+			{
+				Frontier.Add(Next);
+				CameFrom.Add(Next, Current);
+			}
+		}
+	}
+	// reconstruct Path
+	if (!End) return TArray<ATile*>();
+	ATile* Current = End;
+	TArray<ATile*> Path;
+	while (Current != Origin)
+	{
+		Path.Add(Current);
+		Current = CameFrom[Current];
+	}
+	return Path;
+}
+
 TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End, EAffiliation Affiliation)
 {
 	//https://www.redblobgames.com/pathfinding/a-star/introduction.html
