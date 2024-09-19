@@ -4,6 +4,9 @@
 #include "Building.h"
 
 #include "BuildingDataAsset.h"
+#include "Population.h"
+#include "GOTA/CoreSystems/Entity/Civilian.h"
+#include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -31,6 +34,17 @@ UBuilding::UBuilding()
 {
 	Population = CreateDefaultSubobject<UPopulation>(TEXT("Population"));
 	Population->OnSizeChanged.AddDynamic(this, &UBuilding::PopSizeChanged);
+}
+
+void UBuilding::ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile)
+{
+	DataAsset = DataAsset_;
+	Population->ChangeMaxSize(DataAsset->Housing);
+	if (DataAsset->CivilianEntityClass)
+	{
+		Civilian = Tile->GetWorld()->SpawnActor<ACivilian>(DataAsset->CivilianEntityClass);
+		Civilian->SetActorLocation(Tile->GetActorLocation());
+	}
 }
 
 float UBuilding::GetCurrentProduction() const

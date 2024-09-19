@@ -2,13 +2,13 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
-#include "Engine/DataAsset.h"
 #include "GOTA/CoreSystems/Faction/Settlement/GameResources.h"
 #include "GOTA/CoreSystems/Tile/GameplayTagRule.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "BuildingDataAsset.generated.h"
+
+class ACivilian;
 
 UCLASS()
 class GOTA_API UBuildingDataAsset : public UPrimaryDataAsset
@@ -17,27 +17,40 @@ class GOTA_API UBuildingDataAsset : public UPrimaryDataAsset
 	UBuildingDataAsset();
 	
 public:
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	UPROPERTY(EditDefaultsOnly, Category="Building")
 	FName Name;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	UPROPERTY(EditDefaultsOnly, Category="Building")
 	FText Description;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	UPROPERTY(EditDefaultsOnly, Category="Building")
 	FGameplayTagContainer GameplayTags;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	UPROPERTY(EditDefaultsOnly, Category="Building")
 	TArray<FGameplayTagRule> PlacementRules;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	UPROPERTY(EditDefaultsOnly, Category="Building")
 	FGameResources Cost;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	UPROPERTY(EditDefaultsOnly, Category="Building")
 	int32 Housing;
+
+	//------------------Production Per Time Per Pop------------------
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	UPROPERTY(EditDefaultsOnly, Category="Production Per Time Per Pop")
 	EProductionType ProductionType;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Building")
+	UPROPERTY(EditDefaultsOnly, Category="Production Per Time Per Pop")
 	float ProductionRate;
+
+	//--------------------------Civilian Entity-------------------
+	
+	UPROPERTY(EditDefaultsOnly, Category="Civilian Entity")
+	TSubclassOf<ACivilian> CivilianEntityClass;
+
+	UPROPERTY(EditDefaultsOnly, Category="Civilian Entity")
+	float SecondsPerCycle;
+
+	UPROPERTY(EditDefaultsOnly, Category="Civilian Entity")
+	int16 ProductionPerCycle;	
 };

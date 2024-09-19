@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Population.h"
-#include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Building.generated.h"
 
+class ATile;
+class UPopulation;
+class ACivilian;
 class UBuildingDataAsset;
 
 UCLASS(Blueprintable)
@@ -18,6 +18,8 @@ class GOTA_API UBuilding : public UObject
 	UBuilding();
 
 public:
+	void ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile);
+	
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UBuildingDataAsset* DataAsset;
 
@@ -28,9 +30,14 @@ public:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnProductionChangedSig, float, Change, EProductionType, ProductionType);
 
 	FOnProductionChangedSig OnProductionChanged;
-
+	
 	float GetCurrentProduction() const;
 
 	UFUNCTION()
 	void PopSizeChanged(int16 Change);
+
+	//---------------------Civilian Entity----------------
+	
+	UPROPERTY()
+	ACivilian* Civilian;
 };

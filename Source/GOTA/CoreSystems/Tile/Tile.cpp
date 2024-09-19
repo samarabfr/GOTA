@@ -249,8 +249,7 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset, ASettlement* Builder
 {
 	if (!CanBuild() || !Builder) return false;
 	Building = NewObject<UBuilding>();
-	Building->DataAsset = BuildingDataAsset;
-	Building->Population->ChangeMaxSize(BuildingDataAsset->Housing);
+	Building->ServerInit(BuildingDataAsset, this);
 	AddReplicatedSubObject(Building);
 	AddReplicatedSubObject(Building->Population);
 
