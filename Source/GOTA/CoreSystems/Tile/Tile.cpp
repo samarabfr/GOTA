@@ -166,9 +166,9 @@ void ATile::AddCivilian(ACivilian* Civilian)
 
 void ATile::RemoveCivilian(const ACivilian* Civilian)
 {
-	for (ACivilian* Slot : Civilians)
+	for (int32 i = 0; i < Civilians.Num(); ++i)
 	{
-		if(Slot == Civilian) Slot = nullptr;
+		if(Civilians[i] == Civilian) Civilians[i] = nullptr;
 	}
 }
 
