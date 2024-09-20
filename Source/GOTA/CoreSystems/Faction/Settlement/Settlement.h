@@ -47,11 +47,12 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
 	TArray<ATile*> ClaimedTiles;
-
-protected:
+	
+public:
 	UPROPERTY()
 	TArray<ATile*> BorderingUnclaimedTiles;
-
+	
+protected:
 	void RefreshBorderingUnclaimedTiles();
 
 public:

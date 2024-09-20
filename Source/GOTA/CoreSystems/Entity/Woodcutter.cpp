@@ -38,14 +38,28 @@ void AWoodcutter::Work()
 
 bool AWoodcutter::TryFindPath()
 {
-	Path = ATileMap::FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
+	bool HasBorderingTileWithTrees = false;
+	for (ATile* Tile : Settlement->BorderingUnclaimedTiles)
 	{
-		return Tile->EcoValues->GetTrees() > 0 && Settlement->IsBorderingUnclaimedTile(Tile);
-	});
-	if(!Path.IsEmpty()) return true;
-	Path = ATileMap::FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [](const ATile* Tile)
+		if (Tile->EcoValues->GetTrees() > 0)
+		{
+			HasBorderingTileWithTrees = true;
+			break;
+		}
+	}
+	if (HasBorderingTileWithTrees)
 	{
-		return Tile->EcoValues->GetTrees() > 0;
-	});
+		Path = ATileMap::FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
+		{
+			return Tile->EcoValues->GetTrees() > 0 && Settlement->IsBorderingUnclaimedTile(Tile);
+		});
+	}
+	else
+	{
+		Path = ATileMap::FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [](const ATile* Tile)
+		{
+			return Tile->EcoValues->GetTrees() > 0;
+		});
+	}
 	return !Path.IsEmpty();
 }
