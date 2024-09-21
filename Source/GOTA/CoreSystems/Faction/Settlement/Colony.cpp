@@ -8,7 +8,7 @@ AColony::AColony()
 	Affiliation = EAffiliation::Enemy;
 
 	CurrentBuildingProject = CreateDefaultSubobject<UBuildingProject>(TEXT("Current Building Project"));
-	PossibleBuildings = SettlementSettings->C_PossibleBuildings;
+	PossibleBuildings = Settings->C_PossibleBuildings;
 }
 
 void AColony::Tick(float DeltaSeconds)
@@ -117,16 +117,16 @@ void AColony::CalculateImportances()
 	// The less income, the more important
 	// food
 	float FoodIncome = BuildingSummary->ProductionMap[EProductionType::Food];
-	ImportanceRatings.Food = SettlementSettings->FoodImportance
-		* FMath::Pow(EULERS_NUMBER, -SettlementSettings->FoodImportanceDescent * FoodIncome);
+	ImportanceRatings.Food = Settings->FoodImportance
+		* FMath::Pow(EULERS_NUMBER, -Settings->FoodImportanceDescent * FoodIncome);
 	// wood
 	float WoodIncome = BuildingSummary->ProductionMap[EProductionType::Wood];
-	ImportanceRatings.Wood = SettlementSettings->WoodImportance
-		* FMath::Pow(EULERS_NUMBER, -SettlementSettings->WoodImportanceDescent * WoodIncome);
+	ImportanceRatings.Wood = Settings->WoodImportance
+		* FMath::Pow(EULERS_NUMBER, -Settings->WoodImportanceDescent * WoodIncome);
 	// stone
 	float StoneIncome = BuildingSummary->ProductionMap[EProductionType::Stone];
-	ImportanceRatings.Stone = SettlementSettings->StoneImportance
-		* FMath::Pow(EULERS_NUMBER, -SettlementSettings->StoneImportanceDescent * StoneIncome);
+	ImportanceRatings.Stone = Settings->StoneImportance
+		* FMath::Pow(EULERS_NUMBER, -Settings->StoneImportanceDescent * StoneIncome);
 }
 
 

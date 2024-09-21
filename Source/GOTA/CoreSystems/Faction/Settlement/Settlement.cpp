@@ -45,7 +45,7 @@ ASettlement::ASettlement()
 	// Load Settlement Settings DataAsset
 	ConstructorHelpers::FObjectFinder<USettlementSettings> DataAsset(
 		TEXT("/Game/CoreSystems/Faction/DA_SettlementSettings"));
-	SettlementSettings = DataAsset.Object;
+	Settings = DataAsset.Object;
 }
 
 void ASettlement::BeginPlay()
@@ -64,6 +64,7 @@ void ASettlement::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	GenerateIncome(DeltaSeconds);
+	UpdateLastMinuteResources();
 }
 
 void ASettlement::EnableTick()
@@ -74,14 +75,14 @@ void ASettlement::EnableTick()
 void ASettlement::StartingSetup(ATile* SpawnTile)
 {
 	const FGameResources& StartingResources = Affiliation == EAffiliation::Enemy
-		                                          ? SettlementSettings->C_StartingResources
-		                                          : SettlementSettings->N_StartingResources;
+		                                          ? Settings->C_StartingResources
+		                                          : Settings->N_StartingResources;
 	const TArray<UBuildingDataAsset*>& StartingBuildings = Affiliation == EAffiliation::Enemy
-		                                                       ? SettlementSettings->C_StartingBuildings
-		                                                       : SettlementSettings->N_StartingBuildings;
+		                                                       ? Settings->C_StartingBuildings
+		                                                       : Settings->N_StartingBuildings;
 	GameplayTags = Affiliation == EAffiliation::Enemy
-		               ? SettlementSettings->C_GameplayTags
-		               : SettlementSettings->N_GameplayTags;
+		               ? Settings->C_GameplayTags
+		               : Settings->N_GameplayTags;
 	Resources += StartingResources;
 	SpawnTile->TryBuild(StartingBuildings[0], this);
 	for (int32 i = 1; i < StartingBuildings.Num(); ++i)
@@ -141,4 +142,49 @@ void ASettlement::OnBuildingRemoved(UBuilding* Building, ATile* Tile)
 	BuildingSummary->UnregisterBuildingProduction(Building);
 	ClaimedTiles.Remove(Tile);
 	RefreshBorderingUnclaimedTiles();
+}
+
+// -------------------Resources-------------------------
+
+void ASettlement::UpdateLastMinuteResources()
+{
+	const float CurrentCutOff = GetWorld()->GetTimeSeconds() - 60.0f;
+	
+	// Remove old entries from Income queue
+	while (const FIncomeEvent* Tail = IncomeEvents.Peek()) {
+		if(Tail->Timestamp < CurrentCutOff)
+		{
+			LastMinuteIncome -= Tail->Amount;
+			IncomeEvents.Pop();
+		}
+	}
+	
+	// Remove old entries from Consumption queue
+	while (const FIncomeEvent* Tail = ConsumptionEvents.Peek()) {
+		if(Tail->Timestamp < CurrentCutOff)
+		{
+			LastMinuteConsumption -= Tail->Amount;
+			ConsumptionEvents.Pop();
+		}
+	}
+}
+
+void ASettlement::AddResources(FGameResources Amount, bool CountTowardsIncomeLastMinute)
+{
+	Resources += Amount;
+	if(CountTowardsIncomeLastMinute)
+	{
+		LastMinuteIncome += Amount;
+		IncomeEvents.Enqueue(FIncomeEvent(Amount, GetWorld()->GetTimeSeconds()));
+	}
+}
+
+void ASettlement::RemoveResources(FGameResources Amount, bool CountTowardsLastMinuteConsumption)
+{
+	Resources -= Amount;
+	if(CountTowardsLastMinuteConsumption)
+	{
+		LastMinuteConsumption += Amount;
+		ConsumptionEvents.Enqueue(FIncomeEvent(Amount, GetWorld()->GetTimeSeconds()));
+	}
 }

@@ -38,18 +38,14 @@ bool UBuildingProject::IsPossible()
 
 bool UBuildingProject::CanAfford() const
 {
-	if (Cost.Wood > Builder->Resources.Wood) return false;
-	if (Cost.Stone > Builder->Resources.Stone) return false;
-	return true;
+	return Cost <= Builder->GetResources();
 }
 
 bool UBuildingProject::TryBuilding()
 {
-	// Trying to build a new building
 	if (Tile->TryBuild(Data, Builder))
 	{
-		if (Cost.Wood > 0) Builder->Resources.Wood -= Cost.Wood;
-		if (Cost.Stone > 0) Builder->Resources.Stone -= Cost.Stone;
+		Builder->RemoveResources(Cost);
 		return true;
 	}
 	return false;
@@ -89,7 +85,7 @@ int32 UBuildingProject::CalculateProjectTime()
 	// Time to get all the food
 	int32 FoodTime = MAX_int32;
 	float FoodIncome = Builder->BuildingSummary->ProductionMap[EProductionType::Food];
-	const float MoreFoodNeeded = FMath::Max(0, Cost.Food - Builder->Resources.Food);
+	const float MoreFoodNeeded = FMath::Max(0, Cost.Food - Builder->GetResources().Food);
 	if (MoreFoodNeeded == 0)
 		FoodTime = 0;
 	else if (MoreFoodNeeded > 0 && FoodIncome > 0)
@@ -98,7 +94,7 @@ int32 UBuildingProject::CalculateProjectTime()
 	// Time to get all the wood
 	int32 WoodTime = MAX_int32;
 	float WoodIncome = Builder->BuildingSummary->ProductionMap[EProductionType::Wood];
-	const float MoreWoodNeeded = FMath::Max(0, Cost.Wood - Builder->Resources.Wood);
+	const float MoreWoodNeeded = FMath::Max(0, Cost.Wood - Builder->GetResources().Wood);
 	if (MoreWoodNeeded == 0)
 		WoodTime = 0;
 	else if (MoreWoodNeeded > 0 && WoodIncome > 0)
@@ -107,7 +103,7 @@ int32 UBuildingProject::CalculateProjectTime()
 	// Time to get all the stone
 	int32 StoneTime = MAX_int32;
 	float StoneIncome = Builder->BuildingSummary->ProductionMap[EProductionType::Stone];
-	const float MoreStoneNeeded = FMath::Max(0, Cost.Stone - Builder->Resources.Stone);
+	const float MoreStoneNeeded = FMath::Max(0, Cost.Stone - Builder->GetResources().Stone);
 	if (MoreStoneNeeded == 0)
 		StoneTime = 0;
 	else if (MoreStoneNeeded > 0 && StoneIncome > 0)

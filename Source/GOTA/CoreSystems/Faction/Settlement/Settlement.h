@@ -13,6 +13,7 @@ UCLASS(Abstract, Blueprintable)
 class ASettlement : public AActor
 {
 	GENERATED_BODY()
+
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	ASettlement();
@@ -25,7 +26,7 @@ public:
 
 public:
 	UPROPERTY()
-	USettlementSettings* SettlementSettings;
+	USettlementSettings* Settings;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
 	EAffiliation Affiliation;
@@ -36,9 +37,6 @@ public:
 	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
 	USettlementPopulation* PopulationSummary;
 
-	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
-	FGameResources Resources;
-
 	void StartingSetup(ATile* SpawnTile);
 
 	void GenerateIncome(float DeltaSeconds);
@@ -47,17 +45,17 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
 	TArray<ATile*> ClaimedTiles;
-	
+
 public:
 	UPROPERTY()
 	TArray<ATile*> BorderingUnclaimedTiles;
-	
+
 protected:
 	void RefreshBorderingUnclaimedTiles();
 
 public:
 	bool IsBorderingUnclaimedTile(const ATile* Tile) const;
-	
+
 	// -------------------Building-------------------------
 public:
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
@@ -66,4 +64,37 @@ public:
 	void OnBuildingAdded(UBuilding* Building, ATile* Tile);
 
 	void OnBuildingRemoved(UBuilding* Building, ATile* Tile);
+
+	// -------------------Resources-------------------------
+private:
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
+	FGameResources Resources;
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
+	FGameResources LastMinuteIncome;
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
+	FGameResources LastMinuteConsumption;
+
+	struct FIncomeEvent
+	{
+		FGameResources Amount;
+		float Timestamp;
+
+		FIncomeEvent(): Amount(), Timestamp()
+		{
+		};
+
+		FIncomeEvent(const FGameResources InAmount, const float InTimestamp)
+			: Amount(InAmount), Timestamp(InTimestamp)
+		{
+		}
+	};
+
+	TQueue<FIncomeEvent> IncomeEvents;
+	TQueue<FIncomeEvent> ConsumptionEvents;
+	void UpdateLastMinuteResources();
+
+public:
+	FGameResources GetResources() const { return Resources; }
+	void AddResources(FGameResources Amount, bool CountTowardsLastMinuteIncome = false);
+	void RemoveResources(FGameResources Amount, bool CountTowardsLastMinuteConsumption = false);
 };
