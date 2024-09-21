@@ -1,6 +1,8 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
+#include "GameplayTagContainer.h"
+#include "GOTA/CoreSystems/Faction/Settlement/GameResources.h"
 
 #include "Building.generated.h"
 
@@ -19,13 +21,19 @@ class GOTA_API UBuilding : public UObject
 	UBuilding();
 
 public:
-	void ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile, ASettlement* Settlement);
+	void ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile_, ASettlement* Settlement_);
 	
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UBuildingDataAsset* Settings;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UPopulation* Population;
+
+	UPROPERTY()
+	ATile* Tile;
+
+	UPROPERTY()
+	ASettlement* Settlement;
 
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnProductionChangedSig, float, Change, EProductionType, ProductionType);
@@ -39,9 +47,24 @@ public:
 
 	//---------------------Civilian Entity----------------
 	
-	UPROPERTY()
+	UPROPERTY(VisibleInstanceOnly)
 	ACivilian* Civilian;
 	
 	float GetCivilianWorkRate() const;
 	float GetCivilianMovementRate() const;
+	
+	//---------------------Construction phase----------------
+private:
+	UPROPERTY(VisibleInstanceOnly)
+	bool IsUnderConstruction;
+public:
+	bool GetIsUnderConstruction() const { return IsUnderConstruction; }
+	FGameplayTag UnderConstructionTag;
+
+private:
+	UPROPERTY(VisibleInstanceOnly)
+	FGameResources ResourceProgress;
+public:
+	FGameResources GetResourceProgress() const;
+	void SetResourceProgress(const FGameResources NewResourcesProgress);
 };

@@ -8,7 +8,6 @@
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
-#include "Net/Core/PushModel/PushModel.h"
 
 void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -36,15 +35,13 @@ UBuilding::UBuilding()
 	Population->OnSizeChanged.AddDynamic(this, &UBuilding::PopSizeChanged);
 }
 
-void UBuilding::ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile, ASettlement* Settlement)
+void UBuilding::ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile_, ASettlement* Settlement_)
 {
 	Settings = DataAsset_;
-	Population->ChangeMaxSize(Settings->Housing);
-	if (Settings->CivilianClass)
-	{
-		Civilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);
-		Civilian->Init(Settlement, Tile, GetCivilianWorkRate(), Settings->WorkAmountPerCycle, GetCivilianMovementRate());
-	}
+	Tile = Tile_;
+	UnderConstructionTag = FGameplayTag::RequestGameplayTag(FName("Building.UnderConstruction"));
+	Tile->GameplayTags.AddTag(UnderConstructionTag);
+	Settlement = Settlement_;
 }
 
 float UBuilding::GetCurrentProduction() const
@@ -65,4 +62,24 @@ float UBuilding::GetCivilianWorkRate() const
 float UBuilding::GetCivilianMovementRate() const
 {
 	return 100 / Settings->SecondsPerMove;
+}
+
+FGameResources UBuilding::GetResourceProgress() const
+{
+	return ResourceProgress;
+}
+
+void UBuilding::SetResourceProgress(const FGameResources NewResourcesProgress)
+{
+	ResourceProgress = NewResourcesProgress;
+	if(ResourceProgress >= Settings->Cost)
+	{
+		IsUnderConstruction = false;
+		Population->ChangeMaxSize(Settings->Housing);
+		if (Settings->CivilianClass)
+		{
+			Civilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);
+			Civilian->Init(Settlement, Tile, GetCivilianWorkRate(), Settings->WorkAmountPerCycle, GetCivilianMovementRate());
+		}
+	}
 }

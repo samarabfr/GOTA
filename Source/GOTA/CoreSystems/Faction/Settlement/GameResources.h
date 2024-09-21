@@ -21,4 +21,16 @@ struct FGameResources
 	int32 Stone = 0;
 	
 	FGameResources& operator+=(const FGameResources& Addend);
+	
+	// Overloading > operator
+	bool operator>(const FGameResources& Other) const
+	{
+		return Food > Other.Food && Wood > Other.Wood && Stone > Other.Stone;
+	}
+
+	// Overloading >= operator
+	bool operator>=(const FGameResources& Other) const
+	{
+		return Food >= Other.Food && Wood >= Other.Wood && Stone >= Other.Stone;
+	}
 };
