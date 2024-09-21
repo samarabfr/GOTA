@@ -27,4 +27,7 @@ struct FGameResources
 	bool operator>(const FGameResources& Other) const;
 	bool operator<=(const FGameResources& Other) const;
 	bool operator>=(const FGameResources& Other) const;
+
+	FGameResources operator+(const FGameResources& Other) const;
+	FGameResources operator-(const FGameResources& Other) const;
 };
