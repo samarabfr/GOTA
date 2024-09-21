@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "SettlementImportanceRatings.generated.h"
+#include "NewBuildingImportanceRatings.generated.h"
 
 USTRUCT(BlueprintType)
-struct FSettlementImportanceRatings
+struct FNewBuildingImportanceRatings
 {
 	GENERATED_BODY()
 

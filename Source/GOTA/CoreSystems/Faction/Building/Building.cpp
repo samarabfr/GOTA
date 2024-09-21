@@ -41,6 +41,7 @@ void UBuilding::ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile_, ASettle
 	Tile = Tile_;
 	UnderConstructionTag = FGameplayTag::RequestGameplayTag(FName("Building.UnderConstruction"));
 	Tile->GameplayTags.AddTag(UnderConstructionTag);
+	IsUnderConstruction = true;
 	Settlement = Settlement_;
 }
 
@@ -73,13 +74,17 @@ void UBuilding::SetResourceProgress(const FGameResources NewResourcesProgress)
 {
 	ResourceProgress = NewResourcesProgress;
 	if(ResourceProgress >= Settings->Cost)
+		FinishConstruction();
+}
+
+void UBuilding::FinishConstruction()
+{
+	IsUnderConstruction = false;
+	Tile->GameplayTags.RemoveTag(UnderConstructionTag);
+	Population->ChangeMaxSize(Settings->Housing);
+	if (Settings->CivilianClass)
 	{
-		IsUnderConstruction = false;
-		Population->ChangeMaxSize(Settings->Housing);
-		if (Settings->CivilianClass)
-		{
-			Civilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);
-			Civilian->Init(Settlement, Tile, GetCivilianWorkRate(), Settings->WorkAmountPerCycle, GetCivilianMovementRate());
-		}
+		Civilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);
+		Civilian->Init(Settlement, Tile, GetCivilianWorkRate(), Settings->WorkAmountPerCycle, GetCivilianMovementRate());
 	}
 }

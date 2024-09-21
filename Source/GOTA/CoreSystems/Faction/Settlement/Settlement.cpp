@@ -87,8 +87,9 @@ void ASettlement::StartingSetup(ATile* SpawnTile)
 	for (int32 i = 1; i < StartingBuildings.Num(); ++i)
 	{
 		if (BorderingUnclaimedTiles.Num() <= 0) break;
-		BorderingUnclaimedTiles[FMath::RandRange(0, BorderingUnclaimedTiles.Num() - 1)]
-			->TryBuild(StartingBuildings[i], this);
+		ATile* Tile = BorderingUnclaimedTiles[FMath::RandRange(0, BorderingUnclaimedTiles.Num() - 1)];
+		Tile->TryBuild(StartingBuildings[i], this);
+		Tile->Building->FinishConstruction();
 	}
 	for (ATile* Tile : ClaimedTiles)
 	{
