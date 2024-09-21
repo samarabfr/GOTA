@@ -42,8 +42,8 @@ ATile* AColony::FindBuildableTile() const
 
 UBuildingDataAsset* AColony::SelectNewBuilding() const
 {
-	return SettlementSettings->C_PossibleBuildings[FMath::RandRange(
-		0, SettlementSettings->C_PossibleBuildings.Num() - 1)];
+	return Settings->C_PossibleBuildings[FMath::RandRange(
+		0, Settings->C_PossibleBuildings.Num() - 1)];
 	// TODO: Proper logic for figuring out building
 	//CalculateImportances();
 	//CalculateScores();
@@ -83,16 +83,16 @@ FNewBuildingImportanceRatings AColony::CalculateImportanceRatings() const
 	// The less income, the more important
 	// food
 	const float FoodIncome = BuildingSummary->ProductionMap[EProductionType::Food];
-	ImportanceRatings.Food = SettlementSettings->FoodImportance
-		* FMath::Pow(EULERS_NUMBER, -SettlementSettings->FoodImportanceDescent * FoodIncome);
+	ImportanceRatings.Food = Settings->FoodImportance
+		* FMath::Pow(EULERS_NUMBER, -Settings->FoodImportanceDescent * FoodIncome);
 	// wood
 	const float WoodIncome = BuildingSummary->ProductionMap[EProductionType::Wood];
-	ImportanceRatings.Wood = SettlementSettings->WoodImportance
-		* FMath::Pow(EULERS_NUMBER, -SettlementSettings->WoodImportanceDescent * WoodIncome);
+	ImportanceRatings.Wood = Settings->WoodImportance
+		* FMath::Pow(EULERS_NUMBER, -Settings->WoodImportanceDescent * WoodIncome);
 	// stone
 	const float StoneIncome = BuildingSummary->ProductionMap[EProductionType::Stone];
-	ImportanceRatings.Stone = SettlementSettings->StoneImportance
-		* FMath::Pow(EULERS_NUMBER, -SettlementSettings->StoneImportanceDescent * StoneIncome);
+	ImportanceRatings.Stone = Settings->StoneImportance
+		* FMath::Pow(EULERS_NUMBER, -Settings->StoneImportanceDescent * StoneIncome);
 
 	return ImportanceRatings;
 }
