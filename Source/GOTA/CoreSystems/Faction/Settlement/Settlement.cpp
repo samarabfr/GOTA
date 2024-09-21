@@ -100,9 +100,10 @@ void ASettlement::StartingSetup(ATile* SpawnTile)
 
 void ASettlement::GenerateIncome(float DeltaSeconds)
 {
-	Resources.Food += DeltaSeconds * BuildingSummary->ProductionMap[EProductionType::Food];
-	Resources.Wood += DeltaSeconds * BuildingSummary->ProductionMap[EProductionType::Wood];
-	Resources.Stone += DeltaSeconds * BuildingSummary->ProductionMap[EProductionType::Stone];
+	AddResources(FGameResources(
+		             DeltaSeconds * BuildingSummary->ProductionMap[EProductionType::Food],
+		             DeltaSeconds * BuildingSummary->ProductionMap[EProductionType::Wood],
+		             DeltaSeconds * BuildingSummary->ProductionMap[EProductionType::Stone]), true);
 }
 
 // -------------------Claims-------------------------
@@ -150,22 +151,32 @@ void ASettlement::OnBuildingRemoved(UBuilding* Building, ATile* Tile)
 void ASettlement::UpdateLastMinuteResources()
 {
 	const float CurrentCutOff = GetWorld()->GetTimeSeconds() - 60.0f;
-	
+
 	// Remove old entries from Income queue
-	while (const FIncomeEvent* Tail = IncomeEvents.Peek()) {
-		if(Tail->Timestamp < CurrentCutOff)
+	while (const FIncomeEvent* Tail = IncomeEvents.Peek())
+	{
+		if (Tail->Timestamp < CurrentCutOff)
 		{
 			LastMinuteIncome -= Tail->Amount;
 			IncomeEvents.Pop();
 		}
+		else
+		{
+			break;
+		}
 	}
-	
+
 	// Remove old entries from Consumption queue
-	while (const FIncomeEvent* Tail = ConsumptionEvents.Peek()) {
-		if(Tail->Timestamp < CurrentCutOff)
+	while (const FIncomeEvent* Tail = ConsumptionEvents.Peek())
+	{
+		if (Tail->Timestamp < CurrentCutOff)
 		{
 			LastMinuteConsumption -= Tail->Amount;
 			ConsumptionEvents.Pop();
+		}
+		else
+		{
+			break;
 		}
 	}
 }
@@ -173,7 +184,7 @@ void ASettlement::UpdateLastMinuteResources()
 void ASettlement::AddResources(FGameResources Amount, bool CountTowardsIncomeLastMinute)
 {
 	Resources += Amount;
-	if(CountTowardsIncomeLastMinute)
+	if (CountTowardsIncomeLastMinute)
 	{
 		LastMinuteIncome += Amount;
 		IncomeEvents.Enqueue(FIncomeEvent(Amount, GetWorld()->GetTimeSeconds()));
@@ -183,7 +194,7 @@ void ASettlement::AddResources(FGameResources Amount, bool CountTowardsIncomeLas
 void ASettlement::RemoveResources(FGameResources Amount, bool CountTowardsLastMinuteConsumption)
 {
 	Resources -= Amount;
-	if(CountTowardsLastMinuteConsumption)
+	if (CountTowardsLastMinuteConsumption)
 	{
 		LastMinuteConsumption += Amount;
 		ConsumptionEvents.Enqueue(FIncomeEvent(Amount, GetWorld()->GetTimeSeconds()));
