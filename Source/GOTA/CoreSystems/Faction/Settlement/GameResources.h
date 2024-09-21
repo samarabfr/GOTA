@@ -20,17 +20,11 @@ struct FGameResources
 	UPROPERTY(EditAnywhere, Category = "Resources")
 	int32 Stone = 0;
 	
-	FGameResources& operator+=(const FGameResources& Addend);
-	
-	// Overloading > operator
-	bool operator>(const FGameResources& Other) const
-	{
-		return Food > Other.Food && Wood > Other.Wood && Stone > Other.Stone;
-	}
+	FGameResources& operator+=(const FGameResources& Other);
+	FGameResources& operator-=(const FGameResources& Other);
 
-	// Overloading >= operator
-	bool operator>=(const FGameResources& Other) const
-	{
-		return Food >= Other.Food && Wood >= Other.Wood && Stone >= Other.Stone;
-	}
+	bool operator<(const FGameResources& Other) const;
+	bool operator>(const FGameResources& Other) const;
+	bool operator<=(const FGameResources& Other) const;
+	bool operator>=(const FGameResources& Other) const;
 };

@@ -33,7 +33,9 @@ void AWoodcutter::ValidateStatus()
 void AWoodcutter::Work()
 {
 	CurrentTile->EcoValues->SubtractTrees(1);
-	Settlement->Resources.Wood += WorkAmount;
+	FGameResources WorkResources = FGameResources();
+	WorkResources.Wood = WorkAmount;
+	Settlement->AddResources(WorkResources);
 }
 
 bool AWoodcutter::TryFindPath()
