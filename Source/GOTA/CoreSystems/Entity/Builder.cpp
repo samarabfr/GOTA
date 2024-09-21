@@ -1,9 +1,15 @@
 ﻿#include "Builder.h"
 
+#include "CivilianDataAsset.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
+
+ABuilder::ABuilder()
+{
+	Mesh->SetStaticMesh(CivilianDataAsset->BuilderMesh);
+}
 
 void ABuilder::ValidateStatus()
 {

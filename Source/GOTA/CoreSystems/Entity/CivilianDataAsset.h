@@ -11,6 +11,8 @@ class GOTA_API UCivilianDataAsset : public UPrimaryDataAsset
 	
 public:
 	UPROPERTY(EditDefaultsOnly)
-	UStaticMesh* Mesh;
+	UStaticMesh* WoodCutterMesh;
 	
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* BuilderMesh;
 };

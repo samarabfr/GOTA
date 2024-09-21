@@ -21,8 +21,7 @@ ACivilian::ACivilian()
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Static Mesh");
 	Mesh->SetupAttachment(RootComponent);
-	Mesh->SetStaticMesh(CivilianDataAsset->Mesh);
-	Mesh->SetRelativeScale3D(FVector(1, 1, 8));
+	Mesh->SetRelativeScale3D(FVector(1, 1, 2));
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 

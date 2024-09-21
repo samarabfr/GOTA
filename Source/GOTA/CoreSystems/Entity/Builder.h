@@ -7,6 +7,7 @@ UCLASS()
 class GOTA_API ABuilder : public ACivilian
 {
 	GENERATED_BODY()
+	ABuilder();
 	
 	virtual void ValidateStatus() override;
 	virtual void Work() override;

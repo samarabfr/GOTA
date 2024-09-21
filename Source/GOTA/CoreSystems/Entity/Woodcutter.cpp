@@ -1,8 +1,14 @@
 ﻿#include "Woodcutter.h"
 
+#include "CivilianDataAsset.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
+
+AWoodcutter::AWoodcutter()
+{
+	Mesh->SetStaticMesh(CivilianDataAsset->WoodCutterMesh);
+}
 
 void AWoodcutter::ValidateStatus()
 {
