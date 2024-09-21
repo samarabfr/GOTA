@@ -57,14 +57,14 @@ bool AWoodcutter::TryFindPath()
 	}
 	if (HasBorderingTileWithTrees)
 	{
-		Path = ATileMap::FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
+		Path = GameState->TileMap->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
 		{
 			return Tile->EcoValues->GetTrees() > 0 && Settlement->IsBorderingUnclaimedTile(Tile);
 		});
 	}
 	else
 	{
-		Path = ATileMap::FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [](const ATile* Tile)
+		Path = GameState->TileMap->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [](const ATile* Tile)
 		{
 			return Tile->EcoValues->GetTrees() > 0;
 		});

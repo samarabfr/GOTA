@@ -2,6 +2,7 @@
 
 #include "CivilianDataAsset.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
+#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 
 ACivilian::ACivilian()
 {
@@ -28,6 +29,7 @@ ACivilian::ACivilian()
 void ACivilian::Init(ASettlement* Settlement_, ATile* SpawnTile, float WorkRate_, int32 WorkAmount_,
                      float MovementRate_)
 {
+	GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	Settlement = Settlement_;
 	CurrentTile = SpawnTile;
 	SpawnTile->AddCivilian(this);

@@ -27,6 +27,9 @@ protected:
 	ASettlement* Settlement;
 
 	UPROPERTY()
+	AGS_Ingame* GameState;
+
+	UPROPERTY()
 	UCivilianDataAsset* CivilianDataAsset;
 
 	UPROPERTY()

@@ -192,42 +192,56 @@ TArray<ATile*> ATileMap::FindPathToNearestTile(ATile* Origin, const EEntityType 
                                                const std::function<bool(const ATile*)>& Condition = [](const ATile*)
                                                {
 	                                               return true;
-                                               })
+                                               }) const
 {
 	if (!Origin) return TArray<ATile*>();
 	TArray<ATile*> Frontier;
 	Frontier.Add(Origin);
-	TMap<ATile*, ATile*> CameFrom;
-	CameFrom.Add(Origin, nullptr);
-	ATile* End = nullptr;
-	// form flow field
-	while (!Frontier.IsEmpty())
+
+	TArray<int8> DistanceMap;
+	DistanceMap.SetNumZeroed(Tiles.Num());
+	DistanceMap[Origin->HexCoords.Q * Size.R + Origin->HexCoords.R] = 1;
+	TArray<ATile*> FoundTargets;
+	int8 Distance = 2;
+	while (!Frontier.IsEmpty() && FoundTargets.IsEmpty())
 	{
-		ATile* Current = Frontier[0];
-		Frontier.Remove(Current);
-		if (Condition(Current))
+		TArray<ATile*> NewFrontier;
+		for (ATile* Current : Frontier)
 		{
-			// found target Tile
-			End = Current;
-			break;
-		}
-		for (ATile* Next : Current->Neighbors)
-		{
-			if (Next && Next->AcceptsEntity(EntityType) && !CameFrom.Contains(Next))
+			if (Condition(Current))
 			{
-				Frontier.Add(Next);
-				CameFrom.Add(Next, Current);
+				FoundTargets.Add(Current);
+			}
+			for (ATile* Neighbor : Current->Neighbors)
+			{
+				if (Neighbor
+					&& Neighbor->AcceptsEntity(EntityType)
+					&& DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] == 0)
+				{
+					NewFrontier.Add(Neighbor);
+					DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] = Distance;
+				}
 			}
 		}
+		++Distance;
+		Frontier = NewFrontier;
 	}
-	// reconstruct Path
-	if (!End) return TArray<ATile*>();
-	ATile* Current = End;
+	if (FoundTargets.IsEmpty()) return TArray<ATile*>();
+	ATile* Current = FoundTargets[FMath::RandRange(0, FoundTargets.Num() - 1)];
 	TArray<ATile*> Path;
 	while (Current != Origin)
 	{
 		Path.Add(Current);
-		Current = CameFrom[Current];
+		int8 CurrentDistance = DistanceMap[Current->HexCoords.Q * Size.R + Current->HexCoords.R];
+		TArray<ATile*> PossibleNextCurrents;
+		for (ATile* Neighbor : Current->Neighbors)
+		{
+			if (!Neighbor) continue;
+			int8 NeighborDistance = DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R];
+			if (NeighborDistance != 0 && NeighborDistance < CurrentDistance)
+				PossibleNextCurrents.Add(Neighbor);
+		}
+		Current = PossibleNextCurrents[FMath::RandRange(0, PossibleNextCurrents.Num() - 1)];
 	}
 	return Path;
 }

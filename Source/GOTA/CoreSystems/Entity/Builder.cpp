@@ -82,7 +82,7 @@ bool ABuilder::TryFindPath()
 		}
 	}
 	if(!HasValidTiles) return false;
-	Path = ATileMap::FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
+	Path = 	GameState->TileMap->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
 	{
 		return IsTileValidForWork(Tile);
 	});
