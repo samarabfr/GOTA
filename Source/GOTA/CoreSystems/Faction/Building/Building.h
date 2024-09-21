@@ -67,4 +67,6 @@ private:
 public:
 	FGameResources GetResourceProgress() const;
 	void SetResourceProgress(const FGameResources NewResourcesProgress);
+
+	void FinishConstruction();
 };

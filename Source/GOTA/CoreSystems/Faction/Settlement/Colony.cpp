@@ -1,14 +1,11 @@
 ﻿#include "Colony.h"
 
-#include "Algo/RandomShuffle.h"
-#include "Net/UnrealNetwork.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
+#include "GOTA/CoreSystems/Tile/Tile.h"
 
 AColony::AColony()
 {
 	Affiliation = EAffiliation::Enemy;
-
-	CurrentBuildingProject = CreateDefaultSubobject<UBuildingProject>(TEXT("Current Building Project"));
-	PossibleBuildings = Settings->C_PossibleBuildings;
 }
 
 void AColony::Tick(float DeltaSeconds)
@@ -18,61 +15,99 @@ void AColony::Tick(float DeltaSeconds)
 	FigureOutBuilding();
 }
 
-void AColony::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (HasAuthority())
-	{
-		AddReplicatedSubObject(CurrentBuildingProject);
-	}
-}
-
-void AColony::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	FDoRepLifetimeParams Params;
-	Params.bIsPushBased = true;
-
-	Params.Condition = COND_None;
-	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
-	DOREPLIFETIME_WITH_PARAMS(AColony, CurrentBuildingProject, Params);
-}
-
-
 void AColony::FigureOutBuilding()
 {
-	if (CurrentBuildingProject && CurrentBuildingProject->IsPossible())
-	{
-		if (CurrentBuildingProject->CanAfford())
-		{
-			CurrentBuildingProject->TryBuilding();
-			SetCurrentBuildingProject(nullptr);
-			SelectNewBuildingProject();
-		}
-	}
-	else
-	{
-		SetCurrentBuildingProject(nullptr);
-		SelectNewBuildingProject();
-	}
+	if (!ShouldBuild()) return;
+	ATile* Tile = FindBuildableTile();
+	if (!Tile) return;
+	UBuildingDataAsset* NewBuilding = SelectNewBuilding();
+	Tile->TryBuild(NewBuilding, this);
 }
 
-void AColony::SelectNewBuildingProject()
+bool AColony::ShouldBuild() const
 {
-	CalculateImportances();
-	FillBuildingPool();
-	if (BuildingProjectPool.IsEmpty()) return;
-	SetCurrentBuildingProject(BuildingProjectPool[FMath::RandRange(0, BuildingProjectPool.Num() - 1)]);
+	for (const ATile* Tile : ClaimedTiles)
+	{
+		if (Tile->Building->GetIsUnderConstruction())
+			return false;
+	}
+	return true;
+}
+
+ATile* AColony::FindBuildableTile() const
+{
+	if (BorderingUnclaimedTiles.Num() <= 0) return nullptr;
+	return BorderingUnclaimedTiles[FMath::RandRange(0, BorderingUnclaimedTiles.Num() - 1)];
+}
+
+UBuildingDataAsset* AColony::SelectNewBuilding() const
+{
+	return Settings->C_PossibleBuildings[FMath::RandRange(
+		0, Settings->C_PossibleBuildings.Num() - 1)];
+	// TODO: Proper logic for figuring out building
+	//CalculateImportances();
+	//CalculateScores();
+}
+
+float AColony::CalculateScore(const UBuildingDataAsset* Data, FNewBuildingImportanceRatings ImportanceRatings)
+{
+	// costs
+	float CostScore = 0;
+	CostScore += FMath::Pow(EULERS_NUMBER, -0.1 * Data->Cost.Food);
+	CostScore += FMath::Pow(EULERS_NUMBER, -0.1 * Data->Cost.Wood);
+	CostScore += FMath::Pow(EULERS_NUMBER, -0.1 * Data->Cost.Stone);
+	// Calculate GainScore
+	float GainsScore = 0;
+	// income
+	const float MaxIncome = Data->Housing * Data->ProductionRate;
+	if (Data->ProductionType == EProductionType::Food)
+	{
+		GainsScore = ImportanceRatings.Food * MaxIncome;
+	}
+	if (Data->ProductionType == EProductionType::Wood)
+	{
+		GainsScore = ImportanceRatings.Wood * MaxIncome;
+	}
+	if (Data->ProductionType == EProductionType::Stone)
+	{
+		GainsScore = ImportanceRatings.Food * MaxIncome;
+	}
+
+	// result
+	return CostScore * GainsScore;
+}
+
+FNewBuildingImportanceRatings AColony::CalculateImportanceRatings() const
+{
+	FNewBuildingImportanceRatings ImportanceRatings;
+	// The less income, the more important
+	// food
+	const float FoodIncome = BuildingSummary->ProductionMap[EProductionType::Food];
+	ImportanceRatings.Food = Settings->FoodImportance
+		* FMath::Pow(EULERS_NUMBER, -Settings->FoodImportanceDescent * FoodIncome);
+	// wood
+	const float WoodIncome = BuildingSummary->ProductionMap[EProductionType::Wood];
+	ImportanceRatings.Wood = Settings->WoodImportance
+		* FMath::Pow(EULERS_NUMBER, -Settings->WoodImportanceDescent * WoodIncome);
+	// stone
+	const float StoneIncome = BuildingSummary->ProductionMap[EProductionType::Stone];
+	ImportanceRatings.Stone = Settings->StoneImportance
+		* FMath::Pow(EULERS_NUMBER, -Settings->StoneImportanceDescent * StoneIncome);
+
+	return ImportanceRatings;
+}
+
+void AColony::CalculateScores(FNewBuildingImportanceRatings ImportanceRatings)
+{
 	/*
 	// calculate scores
 	Scores.Empty();
 	for (UBuildingProject* BuildingProject : BuildingProjectPool)
 	{
 		Scores.Add(FBuildingProjectScore(BuildingProject,
-		                                 BuildingProject->CalculateScore(),
-		                                 BuildingProject->Data,
-		                                 BuildingProject->CalculateProjectTime()));
+										 BuildingProject->CalculateScore(),
+										 BuildingProject->Data,
+										 BuildingProject->CalculateProjectTime()));
 	}
 	// sort by highest score
 	Scores.Sort([](const FBuildingProjectScore& A, const FBuildingProjectScore& B)
@@ -92,53 +127,4 @@ void AColony::SelectNewBuildingProject()
 	}
 	SetCurrentBuildingProject(Highest);
 	*/
-}
-
-void AColony::FillBuildingPool()
-{
-	BuildingProjectPool.Empty();
-	// If there is a free building slot, add all possible Buildings to the pool
-	Algo::RandomShuffle(BorderingUnclaimedTiles);
-	for (ATile* ClaimedTile : BorderingUnclaimedTiles)
-	{
-		if (ClaimedTile->Building) continue;
-		for (UBuildingDataAsset* PossibleBuilding : PossibleBuildings)
-		{
-			UBuildingProject* BuildingProject = NewObject<UBuildingProject>();
-			BuildingProject->Init(this, PossibleBuilding, ClaimedTile);
-			BuildingProjectPool.Add(BuildingProject);
-		}
-		break;
-	}
-}
-
-void AColony::CalculateImportances()
-{
-	// The less income, the more important
-	// food
-	float FoodIncome = BuildingSummary->ProductionMap[EProductionType::Food];
-	ImportanceRatings.Food = Settings->FoodImportance
-		* FMath::Pow(EULERS_NUMBER, -Settings->FoodImportanceDescent * FoodIncome);
-	// wood
-	float WoodIncome = BuildingSummary->ProductionMap[EProductionType::Wood];
-	ImportanceRatings.Wood = Settings->WoodImportance
-		* FMath::Pow(EULERS_NUMBER, -Settings->WoodImportanceDescent * WoodIncome);
-	// stone
-	float StoneIncome = BuildingSummary->ProductionMap[EProductionType::Stone];
-	ImportanceRatings.Stone = Settings->StoneImportance
-		* FMath::Pow(EULERS_NUMBER, -Settings->StoneImportanceDescent * StoneIncome);
-}
-
-
-void AColony::SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject)
-{
-	if (CurrentBuildingProject)
-	{
-		RemoveReplicatedSubObject(CurrentBuildingProject);
-	}
-	CurrentBuildingProject = NewCurrentBuildingProject;
-	if (CurrentBuildingProject)
-	{
-		AddReplicatedSubObject(CurrentBuildingProject);
-	}
 }
