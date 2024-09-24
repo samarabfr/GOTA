@@ -15,4 +15,7 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMesh* BuilderMesh;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* ForagerMesh;
 };
