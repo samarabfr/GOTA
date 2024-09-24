@@ -2,13 +2,11 @@
 
 #include "Settlement.h"
 
-#include "Algo/RandomShuffle.h"
 #include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "Net/UnrealNetwork.h"
-#include "Net/Core/PushModel/PushModel.h"
 
 void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {

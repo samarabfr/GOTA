@@ -11,10 +11,6 @@ ACivilian::ACivilian()
 	bReplicateUsingRegisteredSubObjectList = true;
 	NetUpdateFrequency = 1.0f;
 
-	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.bStartWithTickEnabled = true; // TODO: ken bock
-	PrimaryActorTick.TickInterval = 0.5f;
-
 	ConstructorHelpers::FObjectFinder<UCivilianDataAsset> DataAsset(
 		TEXT("/Game/CoreSystems/Entity/DA_Civilian"));
 	CivilianDataAsset = DataAsset.Object;
@@ -38,10 +34,8 @@ void ACivilian::Init(ASettlement* Settlement_, ATile* SpawnTile, float WorkRate_
 	MovementRate = MovementRate_;
 }
 
-void ACivilian::Tick(float DeltaSeconds)
+void ACivilian::GOTATick(float DeltaSeconds)
 {
-	Super::Tick(DeltaSeconds);
-
 	ValidateStatus();
 	if (GetStatus() == ECivilianStatus::Moving)
 	{
