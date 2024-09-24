@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Entity.h"
-#include "GOTA/CoreSystems/Faction/Building/PopulationContainer.h"
+#include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "Army.generated.h"
 
 UCLASS()
@@ -18,7 +18,7 @@ public:
 	virtual void CalculateMovement() override;
 
 	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, Instanced)
-	UPopulationContainer* PopCon;
+	UPopulation* PopCon;
 
 	virtual UCombatValues* GetCombatValues() const override;
 

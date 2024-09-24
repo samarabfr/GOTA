@@ -8,13 +8,12 @@
 void AGuardian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
 }
 
 void AGuardian::BeginPlay()
 {
 	Super::BeginPlay();
 	// IncreaseReplicationCount for LoadingProcess
-	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
-	GameState->LoadingManager->IncrementReplicationCount();
+	if (GetWorld()->GetGameState<AGS_Ingame>()->LoadingManager)
+		GetWorld()->GetGameState<AGS_Ingame>()->LoadingManager->IncrementReplicationCount();
 }

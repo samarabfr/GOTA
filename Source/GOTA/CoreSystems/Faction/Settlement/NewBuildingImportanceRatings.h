@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "SettlementImportanceRatings.generated.h"
+#include "NewBuildingImportanceRatings.generated.h"
 
 USTRUCT(BlueprintType)
-struct FSettlementImportanceRatings
+struct FNewBuildingImportanceRatings
 {
 	GENERATED_BODY()
 
@@ -21,10 +21,4 @@ struct FSettlementImportanceRatings
 	
 	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "ImportanceRating")
 	float Stone = 0;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "ImportanceRating")
-	float Weapons = 0;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "ImportanceRating")
-	float Shields = 0;
 };

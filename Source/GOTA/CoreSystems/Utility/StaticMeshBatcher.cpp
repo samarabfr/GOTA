@@ -8,7 +8,7 @@ AStaticMeshBatcher::AStaticMeshBatcher()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ROOT"));
 }
 
-FPrimitiveInstanceId AStaticMeshBatcher::AddStaticMeshInstance(UStaticMesh* StaticMesh, FTransform& Transform)
+FPrimitiveInstanceId AStaticMeshBatcher::AddStaticMeshInstance(UStaticMesh* StaticMesh, const FTransform& Transform)
 {
 	UInstancedStaticMeshComponent* ISMC = nullptr;
 	if (!ISMC_Map.Contains(StaticMesh))
@@ -32,15 +32,14 @@ FPrimitiveInstanceId AStaticMeshBatcher::AddStaticMeshInstance(UStaticMesh* Stat
 	return ISMC->AddInstanceById(Transform);
 }
 
-void AStaticMeshBatcher::RemoveStaticMeshInstance(UStaticMesh* StaticMesh, FPrimitiveInstanceId& InstanceId)
+void AStaticMeshBatcher::RemoveStaticMeshInstance(const UStaticMesh* StaticMesh, const FPrimitiveInstanceId& InstanceId)
 {
 	UInstancedStaticMeshComponent* ISMC = *ISMC_Map.Find(StaticMesh);
 	ISMC->RemoveInstanceById(InstanceId);
-	
 }
 
-void AStaticMeshBatcher::UpdateStaticMeshTransform(UStaticMesh* StaticMesh, FPrimitiveInstanceId& InstanceId,
-	FTransform& Transform)
+void AStaticMeshBatcher::UpdateStaticMeshTransform(const UStaticMesh* StaticMesh, const FPrimitiveInstanceId& InstanceId,
+                                                   const FTransform& Transform)
 {
 	UInstancedStaticMeshComponent* ISMC = *ISMC_Map.Find(StaticMesh);
 	ISMC->UpdateInstanceTransformById(InstanceId, Transform, false, true);

@@ -2,14 +2,14 @@
 
 
 #include "GM_Ingame.h"
-
-
 #include "GOTAGameInstance.h"
 #include "LoadingManager.h"
 #include "PC_Ingame.h"
 #include "PS_Ingame.h"
 #include "GameFramework/GameStateBase.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
 #include "GOTA/CoreSystems/Tile/WorldGenerator.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -17,14 +17,7 @@ AGM_Ingame::AGM_Ingame()
 {
 	ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAssetFinder(
 		TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
-	if (DataAssetFinder.Succeeded())
-	{
-		GameBalance = DataAssetFinder.Object;
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Failed to load GameBalance DataAsset Inside GameMode!"));
-	}
+	GameBalance = DataAssetFinder.Object;
 }
 
 // ---------------------------------------------------------
@@ -123,8 +116,8 @@ void AGM_Ingame::CheckGameEndingConditions()
 	if (GOTAGameState->GameEnded) return;
 
 	// based on SettlementPop
-	int32 ColonialPop = GOTAGameState->TotalColonialPopulation->Population.Size;
-	int32 NativePop = GOTAGameState->TotalNativePopulation->Population.Size;
+	int32 ColonialPop = GOTAGameState->TotalColonialPopulation->GetSize();
+	int32 NativePop = GOTAGameState->TotalNativePopulation->GetSize();
 	int32 TotalPop = ColonialPop + NativePop;
 
 	if (ColonialPop == 0)
@@ -133,24 +126,6 @@ void AGM_Ingame::CheckGameEndingConditions()
 		return;
 	}
 	if (NativePop == 0)
-	{
-		EndGame(EGameEnding::Defeat, FString("Defeat! :("));
-		return;
-	}
-
-	// based on Culture
-	int32 TotalColonistFollower = GOTAGameState->TotalColonialPopulation->Population.FollowerColonists
-		+ GOTAGameState->TotalNativePopulation->Population.FollowerColonists;
-	int32 TotalNativeFollower = GOTAGameState->TotalColonialPopulation->GetNativeFollowers()
-		+ GOTAGameState->TotalNativePopulation->GetNativeFollowers();
-
-	if (TotalColonistFollower == 0)
-	{
-		EndGame(EGameEnding::Victory, FString("Victory! :)"));
-		return;
-	}
-
-	if (TotalNativeFollower == 0)
 	{
 		EndGame(EGameEnding::Defeat, FString("Defeat! :("));
 		return;
@@ -188,16 +163,13 @@ void AGM_Ingame::CreateSettlements()
 {
 	for (ATile* Start : GOTAGameState->TileMap->ColonistsStarts)
 	{
-		ASettlement* Settlement = GetWorld()->SpawnActor<ASettlement>(ColonistSettlementClass);
-		Settlement->InitialStartingSetup(Start);
-		GOTAGameState->ColonistsSettlements.Add(Settlement);
+		AColony* Colony = GetWorld()->SpawnActor<AColony>();
+		Colony->StartingSetup(Start);
+		GOTAGameState->Colonies.Add(Colony);
 	}
-	for (ATile* Start : GOTAGameState->TileMap->NativesStarts)
-	{
-		ASettlement* Settlement = GetWorld()->SpawnActor<ASettlement>(NativeSettlementClass);
-		Settlement->InitialStartingSetup(Start);
-		GOTAGameState->NativeSettlements.Add(Settlement);
-	}
+	ATribe* Tribe = GetWorld()->SpawnActor<ATribe>();
+	Tribe->StartingSetup(GOTAGameState->TileMap->NativesStarts[0]);
+	GOTAGameState->Tribe = Tribe;
 }
 
 void AGM_Ingame::CreateGuardians()
@@ -242,15 +214,6 @@ void AGM_Ingame::CalculateTurn()
 	StartedCalculatingTurn = FDateTime::Now();
 	// Combat Phase
 	GOTAGameState->CombatSystem->TriggerAllCombats();
-	// Settlement Turns
-	for (ASettlement* Settlement : GOTAGameState->ColonistsSettlements)
-	{
-		Settlement->CalculateTurn();
-	}
-	for (ASettlement* Settlement : GOTAGameState->NativeSettlements)
-	{
-		Settlement->CalculateTurn();
-	}
 	// Entity Movement
 	for (AEntity* Entity : GOTAGameState->TileEntities)
 	{

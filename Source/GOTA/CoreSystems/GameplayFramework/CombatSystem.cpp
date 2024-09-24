@@ -16,17 +16,9 @@ bool UCombatSystem::IsSupportedForNetworking() const
 
 UCombatSystem::UCombatSystem()
 {
-	// Load GameBalance for Combat Value calculation
-	static ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAsset2(
+	static ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAssetFinder(
 		TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
-	if (DataAsset2.Succeeded())
-	{
-		GameBalance = DataAsset2.Object;
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Combat System couldn't load GameBalance Data Asset"))
-	}
+	GameBalance = DataAssetFinder.Object;
 }
 
 void UCombatSystem::RegisterCombat(ATile* Tile)

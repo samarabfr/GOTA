@@ -2,11 +2,13 @@
 
 
 #include "Tile.h"
+
+#include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
-#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -30,30 +32,26 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(ATile, SpawnLayout, Params);
-	
 	DOREPLIFETIME_WITH_PARAMS(ATile, EcoValues, Params);
-	
-	DOREPLIFETIME(ATile, GameplayTags);
-	DOREPLIFETIME(ATile, Building);
-	DOREPLIFETIME(ATile, Claimant);
+	DOREPLIFETIME_WITH_PARAMS(ATile, GameplayTags, Params);
+	DOREPLIFETIME_WITH_PARAMS(ATile, Building, Params);
+	DOREPLIFETIME_WITH_PARAMS(ATile, Claimant, Params);
+
 	DOREPLIFETIME(ATile, AlliedEntity);
 	DOREPLIFETIME(ATile, EnemyEntity);
 }
 
 ATile::ATile()
 {
-	// Replication Setup
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
 	NetUpdateFrequency = 1.0f;
 
-	// Tick Setup
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	PrimaryActorTick.TickInterval = 0.5f;
 
-	// initialize neighbor array
 	Neighbors.SetNumZeroed(6);
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ROOT"));
@@ -61,22 +59,22 @@ ATile::ATile()
 	SM_Hexagon->SetupAttachment(RootComponent);
 
 	EcoValues = CreateDefaultSubobject<UEcoValues>(TEXT("EcoValues"));
+	EcoValues->OnTreesChanged.AddDynamic(this, &ATile::TreesChanged);
+	EcoValues->OnWildlifeChanged.AddDynamic(this, &ATile::WildlifeChanged);
+	EcoValues->OnForageChanged.AddDynamic(this, &ATile::ForageChanged);
 }
 
 void ATile::BeginPlay()
 {
 	Super::BeginPlay();
-	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
+	GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
 }
 
 void ATile::ServerInit()
 {
 	AddReplicatedSubObject(EcoValues);
-
-	EcoValues->OnTreesChanged.AddDynamic(this, &ATile::AddTreesToNeighbors);
-	EcoValues->OnWildlifeChanged.AddDynamic(this, &ATile::AddWildlifeToNeighbors);
-	EcoValues->OnForageChanged.AddDynamic(this, &ATile::AddForageToNeighbors);
+	Civilians.SetNumZeroed(DA_TileGraphics->CivilianSlots.Num());
 }
 
 void ATile::OnRep_GameplayTags()
@@ -136,6 +134,45 @@ bool ATile::IsWalkable(EAffiliation Affiliation) const
 	return false;
 }
 
+bool ATile::AcceptsEntity(EEntityType EntityType) const
+{
+	if(EntityType == EEntityType::Civilian)
+		return AcceptsCivilian();
+	return false; // TODO: implement acceptsMilitary
+}
+
+bool ATile::AcceptsCivilian() const
+{
+	if (Terrain.Biome == EBiome::Volcano)
+		return false;
+	for (const ACivilian* Civilian : Civilians)
+	{
+		if (!Civilian) return true;
+	}
+	return false;
+}
+
+void ATile::AddCivilian(ACivilian* Civilian)
+{
+	for (int32 i = 0; i < Civilians.Num(); ++i)
+	{
+		if (!Civilians[i])
+		{
+			Civilians[i] = Civilian;
+			Civilian->SetActorLocation(DA_TileGraphics->CivilianSlots[i] + GetActorLocation());
+			return;
+		}
+	}
+}
+
+void ATile::RemoveCivilian(const ACivilian* Civilian)
+{
+	for (int32 i = 0; i < Civilians.Num(); ++i)
+	{
+		if(Civilians[i] == Civilian) Civilians[i] = nullptr;
+	}
+}
+
 AEntity* ATile::GetEntityByAffiliation(EAffiliation Affiliation) const
 {
 	if (Affiliation == EAffiliation::Ally) return AlliedEntity;
@@ -159,6 +196,7 @@ void ATile::SetClaimant(ASettlement* NewClaimant)
 
 void ATile::OnRep_Claimant(ASettlement* NewClaimant)
 {
+	if (!GameState) GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	UpdateClaimWallsWithNeighbors();
 }
 
@@ -187,13 +225,15 @@ void ATile::UpdateClaimWalls()
 					Transform.SetLocation(GetActorLocation());
 					Transform.SetRotation(
 						FRotator(0, 60 * i, 0).Quaternion());
-					ClaimWallsInstanceIds.Add(i, Claimant->AddClaimMeshInstance(Transform));
+					ClaimWallsInstanceIds.Add(i, GameState->StaticMeshBatcher->AddStaticMeshInstance(
+						                          DA_TileGraphics->ClaimMesh, Transform));
 				}
 			}
 			else if (ClaimWallsInstanceIds.Contains(i))
 			{
 				// Should NOT have flag in this direction
-				Claimant->RemoveClaimMeshInstance(*ClaimWallsInstanceIds.Find(i));
+				GameState->StaticMeshBatcher->RemoveStaticMeshInstance(
+					DA_TileGraphics->ClaimMesh, *ClaimWallsInstanceIds.Find(i));
 				ClaimWallsInstanceIds.Remove(i);
 			}
 		}
@@ -203,7 +243,7 @@ void ATile::UpdateClaimWalls()
 		// remove all flags
 		for (TTuple<uint8, FPrimitiveInstanceId> Tuple : ClaimWallsInstanceIds)
 		{
-			Claimant->RemoveClaimMeshInstance(Tuple.Value);
+			GameState->StaticMeshBatcher->RemoveStaticMeshInstance(DA_TileGraphics->ClaimMesh, Tuple.Value);
 		}
 		ClaimWallsInstanceIds.Empty();
 	}
@@ -220,7 +260,7 @@ bool ATile::TryClaim(ASettlement* PotentialClaimant)
 	Claimant = PotentialClaimant;
 	if (Building)
 	{
-		Claimant->OnBuildingAdded(Building);
+		Claimant->OnBuildingAdded(Building, this);
 	}
 	GameplayTags.AppendTags(Claimant->GameplayTags);
 	UpdateClaimWallsWithNeighbors();
@@ -233,9 +273,8 @@ void ATile::Unclaim()
 	if (!Claimant) return;
 	if (Building)
 	{
-		Claimant->OnBuildingRemoved(Building);
+		Claimant->OnBuildingRemoved(Building, this);
 	}
-	Claimant->LostClaim(this);
 	GameplayTags.RemoveTags(Claimant->GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
 	Claimant = nullptr;
@@ -244,116 +283,131 @@ void ATile::Unclaim()
 // ---------------------------------------------------------
 // Building
 
-void ATile::OnRep_Building()
-{
-	OnBuildingChanged.Broadcast(this);
-}
-
 bool ATile::CanBuild()
 {
-	return !Building;
+	return !Building && Terrain.Biome != EBiome::Volcano;
 }
 
-bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset)
+bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset, ASettlement* Builder)
 {
-	// There is already a Building, can't build here
-	if (Building) return false;
-	// Create Building Object
+	if (!CanBuild() || !Builder) return false;
 	Building = NewObject<UBuilding>();
-	Building->DataAsset = BuildingDataAsset;
-	if (Claimant)
-	{
-		Claimant->OnBuildingAdded(Building);
-	}
-	Building->PopContainer->ChangeMaxSize(BuildingDataAsset->TierOne.Housing);
-	Building->SetupProduction(&BuildingDataAsset->TierOne);
-	// Add Building related GameplayTags
-	GameplayTags.AppendTags(BuildingDataAsset->TierOne.GameplayTags);
-	OnGameplayTagsChanged.Broadcast();
-	// Replication stuff
+	Building->ServerInit(BuildingDataAsset, this, Builder);
 	AddReplicatedSubObject(Building);
-	AddReplicatedSubObject(Building->PopContainer);
-	// Set Graphics
-	OnBuildingChanged.Broadcast(this);
-	InitTileLayout();
-	return true;
-}
+	AddReplicatedSubObject(Building->Population);
 
-bool ATile::CanUpgrade()
-{
-	return Building->CanUpgrade();
-}
+	SetClaimant(Builder);
+	Claimant->OnBuildingAdded(Building, this);
 
-bool ATile::TryUpgrade()
-{
-	if (!Building || !Building->CanUpgrade()) return false;
-	GameplayTags.RemoveTags(Building->DataAsset->GetTierData(Building->Tier)->GameplayTags);
-	Building->Upgrade();
-	GameplayTags.AppendTags(Building->DataAsset->GetTierData(Building->Tier)->GameplayTags);
-	OnBuildingChanged.Broadcast(this);
+	GameplayTags.AppendTags(Claimant->GameplayTags);
+	GameplayTags.AppendTags(BuildingDataAsset->GameplayTags);
+
+	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, GameplayTags, this);
+	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, Claimant, this);
+	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, Building, this);
+
+	OnGameplayTagsChanged.Broadcast();
+	BuildingChanged();
+	ValidateSpawnLayout();
 	return true;
 }
 
 
 void ATile::Unbuild()
 {
-	// there is no Building
 	if (!Building) return;
 	if (Claimant)
 	{
-		Claimant->OnBuildingRemoved(Building);
+		Claimant->OnBuildingRemoved(Building, this);
 	}
-	// Remove Building related GameplayTags
-	GameplayTags.RemoveTag(FGameplayTag::RequestGameplayTag(FName("Building")));
+	GameplayTags.RemoveTags(Building->Settings->GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
-	// Destroy the Object
+	RemoveReplicatedSubObject(Building);
+	RemoveReplicatedSubObject(Building->Population);
 	Building = nullptr;
-	// Set Graphics
+	BuildingChanged();
+	ValidateSpawnLayout();
+}
+
+void ATile::OnRep_Building()
+{
+	BuildingChanged();
+}
+
+void ATile::BuildingChanged()
+{
 	OnBuildingChanged.Broadcast(this);
-	InitTileLayout();
+	if (Building)
+	{
+		Building->Population->OnSizeChanged.AddDynamic(this, &ATile::PopSizeChanged);
+		for (ATile* Neighbor : Neighbors)
+		{
+			if (Neighbor && Neighbor->Building)
+				Building->Population->NeighborChangedPopSize(Neighbor->Building->Population->GetSize());
+		}
+	}
 }
 
 // -------------------Ecosystem-------------------------
 
 void ATile::GOTATick()
 {
-	if(LastTick < 0)
+	if (LastTick < 0)
 	{
-		LastTick =  GetWorld()->GetTimeSeconds();
+		LastTick = GetWorld()->GetTimeSeconds();
 		return;
 	}
 	double DeltaSeconds = GetWorld()->GetTimeSeconds() - LastTick;
 	if (HasAuthority())
+	{
 		EcoValues->ServerTick(DeltaSeconds);
+		if (Building)
+		{
+			Building->Population->ServerTick(DeltaSeconds);
+			Building->GOTATick(DeltaSeconds); // TODO: Client side prediction
+		}
+	}
 	else
+	{
 		EcoValues->ClientTick(DeltaSeconds);
+		if (Building) Building->Population->ClientTick(DeltaSeconds);
+	}
 	LastTick = GetWorld()->GetTimeSeconds();
 }
 
-void ATile::AddTreesToNeighbors(int32 Change)
+void ATile::PopSizeChanged(const int16 Change)
 {
 	ForceNetUpdate();
 	for (int i = 0; i < 6; ++i)
 	{
-		if (Neighbors[i]) Neighbors[i]->EcoValues->AddNeighborTrees(Change);
+		if (Neighbors[i] && Neighbors[i]->Building) Neighbors[i]->Building->Population->NeighborChangedPopSize(Change);
 	}
 }
 
-void ATile::AddWildlifeToNeighbors(int32 Change)
+void ATile::TreesChanged(const int32 Change)
 {
 	ForceNetUpdate();
 	for (int i = 0; i < 6; ++i)
 	{
-		if (Neighbors[i]) Neighbors[i]->EcoValues->AddNeighborWildlife(Change);
+		if (Neighbors[i]) Neighbors[i]->EcoValues->NeighborChangedTrees(Change);
 	}
 }
 
-void ATile::AddForageToNeighbors(int32 Change)
+void ATile::WildlifeChanged(const int32 Change)
 {
 	ForceNetUpdate();
 	for (int i = 0; i < 6; ++i)
 	{
-		if (Neighbors[i]) Neighbors[i]->EcoValues->AddNeighborForage(Change);
+		if (Neighbors[i]) Neighbors[i]->EcoValues->NeighborChangedWildlife(Change);
+	}
+}
+
+void ATile::ForageChanged(const int32 Change)
+{
+	ForceNetUpdate();
+	for (int i = 0; i < 6; ++i)
+	{
+		if (Neighbors[i]) Neighbors[i]->EcoValues->NeighborChangedForage(Change);
 	}
 }
 
@@ -408,8 +462,8 @@ void ATile::UpdateHexagonMaterial()
 
 void ATile::InitTileContent()
 {
-	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	TileContent = NewObject<UTileContent>();
+	if (!GameState) GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	TileContent->Init(this, GameState);
 }
 

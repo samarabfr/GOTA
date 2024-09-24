@@ -13,20 +13,19 @@ ACombat::ACombat()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
-	// Load GameBalance for Combat Value calculation
-	static ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAsset2(
-		TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
-	if (DataAsset2.Succeeded())
-	{
-		GameBalance = DataAsset2.Object;
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Combat System couldn't load GameBalance Data Asset"))
-	}
+
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	MainMesh = CreateDefaultSubobject<UStaticMeshComponent>("Main Mesh");
 	MainMesh->SetupAttachment(RootComponent);
+
+	ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAssetFinder(
+	TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
+	GameBalance = DataAssetFinder.Object;
+}
+
+void ACombat::BeginPlay()
+{
+	Super::BeginPlay();
 }
 
 bool ACombat::DoesCombatTilesContain(ATile* Tile)
@@ -110,7 +109,7 @@ void ACombat::BuildingChanged(ATile* Tile)
 	CalcKills();
 	// register to delegates, unregister not necessary
 	if (!Tile->Building) return;
-	Tile->Building->PopContainer->CombatValues->OnChanged.AddDynamic(this, &ACombat::CombatValuesChanged);
+	//	Tile->Building->PopContainer->CombatValues->OnChanged.AddDynamic(this, &ACombat::CombatValuesChanged);
 }
 
 void ACombat::CombatValuesChanged(UCombatValues* CombatValues)
@@ -153,6 +152,7 @@ void ACombat::CalcAttackDefense()
 			EnemyAttack += CV->GetAttack();
 			EnemyDefense += CV->GetDefense();
 		}
+		/*
 		if (CombatTile.Tile->Building
 			&& CombatTile.Tile->GetClaimant())
 		{
@@ -168,6 +168,7 @@ void ACombat::CalcAttackDefense()
 				EnemyDefense += CV->GetDefense();
 			}
 		}
+		*/
 	}
 }
 
@@ -240,17 +241,20 @@ void ACombat::SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft
 		if (CombatTile.Tile->Building
 			&& CombatTile.Tile->GetClaimant()
 			&& CombatTile.Tile->GetClaimant()->Affiliation == Receiver
-			&& CombatTile.Tile->Building->PopContainer->GetSize() > 0)
+			&& CombatTile.Tile->Building->Population->GetSize() > 0)
 		{
+			/*
 			BuildingPopCombatTiles.Add(&CombatTile);
 			UCombatValues* CV = CombatTile.Tile->Building->GetCombatValues();
 			TotalHP += CV->GetHP();
+			*/
 		}
 	}
 	if (TotalHP <= 0) return;
 	// entities
 	int32 Damage = DamageLeft;
 	// spread damage based on total hp ratio
+	/*
 	for (FCombatTile* BuildingPopCombatTile : BuildingPopCombatTiles)
 	{
 		UCombatValues* CV = BuildingPopCombatTile->Tile->Building->GetCombatValues();
@@ -281,10 +285,12 @@ void ACombat::SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft
 			}
 		}
 	}
+	*/
 }
 
 void ACombat::SpreadDamageToBuildings(EAffiliation Receiver, int32& DamageLeft)
 {
+	/*
 	if (DamageLeft <= 0) return;
 	int32 BuildingTierHP = GameBalance->BuildingTierHP;
 	// get combat tiles with Receiver Building Pop
@@ -328,6 +334,7 @@ void ACombat::SpreadDamageToBuildings(EAffiliation Receiver, int32& DamageLeft)
 			}
 		}
 	}
+	*/
 }
 
 void ACombat::CountKills()
@@ -372,7 +379,7 @@ void ACombat::TriggerCombat()
 		}
 		if (Tile->Building)
 		{
-			Tile->Building->PopContainer->DecreaseSize(CombatTile.BuildingPopKills);
+			Tile->Building->Population->DecreaseSize(CombatTile.BuildingPopKills);
 			if (CombatTile.BuildingDowngrade > 0) Tile->Unbuild(); // TODO: Downgrade instead
 		}
 	}

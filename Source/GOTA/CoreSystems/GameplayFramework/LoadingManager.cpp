@@ -94,6 +94,11 @@ void ALoadingManager::ServerTick()
 			LocalPlayerController->RemoveLoadingUI();
 			GameMode->StartGame();
 			GameState->TileMap->EnableTick();
+			for (AColony* Colony : GameState->Colonies)
+			{
+				Colony->EnableTick();
+			}
+			GameState->Tribe->EnableTick();
 			LoadingStatus->SetCurrentStatus(ELoadingStatus::Finished);
 			GracePeriodTime = 0.0;
 		}

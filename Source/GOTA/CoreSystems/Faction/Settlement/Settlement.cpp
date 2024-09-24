@@ -3,427 +3,182 @@
 #include "Settlement.h"
 
 #include "Algo/RandomShuffle.h"
-#include "Components/InstancedStaticMeshComponent.h"
-#include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
-#include "GOTA/CoreSystems/Faction/Attribute/GOTAAttributeLimited.h"
+#include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	FDoRepLifetimeParams Params;
+	Params.bIsPushBased = true;
 
-	DOREPLIFETIME(ASettlement, PopulationSummary);
-	DOREPLIFETIME(ASettlement, BuildingSummary);
-	DOREPLIFETIME(ASettlement, CurrentBuildingProject);
-	DOREPLIFETIME(ASettlement, Food);
-	DOREPLIFETIME(ASettlement, Wood);
-	DOREPLIFETIME(ASettlement, Stone);
-	DOREPLIFETIME(ASettlement, Expansion);
-	DOREPLIFETIME(ASettlement, PrimaryCulture);
-	DOREPLIFETIME(ASettlement, Affiliation);
+	Params.Condition = COND_InitialOnly;
+	Params.RepNotifyCondition = REPNOTIFY_Always;
+	DOREPLIFETIME_WITH_PARAMS(ASettlement, Affiliation, Params);
+
+	Params.Condition = COND_None;
+	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
+	DOREPLIFETIME_WITH_PARAMS(ASettlement, Resources, Params);
 }
 
 ASettlement::ASettlement()
 {
-	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
-	ISM_ClaimWalls = CreateDefaultSubobject<UInstancedStaticMeshComponent>("Claim Walls");
-	ISM_ClaimWalls->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	ISM_ClaimWalls->SetupAttachment(RootComponent);
-	ISM_ClaimWallsRiver = CreateDefaultSubobject<UInstancedStaticMeshComponent>("Claim Walls River");
-	ISM_ClaimWallsRiver->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	ISM_ClaimWallsRiver->SetupAttachment(RootComponent);
-
-	// Replication stuff
 	bReplicates = true;
+	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
-	Food = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Food"));
-	Wood = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Wood"));
-	Stone = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Stone"));
-	PopulationSummary = CreateDefaultSubobject<UPopulationSummary>(TEXT("Population"));
-	BuildingSummary = CreateDefaultSubobject<UBuildingSummary>(TEXT("Production"));
-	Expansion = CreateDefaultSubobject<UGOTAAttributeLimited>(TEXT("Expansion"));
-	CurrentBuildingProject = CreateDefaultSubobject<UBuildingProject>(TEXT("Current Building Project"));
+	NetUpdateFrequency = 1.0f;
+
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.TickInterval = 0.5;
+
+	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
+
+	PopulationSummary = CreateDefaultSubobject<USettlementPopulation>(TEXT("Population"));
+
+	// Load Settlement Settings DataAsset
+	ConstructorHelpers::FObjectFinder<USettlementSettings> DataAsset(
+		TEXT("/Game/CoreSystems/Faction/DA_SettlementSettings"));
+	Settings = DataAsset.Object;
 }
 
 void ASettlement::BeginPlay()
 {
 	Super::BeginPlay();
+	GetWorld()->GetGameState<AGS_Ingame>()->LoadingManager->IncrementReplicationCount();
+}
 
-	// Get the GameState
-	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
-	TileMap = GameState->TileMap;
-	GameState->LoadingManager->IncrementReplicationCount();
+void ASettlement::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	
+	UpdateLastMinuteResources();
+}
 
-	if (HasAuthority())
+void ASettlement::EnableTick()
+{
+	SetActorTickEnabled(true);
+}
+
+void ASettlement::StartingSetup(ATile* SpawnTile)
+{
+	const FGameResources& StartingResources = Affiliation == EAffiliation::Enemy
+		                                          ? Settings->C_StartingResources
+		                                          : Settings->N_StartingResources;
+	const TArray<UBuildingDataAsset*>& StartingBuildings = Affiliation == EAffiliation::Enemy
+		                                                       ? Settings->C_StartingBuildings
+		                                                       : Settings->N_StartingBuildings;
+	GameplayTags = Affiliation == EAffiliation::Enemy
+		               ? Settings->C_GameplayTags
+		               : Settings->N_GameplayTags;
+	Resources += StartingResources;
+	SpawnTile->TryBuild(StartingBuildings[0], this);
+	for (int32 i = 1; i < StartingBuildings.Num(); ++i)
 	{
-		ISM_ClaimWalls->SetStaticMesh(ClaimMesh);
-
-		AddReplicatedSubObject(Food);
-		AddReplicatedSubObject(Wood);
-		AddReplicatedSubObject(Stone);
-		AddReplicatedSubObject(PopulationSummary);
-		AddReplicatedSubObject(BuildingSummary);
-		AddReplicatedSubObject(Expansion);
-		AddReplicatedSubObject(CurrentBuildingProject);
+		if (BorderingUnclaimedTiles.Num() <= 0) break;
+		ATile* Tile = BorderingUnclaimedTiles[FMath::RandRange(0, BorderingUnclaimedTiles.Num() - 1)];
+		Tile->TryBuild(StartingBuildings[i], this);
+		Tile->Building->FinishConstruction();
+	}
+	for (ATile* Tile : ClaimedTiles)
+	{
+		Tile->Building->Population->ChangeSize(100);
 	}
 }
 
-void ASettlement::SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject)
+// -------------------Claims-------------------------
+
+void ASettlement::RefreshBorderingUnclaimedTiles()
 {
-	if (CurrentBuildingProject)
+	BorderingUnclaimedTiles.Empty();
+	for (ATile* ClaimedTile : ClaimedTiles)
 	{
-		RemoveReplicatedSubObject(CurrentBuildingProject);
+		for (ATile* Neighbor : ClaimedTile->Neighbors)
+		{
+			if (Neighbor && !Neighbor->GetClaimant() && !BorderingUnclaimedTiles.Contains(Neighbor))
+			{
+				BorderingUnclaimedTiles.Add(Neighbor);
+			}
+		}
 	}
-	CurrentBuildingProject = NewCurrentBuildingProject;
-	if (CurrentBuildingProject)
-	{
-		AddReplicatedSubObject(CurrentBuildingProject);
-	}
 }
 
-void ASettlement::CalculateTurn()
+bool ASettlement::IsBorderingUnclaimedTile(const ATile* Tile) const
 {
-	GenerateBaseIncome();
-	GenerateBuildingIncome();
-	FigureOutBuilding();
-	FigureOutSendingArmy();
+	return BorderingUnclaimedTiles.Contains(Tile);
 }
 
-void ASettlement::OnBuildingAdded(UBuilding* Building)
+// -------------------Building-------------------------
+
+void ASettlement::OnBuildingAdded(UBuilding* Building, ATile* Tile)
 {
-	PopulationSummary->RegisterPopulationContainer(Building->PopContainer);
-	BuildingSummary->RegisterBuildingProduction(Building);
+	PopulationSummary->RegisterPop(Building->Population);
+	ClaimedTiles.Add(Tile);
+	RefreshBorderingUnclaimedTiles();
 }
 
-void ASettlement::OnBuildingRemoved(UBuilding* Building)
+void ASettlement::OnBuildingRemoved(UBuilding* Building, ATile* Tile)
 {
-	PopulationSummary->UnregisterPopulationContainer(Building->PopContainer);
-	BuildingSummary->UnregisterBuildingProduction(Building);
-}
-
-void ASettlement::LostClaim(ATile* Tile)
-{
-	if (!Tile) return;
-
+	PopulationSummary->UnregisterPop(Building->Population);
 	ClaimedTiles.Remove(Tile);
+	RefreshBorderingUnclaimedTiles();
 }
 
-FPrimitiveInstanceId ASettlement::AddClaimMeshInstance(FTransform& Transform)
-{
-	return ISM_ClaimWalls->AddInstanceById(Transform);
-}
+// -------------------Resources-------------------------
 
-void ASettlement::RemoveClaimMeshInstance(FPrimitiveInstanceId InstanceId)
+void ASettlement::UpdateLastMinuteResources()
 {
-	ISM_ClaimWalls->RemoveInstanceById(InstanceId);
-}
+	const float CurrentCutOff = GetWorld()->GetTimeSeconds() - 60.0f;
 
-void ASettlement::ClaimTile(ATile* Tile)
-{
-	if (!Tile) return;
-
-	if (Tile->TryClaim(this))
+	// Remove old entries from Income queue
+	while (const FIncomeEvent* Tail = IncomeEvents.Peek())
 	{
-		ClaimedTiles.Add(Tile);
-	}
-}
-
-bool ASettlement::ClaimRandomTile()
-{
-	// All Neighboring tiles that have 3 or more neighbors already claimed by this settlement
-	TArray<ATile*> BorderingTilesHighPrio;
-	// All other claimable neighbors
-	TArray<ATile*> BorderingTilesLowPrio;
-	// Fill Bordering Arrays
-	for (ATile* ClaimedTile : ClaimedTiles)
-	{
-		for (int32 NeighborIndex = 0; NeighborIndex < 6; ++NeighborIndex)
+		if (Tail->Timestamp < CurrentCutOff)
 		{
-			// ignore this tile if its null or not claimable
-			if (!ClaimedTile->Neighbors[NeighborIndex] || !ClaimedTile->Neighbors[NeighborIndex]->IsClaimable())
-				continue;
-			// check how many of this neighbor neighbors are claimed by this settlement
-			int32 NeighborClaimedNeighbors = 0;
-			for (int32 i = 0; i < 6; ++i)
-			{
-				if (ClaimedTile->Neighbors[NeighborIndex]->Neighbors[i]
-					&& ClaimedTile->Neighbors[NeighborIndex]->Neighbors[i]->GetClaimant() == this)
-				{
-					NeighborClaimedNeighbors++;
-				}
-			}
-			if (NeighborClaimedNeighbors >= 3)
-			{
-				BorderingTilesHighPrio.Add(ClaimedTile->Neighbors[NeighborIndex]);
-			}
-			else
-			{
-				BorderingTilesLowPrio.Add(ClaimedTile->Neighbors[NeighborIndex]);
-			}
+			LastMinuteIncome -= Tail->Amount;
+			IncomeEvents.Pop();
+		}
+		else
+		{
+			break;
 		}
 	}
-	if (!BorderingTilesHighPrio.IsEmpty())
-	{
-		// we have at least one High Prio claimable neighbor lets go
-		ClaimTile(BorderingTilesHighPrio[FMath::RandRange(0, BorderingTilesHighPrio.Num() - 1)]);
-		return true;
-	}
-	if (!BorderingTilesLowPrio.IsEmpty())
-	{
-		// well we at least have a low prio tile to claim, good enough
-		ClaimTile(BorderingTilesLowPrio[FMath::RandRange(0, BorderingTilesLowPrio.Num() - 1)]);
-		return true;
-	}
-	return false;
-}
 
-void ASettlement::GenerateBuildingIncomeAlly()
-{
-	int32 _;
-	// Trees
-	Wood->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Tree,
-	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Woodcutting),
-	                                     SettlementBalance->NativeTreeThreshold,
-	                                     SettlementBalance->NativeMaxRange), _);
-	// Wildlife
-	Food->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Wildlife,
-	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Hunting),
-	                                     SettlementBalance->NativeWildlifeThreshold,
-	                                     SettlementBalance->NativeMaxRange), _);
-	// Forage
-	Food->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Forage,
-	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Foraging),
-	                                     SettlementBalance->NativeForageThreshold,
-	                                     SettlementBalance->NativeMaxRange), _);
-}
-
-void ASettlement::GenerateBuildingIncomeEnemy()
-{
-	int32 _;
-	// Trees
-	Wood->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Tree,
-	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Woodcutting),
-	                                     0,
-	                                     SettlementBalance->ColonistMaxRange), _);
-	// Wildlife
-	Food->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Wildlife,
-	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Hunting),
-	                                     0,
-	                                     SettlementBalance->ColonistMaxRange), _);
-	// Forage
-	Food->Add(TileMap->TryReduceEcoValue(this, EEcoValue::Forage,
-	                                     *BuildingSummary->ProductionMap.Find(EProductionType::Foraging),
-	                                     0,
-	                                     SettlementBalance->ColonistMaxRange), _);
-}
-
-void ASettlement::GenerateBaseIncome()
-{
-	// Reached Expansion threshhold, base income +1
-	if (Expansion->GetCurrent() == Expansion->GetMaximum())
+	// Remove old entries from Consumption queue
+	while (const FIncomeEvent* Tail = ConsumptionEvents.Peek())
 	{
-		ClaimRandomTile();
-		Expansion->SetCurrent(1);
-		Expansion->SetMaximum(FMath::TruncToInt32(
-			SettlementBalance->ClaimPrice.GetRichCurveConst()->Eval(ClaimedTiles.Num())));
-	}
-	else
-	{
-		int32 _;
-		Expansion->Add(1, _);
-	}
-}
-
-void ASettlement::GenerateBuildingIncome()
-{
-	int32 _;
-	Expansion->Add(*BuildingSummary->ProductionMap.Find(EProductionType::Expansion), _);
-	if (Affiliation == EAffiliation::Ally)
-	{
-		GenerateBuildingIncomeAlly();
-	}
-	else
-	{
-		GenerateBuildingIncomeEnemy();
-	}
-}
-
-void ASettlement::FigureOutBuilding()
-{
-	if (CurrentBuildingProject && CurrentBuildingProject->IsPossible())
-	{
-		if (CurrentBuildingProject->CanAfford())
+		if (Tail->Timestamp < CurrentCutOff)
 		{
-			CurrentBuildingProject->TryBuilding();
-			SetCurrentBuildingProject(nullptr);
-			SelectNewBuildingProject();
+			LastMinuteConsumption -= Tail->Amount;
+			ConsumptionEvents.Pop();
 		}
-	}
-	else
-	{
-		SetCurrentBuildingProject(nullptr);
-		SelectNewBuildingProject();
-	}
-}
-
-void ASettlement::SelectNewBuildingProject()
-{
-	CalculateImportances();
-	FillBuildingPool();
-	if (BuildingProjectPool.IsEmpty()) return;
-	// calculate scores
-	Scores.Empty();
-	for (UBuildingProject* BuildingProject : BuildingProjectPool)
-	{
-		Scores.Add(FBuildingProjectScore(BuildingProject,
-		                                 BuildingProject->CalculateScore(),
-		                                 BuildingProject->Data,
-		                                 BuildingProject->CalculateProjectTime(),
-		                                 BuildingProject->Tier));
-	}
-	// sort by highest score
-	Scores.Sort([](const FBuildingProjectScore& A, const FBuildingProjectScore& B)
-	{
-		return A.Score > B.Score;
-	});
-	// Set from highest score
-	UBuildingProject* Highest = nullptr;
-	float LowestScore = -MAX_FLT;
-	for (auto Score : Scores)
-	{
-		if (Score.Score > LowestScore)
+		else
 		{
-			LowestScore = Score.Score;
-			Highest = Score.BuildingProject;
-		}
-	}
-	SetCurrentBuildingProject(Highest);
-}
-
-void ASettlement::FillBuildingPool()
-{
-	BuildingProjectPool.Empty();
-	// If there is a free building slot, add all possible Buildings to the pool
-	Algo::RandomShuffle(ClaimedTiles);
-	for (ATile* ClaimedTile : ClaimedTiles)
-	{
-		if (ClaimedTile->Building) continue;
-		for (UBuildingDataAsset* PossibleBuilding : PossibleBuildings)
-		{
-			UBuildingProject* BuildingProject = NewObject<UBuildingProject>();
-			BuildingProject->Init(this, PossibleBuilding, 1, ClaimedTile);
-			BuildingProjectPool.Add(BuildingProject);
-		}
-		break;
-	}
-	// look for ugprades
-	for (ATile* ClaimedTile : ClaimedTiles)
-	{
-		if (!ClaimedTile->Building) continue;
-
-		// tier 2 is next and enabled
-		if (ClaimedTile->Building->Tier == 1 && ClaimedTile->Building->DataAsset->TierTwo.TierEnabled)
-		{
-			UBuildingProject* BuildingProject = NewObject<UBuildingProject>();
-			BuildingProject->Init(this, ClaimedTile->Building->DataAsset, 2, ClaimedTile);
-			BuildingProjectPool.Add(BuildingProject);
-		}
-		// tier 3 is next and enabled
-		else if (ClaimedTile->Building->Tier == 2 && ClaimedTile->Building->DataAsset->TierThree.TierEnabled)
-		{
-			UBuildingProject* BuildingProject = NewObject<UBuildingProject>();
-			BuildingProject->Init(this, ClaimedTile->Building->DataAsset, 3, ClaimedTile);
-			BuildingProjectPool.Add(BuildingProject);
+			break;
 		}
 	}
 }
 
-void ASettlement::CalculateImportances()
+void ASettlement::AddResources(FGameResources Amount, bool CountTowardsIncomeLastMinute)
 {
-	// The less income, the more important
-	// TODO: make functions of income calc
-	// food
-	float FoodIncome = BuildingSummary->ProductionMap[EProductionType::Hunting];
-	FoodIncome += BuildingSummary->ProductionMap[EProductionType::Foraging]
-		* SettlementBalance->ForagingFoodToWoodRatio;
-	ImportanceRatings.Food = SettlementBalance->FoodImportance
-		* FMath::Pow(EULERS_NUMBER, -SettlementBalance->FoodImportanceDescent * FoodIncome);
-	// wood
-	float WoodIncome = BuildingSummary->ProductionMap[EProductionType::Woodcutting];
-	WoodIncome += BuildingSummary->ProductionMap[EProductionType::Foraging]
-		* (1 - SettlementBalance->ForagingFoodToWoodRatio);
-	ImportanceRatings.Wood = SettlementBalance->WoodImportance
-		* FMath::Pow(EULERS_NUMBER, -SettlementBalance->WoodImportanceDescent * WoodIncome);
-	// stone
-	float StoneIncome = BuildingSummary->ProductionMap[EProductionType::Stonecutting];
-	ImportanceRatings.Stone = SettlementBalance->StoneImportance
-		* FMath::Pow(EULERS_NUMBER, -SettlementBalance->StoneImportanceDescent * StoneIncome);
-	// More aggressive => weapons more important
-	float AngryRatio = 0;
-	if (PopulationSummary->Population.Size > 0)
-		AngryRatio = PopulationSummary->GetMood(EMood::Angry) / PopulationSummary->Population.Size;
-	float WeaponsIncome = BuildingSummary->ProductionMap[EProductionType::Bowmaking] + BuildingSummary->ProductionMap[
-		EProductionType::Musketmaking];
-	ImportanceRatings.Weapons = SettlementBalance->WeaponsImportance
-		* FMath::Pow(EULERS_NUMBER, -SettlementBalance->WeaponsImportanceDescent * WeaponsIncome) * (1 + AngryRatio);
-	float ShieldsIncome = BuildingSummary->ProductionMap[EProductionType::Shieldmaking];
-	ImportanceRatings.Shields = SettlementBalance->ShieldsImportance
-		* FMath::Pow(EULERS_NUMBER, -SettlementBalance->ShieldsImportanceDescent * ShieldsIncome) * (1 + AngryRatio);
-}
-
-void ASettlement::FigureOutSendingArmy()
-{
-	if (PopulationSummary->Population.Size < SettlementBalance->MinimumPopulationToSpawnArmy) return;
-
-	// roll if army should spawn
-	if (CalculateArmySpawnChance() < FMath::RandRange(0, 99)) return;
-	// TODO: was losschicken? Wo spawnen? army spawnen; pop raus und rein
-	SpawnArmy();
-}
-
-float ASettlement::CalculateArmySpawnChance()
-{
-	// angry ratio
-	const float AngryRatio = PopulationSummary->GetMood(EMood::Angry) / PopulationSummary->Population.Size;
-	const float AngryRatioImpact = AngryRatio * SettlementBalance->AggressiveMoodMaximumImpact;
-	// Pop over high
-	float PopOverHigh = PopulationSummary->Population.Size - SettlementBalance->HighPopulationThreshold;
-	PopOverHigh = FMath::Max(PopOverHigh, 0);
-	const float PopOverHighImpact = PopOverHigh * SettlementBalance->HighPopulationImpact;
-	// spawn chance
-	return AngryRatioImpact + PopOverHighImpact;
-}
-
-bool ASettlement::SpawnArmy()
-{
-	// nowhere to spawn
-	if (ClaimedTiles.IsEmpty()) return false;
-	// first Tile that has no TileEntity with own affiliation
-	ATile* SpawnLocation = nullptr;
-	for (ATile* Tile : ClaimedTiles)
+	Resources += Amount;
+	if (CountTowardsIncomeLastMinute)
 	{
-		if (!Tile || Tile->GetEntity(Affiliation)) continue;
-		SpawnLocation = Tile;
-		break;
+		LastMinuteIncome += Amount;
+		IncomeEvents.Enqueue(FIncomeEvent(Amount, GetWorld()->GetTimeSeconds()));
 	}
-	if (!SpawnLocation) return false;
+}
 
-	// spawn the army
-	AArmy* Army = Cast<AArmy>(GetWorld()->SpawnActor(ArmyClass));
-	if (!Army) return false;
-	Army->Init(Affiliation, SpawnLocation, 2);
-
-	// reduce Pop in every building
-	// TODO: evaluate how many pops to send
-	// TODO: figure out which pops to send, remove them from the buildings and add them to the army
-	for (ATile* Tile : ClaimedTiles)
+void ASettlement::RemoveResources(FGameResources Amount, bool CountTowardsLastMinuteConsumption)
+{
+	Resources -= Amount;
+	if (CountTowardsLastMinuteConsumption)
 	{
-		if (!Tile || !Tile->Building) continue;
-		Tile->Building->PopContainer->ChangeSize(-1);
+		LastMinuteConsumption += Amount;
+		ConsumptionEvents.Enqueue(FIncomeEvent(Amount, GetWorld()->GetTimeSeconds()));
 	}
-
-	return true;
 }

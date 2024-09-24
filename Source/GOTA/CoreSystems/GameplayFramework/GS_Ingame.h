@@ -5,11 +5,13 @@
 #include "CoreMinimal.h"
 #include "CombatSystem.h"
 #include "StartParameter.h"
+#include "TotalPopulation.h"
 #include "GameFramework/GameState.h"
 #include "GOTA/CoreSystems/Entity/Entity.h"
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
-#include "GOTA/CoreSystems/Faction/Settlement/PopulationSummary.h"
-#include "GOTA/CoreSystems/Faction/Settlement/SettlementBalance.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
+#include "GOTA/CoreSystems/Faction/Settlement/SettlementPopulation.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "GOTA/CoreSystems/Utility/StaticMeshBatcher.h"
@@ -35,10 +37,10 @@ public:
 	ATileMap* TileMap;
 
 	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
-	TArray<ASettlement*> ColonistsSettlements;
+	TArray<AColony*> Colonies;
 
 	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
-	TArray<ASettlement*> NativeSettlements;
+	ATribe* Tribe;
 
 	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
 	TArray<AGuardian*> Guardians;
@@ -55,11 +57,11 @@ public:
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UGOTAAttribute* TotalWildlife;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
-	UPopulationSummary* TotalColonialPopulation;
+	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+	UTotalPopulation* TotalColonialPopulation;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
-	UPopulationSummary* TotalNativePopulation;
+	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+	UTotalPopulation* TotalNativePopulation;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	int32 IslandMaxTrees;
@@ -94,7 +96,7 @@ public:
 	float ElapsedTurnTime;
 
 	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Replicated, Category="GOTAGameState")
-	float MaxTurnTime;
+	float MaxTurnTime = 200;
 
 	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
 	bool IsCalculatingTurn = false;
@@ -145,16 +147,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void RegisterTileForTotalsUpdates(ATile* Tile);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void RegisterColonialSettlementForTotalsUpdates(UPopulationSummary* Population);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void RegisterNativeSettlementForTotalsUpdates(UPopulationSummary* Population);
-
-	void RegisterPopConForTotals(UPopulationContainer* PopCon, EAffiliation Affiliation);
-	void UnregisterPopConForTotals(UPopulationContainer* PopCon, EAffiliation Affiliation);
-
+	
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGameEndingSignature, EGameEnding, Ending, FString, EndMessage);
 

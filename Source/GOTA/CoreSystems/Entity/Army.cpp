@@ -20,8 +20,8 @@ void AArmy::CalculateMovement()
 
 AArmy::AArmy()
 {
-	PopCon = CreateDefaultSubobject<UPopulationContainer>("Population Container");
-	PopCon->CombatValues->OnChanged.AddDynamic(this, &AArmy::CombatValuesChanged);
+	PopCon = CreateDefaultSubobject<UPopulation>("Population Container");
+//	PopCon->CombatValues->OnChanged.AddDynamic(this, &AArmy::CombatValuesChanged);
 }
 
 bool AArmy::IsTargetValid()
@@ -39,7 +39,8 @@ bool AArmy::IsTargetValid()
 
 UCombatValues* AArmy::GetCombatValues() const
 {
-	return PopCon->CombatValues;
+//	return PopCon->CombatValues;
+	return nullptr;
 }
 
 void AArmy::KillIndividuals(int32 Kills)
@@ -52,22 +53,11 @@ void AArmy::KillIndividuals(int32 Kills)
 void AArmy::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-	if (HasAuthority())
-	{
-		GetWorld()->GetGameState<AGS_Ingame>()->UnregisterPopConForTotals(PopCon, GetAffiliation());
-	}
 }
 
 void AArmy::Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 MovementSpeed_)
 {
 	Super::Init(Affiliation_, CurrentTile_, MovementSpeed_);
-	GetWorld()->GetGameState<AGS_Ingame>()->RegisterPopConForTotals(PopCon, Affiliation_);
 	PopCon->DecreaseSize(100);
-	FPopulation RandomPop = FPopulation();
-	RandomPop.Size = FMath::RandRange(5, 10);
-	RandomPop.MoodContent = RandomPop.Size;
-	RandomPop.Bows = FMath::RandRange(1, 3);
-	RandomPop.Muskets = FMath::RandRange(1, 4);
-	RandomPop.Shields = FMath::RandRange(1, 3);
-	PopCon->AddPopulation(RandomPop);
+	PopCon->IncreaseSize(FMath::RandRange(3,10));
 }

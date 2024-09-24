@@ -18,6 +18,8 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Tile.generated.h"
 
+class ACivilian;
+class UBuildingDataAsset;
 class UBuilding;
 class ASettlement;
 
@@ -48,7 +50,7 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	void ServerInit();
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, ReplicatedUsing=OnRep_GameplayTags, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_GameplayTags, Category="Tile")
 	FGameplayTagContainer GameplayTags;
 
 	UFUNCTION()
@@ -62,8 +64,11 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	TArray<ATile*> Neighbors;
-
-
+	
+private:
+	UPROPERTY()
+	AGS_Ingame* GameState;
+	
 	// ------------------------Entity---------------------------
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintGetter=GetAlliedEntity, Replicated, Category="Tile")
@@ -93,8 +98,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Tile")
 	bool IsWalkable(EAffiliation Affiliation) const;
 
-	// ---------------------------------------------------------
-	// Claimant and claiming
+	bool AcceptsEntity(EEntityType EntityType) const;
+
+	// ------------------------Civilians---------------------------
+private:
+	UPROPERTY(VisibleInstanceOnly)
+	TArray<ACivilian*> Civilians;
+
+public:
+	bool AcceptsCivilian() const;
+	void AddCivilian(ACivilian* Civilian);
+	void RemoveCivilian(const ACivilian* Civilian);
+
+	// -------------------Claimant and claiming-------------------
 
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintSetter=SetClaimant, BlueprintGetter=GetClaimant,
@@ -128,51 +144,43 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
 	void Unclaim();
 
-	// ---------------------------------------------------------
-	// Building
-
-	UPROPERTY(VisibleInstanceOnly, Instanced, BlueprintReadWrite, ReplicatedUsing=OnRep_Building, Category="Tile")
+	// -----------------------Building---------------------
+	
+	bool CanBuild();
+	bool TryBuild(UBuildingDataAsset* BuildingDataAsset, ASettlement* Builder);
+	void Unbuild();
+	
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Building, Category="Tile")
 	UBuilding* Building;
 
 	UFUNCTION()
 	void OnRep_Building();
 
-	UPROPERTY(BlueprintAssignable)
+	void BuildingChanged();
+	
 	FOnTileChangedSignature OnBuildingChanged;
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
-	bool CanBuild();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
-	bool TryBuild(UBuildingDataAsset* BuildingDataAsset);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
-	bool CanUpgrade();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
-	bool TryUpgrade();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
-	void Unbuild();
-
-	// -------------------Ecosystem-------------------------
+	// -------------------Ticking-------------------------
 private:
 	double LastTick = -1.0;
 	
 public:
 	void GOTATick();
+
+	UFUNCTION()
+	void PopSizeChanged(const int16 Change);
 	
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	UEcoValues* EcoValues;
 
 	UFUNCTION()
-	void AddTreesToNeighbors(int32 Change);
+	void TreesChanged(const int32 Change);
 
 	UFUNCTION()
-	void AddWildlifeToNeighbors(int32 Change);
+	void WildlifeChanged(const int32 Change);
 
 	UFUNCTION()
-	void AddForageToNeighbors(int32 Change);
+	void ForageChanged(const int32 Change);
 
 	// -----------------------Graphics--------------------------
 public:

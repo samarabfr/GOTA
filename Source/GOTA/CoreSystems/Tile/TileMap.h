@@ -2,12 +2,15 @@
 
 #pragma once
 
+#include <functional>
+
 #include "CoreMinimal.h"
 #include "HexCoords.h"
 #include "TerrainGeneratorDataAsset.h"
 #include "Tile.h"
 #include "GameFramework/Actor.h"
 #include "TileMap.generated.h"
+
 
 UCLASS()
 class GOTA_API ATileMap : public AActor
@@ -20,10 +23,10 @@ public:
 	void Init();
 	void EnableTick();
 	void MaxAllEcoValues();
-	
+
 private:
 	virtual void BeginPlay() override;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category="TileMap")
 	int32 TileTicksPerFrame;
 
@@ -75,6 +78,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	ATile* GetRandomTile();
+
+	TArray<ATile*> FindPathToNearestTile(ATile* Origin, EEntityType EntityType,
+	                                     const std::function<bool(const ATile*)>& Condition) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	TArray<ATile*> GetPath(ATile* Start, ATile* End, EAffiliation Affiliation);

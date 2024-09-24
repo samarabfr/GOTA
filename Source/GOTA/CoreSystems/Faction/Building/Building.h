@@ -1,13 +1,15 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
+#include "GameplayTagContainer.h"
+#include "GOTA/CoreSystems/Faction/Settlement/GameResources.h"
 
-#include "CoreMinimal.h"
-#include "BuildingTierData.h"
-#include "PopulationContainer.h"
-#include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Building.generated.h"
 
+class ASettlement;
+class ATile;
+class UPopulation;
+class ACivilian;
 class UBuildingDataAsset;
 
 UCLASS(Blueprintable)
@@ -18,46 +20,58 @@ class GOTA_API UBuilding : public UObject
 	virtual bool IsSupportedForNetworking() const override;
 	UBuilding();
 	
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnProductionChangedSignature, int32, Changed, EProductionType, Type);
-
 public:
-	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Category="Building")
-	UBuildingDataAsset* DataAsset;
-
-	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Instanced, Category="Building")
-	UPopulationContainer* PopContainer;
-
-	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly, Category="Building")
-	int32 Tier = 1;
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Building")
-	bool CanUpgrade();
+	void ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile_, ASettlement* Settlement_);
+	void GOTATick(float DeltaSeconds);
 	
-	void Upgrade();
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
+	UBuildingDataAsset* Settings;
 
-	// ---------------------------------------------------------
-	// Production
-	
-	UPROPERTY(BlueprintAssignable, Category="Building")
-	FOnProductionChangedSignature OnProductionChanged;
-	
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Building")
-	int32 Production = 0;
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
+	UPopulation* Population;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Building")
-	int32 PopulationThreshold = 0;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Building")
-	int32 ProductionPerThreshold = 0;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Replicated, Category="Building")
-	EProductionType ProductionType = EProductionType::MAX;
-	
 	UFUNCTION()
-	void UpdateProduction(FPopulation Change);
-	
-	void SetupProduction(const FBuildingTierData* TierData);
+	void ProductionChanged(int16 Change);
 
-	UCombatValues* GetCombatValues();
+	UPROPERTY()
+	ATile* Tile;
+
+	UPROPERTY()
+	ASettlement* Settlement;
+
+	//---------------------base income----------------
+
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnIncomeChangedSig, float, IncomeChange, EProductionType, ProductionType);
+	FOnIncomeChangedSig OnIncomeChanged;
+	float GetCurrentIncomePerSecond() const;
+	void AddIncomeToSettlement();
+	
+	UPROPERTY(VisibleInstanceOnly)
+	float IncomeProgress = 0.0f;
+
+	//---------------------Civilian Entity----------------
+	
+	UPROPERTY(VisibleInstanceOnly)
+	ACivilian* Civilian;
+	
+	float GetCivilianWorkRate() const;
+	float GetCivilianMovementRate() const;
+	
+	//---------------------Construction phase----------------
+private:
+	UPROPERTY(VisibleInstanceOnly)
+	bool IsUnderConstruction;
+public:
+	bool GetIsUnderConstruction() const { return IsUnderConstruction; }
+	FGameplayTag UnderConstructionTag;
+
+private:
+	UPROPERTY(VisibleInstanceOnly)
+	FGameResources ResourceProgress;
+public:
+	FGameResources GetResourceProgress() const;
+	void SetResourceProgress(const FGameResources NewResourcesProgress);
+
+	void FinishConstruction();
 };

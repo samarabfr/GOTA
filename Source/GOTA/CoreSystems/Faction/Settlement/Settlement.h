@@ -3,148 +3,95 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BuildingSummary.h"
-#include "BuildingProject.h"
-#include "BuildingProjectScore.h"
-#include "SettlementBalance.h"
-#include "PopulationSummary.h"
-#include "SettlementImportanceRatings.h"
+#include "SettlementSettings.h"
+#include "SettlementPopulation.h"
 #include "GameFramework/Actor.h"
-#include "GOTA/CoreSystems/Entity/Army.h"
-#include "GOTA/CoreSystems/Faction/Attribute/GOTAAttributeLimited.h"
-#include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "Settlement.generated.h"
+
+class UBuilding;
+class ATile;
 
 UCLASS(Abstract, Blueprintable)
 class ASettlement : public AActor
 {
 	GENERATED_BODY()
+
+protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	ASettlement();
 
-	// ---------------------------------------------------------
-	// Setup
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 
 public:
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="Settlement")
-	USettlementBalance* SettlementBalance;
+	void EnableTick();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category="Settlement")
-	ECultureLoyalty PrimaryCulture = ECultureLoyalty::MAX;
+public:
+	UPROPERTY()
+	USettlementSettings* Settings;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category="Settlement")
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
 	EAffiliation Affiliation;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Settlement")
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
 	FGameplayTagContainer GameplayTags;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Settlement")
-	UPopulationSummary* PopulationSummary;
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
+	USettlementPopulation* PopulationSummary;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Settlement")
-	UGOTAAttributeLimited* Expansion;
+	void StartingSetup(ATile* SpawnTile);
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
-	UGOTAAttribute* Food;
+	// -------------------Claims-------------------------
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
-	UGOTAAttribute* Wood;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
-	UGOTAAttribute* Stone;
-
-	UPROPERTY(VisibleInstanceOnly, Instanced, BlueprintReadWrite, BlueprintSetter=SetCurrentBuildingProject, Replicated,
-		Category="Settlement")
-	UBuildingProject* CurrentBuildingProject;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Attribute")
-	UBuildingSummary* BuildingSummary;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Settlement")
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
 	TArray<ATile*> ClaimedTiles;
 
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Settlement")
-	FSettlementImportanceRatings ImportanceRatings;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadWrite, Category="Settlement")
-	TArray<FBuildingProjectScore> Scores;
-
-	UFUNCTION(BlueprintSetter)
-	void SetCurrentBuildingProject(UBuildingProject* NewCurrentBuildingProject);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
-	void CalculateTurn();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
-	void OnBuildingAdded(UBuilding* Building);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
-	void OnBuildingRemoved(UBuilding* Building);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
-	void LostClaim(ATile* Tile);
-
-	FPrimitiveInstanceId AddClaimMeshInstance(FTransform& Transform);
-	void RemoveClaimMeshInstance(FPrimitiveInstanceId InstanceId);
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="Settlement")
-	void InitialStartingSetup(ATile* SpawnTile);
+public:
+	UPROPERTY()
+	TArray<ATile*> BorderingUnclaimedTiles;
 
 protected:
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AArmy> ArmyClass;
+	void RefreshBorderingUnclaimedTiles();
 
-	UPROPERTY(EditDefaultsOnly)
-	UStaticMesh* ClaimMesh;
+public:
+	bool IsBorderingUnclaimedTile(const ATile* Tile) const;
 
-	UPROPERTY(EditDefaultsOnly)
-	UStaticMesh* ClaimMeshRiver;
+	// -------------------Building-------------------------
+public:
+	void OnBuildingAdded(UBuilding* Building, ATile* Tile);
 
-	UPROPERTY()
-	UInstancedStaticMeshComponent* ISM_ClaimWalls;
+	void OnBuildingRemoved(UBuilding* Building, ATile* Tile);
 
-	UPROPERTY()
-	UInstancedStaticMeshComponent* ISM_ClaimWallsRiver;
+	// -------------------Resources-------------------------
+private:
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
+	FGameResources Resources;
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
+	FGameResources LastMinuteIncome;
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
+	FGameResources LastMinuteConsumption;
 
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Settlement")
-	void ClaimTile(ATile* Tile);
+	struct FIncomeEvent
+	{
+		FGameResources Amount;
+		float Timestamp;
 
-	UFUNCTION(BlueprintCallable)
-	bool ClaimRandomTile();
+		FIncomeEvent(): Amount(), Timestamp()
+		{
+		};
 
-private:	
-	UPROPERTY()
-	TSet<ATile*> BorderingUnclaimedTiles;
+		FIncomeEvent(const FGameResources InAmount, const float InTimestamp)
+			: Amount(InAmount), Timestamp(InTimestamp)
+		{
+		}
+	};
 
-	UPROPERTY()
-	ATileMap* TileMap;
+	TQueue<FIncomeEvent> IncomeEvents;
+	TQueue<FIncomeEvent> ConsumptionEvents;
+	void UpdateLastMinuteResources();
 
-	UPROPERTY()
-	TArray<UBuildingProject*> BuildingProjectPool;
-
-	UPROPERTY()
-	TArray<UBuildingDataAsset*> PossibleBuildings;
-
-	void GenerateBuildingIncomeAlly();
-
-	void GenerateBuildingIncomeEnemy();
-
-	void GenerateBaseIncome();
-
-	void GenerateBuildingIncome();
-
-	void FigureOutBuilding();
-
-	void SelectNewBuildingProject();
-
-	void FillBuildingPool();
-
-	void CalculateImportances();
-
-	void FigureOutSendingArmy();
-
-	float CalculateArmySpawnChance();
-
-	bool SpawnArmy();
+public:
+	FGameResources GetResources() const { return Resources; }
+	void AddResources(FGameResources Amount, bool CountTowardsLastMinuteIncome = false);
+	void RemoveResources(FGameResources Amount, bool CountTowardsLastMinuteConsumption = false);
 };
