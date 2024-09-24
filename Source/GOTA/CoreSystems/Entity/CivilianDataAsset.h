@@ -18,4 +18,10 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMesh* ForagerMesh;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* HunterMesh;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* MigrantMesh;
 };
