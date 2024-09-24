@@ -18,9 +18,7 @@ protected:
 
 public:
 	void Init(ASettlement* Settlement_, ATile* SpawnTile, float WorkRate_, int32 WorkAmount_, float MovementRate_);
-
-private:
-	virtual void Tick(float DeltaSeconds) override;
+	void GOTATick(float DeltaSeconds);
 
 protected:	
 	UPROPERTY(VisibleInstanceOnly)

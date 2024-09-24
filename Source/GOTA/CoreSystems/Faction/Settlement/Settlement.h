@@ -8,6 +8,7 @@
 #include "GameFramework/Actor.h"
 #include "Settlement.generated.h"
 
+class ACivilian;
 class UBuilding;
 class ATile;
 

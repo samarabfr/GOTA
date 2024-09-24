@@ -2,13 +2,11 @@
 
 #include "Settlement.h"
 
-#include "Algo/RandomShuffle.h"
 #include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "Net/UnrealNetwork.h"
-#include "Net/Core/PushModel/PushModel.h"
 
 void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -132,7 +130,7 @@ void ASettlement::OnBuildingRemoved(UBuilding* Building, ATile* Tile)
 
 void ASettlement::UpdateLastMinuteResources()
 {
-	const float CurrentCutOff = GetWorld()->GetTimeSeconds() - 60.0f;
+	const float CurrentCutOff = GetWorld()->GetTimeSeconds() - 20.0f;
 
 	// Remove old entries from Income queue
 	while (const FIncomeEvent* Tail = IncomeEvents.Peek())

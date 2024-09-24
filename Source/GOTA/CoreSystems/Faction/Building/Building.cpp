@@ -38,6 +38,7 @@ UBuilding::UBuilding()
 
 void UBuilding::GOTATick(float DeltaSeconds)
 {
+	if(Civilian) Civilian->GOTATick(DeltaSeconds);
 	if(IncomeProgress < Settings->IncomeTime)
 	{
 		IncomeProgress = FMath::Min(IncomeProgress + DeltaSeconds, Settings->IncomeTime);
