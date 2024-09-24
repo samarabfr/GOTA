@@ -3,11 +3,13 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BuildingSummary.h"
 #include "SettlementSettings.h"
 #include "SettlementPopulation.h"
 #include "GameFramework/Actor.h"
 #include "Settlement.generated.h"
+
+class UBuilding;
+class ATile;
 
 UCLASS(Abstract, Blueprintable)
 class ASettlement : public AActor
@@ -39,8 +41,6 @@ public:
 
 	void StartingSetup(ATile* SpawnTile);
 
-	void GenerateIncome(float DeltaSeconds);
-
 	// -------------------Claims-------------------------
 
 	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
@@ -58,9 +58,6 @@ public:
 
 	// -------------------Building-------------------------
 public:
-	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
-	UBuildingSummary* BuildingSummary;
-
 	void OnBuildingAdded(UBuilding* Building, ATile* Tile);
 
 	void OnBuildingRemoved(UBuilding* Building, ATile* Tile);

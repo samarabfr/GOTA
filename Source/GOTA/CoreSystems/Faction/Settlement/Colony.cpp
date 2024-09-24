@@ -1,5 +1,6 @@
 ﻿#include "Colony.h"
 
+#include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 
@@ -59,16 +60,16 @@ float AColony::CalculateScore(const UBuildingDataAsset* Data, FNewBuildingImport
 	// Calculate GainScore
 	float GainsScore = 0;
 	// income
-	const float MaxIncome = Data->Housing * Data->ProductionRate;
-	if (Data->ProductionType == EProductionType::Food)
+	const float MaxIncome = Data->Housing * Data->IncomeTime;
+	if (Data->IncomeType == EProductionType::Food)
 	{
 		GainsScore = ImportanceRatings.Food * MaxIncome;
 	}
-	if (Data->ProductionType == EProductionType::Wood)
+	if (Data->IncomeType == EProductionType::Wood)
 	{
 		GainsScore = ImportanceRatings.Wood * MaxIncome;
 	}
-	if (Data->ProductionType == EProductionType::Stone)
+	if (Data->IncomeType == EProductionType::Stone)
 	{
 		GainsScore = ImportanceRatings.Food * MaxIncome;
 	}
@@ -79,7 +80,9 @@ float AColony::CalculateScore(const UBuildingDataAsset* Data, FNewBuildingImport
 
 FNewBuildingImportanceRatings AColony::CalculateImportanceRatings() const
 {
+	
 	FNewBuildingImportanceRatings ImportanceRatings;
+	/*
 	// The less income, the more important
 	// food
 	const float FoodIncome = BuildingSummary->ProductionMap[EProductionType::Food];
@@ -94,6 +97,7 @@ FNewBuildingImportanceRatings AColony::CalculateImportanceRatings() const
 	ImportanceRatings.Stone = Settings->StoneImportance
 		* FMath::Pow(EULERS_NUMBER, -Settings->StoneImportanceDescent * StoneIncome);
 
+	*/
 	return ImportanceRatings;
 }
 

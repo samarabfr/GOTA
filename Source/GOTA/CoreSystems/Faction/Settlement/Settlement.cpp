@@ -22,7 +22,6 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
-	DOREPLIFETIME_WITH_PARAMS(ASettlement, BuildingSummary, Params);
 	DOREPLIFETIME_WITH_PARAMS(ASettlement, Resources, Params);
 }
 
@@ -40,7 +39,6 @@ ASettlement::ASettlement()
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 
 	PopulationSummary = CreateDefaultSubobject<USettlementPopulation>(TEXT("Population"));
-	BuildingSummary = CreateDefaultSubobject<UBuildingSummary>(TEXT("Production"));
 
 	// Load Settlement Settings DataAsset
 	ConstructorHelpers::FObjectFinder<USettlementSettings> DataAsset(
@@ -52,18 +50,12 @@ void ASettlement::BeginPlay()
 {
 	Super::BeginPlay();
 	GetWorld()->GetGameState<AGS_Ingame>()->LoadingManager->IncrementReplicationCount();
-
-	if (HasAuthority())
-	{
-		AddReplicatedSubObject(BuildingSummary);
-	}
 }
 
 void ASettlement::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	GenerateIncome(DeltaSeconds);
+	
 	UpdateLastMinuteResources();
 }
 
@@ -98,14 +90,6 @@ void ASettlement::StartingSetup(ATile* SpawnTile)
 	}
 }
 
-void ASettlement::GenerateIncome(float DeltaSeconds)
-{
-	AddResources(FGameResources(
-		             DeltaSeconds * BuildingSummary->ProductionMap[EProductionType::Food],
-		             DeltaSeconds * BuildingSummary->ProductionMap[EProductionType::Wood],
-		             DeltaSeconds * BuildingSummary->ProductionMap[EProductionType::Stone]), true);
-}
-
 // -------------------Claims-------------------------
 
 void ASettlement::RefreshBorderingUnclaimedTiles()
@@ -133,7 +117,6 @@ bool ASettlement::IsBorderingUnclaimedTile(const ATile* Tile) const
 void ASettlement::OnBuildingAdded(UBuilding* Building, ATile* Tile)
 {
 	PopulationSummary->RegisterPop(Building->Population);
-	BuildingSummary->RegisterBuildingProduction(Building);
 	ClaimedTiles.Add(Tile);
 	RefreshBorderingUnclaimedTiles();
 }
@@ -141,7 +124,6 @@ void ASettlement::OnBuildingAdded(UBuilding* Building, ATile* Tile)
 void ASettlement::OnBuildingRemoved(UBuilding* Building, ATile* Tile)
 {
 	PopulationSummary->UnregisterPop(Building->Population);
-	BuildingSummary->UnregisterBuildingProduction(Building);
 	ClaimedTiles.Remove(Tile);
 	RefreshBorderingUnclaimedTiles();
 }

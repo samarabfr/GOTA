@@ -19,9 +19,10 @@ class GOTA_API UBuilding : public UObject
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
 	UBuilding();
-
+	
 public:
 	void ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile_, ASettlement* Settlement_);
+	void GOTATick(float DeltaSeconds);
 	
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UBuildingDataAsset* Settings;
@@ -29,21 +30,25 @@ public:
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UPopulation* Population;
 
+	UFUNCTION()
+	void ProductionChanged(int16 Change);
+
 	UPROPERTY()
 	ATile* Tile;
 
 	UPROPERTY()
 	ASettlement* Settlement;
 
+	//---------------------base income----------------
+
 	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnProductionChangedSig, float, Change, EProductionType, ProductionType);
-
-	FOnProductionChangedSig OnProductionChanged;
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnIncomeChangedSig, float, IncomeChange, EProductionType, ProductionType);
+	FOnIncomeChangedSig OnIncomeChanged;
+	float GetCurrentIncomePerSecond() const;
+	void AddIncomeToSettlement();
 	
-	float GetCurrentProduction() const;
-
-	UFUNCTION()
-	void PopSizeChanged(int16 Change);
+	UPROPERTY(VisibleInstanceOnly)
+	float IncomeProgress = 0.0f;
 
 	//---------------------Civilian Entity----------------
 	

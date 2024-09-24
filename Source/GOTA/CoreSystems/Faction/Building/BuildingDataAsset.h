@@ -35,13 +35,16 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Building")
 	int32 Housing;
 
-	//------------------Production Per Time Per Pop------------------
+	//------------------Income------------------
 	
-	UPROPERTY(EditDefaultsOnly, Category="Production Per Time Per Pop")
-	EProductionType ProductionType;
+	UPROPERTY(EditDefaultsOnly, Category="Income")
+	EProductionType IncomeType;
 
-	UPROPERTY(EditDefaultsOnly, Category="Production Per Time Per Pop")
-	float ProductionRate;
+	UPROPERTY(EditDefaultsOnly, Category="Income")
+	float IncomeTime;
+
+	UPROPERTY(EditDefaultsOnly, Category="Income")
+	float IncomeAmount;
 
 	//--------------------------Civilian Entity-------------------
 	

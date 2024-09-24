@@ -5,6 +5,7 @@
 
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
@@ -360,7 +361,11 @@ void ATile::GOTATick()
 	if (HasAuthority())
 	{
 		EcoValues->ServerTick(DeltaSeconds);
-		if (Building) Building->Population->ServerTick(DeltaSeconds);
+		if (Building)
+		{
+			Building->Population->ServerTick(DeltaSeconds);
+			Building->GOTATick(DeltaSeconds); // TODO: Client side prediction
+		}
 	}
 	else
 	{

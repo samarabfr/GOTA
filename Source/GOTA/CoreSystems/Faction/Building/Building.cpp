@@ -6,6 +6,7 @@
 #include "BuildingDataAsset.h"
 #include "Population.h"
 #include "GOTA/CoreSystems/Entity/Civilian.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
 
@@ -32,7 +33,20 @@ bool UBuilding::IsSupportedForNetworking() const
 UBuilding::UBuilding()
 {
 	Population = CreateDefaultSubobject<UPopulation>(TEXT("Population"));
-	Population->OnSizeChanged.AddDynamic(this, &UBuilding::PopSizeChanged);
+	Population->OnSizeChanged.AddDynamic(this, &UBuilding::ProductionChanged);
+}
+
+void UBuilding::GOTATick(float DeltaSeconds)
+{
+	if(IncomeProgress < Settings->IncomeTime)
+	{
+		IncomeProgress = FMath::Min(IncomeProgress + DeltaSeconds, Settings->IncomeTime);
+	}
+	else
+	{
+		AddIncomeToSettlement();
+		IncomeProgress = 0.0f;
+	}
 }
 
 void UBuilding::ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile_, ASettlement* Settlement_)
@@ -45,14 +59,26 @@ void UBuilding::ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile_, ASettle
 	Settlement = Settlement_;
 }
 
-float UBuilding::GetCurrentProduction() const
+float UBuilding::GetCurrentIncomePerSecond() const
 {
-	return Settings->ProductionRate * Population->GetSize();
+	return Settings->IncomeAmount * Population->GetSize() / Settings->IncomeTime;
 }
 
-void UBuilding::PopSizeChanged(int16 Change)
+void UBuilding::AddIncomeToSettlement()
 {
-	OnProductionChanged.Broadcast(Settings->ProductionRate * Change, Settings->ProductionType);
+	FGameResources NewResources;
+	if(Settings->IncomeType == EProductionType::Food)
+		NewResources.Food = Settings->IncomeAmount;
+	if(Settings->IncomeType == EProductionType::Wood)
+		NewResources.Wood = Settings->IncomeAmount;
+	if(Settings->IncomeType == EProductionType::Stone)
+		NewResources.Stone = Settings->IncomeAmount;
+	Settlement->AddResources(NewResources, true);
+}
+
+void UBuilding::ProductionChanged(int16 Change)
+{
+	OnIncomeChanged.Broadcast(Settings->IncomeTime * Change, Settings->IncomeType);
 }
 
 float UBuilding::GetCivilianWorkRate() const
