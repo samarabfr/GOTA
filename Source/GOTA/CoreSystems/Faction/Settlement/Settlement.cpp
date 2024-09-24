@@ -130,7 +130,7 @@ void ASettlement::OnBuildingRemoved(UBuilding* Building, ATile* Tile)
 
 void ASettlement::UpdateLastMinuteResources()
 {
-	const float CurrentCutOff = GetWorld()->GetTimeSeconds() - 60.0f;
+	const float CurrentCutOff = GetWorld()->GetTimeSeconds() - 20.0f;
 
 	// Remove old entries from Income queue
 	while (const FIncomeEvent* Tail = IncomeEvents.Peek())
