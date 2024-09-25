@@ -67,11 +67,6 @@ void AGM_Ingame::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	if (!GOTAGameState) return;
 	CheckGameEndingConditions();
-	if (GOTAGameState->ElapsedTurnTime >= GOTAGameState->MaxTurnTime)
-	{
-		CalculateTurn();
-		GOTAGameState->SetElapsedTurnTimeMulticast(0);
-	}
 }
 
 void AGM_Ingame::LoadGame()
@@ -84,7 +79,6 @@ void AGM_Ingame::LoadGame()
 void AGM_Ingame::StartGame()
 {
 	GOTAGameState->GameStatus = EGameStatus::Running;
-	GOTAGameState->ShouldTickTurnTime = true;
 }
 
 void AGM_Ingame::TogglePause()
@@ -206,30 +200,4 @@ void AGM_Ingame::InitialPossession()
 		APC_Ingame* PC = Cast<APC_Ingame>(PS->GetOwningController());
 		PC->Possess(GOTAGameState->Guardians[PS->GOTAPlayerID]);
 	}
-}
-
-void AGM_Ingame::CalculateTurn()
-{
-	GOTAGameState->TurnCalculationStart();
-	StartedCalculatingTurn = FDateTime::Now();
-	// Combat Phase
-	GOTAGameState->CombatSystem->TriggerAllCombats();
-	// Entity Movement
-	for (AEntity* Entity : GOTAGameState->TileEntities)
-	{
-		Entity->CalculateMovement();
-	}
-	// Check for combats next round
-	for (AEntity* Entity : GOTAGameState->TileEntities)
-	{
-		if (Entity->ShouldCombatTrigger())
-			GOTAGameState->CombatSystem->RegisterCombat(Entity->CurrentTile);
-	}
-	// Finished
-	FTimespan TimeSpan = FDateTime::Now() - StartedCalculatingTurn;
-	UE_LOG(LogTemp, Warning, TEXT("It took %d ms to calculate the %d turn."),
-	       TimeSpan.GetFractionMilli(),
-	       GOTAGameState->TurnCounter)
-	GOTAGameState->IncreaseTurnCounter();
-	GOTAGameState->TurnCalculationEnd();
 }

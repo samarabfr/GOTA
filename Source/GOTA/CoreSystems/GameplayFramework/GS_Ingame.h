@@ -28,8 +28,6 @@ class GOTA_API AGS_Ingame : public AGameState
 	virtual void BeginPlay() override;
 
 public:
-	virtual void Tick(float DeltaSeconds) override;
-
 	// ---------------------------------------------------------
 	// Stuff in the World
 
@@ -71,65 +69,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	int32 IslandMaxForage;
-
-	// ---------------------------------------------------------
-	// Turn Stuff
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FZeroParamSignature);
-
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FTimeChangedSignature, float, ElapsedTime, float, MaxTime);
-
-	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
-	FZeroParamSignature OnTurnCounterChanged;
-
-	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
-	FTimeChangedSignature OnTurnTimerChanged;
-
-	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
-	FZeroParamSignature OnTurnCalculationStart;
-
-	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
-	FZeroParamSignature OnTurnCalculationEnd;
-
-	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
-	float ElapsedTurnTime;
-
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Replicated, Category="GOTAGameState")
-	float MaxTurnTime = 200;
-
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
-	bool IsCalculatingTurn = false;
-
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
-	bool ShouldTickTurnTime = false;
-
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_TurnCounter, Category="GOTAGameState")
-	int32 TurnCounter = 1;
-
-	void IncreaseTurnCounter();
-
-	UFUNCTION()
-	void OnRep_TurnCounter();
-
-	UFUNCTION(BlueprintSetter)
-	void SetElapsedTurnTime(float NewValue);
-
-	UFUNCTION(NetMulticast, Reliable)
-	void SetElapsedTurnTimeMulticast(float NewValue);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void NextTurn();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void TurnCalculationStart();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void TurnCalculationEnd();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void TogglePause();
-
+	
 	// ---------------------------------------------------------
 	// Useful Stuff
 
