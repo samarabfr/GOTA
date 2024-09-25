@@ -121,7 +121,7 @@ private:
 
 public:
 	UFUNCTION(BlueprintGetter)
-	ASettlement* GetClaimant();
+	ASettlement* GetClaimant() const;
 
 	UFUNCTION(BlueprintSetter)
 	void SetClaimant(ASettlement* NewClaimant);

@@ -183,7 +183,7 @@ AEntity* ATile::GetEntityByAffiliation(EAffiliation Affiliation) const
 // ---------------------------------------------------------
 // Claimant and claiming
 
-ASettlement* ATile::GetClaimant()
+ASettlement* ATile::GetClaimant() const
 {
 	return Claimant;
 }
