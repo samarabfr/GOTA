@@ -15,4 +15,13 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMesh* BuilderMesh;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* ForagerMesh;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* HunterMesh;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* MigrantMesh;
 };
