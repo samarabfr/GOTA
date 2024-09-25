@@ -71,10 +71,4 @@ public:
 	void CreateMouseUtils();
 
 	void InitialPossession();
-
-	// ---------------------------------------------------------
-	// Calculate Turn
-private:
-	void CalculateTurn();
-	FDateTime StartedCalculatingTurn;
 };

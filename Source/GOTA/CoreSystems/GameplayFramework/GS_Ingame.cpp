@@ -17,11 +17,6 @@ void AGS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	DOREPLIFETIME(AGS_Ingame, IslandMaxWildlife);
 	DOREPLIFETIME(AGS_Ingame, IslandMaxForage);
 
-	DOREPLIFETIME(AGS_Ingame, MaxTurnTime);
-	DOREPLIFETIME(AGS_Ingame, IsCalculatingTurn);
-	DOREPLIFETIME(AGS_Ingame, ShouldTickTurnTime);
-	DOREPLIFETIME(AGS_Ingame, TurnCounter);
-
 	DOREPLIFETIME(AGS_Ingame, CombatSystem);
 	DOREPLIFETIME(AGS_Ingame, StartParameter);
 }
@@ -53,60 +48,6 @@ void AGS_Ingame::BeginPlay()
 	}
 	// Spawn Static Mesh Batcher
 	StaticMeshBatcher = GetWorld()->SpawnActor<AStaticMeshBatcher>();
-}
-
-void AGS_Ingame::Tick(float DeltaSeconds)
-{
-	if (!ShouldTickTurnTime) return;
-	SetElapsedTurnTime(FMath::Min(ElapsedTurnTime + DeltaSeconds, MaxTurnTime));
-}
-
-
-void AGS_Ingame::IncreaseTurnCounter()
-{
-	++TurnCounter;
-	OnTurnCounterChanged.Broadcast();
-}
-
-void AGS_Ingame::OnRep_TurnCounter()
-{
-	OnTurnCounterChanged.Broadcast();
-}
-
-void AGS_Ingame::SetElapsedTurnTime(float NewValue)
-{
-	ElapsedTurnTime = NewValue;
-	OnTurnTimerChanged.Broadcast(ElapsedTurnTime, MaxTurnTime);
-}
-
-void AGS_Ingame::SetElapsedTurnTimeMulticast_Implementation(float NewValue)
-{
-	SetElapsedTurnTime(NewValue);
-}
-
-
-void AGS_Ingame::NextTurn()
-{
-	SetElapsedTurnTimeMulticast(MaxTurnTime);
-}
-
-void AGS_Ingame::TurnCalculationStart()
-{
-	ShouldTickTurnTime = false;
-	IsCalculatingTurn = true;
-	OnTurnCalculationStart.Broadcast();
-}
-
-void AGS_Ingame::TurnCalculationEnd()
-{
-	ShouldTickTurnTime = true;
-	IsCalculatingTurn = false;
-	OnTurnCalculationEnd.Broadcast();
-}
-
-void AGS_Ingame::TogglePause()
-{
-	ShouldTickTurnTime = !ShouldTickTurnTime;
 }
 
 void AGS_Ingame::EndGame_Implementation(::EGameEnding Ending, const FString& EndingMessage)
