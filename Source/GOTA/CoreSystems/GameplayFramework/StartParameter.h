@@ -15,6 +15,7 @@ class UStartParameter : public UObject
 public:
 	UPROPERTY(BlueprintAssignable, Category="StartParameter")
 	FStartParameterChangedSig OnChanged;
+
 private:
 	UPROPERTY(BlueprintGetter=GetIslandSize,
 		BlueprintSetter=SetIslandSize,
@@ -22,12 +23,6 @@ private:
 		Category="StartParameter")
 	int32 IslandSize = 800;
 
-	UPROPERTY(BlueprintGetter=GetColonies,
-		BlueprintSetter=SetColonies,
-		ReplicatedUsing=OnRep_Colonies,
-		Category = "StartParameter")
-	int32 Colonies = 4;
-	
 public:
 	UFUNCTION(BlueprintGetter)
 	int32 GetIslandSize();
@@ -35,15 +30,6 @@ public:
 	UFUNCTION(BlueprintSetter, BlueprintAuthorityOnly)
 	void SetIslandSize(int32 NewValue);
 
-	UFUNCTION(BlueprintGetter)
-	int32 GetColonies();
-
-	UFUNCTION(BlueprintSetter, BlueprintAuthorityOnly)
-	void SetColonies(int32 NewValue);
-	
 	UFUNCTION()
 	void OnRep_IslandSize();
-	
-	UFUNCTION()
-	void OnRep_Colonies();
 };

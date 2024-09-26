@@ -108,10 +108,12 @@ void AGM_Ingame::EndGame(EGameEnding Ending, const FString& EndingMessage)
 void AGM_Ingame::CheckGameEndingConditions()
 {
 	if (GOTAGameState->GameEnded) return;
-
+	if (!GOTAGameState->Colony) return;
+	if (!GOTAGameState->Tribe) return;
+	
 	// based on SettlementPop
-	int32 ColonialPop = GOTAGameState->TotalColonialPopulation->GetSize();
-	int32 NativePop = GOTAGameState->TotalNativePopulation->GetSize();
+	int32 ColonialPop = GOTAGameState->Colony->PopulationSummary->GetSize();
+	int32 NativePop = GOTAGameState->Tribe->PopulationSummary->GetSize();
 	int32 TotalPop = ColonialPop + NativePop;
 
 	if (ColonialPop == 0)
@@ -147,7 +149,7 @@ void AGM_Ingame::CreateWorld()
 	UWorldGenerator* WorldGen = NewObject<UWorldGenerator>();
 	WorldGen->Init(GOTAGameState->TileMap,
 	               GOTAGameState->StartParameter->GetIslandSize(),
-	               GOTAGameState->StartParameter->GetColonies(),
+	               1,
 	               1);
 	WorldGen->GenerateWorld();
 	GOTAGameState->TileMap->Init();
@@ -155,21 +157,17 @@ void AGM_Ingame::CreateWorld()
 
 void AGM_Ingame::CreateSettlements()
 {
-	for (ATile* Start : GOTAGameState->TileMap->ColonistsStarts)
-	{
-		AColony* Colony = GetWorld()->SpawnActor<AColony>();
-		Colony->StartingSetup(Start);
-		GOTAGameState->Colonies.Add(Colony);
-	}
-	ATribe* Tribe = GetWorld()->SpawnActor<ATribe>();
-	Tribe->StartingSetup(GOTAGameState->TileMap->NativesStarts[0]);
-	GOTAGameState->Tribe = Tribe;
+	GOTAGameState->Colony = GetWorld()->SpawnActor<AColony>();
+	GOTAGameState->Colony->StartingSetup(GOTAGameState->TileMap->ColonistsStarts[0]);
+
+	GOTAGameState->Tribe = GetWorld()->SpawnActor<ATribe>();
+	GOTAGameState->Tribe->StartingSetup(GOTAGameState->TileMap->NativesStarts[0]);
 }
 
 void AGM_Ingame::CreateGuardians()
 {
 	// 4 because max players, but maybe this should be a constant somewhere
-	GOTAGameState->Guardians.SetNumZeroed(4); 
+	GOTAGameState->Guardians.SetNumZeroed(4);
 	for (APlayerState* PlayerState : GOTAGameState->PlayerArray)
 	{
 		APS_Ingame* PS = Cast<APS_Ingame>(PlayerState);

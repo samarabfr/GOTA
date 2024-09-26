@@ -29,8 +29,6 @@ AGS_Ingame::AGS_Ingame()
 	TotalTrees = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Trees"));
 	TotalForage = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Forage"));
 	TotalWildlife = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Wildlife"));
-	TotalColonialPopulation = CreateDefaultSubobject<UTotalPopulation>(TEXT("Total Colonial Population"));
-	TotalNativePopulation = CreateDefaultSubobject<UTotalPopulation>(TEXT("Total Native Population"));
 	CombatSystem = CreateDefaultSubobject<UCombatSystem>(TEXT("Combat System"));
 	StartParameter = CreateDefaultSubobject<UStartParameter>(TEXT("Start Parameter"));
 }

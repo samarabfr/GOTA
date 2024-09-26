@@ -19,9 +19,6 @@ class GOTA_API USettlementPopulation : public UObject
 	UPROPERTY()
 	TArray<UPopulation*> Populations;
 
-	UPROPERTY()
-	AGS_Ingame* GameState;
-
 	// ------------------Tracking Changes----------------
 public:
 	void RegisterPop(UPopulation* Pop);

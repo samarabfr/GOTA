@@ -43,9 +43,6 @@ public:
 
 	UPROPERTY(meta = (BindWidget))
 	USpinBox* SB_IslandSize;
-
-	UPROPERTY(meta = (BindWidget))
-	USpinBox* SB_Colonies;
 	
 	// ---------------------------------------------------------
 	// 
@@ -59,9 +56,6 @@ private:
 	
 	UFUNCTION()
 	void LeavePressed();
-
-	UFUNCTION()
-	void ColonyCountChanged(float InValue, ETextCommit::Type CommitMethod);
 
 	UFUNCTION()
 	void IslandTilesChanged(float InValue, ETextCommit::Type CommitMethod);

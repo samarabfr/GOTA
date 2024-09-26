@@ -5,12 +5,10 @@
 #include "CoreMinimal.h"
 #include "CombatSystem.h"
 #include "StartParameter.h"
-#include "TotalPopulation.h"
 #include "GameFramework/GameState.h"
 #include "GOTA/CoreSystems/Entity/Entity.h"
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
-#include "GOTA/CoreSystems/Faction/Settlement/SettlementPopulation.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
@@ -35,7 +33,7 @@ public:
 	ATileMap* TileMap;
 
 	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
-	TArray<AColony*> Colonies;
+	AColony* Colony;
 
 	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
 	ATribe* Tribe;
@@ -54,12 +52,6 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UGOTAAttribute* TotalWildlife;
-
-	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
-	UTotalPopulation* TotalColonialPopulation;
-
-	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
-	UTotalPopulation* TotalNativePopulation;
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	int32 IslandMaxTrees;

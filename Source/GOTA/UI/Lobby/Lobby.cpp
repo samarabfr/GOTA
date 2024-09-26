@@ -12,7 +12,6 @@ void ULobby::NativeConstruct()
 		// Client Construct
 		BTN_Start->SetIsEnabled(false);
 		SB_IslandSize->SetIsEnabled(false);
-		SB_Colonies->SetIsEnabled(false);
 	}
 	else
 	{
@@ -22,10 +21,6 @@ void ULobby::NativeConstruct()
 		SB_IslandSize->SetIsEnabled(true);
 		SB_IslandSize->OnValueCommitted.AddDynamic(this, &ULobby::IslandTilesChanged);
 		IslandTilesChanged(SB_IslandSize->GetValue(), ETextCommit::Default);
-
-		SB_Colonies->SetIsEnabled(true);
-		SB_Colonies->OnValueCommitted.AddDynamic(this, &ULobby::ColonyCountChanged);
-		ColonyCountChanged(SB_Colonies->GetValue(), ETextCommit::Default);
 	}
 	GameState->StartParameter->OnChanged.AddDynamic(this, &ULobby::StartParameterChanged);
 	StartParameterChanged(GameState->StartParameter);
@@ -65,11 +60,6 @@ void ULobby::LeavePressed()
 	PC->ClientTravel("/Game/UI/MainMenu/L_MainMenu", TRAVEL_Absolute);
 }
 
-void ULobby::ColonyCountChanged(float InValue, ETextCommit::Type CommitMethod)
-{
-	GameState->StartParameter->SetColonies(InValue);
-}
-
 void ULobby::IslandTilesChanged(float InValue, ETextCommit::Type CommitMethod)
 {
 	GameState->StartParameter->SetIslandSize(InValue);
@@ -78,5 +68,4 @@ void ULobby::IslandTilesChanged(float InValue, ETextCommit::Type CommitMethod)
 void ULobby::StartParameterChanged(UStartParameter* StartParameter)
 {
 	SB_IslandSize->SetValue(StartParameter->GetIslandSize());
-	SB_Colonies->SetValue(StartParameter->GetColonies());
 }
