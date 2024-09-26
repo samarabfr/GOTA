@@ -19,7 +19,12 @@ ACivilian::ACivilian()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Static Mesh");
 	Mesh->SetupAttachment(RootComponent);
 	Mesh->SetRelativeScale3D(FVector(1, 1, 2));
-	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	// I still don't understand why i need to set both: the ResponseChannel and CollisionEnabled
+	// but this way it will only collide with ray casts, as intended
+	Mesh->SetSimulatePhysics(false);
+	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	Mesh->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
 }
 
 void ACivilian::Init(ASettlement* Settlement_, ATile* SpawnTile, float WorkRate_, int32 WorkAmount_,
