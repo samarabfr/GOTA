@@ -3,6 +3,7 @@
 #include "Blueprint/UserWidget.h"
 #include "ClickedInfo.generated.h"
 
+class UBuildingInfo;
 class UTileInfo;
 
 UCLASS(Blueprintable)
@@ -15,6 +16,9 @@ public:
 	
 	UPROPERTY(meta = (BindWidget))
 	UTileInfo* TileInfo;
+
+	UPROPERTY(meta = (BindWidget))
+	UBuildingInfo* BuildingInfo;
 	
 	// --------------------------------------------------
 	
