@@ -1,13 +1,13 @@
 ﻿#pragma once
 
 #include "Blueprint/UserWidget.h"
-#include "Clock.generated.h"
+#include "TopBar.generated.h"
 
 class AGS_Ingame;
 class UImage;
 
 UCLASS(Blueprintable)
-class GOTA_API UClock : public UUserWidget
+class GOTA_API UTopBar : public UUserWidget
 {
 	GENERATED_BODY()
 

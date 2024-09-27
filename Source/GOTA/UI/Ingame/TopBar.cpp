@@ -1,16 +1,16 @@
-﻿#include "Clock.h"
+﻿#include "TopBar.h"
 
 #include "Components/Image.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 
 
-void UClock::NativeConstruct()
+void UTopBar::NativeConstruct()
 {
 	Super::NativeConstruct();
 	GameState = GetWorld()->GetGameState<AGS_Ingame>();
 }
 
-void UClock::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+void UTopBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 	Daytime_Disk->SetRenderTransformAngle(Daytime_Disk->GetRenderTransformAngle() + 0.1);
