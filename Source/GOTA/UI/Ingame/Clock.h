@@ -1,13 +1,13 @@
 ﻿#pragma once
 
 #include "Blueprint/UserWidget.h"
-#include "ClickedInfo.generated.h"
+#include "Clock.generated.h"
 
-class UBuildingInfo;
-class UTileInfo;
+class AGS_Ingame;
+class UImage;
 
 UCLASS(Blueprintable)
-class GOTA_API UClickedInfo : public UUserWidget
+class GOTA_API UClock : public UUserWidget
 {
 	GENERATED_BODY()
 
@@ -15,18 +15,20 @@ class GOTA_API UClickedInfo : public UUserWidget
 	// -------------------Widgets------------------------
 protected:
 	UPROPERTY(meta = (BindWidget))
-	UTileInfo* TileInfo;
+	UImage* Daytime_Disk;
 
 	UPROPERTY(meta = (BindWidget))
-	UBuildingInfo* BuildingInfo;
-	
+	UImage* Health_Disk;
+
+	UPROPERTY(meta = (BindWidget))
+	UImage* Power_Disk;
+
 	// --------------------------------------------------
-	
 private:
+	UPROPERTY()
+	AGS_Ingame* GameState;
+
 	virtual void NativeConstruct() override;
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
-
-public:
-	void WatchActor(AActor* Actor);
 };

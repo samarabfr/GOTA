@@ -14,10 +14,9 @@ UCLASS(Blueprintable)
 class GOTA_API UIngameUI : public UUserWidget
 {
 	GENERATED_BODY()
-
-public:
-	// -------------------Widgets------------------------
 	
+	// -------------------Widgets------------------------
+protected:
 	UPROPERTY(meta = (BindWidget))
 	UClickedInfo* ClickedInfo;
 
