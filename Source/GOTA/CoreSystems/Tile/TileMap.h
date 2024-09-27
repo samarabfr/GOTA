@@ -83,11 +83,11 @@ public:
 	                                     const std::function<bool(const ATile*)>& Condition) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
-	TArray<ATile*> GetPath(ATile* Start, ATile* End, EAffiliation Affiliation);
+	TArray<ATile*> GetPath(ATile* Start, ATile* End);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	TArray<ATile*>
-	GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation TargetAffiliation, EAffiliation Walker);
+	GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation TargetAffiliation);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	int32 TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, int32 Amount, int32 Threshold, int32 MaxRange);

@@ -2,29 +2,82 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Entity.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "Army.generated.h"
 
+class AGS_Ingame;
+class ATile;
+class ASettlement;
+class UArmySettings;
+
 UCLASS()
-class GOTA_API AArmy : public AEntity
+class GOTA_API AArmy : public AActor
 {
 	GENERATED_BODY()
+
+protected:
 	AArmy();
-	bool IsTargetValid();
 
 public:
-	virtual void CalculateMovement() override;
+	void Init(ASettlement* Settlement_, ATile* SpawnTile, float RecruitRate_, float MovementRate_);
+	void GOTATick(float DeltaSeconds);
 
-	UPROPERTY(BlueprintReadOnly, VisibleInstanceOnly, Instanced)
-	UPopulation* PopCon;
+private:
+	UPROPERTY(VisibleInstanceOnly)
+	EAffiliation Affiliation;
+	
+public:
+	EAffiliation GetAffiliation() const;
+private:
+	UPROPERTY(VisibleInstanceOnly)
+	ASettlement* Settlement;
 
-	virtual UCombatValues* GetCombatValues() const override;
+	UPROPERTY()
+	AGS_Ingame* GameState;
 
-	virtual void KillIndividuals(int32 Kills) override;
+	UPROPERTY()
+	UArmySettings* ArmySettings;
 
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	UPROPERTY()
+	UStaticMeshComponent* Mesh;
 
-	virtual void Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 MovementSpeed_) override;
+	UPROPERTY(VisibleInstanceOnly)
+	float Progress; // in percent
+	UPROPERTY(VisibleInstanceOnly)
+	int32 Size;
+	UPROPERTY(VisibleInstanceOnly)
+	float RecruitRate; // in percent per second
+	UPROPERTY(VisibleInstanceOnly)
+	float MovementRate; // in percent per second
+
+	void Move();
+	void Recruit();
+
+	// -----------------Status------------------------
+private:
+	UPROPERTY(VisibleInstanceOnly)
+	EArmyStatus Status;
+	
+	virtual void ValidateStatus();
+	bool TryFindPath();
+	bool IsTileValidForRecruiting(const ATile* Tile) const;
+
+	EArmyStatus GetStatus() const { return Status; }
+	void SetStatus(EArmyStatus NewStatus);
+
+	// -----------------Moving on Path------------------------
+	UPROPERTY(VisibleInstanceOnly)
+	ATile* CurrentTile;
+
+	UPROPERTY(VisibleInstanceOnly)
+	TArray<ATile*> Path;
+
+	// -----------------Combat------------------------
+private:
+	void CheckForCombat();
+	void InitializeCombat(AArmy* Enemy);
+	void JoinCombat(AArmy* Enemy);
+	
+public:
+	void ChallengeToCombat();
 };

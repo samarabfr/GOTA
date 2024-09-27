@@ -86,8 +86,17 @@ enum class ECivilianStatus : uint8
 };
 
 UENUM()
+enum class EArmyStatus : uint8
+{
+	Idle UMETA(DisplayName = "Idle"),
+	Moving UMETA(DisplayName = "Moving"),
+	Recruiting UMETA(DisplayName = "Recruiting"),
+	Fighting UMETA(DisplayName = "Fighting")
+};
+
+UENUM()
 enum class EEntityType : uint8
 {
 	Civilian UMETA(DisplayName = "Civilian"),
-	Military UMETA(DisplayName = "Military")
+	Army UMETA(DisplayName = "Military")
 };

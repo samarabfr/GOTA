@@ -41,7 +41,7 @@ void ACombat::AddCombatTile(FCombatTile CombatTile)
 {
 	CombatTiles.Add(CombatTile);
 	// anfangen zu tracken
-	CombatTile.Tile->OnEntityChanged.AddDynamic(this, &ACombat::EntityChanged);
+	//CombatTile.Tile->OnEntityChanged.AddDynamic(this, &ACombat::EntityChanged);
 	EntityChanged(CombatTile.Tile, nullptr);
 	CombatTile.Tile->OnBuildingChanged.AddDynamic(this, &ACombat::BuildingChanged);
 	BuildingChanged(CombatTile.Tile);
@@ -58,7 +58,7 @@ void ACombat::RemoveCombatTile(FCombatTile CombatTile)
 {
 	CombatTiles.Remove(CombatTile);
 	// aufhören zu tracken
-	CombatTile.Tile->OnEntityChanged.RemoveDynamic(this, &ACombat::EntityChanged);
+	//CombatTile.Tile->OnEntityChanged.RemoveDynamic(this, &ACombat::EntityChanged);
 	CombatTile.Tile->OnBuildingChanged.RemoveDynamic(this, &ACombat::BuildingChanged);
 }
 
@@ -92,6 +92,7 @@ bool ACombat::ShouldMerge(ATile* Tile)
 
 void ACombat::EntityChanged(ATile* Tile, AEntity* OldEntity)
 {
+	/*
 	CalcKills();
 	// unregister from delegates
 	if (OldEntity) OldEntity->OnCombatValuesChanged.RemoveDynamic(this, &ACombat::CombatValuesChanged);
@@ -102,6 +103,7 @@ void ACombat::EntityChanged(ATile* Tile, AEntity* OldEntity)
 	if (Tile->GetEnemyEntity())
 		Tile->GetEnemyEntity()->OnCombatValuesChanged.AddDynamic(
 			this, &ACombat::CombatValuesChanged);
+			*/
 }
 
 void ACombat::BuildingChanged(ATile* Tile)
@@ -134,6 +136,7 @@ void ACombat::CalcKills()
 
 void ACombat::CalcAttackDefense()
 {
+	/*
 	AlliedAttack = 0;
 	AlliedDefense = 0;
 	EnemyAttack = 0;
@@ -152,7 +155,6 @@ void ACombat::CalcAttackDefense()
 			EnemyAttack += CV->GetAttack();
 			EnemyDefense += CV->GetDefense();
 		}
-		/*
 		if (CombatTile.Tile->Building
 			&& CombatTile.Tile->GetClaimant())
 		{
@@ -168,8 +170,8 @@ void ACombat::CalcAttackDefense()
 				EnemyDefense += CV->GetDefense();
 			}
 		}
-		*/
 	}
+		*/
 }
 
 void ACombat::SpreadDamage(int32 Damage, EAffiliation Receiver)
@@ -181,6 +183,7 @@ void ACombat::SpreadDamage(int32 Damage, EAffiliation Receiver)
 
 void ACombat::SpreadDamageToEntities(EAffiliation Receiver, int32& DamageLeft)
 {
+	/*
 	if (DamageLeft <= 0) return;
 	// get combat tiles with Receiver entities
 	TArray<FCombatTile*> EntityCombatTiles;
@@ -228,6 +231,7 @@ void ACombat::SpreadDamageToEntities(EAffiliation Receiver, int32& DamageLeft)
 			}
 		}
 	}
+	*/
 }
 
 void ACombat::SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft)
@@ -365,6 +369,7 @@ void ACombat::CountKills()
 
 void ACombat::TriggerCombat()
 {
+	/*
 	PreventCalcKills = true;
 	for (FCombatTile CombatTile : CombatTiles)
 	{
@@ -384,6 +389,7 @@ void ACombat::TriggerCombat()
 		}
 	}
 	PreventCalcKills = false;
+	*/
 }
 
 void ACombat::EndPlay(const EEndPlayReason::Type EndPlayReason)

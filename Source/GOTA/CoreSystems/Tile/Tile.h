@@ -18,6 +18,7 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Tile.generated.h"
 
+class AArmy;
 class ACivilian;
 class UBuildingDataAsset;
 class UBuilding;
@@ -68,37 +69,21 @@ public:
 private:
 	UPROPERTY()
 	AGS_Ingame* GameState;
-	
+
 	// ------------------------Entity---------------------------
+public:
+	bool AcceptsEntity(const EEntityType EntityType) const;
+	
+	// ------------------------Army---------------------------
 private:
-	UPROPERTY(VisibleInstanceOnly, BlueprintGetter=GetAlliedEntity, Replicated, Category="Tile")
-	AEntity* AlliedEntity;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintGetter=GetEnemyEntity, Replicated, Category="Tile")
-	AEntity* EnemyEntity;
-
-	AEntity* GetEntityByAffiliation(EAffiliation Affiliation) const;
+	UPROPERTY(VisibleInstanceOnly)
+	AArmy* Army;
 
 public:
-	UPROPERTY(BlueprintAssignable)
-	FOnEntityChangedSignature OnEntityChanged;
-
-	UFUNCTION(BlueprintGetter)
-	AEntity* GetAlliedEntity();
-
-	UFUNCTION(BlueprintGetter)
-	AEntity* GetEnemyEntity();
-
-	void SetAlliedEntity(AEntity* NewAlliedEntity);
-	void SetEnemyEntity(AEntity* NewEnemyEntity);
-
-	AEntity* GetEntity(EAffiliation Affiliation);
-	void SetEntity(AEntity* NewEntity, EAffiliation Affiliation);
-
-	UFUNCTION(BlueprintCallable, Category="Tile")
-	bool IsWalkable(EAffiliation Affiliation) const;
-
-	bool AcceptsEntity(EEntityType EntityType) const;
+	AArmy* GetArmy() const;
+	bool AcceptsArmy() const;
+	void SetArmy(AArmy* NewArmy);
+	void RemoveArmy();
 
 	// ------------------------Civilians---------------------------
 private:

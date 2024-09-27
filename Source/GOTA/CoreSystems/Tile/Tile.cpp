@@ -36,9 +36,6 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME_WITH_PARAMS(ATile, GameplayTags, Params);
 	DOREPLIFETIME_WITH_PARAMS(ATile, Building, Params);
 	DOREPLIFETIME_WITH_PARAMS(ATile, Claimant, Params);
-
-	DOREPLIFETIME(ATile, AlliedEntity);
-	DOREPLIFETIME(ATile, EnemyEntity);
 }
 
 ATile::ATile()
@@ -82,63 +79,35 @@ void ATile::OnRep_GameplayTags()
 	OnGameplayTagsChanged.Broadcast();
 }
 
-AEntity* ATile::GetAlliedEntity()
-{
-	return AlliedEntity;
-}
-
-AEntity* ATile::GetEnemyEntity()
-{
-	return EnemyEntity;
-}
-
-void ATile::SetAlliedEntity(AEntity* NewAlliedEntity)
-{
-	AEntity* OldEntity = AlliedEntity;
-	AlliedEntity = NewAlliedEntity;
-	OnEntityChanged.Broadcast(this, OldEntity);
-}
-
-void ATile::SetEnemyEntity(AEntity* NewEnemyEntity)
-{
-	AEntity* OldEntity = EnemyEntity;
-	EnemyEntity = NewEnemyEntity;
-	OnEntityChanged.Broadcast(this, OldEntity);
-}
-
-AEntity* ATile::GetEntity(EAffiliation Affiliation)
-{
-	if (Affiliation == EAffiliation::Ally)
-		return GetAlliedEntity();
-	return GetEnemyEntity();
-}
-
-void ATile::SetEntity(AEntity* NewEntity, EAffiliation Affiliation)
-{
-	if (Affiliation == EAffiliation::Ally)
-		SetAlliedEntity(NewEntity);
-	else
-		SetEnemyEntity(NewEntity);
-}
-
-bool ATile::IsWalkable(EAffiliation Affiliation) const
-{
-	if (Affiliation == EAffiliation::Ally)
-	{
-		return !AlliedEntity;
-	}
-	if (Affiliation == EAffiliation::Enemy)
-	{
-		return !EnemyEntity;
-	}
-	return false;
-}
-
-bool ATile::AcceptsEntity(EEntityType EntityType) const
+bool ATile::AcceptsEntity(const EEntityType EntityType) const
 {
 	if(EntityType == EEntityType::Civilian)
 		return AcceptsCivilian();
-	return false; // TODO: implement acceptsMilitary
+	if(EntityType == EEntityType::Army)
+		return AcceptsArmy();
+	return false;
+}
+
+AArmy* ATile::GetArmy() const
+{
+	return Army;
+}
+
+bool ATile::AcceptsArmy() const
+{
+	if (Terrain.Biome == EBiome::Volcano)
+		return false;
+	return !Army;
+}
+
+void ATile::SetArmy(AArmy* NewArmy)
+{
+	if(!Army) Army = NewArmy;
+}
+
+void ATile::RemoveArmy()
+{
+	SetArmy(nullptr);
 }
 
 bool ATile::AcceptsCivilian() const
@@ -171,13 +140,6 @@ void ATile::RemoveCivilian(const ACivilian* Civilian)
 	{
 		if(Civilians[i] == Civilian) Civilians[i] = nullptr;
 	}
-}
-
-AEntity* ATile::GetEntityByAffiliation(EAffiliation Affiliation) const
-{
-	if (Affiliation == EAffiliation::Ally) return AlliedEntity;
-	if (Affiliation == EAffiliation::Enemy) return EnemyEntity;
-	return nullptr;
 }
 
 // ---------------------------------------------------------

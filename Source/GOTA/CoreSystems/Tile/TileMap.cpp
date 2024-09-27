@@ -246,7 +246,7 @@ TArray<ATile*> ATileMap::FindPathToNearestTile(ATile* Origin, const EEntityType 
 	return Path;
 }
 
-TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End, EAffiliation Affiliation)
+TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End)
 {
 	//https://www.redblobgames.com/pathfinding/a-star/introduction.html
 	TArray<ATile*> Frontier;
@@ -265,7 +265,7 @@ TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End, EAffiliation Affiliat
 		}
 		for (ATile* Next : Current->Neighbors)
 		{
-			if (Next && Next->IsWalkable(Affiliation) && !CameFrom.Contains(Next))
+			if (Next && Next->AcceptsArmy() && !CameFrom.Contains(Next))
 			{
 				Frontier.Add(Next);
 				CameFrom.Add(Next, Current);
@@ -287,8 +287,7 @@ TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End, EAffiliation Affiliat
 	return Path;
 }
 
-TArray<ATile*> ATileMap::GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation TargetAffiliation,
-                                                            EAffiliation Walker)
+TArray<ATile*> ATileMap::GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation TargetAffiliation)
 {
 	//https://www.redblobgames.com/pathfinding/a-star/introduction.html
 	TArray<ATile*> Frontier;
@@ -305,7 +304,7 @@ TArray<ATile*> ATileMap::GetPathToNearestAffiliatedBuilding(ATile* Start, EAffil
 		if (Current->Building
 			&& Current->GetClaimant()
 			&& Current->GetClaimant()->Affiliation == TargetAffiliation
-			&& Current->IsWalkable(Walker))
+			&& Current->AcceptsArmy())
 		{
 			// found target Tile
 			Target = Current;
@@ -314,7 +313,7 @@ TArray<ATile*> ATileMap::GetPathToNearestAffiliatedBuilding(ATile* Start, EAffil
 		// Add all Neighbors of Current tile to the Frontier, with Current Tile as CameFrom
 		for (ATile* Next : Current->Neighbors)
 		{
-			if (Next && Next->IsWalkable(Walker) && !CameFrom.Contains(Next))
+			if (Next && Next->AcceptsArmy() && !CameFrom.Contains(Next))
 			{
 				Frontier.Add(Next);
 				CameFrom.Add(Next, Current);
