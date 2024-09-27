@@ -113,7 +113,7 @@ bool AArmy::TryFindPath()
 bool AArmy::IsTileValidForRecruiting(const ATile* Tile) const
 {
 	return Tile->Building
-		&& Tile->Building->Population->GetSize() > 0
+		&& Tile->Building->Population->GetSize() == Tile->Building->Population->GetMaxSize()
 		&& Tile->GetClaimant()
 		&& Tile->GetClaimant() == Settlement;
 }
