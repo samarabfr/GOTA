@@ -22,6 +22,9 @@ class GOTA_API AMouseUtils : public AActor
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHoverTileChangedSig, ATile*, NewTile);
 
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHoverActorChangedSig, AActor*, NewActor);
+
 	UPROPERTY(VisibleInstanceOnly)
 	USceneComponent* MouseLocation;
 
@@ -31,17 +34,22 @@ class GOTA_API AMouseUtils : public AActor
 	UPROPERTY(BlueprintGetter=GetHoverTile)
 	ATile* HoverTile = nullptr;
 
+	UPROPERTY()
+	AActor* HoverActor = nullptr;
+
 public:
 	UPROPERTY(BlueprintAssignable, Category="MouseUtils")
 	FHoverTileChangedSig OnHoverTileChanged;
 
+	FHoverActorChangedSig OnHoverActorChanged;
+
 	UFUNCTION(BlueprintGetter)
 	ATile* GetHoverTile() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category="MouseUtils")
+	AActor* GetHoverActor() const { return HoverActor; }
+
 	FVector GetMouseLocation() const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category="MouseUtils")
 	FVector GetMouseTileLocation() const;
 
 	void SetPlayerController(APC_Ingame* PC);
