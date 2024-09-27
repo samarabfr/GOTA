@@ -2,8 +2,11 @@
 
 
 #include "Blueprint/UserWidget.h"
+#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "IngameUI.generated.h"
 
+class UTextBlock;
+class ACombat;
 class UClickedInfo;
 class USpinBox;
 
@@ -17,6 +20,9 @@ public:
 	
 	UPROPERTY(meta = (BindWidget))
 	UClickedInfo* ClickedInfo;
+
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* Txt_GameEnding;
 	
 	// --------------------------------------------------
 	
@@ -28,4 +34,12 @@ private:
 public:
 	UFUNCTION(BlueprintCallable)
 	void ClickActor(AActor* Actor);
+
+	void HoverActor(AActor* Actor);
+	
+	UFUNCTION(BlueprintCallable)
+	void WatchCombat(ACombat* Combat);
+
+	UFUNCTION()
+	void OnGameEnding(const EGameEnding Ending, const FString& EndingMessage);
 };

@@ -21,7 +21,7 @@ protected:
 	UTextBlock* Tree_Max;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* TreeGrowth;
+	UTextBlock* Tree_Growth;
 
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* Tree_Progress;
@@ -33,7 +33,7 @@ protected:
 	UTextBlock* Wildlife_Max;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* WildlifeGrowth;
+	UTextBlock* Wildlife_Growth;
 
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* Wildlife_Progress;
@@ -45,7 +45,7 @@ protected:
 	UTextBlock* Forage_Max;
 
 	UPROPERTY(meta = (BindWidget))
-	UTextBlock* ForageGrowth;
+	UTextBlock* Forage_Growth;
 
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* Forage_Progress;

@@ -9,6 +9,8 @@
 #include "GOTA/CoreSystems/Utility/DistanceUtils.h"
 #include "PC_Ingame.generated.h"
 
+class UIngameUI;
+
 UCLASS()
 class GOTA_API APC_Ingame : public APlayerController
 {
@@ -23,7 +25,7 @@ class GOTA_API APC_Ingame : public APlayerController
 
 	UPROPERTY(ReplicatedUsing=OnRep_MouseUtils, BlueprintGetter=GetMouseUtils)
 	AMouseUtils* MouseUtils;
-	
+
 	// ---------------------------------------------------------
 	// Setup
 	virtual void BeginPlay() override;
@@ -31,11 +33,21 @@ class GOTA_API APC_Ingame : public APlayerController
 public:
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="PlayerController")
 	void InitInput();
-	
+
 	virtual void OnPossess(APawn* InPawn) override;
-	
-	// ---------------------------------------------------------
-	// UI Stuff
+
+	// -------------------------UI Stuff------------------------
+
+private:
+	UPROPERTY(BlueprintGetter=GetIngameUI, BlueprintSetter=SetIngameUI)
+	UIngameUI* IngameUI;
+
+public:
+	UFUNCTION(BlueprintGetter)
+	UIngameUI* GetIngameUI() const { return IngameUI; }
+
+	UFUNCTION(BlueprintSetter)
+	void SetIngameUI(UIngameUI* InIngameUI) { IngameUI = InIngameUI; }
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="PlayerController")
 	void WatchCombat(ACombat* Combat);
@@ -55,29 +67,32 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category="PlayerController")
 	void CreateIngameUI();
 
-	UFUNCTION(BlueprintImplementableEvent, Category="PlayerController")
-	void BindToMouseUtils(AMouseUtils* MouseUtils_);
-
 	// ---------------------------------------------------------
 	// Getter & Setter
 
 	UFUNCTION(BlueprintGetter)
 	AGuardian* GetGuardian();
-	
+
 	void SetGuardian(AGuardian* Guardian_);
-	
+
 	UFUNCTION()
 	void OnRep_Guardian();
 
 	void GuardianChanged();
-	
+
 	UFUNCTION(BlueprintGetter)
 	AMouseUtils* GetMouseUtils();
-	
+
 	void SetMouseUtils(AMouseUtils* MouseUtils_);
 
 	UFUNCTION()
 	void OnRep_MouseUtils();
 
 	void MouseUtilsChanged();
+
+	UFUNCTION()
+	void OnHoverActorChanged(AActor* Actor);
+
+	UFUNCTION(BlueprintCallable)
+	void ClickActor();
 };
