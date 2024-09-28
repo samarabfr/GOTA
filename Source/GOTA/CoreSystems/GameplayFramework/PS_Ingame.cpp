@@ -12,7 +12,7 @@ void APS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	DOREPLIFETIME(APS_Ingame, SelectedGuardian)
 }
 
-void APS_Ingame::SelectGuardian_Implementation(UGuardianDataAsset* NewGuardian)
+void APS_Ingame::SelectGuardian_Implementation(UGuardianSettings* NewGuardian)
 {
 	SelectedGuardian = NewGuardian;
 }

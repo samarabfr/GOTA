@@ -10,7 +10,7 @@ class ASettlement;
 class ATile;
 class UPopulation;
 class ACivilian;
-class UBuildingDataAsset;
+class UBuildingSettings;
 
 UCLASS(Blueprintable)
 class GOTA_API UBuilding : public UObject
@@ -21,11 +21,11 @@ class GOTA_API UBuilding : public UObject
 	UBuilding();
 	
 public:
-	void ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile_, ASettlement* Settlement_);
+	void ServerInit(UBuildingSettings* DataAsset_, ATile* Tile_, ASettlement* Settlement_);
 	void GOTATick(float DeltaSeconds);
 	
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
-	UBuildingDataAsset* Settings;
+	UBuildingSettings* Settings;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UPopulation* Population;

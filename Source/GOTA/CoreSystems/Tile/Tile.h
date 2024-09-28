@@ -19,7 +19,7 @@
 #include "Tile.generated.h"
 
 class ACivilian;
-class UBuildingDataAsset;
+class UBuildingSettings;
 class UBuilding;
 class ASettlement;
 
@@ -147,7 +147,7 @@ public:
 	// -----------------------Building---------------------
 	
 	bool CanBuild();
-	bool TryBuild(UBuildingDataAsset* BuildingDataAsset, ASettlement* Builder);
+	bool TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder);
 	void Unbuild();
 	
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Building, Category="Tile")

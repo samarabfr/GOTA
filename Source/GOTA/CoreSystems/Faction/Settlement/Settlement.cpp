@@ -67,7 +67,7 @@ void ASettlement::StartingSetup(ATile* SpawnTile)
 	const FGameResources& StartingResources = Affiliation == EAffiliation::Enemy
 		                                          ? Settings->C_StartingResources
 		                                          : Settings->N_StartingResources;
-	const TArray<UBuildingDataAsset*>& StartingBuildings = Affiliation == EAffiliation::Enemy
+	const TArray<UBuildingSettings*>& StartingBuildings = Affiliation == EAffiliation::Enemy
 		                                                       ? Settings->C_StartingBuildings
 		                                                       : Settings->N_StartingBuildings;
 	GameplayTags = Affiliation == EAffiliation::Enemy
@@ -75,6 +75,7 @@ void ASettlement::StartingSetup(ATile* SpawnTile)
 		               : Settings->N_GameplayTags;
 	Resources += StartingResources;
 	SpawnTile->TryBuild(StartingBuildings[0], this);
+	SpawnTile->Building->FinishConstruction();
 	for (int32 i = 1; i < StartingBuildings.Num(); ++i)
 	{
 		if (BorderingUnclaimedTiles.Num() <= 0) break;

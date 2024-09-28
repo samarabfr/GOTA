@@ -1,11 +1,11 @@
 ﻿#pragma once
 
-#include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "Components/ComboBoxString.h"
-#include "Components/TextBlock.h"
-#include "GOTA/CoreSystems/GameplayFramework/PS_Ingame.h"
 #include "PlayerSlot.generated.h"
+
+class UGuardianSettings;
+class UTextBlock;
+class UComboBoxString;
 
 UCLASS(Blueprintable)
 class GOTA_API UPlayerSlot : public UUserWidget
@@ -23,7 +23,7 @@ public:
 	UTextBlock* PlayerName;
 
 	UPROPERTY(EditDefaultsOnly, Category="PlayerSlot")
-	TArray<UGuardianDataAsset*> Guardians;
+	TArray<UGuardianSettings*> Guardians;
 
 	virtual void NativeConstruct() override;
 	
@@ -36,5 +36,5 @@ public:
 	void OnSelectionChanged(FString SelectedItem, ESelectInfo::Type SelectionType);
 
 private:
-	UGuardianDataAsset* GetSelectedGuardian() const;
+	UGuardianSettings* GetSelectedGuardian() const;
 };

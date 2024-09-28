@@ -5,7 +5,7 @@
 
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
-#include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
@@ -288,7 +288,7 @@ bool ATile::CanBuild()
 	return !Building && Terrain.Biome != EBiome::Volcano;
 }
 
-bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset, ASettlement* Builder)
+bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
 	if (!CanBuild() || !Builder) return false;
 	Building = NewObject<UBuilding>();

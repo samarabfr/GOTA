@@ -3,7 +3,7 @@
 
 #include "Building.h"
 
-#include "BuildingDataAsset.h"
+#include "BuildingSettings.h"
 #include "Population.h"
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
@@ -50,7 +50,7 @@ void UBuilding::GOTATick(float DeltaSeconds)
 	}
 }
 
-void UBuilding::ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile_, ASettlement* Settlement_)
+void UBuilding::ServerInit(UBuildingSettings* DataAsset_, ATile* Tile_, ASettlement* Settlement_)
 {
 	Settings = DataAsset_;
 	Tile = Tile_;

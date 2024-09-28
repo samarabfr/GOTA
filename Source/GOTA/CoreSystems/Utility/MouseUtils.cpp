@@ -55,6 +55,12 @@ void AMouseUtils::Tick(float DeltaSeconds)
 			SetNetTileLocation(HitTile->GetActorLocation());
 			OnHoverTileChanged.Broadcast(HitTile);
 		}
+
+		if(HitResult.GetActor() != HoverActor)
+		{
+			HoverActor = HitResult.GetActor();
+			OnHoverActorChanged.Broadcast(HoverActor);
+		}
 	}
 }
 

@@ -21,9 +21,9 @@ private:
 
 	ATile* FindBuildableTile() const;
 
-	UBuildingDataAsset* SelectNewBuilding() const;
+	UBuildingSettings* SelectNewBuilding() const;
 
-	static float CalculateScore(const UBuildingDataAsset* Data, FNewBuildingImportanceRatings ImportanceRatings);
+	static float CalculateScore(const UBuildingSettings* Data, FNewBuildingImportanceRatings ImportanceRatings);
 
 	FNewBuildingImportanceRatings CalculateImportanceRatings() const;
 

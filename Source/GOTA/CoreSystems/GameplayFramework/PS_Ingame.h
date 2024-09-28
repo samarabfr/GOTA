@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerState.h"
-#include "GOTA/CoreSystems/Guardian/GuardianDataAsset.h"
 #include "PS_Ingame.generated.h"
 
 
@@ -19,10 +18,8 @@ public:
 	int32 GOTAPlayerID = -1;
 
 	UPROPERTY(BlueprintReadOnly, Replicated)
-	UGuardianDataAsset* SelectedGuardian;
+	UGuardianSettings* SelectedGuardian;
 
 	UFUNCTION(BlueprintCallable, Server, Reliable)
-	void SelectGuardian(UGuardianDataAsset* NewGuardian);
-
-
+	void SelectGuardian(UGuardianSettings* NewGuardian);
 };
