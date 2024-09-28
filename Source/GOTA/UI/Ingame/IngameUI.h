@@ -5,6 +5,7 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "IngameUI.generated.h"
 
+class UGuardianInfo;
 class UTextBlock;
 class ACombat;
 class UClickedInfo;
@@ -22,6 +23,18 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Txt_GameEnding;
+
+	UPROPERTY(meta = (BindWidget))
+	UGuardianInfo* GuardianInfo1;
+
+	UPROPERTY(meta = (BindWidget))
+	UGuardianInfo* GuardianInfo2;
+
+	UPROPERTY(meta = (BindWidget))
+	UGuardianInfo* GuardianInfo3;
+	
+	UPROPERTY(meta = (BindWidget))
+	UGuardianInfo* GuardianInfo4;
 	
 	// --------------------------------------------------
 	

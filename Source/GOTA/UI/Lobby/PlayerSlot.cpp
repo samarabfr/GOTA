@@ -1,12 +1,17 @@
 ﻿#include "PlayerSlot.h"
 
+#include "Components/ComboBoxString.h"
+#include "Components/TextBlock.h"
+#include "GOTA/CoreSystems/GameplayFramework/PS_Ingame.h"
+#include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
+
 void UPlayerSlot::NativeConstruct()
 {
 	Super::NativeConstruct();
 
-	for (UGuardianDataAsset* GuardianDataAsset : Guardians)
+	for (const UGuardianSettings* GuardianSettings : Guardians)
 	{
-		GuardianSelection->AddOption(GuardianDataAsset->Name);
+		GuardianSelection->AddOption(GuardianSettings->Name);
 	}
 	GuardianSelection->SetSelectedOption(GuardianSelection->GetOptionAtIndex(0));
 
@@ -59,12 +64,12 @@ void UPlayerSlot::OnSelectionChanged(FString SelectedItem, ESelectInfo::Type Sel
 	CachedPlayerState->SelectGuardian(GetSelectedGuardian());
 }
 
-UGuardianDataAsset* UPlayerSlot::GetSelectedGuardian() const
+UGuardianSettings* UPlayerSlot::GetSelectedGuardian() const
 {
-	FString Selected = GuardianSelection->GetSelectedOption();
-	for (UGuardianDataAsset* GuardianDataAsset : Guardians)
+	const FString Selected = GuardianSelection->GetSelectedOption();
+	for (UGuardianSettings* GuardianSettings : Guardians)
 	{
-		if (GuardianDataAsset->Name == Selected) return GuardianDataAsset;
+		if (GuardianSettings->Name == Selected) return GuardianSettings;
 	}
 	return nullptr;
 }

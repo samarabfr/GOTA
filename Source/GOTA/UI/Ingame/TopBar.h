@@ -3,6 +3,7 @@
 #include "Blueprint/UserWidget.h"
 #include "TopBar.generated.h"
 
+class UTextBlock;
 class AGS_Ingame;
 class UImage;
 
@@ -22,7 +23,31 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UImage* Power_Disk;
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* Colony_Pop;
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* Colony_Food;
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* Colony_Wood;
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* Colony_Stone;
 
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* Tribe_Pop;
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* Tribe_Food;
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* Tribe_Wood;
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* Tribe_Stone;
+	
 	// --------------------------------------------------
 private:
 	UPROPERTY()

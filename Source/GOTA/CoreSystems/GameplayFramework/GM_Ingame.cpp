@@ -10,6 +10,7 @@
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
+#include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
 #include "GOTA/CoreSystems/Tile/WorldGenerator.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -110,7 +111,7 @@ void AGM_Ingame::CheckGameEndingConditions()
 	if (GOTAGameState->GameEnded) return;
 	if (!GOTAGameState->Colony) return;
 	if (!GOTAGameState->Tribe) return;
-	
+
 	// based on SettlementPop
 	int32 ColonialPop = GOTAGameState->Colony->PopulationSummary->GetSize();
 	int32 NativePop = GOTAGameState->Tribe->PopulationSummary->GetSize();
@@ -175,6 +176,7 @@ void AGM_Ingame::CreateGuardians()
 		AGuardian* G = GetWorld()->SpawnActor<AGuardian>(PS->SelectedGuardian->GuardianBlueprint,
 		                                                 Location, FRotator::ZeroRotator);
 		GOTAGameState->Guardians[PS->GOTAPlayerID] = G;
+		G->Settings = PS->SelectedGuardian;
 	}
 }
 

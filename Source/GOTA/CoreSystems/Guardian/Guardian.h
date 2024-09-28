@@ -7,6 +7,9 @@
 #include "GOTA/CoreSystems/Utility/MouseUtils.h"
 #include "Guardian.generated.h"
 
+class UGuardianSettings;
+class UGuardianDataAsset;
+
 UCLASS()
 class GOTA_API AGuardian : public ACharacter
 {
@@ -18,5 +21,7 @@ class GOTA_API AGuardian : public ACharacter
 public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCosmetic, Category="PlayerController")
 	void SetupGAM(AMouseUtils* MouseUtils_);
-	
+
+	UPROPERTY()
+	UGuardianSettings* Settings;
 };
