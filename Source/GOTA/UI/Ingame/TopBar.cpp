@@ -1,5 +1,6 @@
 ﻿#include "TopBar.h"
 
+#include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
@@ -14,7 +15,12 @@ void UTopBar::NativeConstruct()
 void UTopBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-	Daytime_Disk->SetRenderTransformAngle(Daytime_Disk->GetRenderTransformAngle() + 0.1);
+
+	float Gametime = GetWorld()->GetTimeSeconds();
+	float RotationPerSecond = 1;
+	float NewRotation = static_cast<int32>(Gametime * RotationPerSecond);
+	Daytime_Disk->SetRenderTransformAngle(Gametime);
+	
 	if (!GameState) return;
 	int16 Colonists = GameState->Colony->PopulationSummary->GetSize();
 	int16 Natives = GameState->Tribe->PopulationSummary->GetSize();

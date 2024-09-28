@@ -8,7 +8,7 @@
 #include "SettlementSettings.generated.h"
 
 class AArmy;
-class UBuildingDataAsset;
+class UBuildingSettings;
 
 UCLASS(Blueprintable)
 class GOTA_API USettlementSettings : public UPrimaryDataAsset
@@ -23,10 +23,10 @@ public:
 	FGameplayTagContainer C_GameplayTags;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Colonist Settlement")
-	TArray<UBuildingDataAsset*> C_PossibleBuildings;
+	TArray<UBuildingSettings*> C_PossibleBuildings;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Colonist Settlement")
-	TArray<UBuildingDataAsset*> C_StartingBuildings;
+	TArray<UBuildingSettings*> C_StartingBuildings;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Colonist Settlement")
 	FGameResources C_StartingResources;
@@ -38,7 +38,7 @@ public:
 	FGameplayTagContainer N_GameplayTags;
 
 	UPROPERTY(EditDefaultsOnly, Category="Native Settlement")
-	TArray<UBuildingDataAsset*> N_StartingBuildings;
+	TArray<UBuildingSettings*> N_StartingBuildings;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Native Settlement")
 	FGameResources N_StartingResources;

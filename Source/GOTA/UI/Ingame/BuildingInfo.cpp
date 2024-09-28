@@ -4,7 +4,7 @@
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
-#include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 
 void UBuildingInfo::NativeConstruct()

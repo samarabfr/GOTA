@@ -3,7 +3,7 @@
 #include "Algo/RandomShuffle.h"
 #include "Components/StaticMeshComponent.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
-#include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 
 void UTileContent::Init(ATile* Tile_, AGS_Ingame* GameState_)
