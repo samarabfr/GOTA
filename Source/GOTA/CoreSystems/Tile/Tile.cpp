@@ -607,7 +607,11 @@ USpawnLayoutDataAsset* ATile::FindSpawnLayoutDataAsset()
 	TArray<USpawnLayoutDataAsset*> PossibleLayouts;
 	for (USpawnLayoutDataAsset* DA_SpawnLayout : TileLayout->SpawnLayouts)
 	{
-		if (DA_SpawnLayout->IsValidFor(GameplayTags)) PossibleLayouts.Add(DA_SpawnLayout);
+		if (DA_SpawnLayout->IsValidFor(GameplayTags))
+		{
+			if (DA_SpawnLayout->GuaranteedIfPossible) return DA_SpawnLayout;
+			PossibleLayouts.Add(DA_SpawnLayout);
+		}
 	}
 	if (PossibleLayouts.Num() <= 0) return nullptr;
 	// Weighted Random to select a SpawnLayout

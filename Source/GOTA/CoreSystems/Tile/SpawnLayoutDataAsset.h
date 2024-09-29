@@ -18,16 +18,19 @@ class GOTA_API USpawnLayoutDataAsset : public UPrimaryDataAsset
 	USpawnLayoutDataAsset();
 	
 public:
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	UPROPERTY(EditAnywhere)
 	FName Name;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly)
 	TArray<FGameplayTagRule> GameplayTagRules;
+
+	UPROPERTY(EditDefaultsOnly)
+	bool GuaranteedIfPossible = false;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly)
 	FSpawnBias SpawnBias;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly)
 	FSpawnLayout SpawnLayout;
 
 	bool IsValidFor(const FGameplayTagContainer& GameplayTagContainer);
