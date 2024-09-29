@@ -8,8 +8,15 @@
 #include "GameplayTagRule.h"
 #include "SpawnBias.h"
 #include "GameFramework/Actor.h"
-#include "TileAsset.h"
 #include "TileAssetDA.generated.h"
+
+UENUM()
+enum class ERotationMode : uint8
+{
+	Default UMETA(DisplayName = "Default Spawn Point Rotation"),
+	Random90Degree UMETA(DisplayName = "90 Degree Random"),
+	Random360Degree UMETA(DisplayName = "360 Degree Random"),
+};
 
 UCLASS(BlueprintType)
 class UTileAssetDA : public UPrimaryDataAsset
@@ -21,7 +28,7 @@ public:
 	UStaticMesh* StaticMesh = nullptr;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	ERotationMode RotationMode = ERotationMode::SpawnPointRotation;
+	ERotationMode RotationMode = ERotationMode::Default;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	FSpawnBias SpawnBias;
