@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TileAssetDA.h"
+#include "TileAsset.h"
 #include "Engine/DataAsset.h"
 #include "TileGraphicsDataAsset.generated.h"
 
@@ -32,22 +32,22 @@ public:
 	UStaticMesh* ClaimMeshRiver;
 
 	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
-	UTileAssetDA* DefaultTileAsset;
+	UTileAsset* DefaultTileAsset;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
-	TArray<UTileAssetDA*> MainBuildingTileAssets;
+	TArray<UTileAsset*> MainBuildingTileAssets;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
-	TArray<UTileAssetDA*> BuildingTileAssets;
+	TArray<UTileAsset*> BuildingTileAssets;
 
 	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
-	TArray<UTileAssetDA*> TreeTileAssets;
+	TArray<UTileAsset*> TreeTileAssets;
 
 	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
-	TArray<UTileAssetDA*> PropTileAssets;
+	TArray<UTileAsset*> PropTileAssets;
 
 	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
-	TArray<UTileAssetDA*> ForageTileAssets;
+	TArray<UTileAsset*> ForageTileAssets;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Tile Graphics")
 	UDataTable* TileLayouts;

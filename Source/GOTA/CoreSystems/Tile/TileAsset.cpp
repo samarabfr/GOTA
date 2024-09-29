@@ -1,7 +1,7 @@
-﻿#include "TileAssetDA.h"
+﻿#include "TileAsset.h"
 
 
-bool UTileAssetDA::IsValidFor(const FGameplayTagContainer& GameplayTagContainer) const
+bool UTileAsset::IsValidFor(const FGameplayTagContainer& GameplayTagContainer) const
 {
 	for (FGameplayTagRule Rule : GameplayTagRules)
 	{
@@ -10,12 +10,12 @@ bool UTileAssetDA::IsValidFor(const FGameplayTagContainer& GameplayTagContainer)
 	return true;
 }
 
-int32 UTileAssetDA::GetBiasAfterMultipliers(const FTerrain& Terrain) const
+int32 UTileAsset::GetBiasAfterMultipliers(const FTerrain& Terrain) const
 {
 	return SpawnBias.GetBiasAfterMultipliers(Terrain);
 }
 
-float UTileAssetDA::GetRotationAfterMode() const
+float UTileAsset::GetRotationAfterMode() const
 {
 	switch (RotationMode)
 	{

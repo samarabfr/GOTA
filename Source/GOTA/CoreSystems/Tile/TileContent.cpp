@@ -259,7 +259,7 @@ void UTileContent::ValidateBuildings(ATile* Tile_)
 	}
 }
 
-void UTileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const TArray<UTileAssetDA*>& Assets)
+void UTileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const TArray<UTileAsset*>& Assets)
 {
 	// Remove Invalid and count how many new Assets we need
 	int32 NewAssetsNeeded = 0;
@@ -286,7 +286,7 @@ void UTileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const TArr
 		}
 	}
 	// Get new Assets and put them on the Array
-	TArray<UTileAssetDA*> OutFoundAssets;
+	TArray<UTileAsset*> OutFoundAssets;
 	FindRandomValidAssets(NewAssetsNeeded, Assets, OutFoundAssets);
 	if (OutFoundAssets.Num() != NewAssetsNeeded) return;
 	for (FTileAssetSpawn& TileAssetSpawn : Array)
@@ -319,13 +319,13 @@ void UTileContent::DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
 	FTileAssetSpawn.bIsSpawned = false;
 }
 
-void UTileContent::FindRandomValidAssets(const int32 Amount, const TArray<UTileAssetDA*>& AssetArray,
-                                         TArray<UTileAssetDA*>& OutFoundAssets) const
+void UTileContent::FindRandomValidAssets(const int32 Amount, const TArray<UTileAsset*>& AssetArray,
+                                         TArray<UTileAsset*>& OutFoundAssets) const
 {
 	if (Amount <= 0) return;
 	// First Filter Through the Input Array to find out which Assets are valid for this Tile
-	TArray<UTileAssetDA*> PossibleAssets;
-	for (UTileAssetDA* Asset : AssetArray)
+	TArray<UTileAsset*> PossibleAssets;
+	for (UTileAsset* Asset : AssetArray)
 	{
 		if (Asset->IsValidFor(Tile->GameplayTags))
 		{
@@ -337,7 +337,7 @@ void UTileContent::FindRandomValidAssets(const int32 Amount, const TArray<UTileA
 		PossibleAssets.Add(Tile->DA_TileGraphics->DefaultTileAsset);
 	// Calculate TotalBias for the weighted random selection
 	int32 TotalBias = 0;
-	for (UTileAssetDA* Asset : PossibleAssets)
+	for (UTileAsset* Asset : PossibleAssets)
 	{
 		TotalBias += Asset->GetBiasAfterMultipliers(Terrain);
 	}
@@ -345,7 +345,7 @@ void UTileContent::FindRandomValidAssets(const int32 Amount, const TArray<UTileA
 	for (int32 i = 0; i < Amount; i++)
 	{
 		int32 Count = FMath::RandRange(0, TotalBias - 1);
-		for (UTileAssetDA* Asset : PossibleAssets)
+		for (UTileAsset* Asset : PossibleAssets)
 		{
 			int32 SpawnBias = Asset->GetBiasAfterMultipliers(Terrain);
 			if (Count < SpawnBias)

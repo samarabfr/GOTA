@@ -8,7 +8,6 @@
 #include "SpawnLayout.h"
 #include "TileContent.h"
 #include "TileGraphicsDataAsset.h"
-#include "TileAssetWithPosition.h"
 #include "TileLayout.h"
 #include "BiomesDataAsset.h"
 #include "EcoValues.h"

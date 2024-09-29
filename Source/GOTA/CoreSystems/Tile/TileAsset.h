@@ -8,7 +8,7 @@
 #include "GameplayTagRule.h"
 #include "SpawnBias.h"
 #include "GameFramework/Actor.h"
-#include "TileAssetDA.generated.h"
+#include "TileAsset.generated.h"
 
 UENUM()
 enum class ERotationMode : uint8
@@ -19,7 +19,7 @@ enum class ERotationMode : uint8
 };
 
 UCLASS(BlueprintType)
-class UTileAssetDA : public UPrimaryDataAsset
+class UTileAsset : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 	
