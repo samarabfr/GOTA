@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-#include "GameplayTagContainer.h"
 #include "GOTA/CoreSystems/Faction/Settlement/GameResources.h"
 
 #include "Building.generated.h"
@@ -64,7 +63,6 @@ private:
 	bool IsUnderConstruction;
 public:
 	bool GetIsUnderConstruction() const { return IsUnderConstruction; }
-	FGameplayTag UnderConstructionTag;
 
 private:
 	UPROPERTY(VisibleInstanceOnly)

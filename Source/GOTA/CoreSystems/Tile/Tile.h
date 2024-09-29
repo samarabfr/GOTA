@@ -7,8 +7,7 @@
 #include "HexCoords.h"
 #include "SpawnLayout.h"
 #include "TileContent.h"
-#include "TileGraphicsDataAsset.h"
-#include "TileAssetWithPosition.h"
+#include "TileSettings.h"
 #include "TileLayout.h"
 #include "BiomesDataAsset.h"
 #include "EcoValues.h"
@@ -157,6 +156,8 @@ public:
 	void OnRep_Building();
 
 	void BuildingChanged();
+
+	void OnBuildingFinishedConstruction();
 	
 	FOnTileChangedSignature OnBuildingChanged;
 
@@ -185,7 +186,7 @@ public:
 	// -----------------------Graphics--------------------------
 public:
 	UPROPERTY(EditDefaultsOnly, Category="Tile")
-	UTileGraphicsDataAsset* DA_TileGraphics;
+	UTileSettings* Settings;
 
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Tile")

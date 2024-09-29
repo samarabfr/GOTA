@@ -2,40 +2,47 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Terrain.h"
 #include "GameplayTagContainer.h"
 #include "GameplayTagRule.h"
 #include "SpawnBias.h"
-#include "GameFramework/Actor.h"
 #include "TileAsset.generated.h"
 
-UENUM(BlueprintType)
+UENUM()
 enum class ERotationMode : uint8
 {
-	SpawnPointRotation UMETA(DisplayName = "Default Spawn Point Rotation"),
+	Default UMETA(DisplayName = "Default Spawn Point Rotation"),
 	Random90Degree UMETA(DisplayName = "90 Degree Random"),
 	Random360Degree UMETA(DisplayName = "360 Degree Random"),
 };
 
-USTRUCT(BlueprintType)
-struct FTileAsset : public FTableRowBase
+UCLASS(BlueprintType)
+class UTileAsset : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
+	
+public:
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* MeshFinished = nullptr;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	UStaticMesh* StaticMesh = nullptr;
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* MeshUnfinished = nullptr;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* MeshDestroyed = nullptr;
+	
+	UPROPERTY(EditDefaultsOnly)
+	ERotationMode RotationMode = ERotationMode::Default;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	ERotationMode RotationMode = ERotationMode::SpawnPointRotation;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly)
 	FSpawnBias SpawnBias;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly)
 	TArray<FGameplayTagRule> GameplayTagRules;
 
 	bool IsValidFor(const FGameplayTagContainer& GameplayTagContainer) const;
 
 	int32 GetBiasAfterMultipliers(const FTerrain& Terrain) const;
+
+	float GetRotationAfterMode() const;
 };
