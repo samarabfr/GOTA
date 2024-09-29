@@ -2,12 +2,10 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "Terrain.h"
 #include "GameplayTagContainer.h"
 #include "GameplayTagRule.h"
 #include "SpawnBias.h"
-#include "GameFramework/Actor.h"
 #include "TileAsset.generated.h"
 
 UENUM()
@@ -24,16 +22,22 @@ class UTileAsset : public UPrimaryDataAsset
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	UStaticMesh* StaticMesh = nullptr;
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* MeshFinished = nullptr;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* MeshUnfinished = nullptr;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* MeshDestroyed = nullptr;
+	
+	UPROPERTY(EditDefaultsOnly)
 	ERotationMode RotationMode = ERotationMode::Default;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly)
 	FSpawnBias SpawnBias;
 	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly)
 	TArray<FGameplayTagRule> GameplayTagRules;
 
 	bool IsValidFor(const FGameplayTagContainer& GameplayTagContainer) const;

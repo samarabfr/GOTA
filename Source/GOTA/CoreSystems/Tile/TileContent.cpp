@@ -3,10 +3,10 @@
 #include "Algo/RandomShuffle.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 
-void UTileContent::Init(ATile* Tile_, AGS_Ingame* GameState_)
+void UTileContent::Init(ATile* InTile, AGS_Ingame* InGameState)
 {
-	GameState = GameState_;
-	Tile = Tile_;
+	GameState = InGameState;
+	Tile = InTile;
 	Tile->OnGameplayTagsChanged.AddDynamic(this, &UTileContent::ValidateEverything);
 	Tile->EcoValues->OnTreesChanged.AddDynamic(this, &UTileContent::UpdateTrees);
 	Tile->EcoValues->OnForageChanged.AddDynamic(this, &UTileContent::UpdateForage);
@@ -20,9 +20,9 @@ void UTileContent::SetRotation(FRotator Rotator)
 	ValidateEverything();
 }
 
-void UTileContent::SetTerrain(const FTerrain& Terrain_)
+void UTileContent::SetTerrain(const FTerrain& InTerrain)
 {
-	Terrain = Terrain_;
+	Terrain = InTerrain;
 	DespawnEveryTileAsset();
 	NullEveryTileAsset();
 	ValidateEverything();
@@ -161,10 +161,9 @@ void UTileContent::OnSpawnPointLayoutChanged()
 	}
 	if (MainBuilding.bIsSpawned)
 	{
-		FTransform T = FTransform();
-		CalculateTransform(MainBuilding.SpawnPoint, T);
-		GameState->StaticMeshBatcher->UpdateStaticMeshTransform(
-			MainBuilding.TileAsset->StaticMesh, MainBuilding.InstanceId, T);
+		ESpawnState BeforeState = MainBuilding.SpawnState;
+		DespawnTileAsset(MainBuilding);
+		SpawnTileAsset(MainBuilding, BeforeState);
 	}
 
 	ValidateEverything();
@@ -200,36 +199,21 @@ void UTileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<
 			FTransform T = FTransform();
 			CalculateTransform(Array[i].SpawnPoint, T);
 			GameState->StaticMeshBatcher->UpdateStaticMeshTransform(
-				Array[i].TileAsset->StaticMesh, Array[i].InstanceId, T);
+				Array[i].TileAsset->MeshFinished, Array[i].InstanceId, T);
 		}
 	}
 }
 
 void UTileContent::ValidateEverything()
 {
-	ValidateTileAssets(TreeTileAssetSpawns, Tile->DA_TileGraphics->TreeTileAssets);
+	ValidateTileAssets(TreeTileAssetSpawns, Tile->Settings->TreeTileAssets);
 	UpdateTrees(0);
-	ValidateTileAssets(PropTileAssetSpawns, Tile->DA_TileGraphics->PropTileAssets);
+	ValidateTileAssets(PropTileAssetSpawns, Tile->Settings->PropTileAssets);
 	SpawnProps();
-	ValidateTileAssets(BuildingTileAssetSpawns, Tile->DA_TileGraphics->BuildingTileAssets);
-	ValidateBuildings(Tile);
-	ValidateTileAssets(ForageTileAssetSpawns, Tile->DA_TileGraphics->ForageTileAssets);
+	ValidateTileAssets(BuildingTileAssetSpawns, Tile->Settings->BuildingTileAssets);
+	ValidateBuildings();
+	ValidateTileAssets(ForageTileAssetSpawns, Tile->Settings->ForageTileAssets);
 	UpdateForage(0);
-	ValidateMainBuilding(Tile);
-}
-
-void UTileContent::ValidateMainBuilding(ATile* Tile_)
-{
-	FGameplayTag BuildingTag = FGameplayTag::RequestGameplayTag(FName("Building"));
-	if (Tile_->GameplayTags.HasTag(BuildingTag))
-	{
-		MainBuilding.TileAsset = Tile->DA_TileGraphics->DefaultTileAsset;
-		SpawnTileAsset(MainBuilding);
-	}
-	else
-	{
-		DespawnTileAsset(MainBuilding);
-	}
 }
 
 void UTileContent::SpawnProps()
@@ -240,15 +224,22 @@ void UTileContent::SpawnProps()
 	}
 }
 
-void UTileContent::ValidateBuildings(ATile* Tile_)
+void UTileContent::ValidateBuildings()
 {
-	FGameplayTag BuildingTag = FGameplayTag::RequestGameplayTag(FName("Building"));
-	if (Tile_->GameplayTags.HasTag(BuildingTag))
+	if (Tile->GameplayTags.HasTag(Tile->Settings->BuildingTag))
 	{
+		ESpawnState DesiredSpawnState = ESpawnState::Finished;
+		if (Tile->GameplayTags.HasTag(Tile->Settings->BuildingUnderConstructionTag))
+			DesiredSpawnState = ESpawnState::Unfinished;
+		if (Tile->GameplayTags.HasTag(Tile->Settings->BuildingDestroyedTag))
+			DesiredSpawnState = ESpawnState::Destroyed;
+
 		for (FTileAssetSpawn& TileAssetSpawn : BuildingTileAssetSpawns)
 		{
-			SpawnTileAsset(TileAssetSpawn);
+			SpawnTileAsset(TileAssetSpawn, DesiredSpawnState);
 		}
+		MainBuilding.TileAsset = Tile->Settings->DefaultTileAsset;
+		SpawnTileAsset(MainBuilding, DesiredSpawnState);
 	}
 	else
 	{
@@ -256,6 +247,7 @@ void UTileContent::ValidateBuildings(ATile* Tile_)
 		{
 			DespawnTileAsset(TileAssetSpawn);
 		}
+		DespawnTileAsset(MainBuilding);
 	}
 }
 
@@ -299,24 +291,47 @@ void UTileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const TArr
 	}
 }
 
-void UTileContent::SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
+void UTileContent::SpawnTileAsset(FTileAssetSpawn& TileAssetSpawn, const ESpawnState DesiredSpawnState)
 {
-	// already spawned
-	if (FTileAssetSpawn.bIsSpawned || !FTileAssetSpawn.TileAsset) return;
+	if (!TileAssetSpawn.TileAsset) return;
+	if (TileAssetSpawn.bIsSpawned && DesiredSpawnState == TileAssetSpawn.SpawnState) return;
+
+	ESpawnState SelectedSpawnState = DesiredSpawnState;
+	UStaticMesh* SelectedMesh = TileAssetSpawn.GetMeshForSpawnState(DesiredSpawnState);
+
+	if (!SelectedMesh && DesiredSpawnState == ESpawnState::Unfinished)
+	{
+		SelectedMesh = TileAssetSpawn.TileAsset->MeshFinished;
+		SelectedSpawnState = ESpawnState::Finished;
+	}
+
+	if (!SelectedMesh) return;
+
+	if (TileAssetSpawn.bIsSpawned)
+	{
+		if (SelectedSpawnState != TileAssetSpawn.SpawnState)
+			DespawnTileAsset(TileAssetSpawn);
+		else
+			return;
+	}
+
 	FTransform T = FTransform();
-	CalculateTransform(FTileAssetSpawn.SpawnPoint, T);
-	FTileAssetSpawn.InstanceId = GameState->StaticMeshBatcher->AddStaticMeshInstance(
-		FTileAssetSpawn.TileAsset->StaticMesh, T);
-	FTileAssetSpawn.bIsSpawned = true;
+	CalculateTransform(TileAssetSpawn.SpawnPoint, T);
+
+	TileAssetSpawn.InstanceId = GameState->StaticMeshBatcher->AddStaticMeshInstance(
+		SelectedMesh, T);
+	TileAssetSpawn.bIsSpawned = true;
+	TileAssetSpawn.SpawnState = SelectedSpawnState;
 }
 
 void UTileContent::DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
 {
-	// not spawned
 	if (!FTileAssetSpawn.bIsSpawned) return;
-	GameState->StaticMeshBatcher->RemoveStaticMeshInstance(FTileAssetSpawn.TileAsset->StaticMesh,
-	                                                       FTileAssetSpawn.InstanceId);
+	GameState->StaticMeshBatcher->RemoveStaticMeshInstance(
+		FTileAssetSpawn.GetMeshForSpawnState(FTileAssetSpawn.SpawnState),
+		FTileAssetSpawn.InstanceId);
 	FTileAssetSpawn.bIsSpawned = false;
+	FTileAssetSpawn.SpawnState = ESpawnState::Unspawned;
 }
 
 void UTileContent::FindRandomValidAssets(const int32 Amount, const TArray<UTileAsset*>& AssetArray,
@@ -334,7 +349,7 @@ void UTileContent::FindRandomValidAssets(const int32 Amount, const TArray<UTileA
 	}
 	// Use Default if no Possible Assets could be found
 	if (PossibleAssets.IsEmpty())
-		PossibleAssets.Add(Tile->DA_TileGraphics->DefaultTileAsset);
+		PossibleAssets.Add(Tile->Settings->DefaultTileAsset);
 	// Calculate TotalBias for the weighted random selection
 	int32 TotalBias = 0;
 	for (UTileAsset* Asset : PossibleAssets)

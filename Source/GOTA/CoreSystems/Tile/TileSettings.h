@@ -5,10 +5,10 @@
 #include "CoreMinimal.h"
 #include "TileAsset.h"
 #include "Engine/DataAsset.h"
-#include "TileGraphicsDataAsset.generated.h"
+#include "TileSettings.generated.h"
 
 UCLASS()
-class GOTA_API UTileGraphicsDataAsset : public UPrimaryDataAsset
+class GOTA_API UTileSettings : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 	
@@ -31,22 +31,31 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Claim Meshes")
 	UStaticMesh* ClaimMeshRiver;
 
-	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
+	UPROPERTY(EditDefaultsOnly, Category="Tile Content")
+	FGameplayTag BuildingTag;
+
+	UPROPERTY(EditDefaultsOnly, Category="Tile Content")
+	FGameplayTag BuildingUnderConstructionTag;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Tile Content")
+	FGameplayTag BuildingDestroyedTag;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Tile Content")
 	UTileAsset* DefaultTileAsset;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
+	UPROPERTY(EditDefaultsOnly, Category="Tile Content")
 	TArray<UTileAsset*> MainBuildingTileAssets;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
+	UPROPERTY(EditDefaultsOnly, Category="Tile Content")
 	TArray<UTileAsset*> BuildingTileAssets;
 
-	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
+	UPROPERTY(EditDefaultsOnly, Category="Tile Content")
 	TArray<UTileAsset*> TreeTileAssets;
 
-	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
+	UPROPERTY(EditDefaultsOnly, Category="Tile Content")
 	TArray<UTileAsset*> PropTileAssets;
 
-	UPROPERTY(EditDefaultsOnly, Category="Tile Asset")
+	UPROPERTY(EditDefaultsOnly, Category="Tile Content")
 	TArray<UTileAsset*> ForageTileAssets;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Tile Graphics")

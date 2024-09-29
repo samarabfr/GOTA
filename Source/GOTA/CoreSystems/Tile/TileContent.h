@@ -15,32 +15,32 @@ class GOTA_API UTileContent : public UObject
 	GENERATED_BODY()
 
 public:
-	void Init(ATile* Tile_, AGS_Ingame* GameState_);
+	void Init(ATile* InTile, AGS_Ingame* InGameState);
 
 	void SetRotation(FRotator Rotator);
 
 	void OnSpawnPointLayoutChanged();
 
-	void SetTerrain(const FTerrain& Terrain_);
-	
+	void SetTerrain(const FTerrain& InTerrain);
+
 private:
 	void DespawnEveryTileAsset();
 
 	UFUNCTION()
 	void UpdateTrees(int32 Change);
-	
+
 	void NullEveryTileAsset();
 
 	UFUNCTION()
 	void UpdateForage(int32 Change);
-	
-	void ValidateBuildings(ATile* Tile_);
+
+	void ValidateBuildings();
 
 	void SpawnProps();
 
 	UPROPERTY()
 	ATile* Tile;
-	
+
 	FTerrain Terrain;
 
 	TArray<FTileAssetSpawn> TreeTileAssetSpawns;
@@ -60,12 +60,10 @@ private:
 
 	UFUNCTION()
 	void ValidateEverything();
-	
-	void ValidateMainBuilding(ATile* Tile_);
 
 	void ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const TArray<UTileAsset*>& Assets);
 
-	void SpawnTileAsset(FTileAssetSpawn& FTileAssetSpawn);
+	void SpawnTileAsset(FTileAssetSpawn& TileAssetSpawn, const ESpawnState DesiredSpawnState = ESpawnState::Finished);
 
 	void DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn);
 
