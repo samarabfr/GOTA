@@ -1,12 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "PC_Ingame.h"
+
+#include "GOTA/UI/Ingame/IngameUI.h"
 #include "Net/UnrealNetwork.h"
 
 void APC_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
+
 	DOREPLIFETIME(APC_Ingame, Guardian)
 	DOREPLIFETIME(APC_Ingame, MouseUtils)
 }
@@ -24,6 +26,9 @@ void APC_Ingame::OnPossess(APawn* InPawn)
 	Super::OnPossess(InPawn);
 	SetGuardian(Cast<AGuardian>(InPawn));
 }
+
+// -------------------------UI Stuff------------------------
+
 
 // ---------------------------------------------------------
 // Getter & Setter
@@ -49,7 +54,7 @@ void APC_Ingame::GuardianChanged()
 	if (!Guardian) return;
 	if (!IsLocalController()) return;
 	DistanceUtils->AttachToActor(Guardian, FAttachmentTransformRules::SnapToTargetIncludingScale);
-	if(MouseUtils) Guardian->SetupGAM(MouseUtils);
+	if (MouseUtils) Guardian->SetupGAM(MouseUtils);
 }
 
 AMouseUtils* APC_Ingame::GetMouseUtils()
@@ -73,7 +78,17 @@ void APC_Ingame::MouseUtilsChanged()
 	if (IsLocalController())
 	{
 		MouseUtils->SetPlayerController(this);
-		BindToMouseUtils(MouseUtils);
-		if(Guardian) Guardian->SetupGAM(MouseUtils);
+		MouseUtils->OnHoverActorChanged.AddDynamic(this, &APC_Ingame::OnHoverActorChanged);
+		if (Guardian) Guardian->SetupGAM(MouseUtils);
 	}
+}
+
+void APC_Ingame::OnHoverActorChanged(AActor* Actor)
+{
+	IngameUI->HoverActor(Actor);
+}
+
+void APC_Ingame::ClickActor()
+{
+	IngameUI->ClickActor(MouseUtils->GetHoverActor());
 }

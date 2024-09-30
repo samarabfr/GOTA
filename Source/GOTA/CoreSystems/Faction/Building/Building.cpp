@@ -3,7 +3,7 @@
 
 #include "Building.h"
 
-#include "BuildingDataAsset.h"
+#include "BuildingSettings.h"
 #include "Population.h"
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
@@ -50,12 +50,10 @@ void UBuilding::GOTATick(float DeltaSeconds)
 	}
 }
 
-void UBuilding::ServerInit(UBuildingDataAsset* DataAsset_, ATile* Tile_, ASettlement* Settlement_)
+void UBuilding::ServerInit(UBuildingSettings* DataAsset_, ATile* Tile_, ASettlement* Settlement_)
 {
 	Settings = DataAsset_;
 	Tile = Tile_;
-	UnderConstructionTag = FGameplayTag::RequestGameplayTag(FName("Building.UnderConstruction"));
-	Tile->GameplayTags.AddTag(UnderConstructionTag);
 	IsUnderConstruction = true;
 	Settlement = Settlement_;
 }
@@ -107,7 +105,7 @@ void UBuilding::SetResourceProgress(const FGameResources NewResourcesProgress)
 void UBuilding::FinishConstruction()
 {
 	IsUnderConstruction = false;
-	Tile->GameplayTags.RemoveTag(UnderConstructionTag);
+	Tile->OnBuildingFinishedConstruction();
 	Population->ChangeMaxSize(Settings->Housing);
 	if (Settings->CivilianClass)
 	{

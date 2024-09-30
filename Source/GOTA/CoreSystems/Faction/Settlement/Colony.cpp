@@ -1,7 +1,7 @@
 ﻿#include "Colony.h"
 
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
-#include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 
 AColony::AColony()
@@ -21,7 +21,7 @@ void AColony::FigureOutBuilding()
 	if (!ShouldBuild()) return;
 	ATile* Tile = FindBuildableTile();
 	if (!Tile) return;
-	UBuildingDataAsset* NewBuilding = SelectNewBuilding();
+	UBuildingSettings* NewBuilding = SelectNewBuilding();
 	Tile->TryBuild(NewBuilding, this);
 }
 
@@ -41,7 +41,7 @@ ATile* AColony::FindBuildableTile() const
 	return BorderingUnclaimedTiles[FMath::RandRange(0, BorderingUnclaimedTiles.Num() - 1)];
 }
 
-UBuildingDataAsset* AColony::SelectNewBuilding() const
+UBuildingSettings* AColony::SelectNewBuilding() const
 {
 	return Settings->C_PossibleBuildings[FMath::RandRange(
 		0, Settings->C_PossibleBuildings.Num() - 1)];
@@ -50,7 +50,7 @@ UBuildingDataAsset* AColony::SelectNewBuilding() const
 	//CalculateScores();
 }
 
-float AColony::CalculateScore(const UBuildingDataAsset* Data, FNewBuildingImportanceRatings ImportanceRatings)
+float AColony::CalculateScore(const UBuildingSettings* Data, FNewBuildingImportanceRatings ImportanceRatings)
 {
 	// costs
 	float CostScore = 0;

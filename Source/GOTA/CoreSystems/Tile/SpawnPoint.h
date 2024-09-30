@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TileAssetDA.h"
+#include "TileAsset.h"
 #include "GameFramework/Actor.h"
 #include "SpawnPoint.generated.h"
 
@@ -23,5 +23,5 @@ struct FSpawnPoint
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly,
 		meta = (ToolTip = "Picks full random out of this Array if it isn't empty."))
-	TArray<UTileAssetDA*> ForcedAssets;
+	TArray<UTileAsset*> ForcedAssets;
 };

@@ -5,7 +5,7 @@
 
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
-#include "GOTA/CoreSystems/Faction/Building/BuildingDataAsset.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
@@ -71,7 +71,7 @@ void ATile::BeginPlay()
 void ATile::ServerInit()
 {
 	AddReplicatedSubObject(EcoValues);
-	Civilians.SetNumZeroed(DA_TileGraphics->CivilianSlots.Num());
+	Civilians.SetNumZeroed(Settings->CivilianSlots.Num());
 }
 
 void ATile::OnRep_GameplayTags()
@@ -81,7 +81,7 @@ void ATile::OnRep_GameplayTags()
 
 bool ATile::AcceptsEntity(const EEntityType EntityType) const
 {
-	if(EntityType == EEntityType::Civilian)
+	if (EntityType == EEntityType::Civilian)
 		return AcceptsCivilian();
 	if(EntityType == EEntityType::Army)
 		return AcceptsArmy();
@@ -128,7 +128,7 @@ void ATile::AddCivilian(ACivilian* Civilian)
 		if (!Civilians[i])
 		{
 			Civilians[i] = Civilian;
-			Civilian->SetActorLocation(DA_TileGraphics->CivilianSlots[i] + GetActorLocation());
+			Civilian->SetActorLocation(Settings->CivilianSlots[i] + GetActorLocation());
 			return;
 		}
 	}
@@ -138,7 +138,7 @@ void ATile::RemoveCivilian(const ACivilian* Civilian)
 {
 	for (int32 i = 0; i < Civilians.Num(); ++i)
 	{
-		if(Civilians[i] == Civilian) Civilians[i] = nullptr;
+		if (Civilians[i] == Civilian) Civilians[i] = nullptr;
 	}
 }
 
@@ -188,14 +188,14 @@ void ATile::UpdateClaimWalls()
 					Transform.SetRotation(
 						FRotator(0, 60 * i, 0).Quaternion());
 					ClaimWallsInstanceIds.Add(i, GameState->StaticMeshBatcher->AddStaticMeshInstance(
-						                          DA_TileGraphics->ClaimMesh, Transform));
+						                          Settings->ClaimMesh, Transform));
 				}
 			}
 			else if (ClaimWallsInstanceIds.Contains(i))
 			{
 				// Should NOT have flag in this direction
 				GameState->StaticMeshBatcher->RemoveStaticMeshInstance(
-					DA_TileGraphics->ClaimMesh, *ClaimWallsInstanceIds.Find(i));
+					Settings->ClaimMesh, *ClaimWallsInstanceIds.Find(i));
 				ClaimWallsInstanceIds.Remove(i);
 			}
 		}
@@ -205,7 +205,7 @@ void ATile::UpdateClaimWalls()
 		// remove all flags
 		for (TTuple<uint8, FPrimitiveInstanceId> Tuple : ClaimWallsInstanceIds)
 		{
-			GameState->StaticMeshBatcher->RemoveStaticMeshInstance(DA_TileGraphics->ClaimMesh, Tuple.Value);
+			GameState->StaticMeshBatcher->RemoveStaticMeshInstance(Settings->ClaimMesh, Tuple.Value);
 		}
 		ClaimWallsInstanceIds.Empty();
 	}
@@ -250,7 +250,7 @@ bool ATile::CanBuild()
 	return !Building && Terrain.Biome != EBiome::Volcano;
 }
 
-bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset, ASettlement* Builder)
+bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
 	if (!CanBuild() || !Builder) return false;
 	Building = NewObject<UBuilding>();
@@ -263,6 +263,7 @@ bool ATile::TryBuild(UBuildingDataAsset* BuildingDataAsset, ASettlement* Builder
 
 	GameplayTags.AppendTags(Claimant->GameplayTags);
 	GameplayTags.AppendTags(BuildingDataAsset->GameplayTags);
+	GameplayTags.AddTag(Settings->BuildingUnderConstructionTag);
 
 	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, GameplayTags, this);
 	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, Claimant, this);
@@ -308,6 +309,12 @@ void ATile::BuildingChanged()
 				Building->Population->NeighborChangedPopSize(Neighbor->Building->Population->GetSize());
 		}
 	}
+}
+
+void ATile::OnBuildingFinishedConstruction()
+{
+	GameplayTags.RemoveTag(Settings->BuildingUnderConstructionTag);
+	OnGameplayTagsChanged.Broadcast();
 }
 
 // -------------------Ecosystem-------------------------
@@ -406,16 +413,16 @@ void ATile::UpdateHexagonMaterial()
 	switch (Terrain.Biome)
 	{
 	case EBiome::Gras:
-		SM_Hexagon->SetMaterial(0, DA_TileGraphics->M_Grass);
+		SM_Hexagon->SetMaterial(0, Settings->M_Grass);
 		break;
 	case EBiome::Beach:
-		SM_Hexagon->SetMaterial(0, DA_TileGraphics->M_Beach);
+		SM_Hexagon->SetMaterial(0, Settings->M_Beach);
 		break;
 	case EBiome::Mountain:
-		SM_Hexagon->SetMaterial(0, DA_TileGraphics->M_Mountain);
+		SM_Hexagon->SetMaterial(0, Settings->M_Mountain);
 		break;
 	case EBiome::Volcano:
-		SM_Hexagon->SetMaterial(0, DA_TileGraphics->M_Volcano);
+		SM_Hexagon->SetMaterial(0, Settings->M_Volcano);
 		break;
 	}
 }
@@ -469,7 +476,7 @@ FTileLayout* ATile::FindTileLayout()
 {
 	FString _;
 	TArray<FTileLayout*> AllRows;
-	DA_TileGraphics->TileLayouts->GetAllRows<FTileLayout>(_, AllRows);
+	Settings->TileLayouts->GetAllRows<FTileLayout>(_, AllRows);
 
 	for (FTileLayout* Row : AllRows)
 	{
@@ -562,7 +569,11 @@ USpawnLayoutDataAsset* ATile::FindSpawnLayoutDataAsset()
 	TArray<USpawnLayoutDataAsset*> PossibleLayouts;
 	for (USpawnLayoutDataAsset* DA_SpawnLayout : TileLayout->SpawnLayouts)
 	{
-		if (DA_SpawnLayout->IsValidFor(GameplayTags)) PossibleLayouts.Add(DA_SpawnLayout);
+		if (DA_SpawnLayout->IsValidFor(GameplayTags))
+		{
+			if (DA_SpawnLayout->GuaranteedIfPossible) return DA_SpawnLayout;
+			PossibleLayouts.Add(DA_SpawnLayout);
+		}
 	}
 	if (PossibleLayouts.Num() <= 0) return nullptr;
 	// Weighted Random to select a SpawnLayout

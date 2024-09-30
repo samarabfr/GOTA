@@ -61,7 +61,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	int32 IslandMaxForage;
-	
+
 	// ---------------------------------------------------------
 	// Useful Stuff
 
@@ -79,9 +79,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void RegisterTileForTotalsUpdates(ATile* Tile);
-	
+
 	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGameEndingSignature, EGameEnding, Ending, FString, EndMessage);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGameEndingSignature,
+	                                             const EGameEnding, Ending,
+	                                             const FString&, EndMessage);
 
 	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
 	FGameEndingSignature OnGameEnding;
