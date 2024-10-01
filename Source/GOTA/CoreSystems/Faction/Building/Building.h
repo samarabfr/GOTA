@@ -19,11 +19,11 @@ class GOTA_API UBuilding : public UObject
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
 	UBuilding();
-	
+
 public:
 	void ServerInit(UBuildingSettings* DataAsset_, ATile* Tile_, ASettlement* Settlement_);
 	void GOTATick(float DeltaSeconds);
-	
+
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UBuildingSettings* Settings;
 
@@ -42,40 +42,47 @@ public:
 	//---------------------base income----------------
 
 	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnIncomeChangedSig, float, IncomeChange, EProductionType, ProductionType);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnIncomeChangedSig, float, IncomeChange, EProductionType,
+	                                             ProductionType);
+
 	FOnIncomeChangedSig OnIncomeChanged;
 	float GetCurrentIncomePerSecond() const;
 	void AddIncomeToSettlement();
-	
+
 	UPROPERTY(VisibleInstanceOnly)
 	float IncomeProgress = 0.0f;
 
 	//---------------------Civilian Entity----------------
-	
+
 	UPROPERTY(VisibleInstanceOnly)
 	ACivilian* Civilian;
-	
+
 	float GetCivilianWorkRate() const;
 	float GetCivilianMovementRate() const;
 
 	//---------------------Civilian Entity----------------
-	
+
 	UPROPERTY(VisibleInstanceOnly)
 	AArmy* Army;
-	
+
+	UPROPERTY(VisibleInstanceOnly)
+	float ArmyRespawnTimer = 0.0F;
+
 	float GetArmyRecruitRate() const;
 	float GetArmyMovementRate() const;
-	
+
 	//---------------------Construction phase----------------
 private:
 	UPROPERTY(VisibleInstanceOnly)
-	bool IsUnderConstruction;
+	bool bIsUnderConstruction;
+
 public:
-	bool GetIsUnderConstruction() const { return IsUnderConstruction; }
+	bool GetIsUnderConstruction() const { return bIsUnderConstruction; }
 
 private:
 	UPROPERTY(VisibleInstanceOnly)
 	FGameResources ResourceProgress;
+
 public:
 	FGameResources GetResourceProgress() const;
 	void SetResourceProgress(const FGameResources NewResourcesProgress);

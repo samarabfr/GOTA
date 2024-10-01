@@ -74,4 +74,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Army")
 	float ArmySecondsPerMove = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	float ArmyRespawnTime = 0.0f;
 };

@@ -39,9 +39,9 @@ UBuilding::UBuilding()
 
 void UBuilding::GOTATick(float DeltaSeconds)
 {
-	if(Civilian) Civilian->GOTATick(DeltaSeconds);
-	if(Army) Army->GOTATick(DeltaSeconds);
-	if(IncomeProgress < Settings->IncomeTime)
+	if (Civilian) Civilian->GOTATick(DeltaSeconds);
+	if (Army) Army->GOTATick(DeltaSeconds);
+	if (IncomeProgress < Settings->IncomeTime)
 	{
 		IncomeProgress = FMath::Min(IncomeProgress + DeltaSeconds, Settings->IncomeTime);
 	}
@@ -50,13 +50,27 @@ void UBuilding::GOTATick(float DeltaSeconds)
 		AddIncomeToSettlement();
 		IncomeProgress = 0.0f;
 	}
+	// Army
+	if (Settings->bArmyEnabled && !bIsUnderConstruction && !Army)
+	{
+		if (ArmyRespawnTimer < Settings->ArmyRespawnTime)
+		{
+			ArmyRespawnTimer += DeltaSeconds;
+		}
+		else
+		{
+			ArmyRespawnTimer = 0.0f;
+			Army = Tile->GetWorld()->SpawnActor<AArmy>();
+			Army->Init(Settlement, Tile, GetArmyRecruitRate(), GetArmyMovementRate(), 1);
+		}
+	}
 }
 
 void UBuilding::ServerInit(UBuildingSettings* DataAsset_, ATile* Tile_, ASettlement* Settlement_)
 {
 	Settings = DataAsset_;
 	Tile = Tile_;
-	IsUnderConstruction = true;
+	bIsUnderConstruction = true;
 	Settlement = Settlement_;
 }
 
@@ -68,11 +82,11 @@ float UBuilding::GetCurrentIncomePerSecond() const
 void UBuilding::AddIncomeToSettlement()
 {
 	FGameResources NewResources;
-	if(Settings->IncomeType == EProductionType::Food)
+	if (Settings->IncomeType == EProductionType::Food)
 		NewResources.Food = Settings->IncomeAmount;
-	if(Settings->IncomeType == EProductionType::Wood)
+	if (Settings->IncomeType == EProductionType::Wood)
 		NewResources.Wood = Settings->IncomeAmount;
-	if(Settings->IncomeType == EProductionType::Stone)
+	if (Settings->IncomeType == EProductionType::Stone)
 		NewResources.Stone = Settings->IncomeAmount;
 	Settlement->AddResources(NewResources, true);
 }
@@ -110,23 +124,19 @@ FGameResources UBuilding::GetResourceProgress() const
 void UBuilding::SetResourceProgress(const FGameResources NewResourcesProgress)
 {
 	ResourceProgress = NewResourcesProgress;
-	if(ResourceProgress >= Settings->Cost)
+	if (ResourceProgress >= Settings->Cost)
 		FinishConstruction();
 }
 
 void UBuilding::FinishConstruction()
 {
-	IsUnderConstruction = false;
+	bIsUnderConstruction = false;
 	Tile->OnBuildingFinishedConstruction();
 	Population->ChangeMaxSize(Settings->Housing);
 	if (Settings->bCivilianEnabled)
 	{
 		Civilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);
-		Civilian->Init(Settlement, Tile, GetCivilianWorkRate(), Settings->WorkAmountPerCycle, GetCivilianMovementRate());
-	}
-	if (Settings->bArmyEnabled)
-	{
-		Army = Tile->GetWorld()->SpawnActor<AArmy>();
-		Army->Init(Settlement,Tile, GetArmyRecruitRate(),GetArmyMovementRate(), 1);
+		Civilian->Init(Settlement, Tile, GetCivilianWorkRate(), Settings->WorkAmountPerCycle,
+		               GetCivilianMovementRate());
 	}
 }
