@@ -6,6 +6,7 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "BuildingSettings.generated.h"
 
+class AArmy;
 class ACivilian;
 
 UCLASS()
@@ -61,5 +62,16 @@ public:
 	int32 WorkAmountPerCycle = 0;
 
 	UPROPERTY(EditDefaultsOnly, Category="Civilian")
-	float SecondsPerMove = 0.0f;
+	float CivilianSecondsPerMove = 0.0f;
+
+	//--------------------------Army-------------------
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	bool bArmyEnabled = false;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	float SecondsPerRecruitCycle = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	float ArmySecondsPerMove = 0.0f;
 };

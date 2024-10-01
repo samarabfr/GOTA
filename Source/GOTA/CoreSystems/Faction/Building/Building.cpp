@@ -5,6 +5,7 @@
 
 #include "BuildingSettings.h"
 #include "Population.h"
+#include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
@@ -39,6 +40,7 @@ UBuilding::UBuilding()
 void UBuilding::GOTATick(float DeltaSeconds)
 {
 	if(Civilian) Civilian->GOTATick(DeltaSeconds);
+	if(Army) Army->GOTATick(DeltaSeconds);
 	if(IncomeProgress < Settings->IncomeTime)
 	{
 		IncomeProgress = FMath::Min(IncomeProgress + DeltaSeconds, Settings->IncomeTime);
@@ -87,7 +89,17 @@ float UBuilding::GetCivilianWorkRate() const
 
 float UBuilding::GetCivilianMovementRate() const
 {
-	return 100 / Settings->SecondsPerMove;
+	return 100 / Settings->CivilianSecondsPerMove;
+}
+
+float UBuilding::GetArmyRecruitRate() const
+{
+	return 100 / Settings->SecondsPerRecruitCycle;
+}
+
+float UBuilding::GetArmyMovementRate() const
+{
+	return 100 / Settings->ArmySecondsPerMove;
 }
 
 FGameResources UBuilding::GetResourceProgress() const
@@ -107,9 +119,14 @@ void UBuilding::FinishConstruction()
 	IsUnderConstruction = false;
 	Tile->OnBuildingFinishedConstruction();
 	Population->ChangeMaxSize(Settings->Housing);
-	if (Settings->CivilianClass)
+	if (Settings->bCivilianEnabled)
 	{
 		Civilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);
 		Civilian->Init(Settlement, Tile, GetCivilianWorkRate(), Settings->WorkAmountPerCycle, GetCivilianMovementRate());
+	}
+	if (Settings->bArmyEnabled)
+	{
+		Army = Tile->GetWorld()->SpawnActor<AArmy>();
+		Army->Init(Settlement,Tile, GetArmyRecruitRate(),GetArmyMovementRate(), 1);
 	}
 }

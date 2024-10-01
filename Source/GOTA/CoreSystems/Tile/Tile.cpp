@@ -3,6 +3,7 @@
 
 #include "Tile.h"
 
+#include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
@@ -83,7 +84,7 @@ bool ATile::AcceptsEntity(const EEntityType EntityType) const
 {
 	if (EntityType == EEntityType::Civilian)
 		return AcceptsCivilian();
-	if(EntityType == EEntityType::Army)
+	if (EntityType == EEntityType::Army)
 		return AcceptsArmy();
 	return false;
 }
@@ -102,7 +103,8 @@ bool ATile::AcceptsArmy() const
 
 void ATile::SetArmy(AArmy* NewArmy)
 {
-	if(!Army) Army = NewArmy;
+	Army = NewArmy;
+	if (Army) Army->SetActorLocation(Settings->ArmySlot + GetActorLocation());
 }
 
 void ATile::RemoveArmy()

@@ -5,6 +5,7 @@
 
 #include "Building.generated.h"
 
+class AArmy;
 class ASettlement;
 class ATile;
 class UPopulation;
@@ -56,6 +57,14 @@ public:
 	
 	float GetCivilianWorkRate() const;
 	float GetCivilianMovementRate() const;
+
+	//---------------------Civilian Entity----------------
+	
+	UPROPERTY(VisibleInstanceOnly)
+	AArmy* Army;
+	
+	float GetArmyRecruitRate() const;
+	float GetArmyMovementRate() const;
 	
 	//---------------------Construction phase----------------
 private:

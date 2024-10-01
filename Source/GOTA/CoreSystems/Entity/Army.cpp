@@ -14,26 +14,32 @@ AArmy::AArmy()
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
 	NetUpdateFrequency = 1.0f;
-	
+
 	ConstructorHelpers::FObjectFinder<UArmySettings> DataAsset(
 		TEXT("/Game/CoreSystems/Entity/DA_Army"));
-	ArmySettings = DataAsset.Object; 
+	Settings = DataAsset.Object;
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Static Mesh");
 	Mesh->SetupAttachment(RootComponent);
-	Mesh->SetRelativeScale3D(FVector(1, 1, 2));
+	Mesh->SetRelativeScale3D(FVector(1, 1, 4));
 	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
-void AArmy::Init(ASettlement* Settlement_, ATile* SpawnTile, float RecruitRate_, float MovementRate_)
+void AArmy::Init(ASettlement* InSettlement, ATile* SpawnTile, float InRecruitRate, float InMovementRate, int32 InSize)
 {
 	GameState = GetWorld()->GetGameState<AGS_Ingame>();
-	Settlement = Settlement_;
+	Settlement = InSettlement;
 	CurrentTile = SpawnTile;
 	SpawnTile->SetArmy(this);
-	RecruitRate = RecruitRate_;
-	MovementRate = MovementRate_;
+	RecruitRate = InRecruitRate;
+	MovementRate = InMovementRate;
+	Size = InSize;
+	Affiliation = Settlement->Affiliation;
+	if(Affiliation == EAffiliation::Enemy)
+		Mesh->SetStaticMesh(Settings->ColonyArmyMesh);
+	else
+		Mesh->SetStaticMesh(Settings->NativeArmyMesh);
 }
 
 void AArmy::GOTATick(float DeltaSeconds)
@@ -67,7 +73,7 @@ void AArmy::ValidateStatus()
 {
 	CheckForCombat();
 	if (Status == EArmyStatus::Fighting) return;
-	if(Status == EArmyStatus::Idle)
+	if (Status == EArmyStatus::Idle)
 	{
 		if (IsTileValidForRecruiting(CurrentTile))
 			SetStatus(EArmyStatus::Recruiting);
@@ -102,8 +108,8 @@ bool AArmy::TryFindPath()
 			break;
 		}
 	}
-	if(!HasValidTiles) return false;
-	Path = 	GameState->TileMap->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
+	if (!HasValidTiles) return false;
+	Path = GameState->TileMap->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
 	{
 		return IsTileValidForRecruiting(Tile);
 	});

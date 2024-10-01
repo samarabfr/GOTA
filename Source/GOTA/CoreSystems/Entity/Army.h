@@ -19,15 +19,16 @@ protected:
 	AArmy();
 
 public:
-	void Init(ASettlement* Settlement_, ATile* SpawnTile, float RecruitRate_, float MovementRate_);
+	void Init(ASettlement* InSettlement, ATile* SpawnTile, float InRecruitRate, float InMovementRate, int32 InSize);
 	void GOTATick(float DeltaSeconds);
 
 private:
 	UPROPERTY(VisibleInstanceOnly)
 	EAffiliation Affiliation;
-	
+
 public:
 	EAffiliation GetAffiliation() const;
+
 private:
 	UPROPERTY(VisibleInstanceOnly)
 	ASettlement* Settlement;
@@ -36,7 +37,7 @@ private:
 	AGS_Ingame* GameState;
 
 	UPROPERTY()
-	UArmySettings* ArmySettings;
+	UArmySettings* Settings;
 
 	UPROPERTY()
 	UStaticMeshComponent* Mesh;
@@ -44,7 +45,7 @@ private:
 	UPROPERTY(VisibleInstanceOnly)
 	float Progress; // in percent
 	UPROPERTY(VisibleInstanceOnly)
-	int32 Size;
+	int32 Size = 0;
 	UPROPERTY(VisibleInstanceOnly)
 	float RecruitRate; // in percent per second
 	UPROPERTY(VisibleInstanceOnly)
@@ -56,8 +57,8 @@ private:
 	// -----------------Status------------------------
 private:
 	UPROPERTY(VisibleInstanceOnly)
-	EArmyStatus Status;
-	
+	EArmyStatus Status = EArmyStatus::Idle;
+
 	virtual void ValidateStatus();
 	bool TryFindPath();
 	bool IsTileValidForRecruiting(const ATile* Tile) const;
@@ -77,7 +78,7 @@ private:
 	void CheckForCombat();
 	void InitializeCombat(AArmy* Enemy);
 	void JoinCombat(AArmy* Enemy);
-	
+
 public:
 	void ChallengeToCombat();
 };
