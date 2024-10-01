@@ -57,7 +57,7 @@ void UBuilding::GOTATick(float DeltaSeconds)
 		{
 			ArmyRespawnTimer += DeltaSeconds;
 		}
-		else
+		else if(Tile->AcceptsArmy())
 		{
 			ArmyRespawnTimer = 0.0f;
 			Army = Tile->GetWorld()->SpawnActor<AArmy>();
