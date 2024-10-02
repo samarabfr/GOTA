@@ -2,13 +2,12 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Combat.h"
 #include "GameFramework/PlayerController.h"
-#include "GOTA/CoreSystems/Guardian/Guardian.h"
-#include "GOTA/CoreSystems/Utility/DistanceUtils.h"
 #include "PC_Ingame.generated.h"
 
+class AMouseUtils;
+class ADistanceUtils;
+class AGuardian;
 class UIngameUI;
 
 UCLASS()
@@ -16,7 +15,7 @@ class GOTA_API APC_Ingame : public APlayerController
 {
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	
 	UPROPERTY()
 	ADistanceUtils* DistanceUtils;
 
@@ -31,10 +30,10 @@ class GOTA_API APC_Ingame : public APlayerController
 	virtual void BeginPlay() override;
 
 public:
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="PlayerController")
 	void InitInput();
 
 	virtual void OnPossess(APawn* InPawn) override;
+
 
 	// -------------------------UI Stuff------------------------
 

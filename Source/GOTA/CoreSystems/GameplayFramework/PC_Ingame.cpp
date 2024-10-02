@@ -1,7 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "PC_Ingame.h"
-
+#include "EnhancedInputSubsystems.h"
+#include "InputMappingContext.h"
+#include "GOTA/CoreSystems/Utility/DistanceUtils.h"
 #include "GOTA/UI/Ingame/IngameUI.h"
 #include "Net/UnrealNetwork.h"
 
@@ -19,6 +21,22 @@ void APC_Ingame::BeginPlay()
 	if (!IsLocalController()) return;
 	CreateLobbyUI();
 	DistanceUtils = GetWorld()->SpawnActor<ADistanceUtils>();
+}
+
+void APC_Ingame::InitInput()
+{
+	UInputMappingContext* InputMapping = Cast<UInputMappingContext>(StaticLoadObject(
+		UInputMappingContext::StaticClass(),
+		nullptr,
+		TEXT("/Game/CoreSystems/Input/IMC_InputGuardian")
+	));
+
+	if (ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player))
+	{
+		UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>();
+		InputSystem->AddMappingContext(InputMapping, 1);
+	}
 }
 
 void APC_Ingame::OnPossess(APawn* InPawn)
