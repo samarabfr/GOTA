@@ -2,9 +2,11 @@
 
 #pragma once
 
+
 #include "GameFramework/PlayerController.h"
 #include "PC_Ingame.generated.h"
 
+struct FInputActionInstance;
 class AMouseUtils;
 class ADistanceUtils;
 class AGuardian;
@@ -15,7 +17,7 @@ class GOTA_API APC_Ingame : public APlayerController
 {
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
 	UPROPERTY()
 	ADistanceUtils* DistanceUtils;
 
@@ -30,8 +32,6 @@ class GOTA_API APC_Ingame : public APlayerController
 	virtual void BeginPlay() override;
 
 public:
-	void InitInput();
-
 	virtual void OnPossess(APawn* InPawn) override;
 
 
@@ -94,4 +94,20 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void ClickActor();
+
+	// ----------------------- Input -----------------------
+public:
+	void InitInput();
+
+private:
+	void LeftClick(const FInputActionInstance& Instance);
+	
+	void StartJump(const FInputActionInstance& Instance);
+	void StopJump(const FInputActionInstance& Instance);
+
+	bool bIsLookingAround = false;
+	FVector2D MousePositionWhenStartingLookingAround;
+	void LookAround(const FInputActionInstance& Instance);
+	void StartLookingAround(const FInputActionInstance& Instance);
+	void StopLookingAround(const FInputActionInstance& Instance);
 };
