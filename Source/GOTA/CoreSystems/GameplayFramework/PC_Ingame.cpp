@@ -36,22 +36,11 @@ void APC_Ingame::OnPossess(APawn* InPawn)
 // -------------------------UI Stuff------------------------
 
 
-// ---------------------------------------------------------
-// Getter & Setter
+// ------------------------ Guardian ------------------------
 
-AGuardian* APC_Ingame::GetGuardian()
+void APC_Ingame::SetGuardian(AGuardian* NewGuardian)
 {
-	return Guardian;
-}
-
-void APC_Ingame::SetGuardian(AGuardian* Guardian_)
-{
-	Guardian = Guardian_;
-	GuardianChanged();
-}
-
-void APC_Ingame::OnRep_Guardian()
-{
+	Guardian = NewGuardian;
 	GuardianChanged();
 }
 
@@ -63,36 +52,7 @@ void APC_Ingame::GuardianChanged()
 	if (MouseUtils) Guardian->SetupGAM(MouseUtils);
 }
 
-AMouseUtils* APC_Ingame::GetMouseUtils()
-{
-	return MouseUtils;
-}
-
-void APC_Ingame::SetMouseUtils(AMouseUtils* MouseUtils_)
-{
-	MouseUtils = MouseUtils_;
-	MouseUtilsChanged();
-}
-
-void APC_Ingame::OnRep_MouseUtils()
-{
-	MouseUtilsChanged();
-}
-
-void APC_Ingame::MouseUtilsChanged()
-{
-	if (IsLocalController())
-	{
-		MouseUtils->SetPlayerController(this);
-		MouseUtils->OnHoverActorChanged.AddDynamic(this, &APC_Ingame::OnHoverActorChanged);
-		if (Guardian) Guardian->SetupGAM(MouseUtils);
-	}
-}
-
-void APC_Ingame::OnHoverActorChanged(AActor* Actor)
-{
-	IngameUI->HoverActor(Actor);
-}
+// ---------------------- InteractionMode ----------------------
 
 void APC_Ingame::ClickActor()
 {
@@ -113,7 +73,7 @@ void APC_Ingame::InitInput()
 	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	InputMode.SetHideCursorDuringCapture(false);
 	SetInputMode(InputMode);
-	
+
 	const ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player);
 	UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
 	InputSystem->AddMappingContext(DataAsset->MappingContext, 1);
@@ -121,7 +81,7 @@ void APC_Ingame::InitInput()
 	UEnhancedInputComponent* Component = Cast<UEnhancedInputComponent>(InputComponent);
 
 	Component->BindAction(DataAsset->LeftClick, ETriggerEvent::Triggered, this, &APC_Ingame::LeftClick);
-	
+
 	Component->BindAction(DataAsset->Jump, ETriggerEvent::Triggered, this, &APC_Ingame::StartJump);
 	Component->BindAction(DataAsset->Jump, ETriggerEvent::Canceled, this, &APC_Ingame::StopJump);
 	Component->BindAction(DataAsset->Jump, ETriggerEvent::Completed, this, &APC_Ingame::StopJump);
@@ -129,6 +89,26 @@ void APC_Ingame::InitInput()
 	Component->BindAction(DataAsset->LookAround, ETriggerEvent::Triggered, this, &APC_Ingame::LookAround);
 	Component->BindAction(DataAsset->ActivateLooking, ETriggerEvent::Started, this, &APC_Ingame::StartLookingAround);
 	Component->BindAction(DataAsset->ActivateLooking, ETriggerEvent::Completed, this, &APC_Ingame::StopLookingAround);
+}
+
+
+void APC_Ingame::SetMouseUtils(AMouseUtils* NewMouseUtils)
+{
+	MouseUtils = NewMouseUtils;
+	MouseUtilsChanged();
+}
+
+void APC_Ingame::MouseUtilsChanged()
+{
+	if (!IsLocalController()) return;
+	MouseUtils->SetPlayerController(this);
+	MouseUtils->OnHoverActorChanged.AddDynamic(this, &APC_Ingame::OnHoverActorChanged);
+	if (Guardian) Guardian->SetupGAM(MouseUtils);
+}
+
+void APC_Ingame::OnHoverActorChanged(AActor* Actor)
+{
+	IngameUI->HoverActor(Actor);
 }
 
 void APC_Ingame::LeftClick(const FInputActionInstance& Instance)

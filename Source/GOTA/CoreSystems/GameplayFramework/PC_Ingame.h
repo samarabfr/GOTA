@@ -21,19 +21,9 @@ class GOTA_API APC_Ingame : public APlayerController
 	UPROPERTY()
 	ADistanceUtils* DistanceUtils;
 
-	UPROPERTY(ReplicatedUsing=OnRep_Guardian, BlueprintGetter=GetGuardian)
-	AGuardian* Guardian;
-
-	UPROPERTY(ReplicatedUsing=OnRep_MouseUtils, BlueprintGetter=GetMouseUtils)
-	AMouseUtils* MouseUtils;
-
 	// ---------------------------------------------------------
 	// Setup
 	virtual void BeginPlay() override;
-
-public:
-	virtual void OnPossess(APawn* InPawn) override;
-
 
 	// -------------------------UI Stuff------------------------
 
@@ -66,42 +56,47 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category="PlayerController")
 	void CreateIngameUI();
 
-	// ---------------------------------------------------------
-	// Getter & Setter
+	// ------------------------ Guardian ------------------------
+public:
+	virtual void OnPossess(APawn* InPawn) override;
 
-	UFUNCTION(BlueprintGetter)
-	AGuardian* GetGuardian();
+private:
+	UPROPERTY(ReplicatedUsing=GuardianChanged)
+	AGuardian* Guardian;
 
-	void SetGuardian(AGuardian* Guardian_);
+public:
+	AGuardian* GetGuardian() { return Guardian; }
+
+private:
+	void SetGuardian(AGuardian* NewGuardian);
 
 	UFUNCTION()
-	void OnRep_Guardian();
-
 	void GuardianChanged();
 
-	UFUNCTION(BlueprintGetter)
-	AMouseUtils* GetMouseUtils();
+	// ---------------------- InteractionMode ----------------------
 
-	void SetMouseUtils(AMouseUtils* MouseUtils_);
-
-	UFUNCTION()
-	void OnRep_MouseUtils();
-
-	void MouseUtilsChanged();
-
-	UFUNCTION()
-	void OnHoverActorChanged(AActor* Actor);
-
-	UFUNCTION(BlueprintCallable)
 	void ClickActor();
 
 	// ----------------------- Input -----------------------
 public:
 	void InitInput();
 
+	UPROPERTY(ReplicatedUsing=MouseUtilsChanged)
+	AMouseUtils* MouseUtils;
+
+	AMouseUtils* GetMouseUtils() const { return MouseUtils; }
+
+	void SetMouseUtils(AMouseUtils* NewMouseUtils);
+
+	UFUNCTION()
+	void MouseUtilsChanged();
+
+	UFUNCTION()
+	void OnHoverActorChanged(AActor* Actor);
+
 private:
 	void LeftClick(const FInputActionInstance& Instance);
-	
+
 	void StartJump(const FInputActionInstance& Instance);
 	void StopJump(const FInputActionInstance& Instance);
 
