@@ -59,6 +59,28 @@ void APC_Ingame::ClickActor()
 	IngameUI->ClickActor(MouseUtils->GetHoverActor());
 }
 
+void APC_Ingame::StartPlacingBuilding(UBuildingSettings* Building)
+{
+	bIsPlacingBuilding = true;
+	BuildingToPlace = Building;
+	//Show it somehow
+}
+
+void APC_Ingame::StopPlacingBuilding()
+{
+	bIsPlacingBuilding = false;
+}
+
+void APC_Ingame::PlaceBuilding()
+{
+	if (MouseUtils->GetHoverTile() && BuildingToPlace)
+	{
+		const AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
+		MouseUtils->GetHoverTile()->TryBuild(BuildingToPlace, GameState->Tribe);
+		StopPlacingBuilding();
+	}
+}
+
 // ----------------------- Input -----------------------
 
 void APC_Ingame::InitInput()
@@ -113,7 +135,15 @@ void APC_Ingame::OnHoverActorChanged(AActor* Actor)
 
 void APC_Ingame::LeftClick(const FInputActionInstance& Instance)
 {
-	ClickActor();
+	if (bIsLookingAround) return;
+	if (bIsPlacingBuilding)
+	{
+		PlaceBuilding();
+	}
+	else
+	{
+		ClickActor();
+	}
 }
 
 void APC_Ingame::StartJump(const FInputActionInstance& Instance)

@@ -6,6 +6,7 @@
 #include "GameFramework/PlayerController.h"
 #include "PC_Ingame.generated.h"
 
+class UBuildingSettings;
 struct FInputActionInstance;
 class AMouseUtils;
 class ADistanceUtils;
@@ -76,6 +77,17 @@ private:
 	// ---------------------- InteractionMode ----------------------
 
 	void ClickActor();
+
+	bool bIsPlacingBuilding = false;
+	
+	UPROPERTY()
+	UBuildingSettings* BuildingToPlace = nullptr;
+public:
+	void StartPlacingBuilding(UBuildingSettings* Building);
+
+	void StopPlacingBuilding();
+private:
+	void PlaceBuilding();
 
 	// ----------------------- Input -----------------------
 public:
