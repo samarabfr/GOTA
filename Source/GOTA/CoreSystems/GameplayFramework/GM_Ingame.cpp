@@ -7,6 +7,7 @@
 #include "PC_Ingame.h"
 #include "PS_Ingame.h"
 #include "GameFramework/GameStateBase.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingPlacer.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
@@ -180,14 +181,19 @@ void AGM_Ingame::CreateGuardians()
 	}
 }
 
-void AGM_Ingame::CreateMouseUtils()
+void AGM_Ingame::CreateUtilActors()
 {
-	for (APlayerState* PlayerState : GOTAGameState->PlayerArray)
+	for (const APlayerState* PlayerState : GOTAGameState->PlayerArray)
 	{
-		APC_Ingame* PC = Cast<APC_Ingame>(PlayerState->GetOwningController());
-		AMouseUtils* MU = GetWorld()->SpawnActor<AMouseUtils>(MouseUtilsClass);
-		MU->SetOwner(PC);
-		PC->SetMouseUtils(MU);
+		APC_Ingame* PlayerController = Cast<APC_Ingame>(PlayerState->GetOwningController());
+		// Create MouseUtils
+		AMouseUtils* MouseUtils = GetWorld()->SpawnActor<AMouseUtils>(MouseUtilsClass);
+		MouseUtils->SetOwner(PlayerController);
+		PlayerController->SetMouseUtils(MouseUtils);
+		// Create BuildingPlacer
+		ABuildingPlacer* BuildingPlacer = GetWorld()->SpawnActor<ABuildingPlacer>();
+		BuildingPlacer->Init(MouseUtils);
+		PlayerController->SetBuildingPlacer(BuildingPlacer);
 	}
 }
 

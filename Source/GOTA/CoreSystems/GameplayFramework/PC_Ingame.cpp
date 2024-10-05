@@ -9,12 +9,22 @@
 #include "GOTA/CoreSystems/Utility/DistanceUtils.h"
 #include "GOTA/UI/Ingame/IngameUI.h"
 #include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 
 void APC_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	FDoRepLifetimeParams Params;
+	Params.bIsPushBased = true;
 
+	Params.Condition = COND_InitialOnly;
+	Params.RepNotifyCondition = REPNOTIFY_Always;
+	
+	Params.Condition = COND_None;
+	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
+	DOREPLIFETIME_WITH_PARAMS(APC_Ingame, BuildingPlacer, Params)
+	
 	DOREPLIFETIME(APC_Ingame, Guardian)
 	DOREPLIFETIME(APC_Ingame, MouseUtils)
 }
@@ -59,26 +69,25 @@ void APC_Ingame::ClickActor()
 	IngameUI->ClickActor(MouseUtils->GetHoverActor());
 }
 
+void APC_Ingame::SetBuildingPlacer(ABuildingPlacer* NewBuildingPlacer)
+{
+	BuildingPlacer = NewBuildingPlacer;
+	MARK_PROPERTY_DIRTY_FROM_NAME(APC_Ingame, BuildingPlacer, this)
+}
+
 void APC_Ingame::StartPlacingBuilding(UBuildingSettings* Building)
 {
-	bIsPlacingBuilding = true;
-	BuildingToPlace = Building;
-	//Show it somehow
+	BuildingPlacer->StartPlacingBuilding(Building);
 }
 
 void APC_Ingame::StopPlacingBuilding()
 {
-	bIsPlacingBuilding = false;
+	BuildingPlacer->StopPlacingBuilding();
 }
 
 void APC_Ingame::PlaceBuilding()
 {
-	if (MouseUtils->GetHoverTile() && BuildingToPlace)
-	{
-		const AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
-		MouseUtils->GetHoverTile()->TryBuild(BuildingToPlace, GameState->Tribe);
-		StopPlacingBuilding();
-	}
+	BuildingPlacer->PlaceBuilding();
 }
 
 // ----------------------- Input -----------------------
@@ -136,7 +145,7 @@ void APC_Ingame::OnHoverActorChanged(AActor* Actor)
 void APC_Ingame::LeftClick(const FInputActionInstance& Instance)
 {
 	if (bIsLookingAround) return;
-	if (bIsPlacingBuilding)
+	if (BuildingPlacer->IsPlacing())
 	{
 		PlaceBuilding();
 	}

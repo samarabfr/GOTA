@@ -4,6 +4,7 @@
 
 
 #include "GameFramework/PlayerController.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingPlacer.h"
 #include "PC_Ingame.generated.h"
 
 class UBuildingSettings;
@@ -78,14 +79,16 @@ private:
 
 	void ClickActor();
 
-	bool bIsPlacingBuilding = false;
-	
-	UPROPERTY()
-	UBuildingSettings* BuildingToPlace = nullptr;
+	UPROPERTY(Replicated)
+	ABuildingPlacer* BuildingPlacer;
+
 public:
+	void SetBuildingPlacer(ABuildingPlacer* NewBuildingPlacer);
+
 	void StartPlacingBuilding(UBuildingSettings* Building);
 
 	void StopPlacingBuilding();
+	
 private:
 	void PlaceBuilding();
 
