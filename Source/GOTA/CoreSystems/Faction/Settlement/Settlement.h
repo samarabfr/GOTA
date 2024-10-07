@@ -38,7 +38,7 @@ public:
 	FGameplayTagContainer GameplayTags;
 
 	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	USettlementPopulation* PopulationSummary;
+	USettlementPopulation* Population;
 
 	void StartingSetup(ATile* SpawnTile);
 
@@ -62,7 +62,7 @@ public:
 	void OnBuildingAdded(UBuilding* Building, ATile* Tile);
 
 	void OnBuildingRemoved(UBuilding* Building, ATile* Tile);
-
+	
 	// -------------------Resources-------------------------
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")

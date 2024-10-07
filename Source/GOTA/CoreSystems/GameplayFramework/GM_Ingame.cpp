@@ -114,8 +114,8 @@ void AGM_Ingame::CheckGameEndingConditions()
 	if (!GOTAGameState->GetTribe()) return;
 
 	// based on SettlementPop
-	int32 ColonialPop = GOTAGameState->GetColony()->PopulationSummary->GetSize();
-	int32 NativePop = GOTAGameState->GetTribe()->PopulationSummary->GetSize();
+	int32 ColonialPop = GOTAGameState->GetColony()->Population->GetSize();
+	int32 NativePop = GOTAGameState->GetTribe()->Population->GetSize();
 	int32 TotalPop = ColonialPop + NativePop;
 
 	if (ColonialPop == 0)

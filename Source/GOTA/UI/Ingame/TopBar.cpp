@@ -22,12 +22,14 @@ void UTopBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	Daytime_Disk->SetRenderTransformAngle(Gametime);
 	
 	if (!GameState) return;
-	int16 Colonists = GameState->GetColony()->PopulationSummary->GetSize();
-	int16 Natives = GameState->GetTribe()->PopulationSummary->GetSize();
-	if (Colonists + Natives == 0) return;
-	float NativeProportion = Natives / static_cast<float>(Colonists + Natives);
-	float Angle = FMath::Lerp(-40.0f, 40.0f, 1.0f - NativeProportion);
-	Power_Disk->SetRenderTransformAngle(Angle);
+	int16 Colonists = GameState->GetColony()->Population->GetSize();
+	int16 Natives = GameState->GetTribe()->Population->GetSize();
+	if (Colonists + Natives != 0)
+	{
+		float NativeProportion = Natives / static_cast<float>(Colonists + Natives);
+		float Angle = FMath::Lerp(-40.0f, 40.0f, 1.0f - NativeProportion);
+		Power_Disk->SetRenderTransformAngle(Angle);
+	}
 
 	FGameResources ColonyRes = GameState->GetColony()->GetResources();
 	Colony_Pop->SetText(FText::AsNumber(Colonists));
