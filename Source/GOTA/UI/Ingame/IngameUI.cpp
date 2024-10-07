@@ -12,16 +12,22 @@ void UIngameUI::NativeConstruct()
 	Super::NativeConstruct();
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->OnGameEnding.AddDynamic(this, &UIngameUI::OnGameEnding);
-	GuardianInfo1->SetGuardian(GameState->Guardians[0]);
-	GuardianInfo2->SetGuardian(GameState->Guardians[1]);
-	GuardianInfo3->SetGuardian(GameState->Guardians[2]);
-	GuardianInfo4->SetGuardian(GameState->Guardians[3]);
+	GameState->OnGuardiansChanged.AddDynamic(this, &UIngameUI::RefreshGuardianWidgets);
+	RefreshGuardianWidgets(GameState);
 	Btn_Build->OnPressed.AddDynamic(this, &UIngameUI::OnBtnBuildPressed);
 }
 
 void UIngameUI::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
+}
+
+void UIngameUI::RefreshGuardianWidgets(AGS_Ingame* GameState)
+{
+	GuardianInfo1->SetGuardian(GameState->GetGuardian(0));
+	GuardianInfo2->SetGuardian(GameState->GetGuardian(1));
+	GuardianInfo3->SetGuardian(GameState->GetGuardian(2));
+	GuardianInfo4->SetGuardian(GameState->GetGuardian(3));
 }
 
 void UIngameUI::ClickActor(AActor* Actor)

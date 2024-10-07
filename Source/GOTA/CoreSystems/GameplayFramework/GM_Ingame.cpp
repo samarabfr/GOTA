@@ -168,16 +168,14 @@ void AGM_Ingame::CreateSettlements()
 
 void AGM_Ingame::CreateGuardians()
 {
-	// 4 because max players, but maybe this should be a constant somewhere
-	GOTAGameState->Guardians.SetNumZeroed(4);
 	for (APlayerState* PlayerState : GOTAGameState->PlayerArray)
 	{
-		APS_Ingame* PS = Cast<APS_Ingame>(PlayerState);
-		FVector Location = FVector(0, 0, 1000);
-		AGuardian* G = GetWorld()->SpawnActor<AGuardian>(PS->SelectedGuardian->GuardianBlueprint,
-		                                                 Location, FRotator::ZeroRotator);
-		GOTAGameState->Guardians[PS->GOTAPlayerID] = G;
-		G->Settings = PS->SelectedGuardian;
+		const APS_Ingame* PlayerStateIngame = Cast<APS_Ingame>(PlayerState);
+		const FVector Location = FVector(0, 0, 1000);
+		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(PlayerStateIngame->SelectedGuardian->GuardianBlueprint,
+		                                                        Location, FRotator::ZeroRotator);
+		GOTAGameState->SetGuardian(PlayerStateIngame->GOTAPlayerID, Guardian);
+		Guardian->Init(PlayerStateIngame->SelectedGuardian);
 	}
 }
 
@@ -204,6 +202,6 @@ void AGM_Ingame::InitialPossession()
 	{
 		APS_Ingame* PS = Cast<APS_Ingame>(PlayerState);
 		APC_Ingame* PC = Cast<APC_Ingame>(PS->GetOwningController());
-		PC->Possess(GOTAGameState->Guardians[PS->GOTAPlayerID]);
+		PC->Possess(GOTAGameState->GetGuardian(PS->GOTAPlayerID));
 	}
 }
