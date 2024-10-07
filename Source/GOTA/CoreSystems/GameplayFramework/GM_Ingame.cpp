@@ -110,12 +110,12 @@ void AGM_Ingame::EndGame(EGameEnding Ending, const FString& EndingMessage)
 void AGM_Ingame::CheckGameEndingConditions()
 {
 	if (GOTAGameState->GameEnded) return;
-	if (!GOTAGameState->Colony) return;
-	if (!GOTAGameState->Tribe) return;
+	if (!GOTAGameState->GetColony()) return;
+	if (!GOTAGameState->GetTribe()) return;
 
 	// based on SettlementPop
-	int32 ColonialPop = GOTAGameState->Colony->PopulationSummary->GetSize();
-	int32 NativePop = GOTAGameState->Tribe->PopulationSummary->GetSize();
+	int32 ColonialPop = GOTAGameState->GetColony()->PopulationSummary->GetSize();
+	int32 NativePop = GOTAGameState->GetTribe()->PopulationSummary->GetSize();
 	int32 TotalPop = ColonialPop + NativePop;
 
 	if (ColonialPop == 0)
@@ -159,11 +159,13 @@ void AGM_Ingame::CreateWorld()
 
 void AGM_Ingame::CreateSettlements()
 {
-	GOTAGameState->Colony = GetWorld()->SpawnActor<AColony>();
-	GOTAGameState->Colony->StartingSetup(GOTAGameState->TileMap->ColonistsStarts[0]);
+	AColony* Colony = GetWorld()->SpawnActor<AColony>();
+	Colony->StartingSetup(GOTAGameState->TileMap->ColonistsStarts[0]);
+	GOTAGameState->SetColony(Colony);
 
-	GOTAGameState->Tribe = GetWorld()->SpawnActor<ATribe>();
-	GOTAGameState->Tribe->StartingSetup(GOTAGameState->TileMap->NativesStarts[0]);
+	ATribe* Tribe = GetWorld()->SpawnActor<ATribe>();
+	Tribe->StartingSetup(GOTAGameState->TileMap->NativesStarts[0]);
+	GOTAGameState->SetTribe(Tribe);
 }
 
 void AGM_Ingame::CreateGuardians()

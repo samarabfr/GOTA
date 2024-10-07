@@ -18,6 +18,8 @@ void AGS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(AGS_Ingame, Guardians, Params)
+	DOREPLIFETIME_WITH_PARAMS(AGS_Ingame, Tribe, Params)
+	DOREPLIFETIME_WITH_PARAMS(AGS_Ingame, Colony, Params)
 
 	DOREPLIFETIME(AGS_Ingame, TileMap);
 
@@ -60,6 +62,18 @@ void AGS_Ingame::BeginPlay()
 	}
 	// Spawn Static Mesh Batcher
 	StaticMeshBatcher = GetWorld()->SpawnActor<AStaticMeshBatcher>();
+}
+
+void AGS_Ingame::SetTribe(ATribe* NewTribe)
+{
+	Tribe = NewTribe;
+	MARK_PROPERTY_DIRTY_FROM_NAME(AGS_Ingame, Tribe, this)
+}
+
+void AGS_Ingame::SetColony(AColony* NewColony)
+{
+	Colony = NewColony;
+	MARK_PROPERTY_DIRTY_FROM_NAME(AGS_Ingame, Colony, this)
 }
 
 void AGS_Ingame::GuardiansChanged()

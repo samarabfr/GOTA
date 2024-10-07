@@ -32,11 +32,21 @@ public:
 	UPROPERTY(Replicated)
 	ATileMap* TileMap;
 
-	UPROPERTY()
+private:
+	UPROPERTY(Replicated)
+	ATribe* Tribe;
+
+public:
+	void SetTribe(ATribe* NewTribe);
+	ATribe* GetTribe() const { return Tribe; }
+
+private:
+	UPROPERTY(Replicated)
 	AColony* Colony;
 
-	UPROPERTY()
-	ATribe* Tribe;
+public:
+	void SetColony(AColony* NewColony);
+	AColony* GetColony() const { return Colony; }
 
 private:
 	UDELEGATE()

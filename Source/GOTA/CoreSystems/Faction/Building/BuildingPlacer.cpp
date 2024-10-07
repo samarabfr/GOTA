@@ -98,7 +98,7 @@ void ABuildingPlacer::PlaceBuilding()
 	if (MouseUtils && MouseUtils->GetHoverTile() && BuildingToPlace)
 	{
 		const AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
-		MouseUtils->GetHoverTile()->TryBuild(BuildingToPlace, GameState->Tribe);
+		MouseUtils->GetHoverTile()->TryBuild(BuildingToPlace, GameState->GetTribe());
 		StopPlacingBuilding();
 	}
 }
