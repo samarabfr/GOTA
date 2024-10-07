@@ -149,12 +149,10 @@ public:
 	bool TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder);
 	void Unbuild();
 	
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Building, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=BuildingChanged, Category="Tile")
 	UBuilding* Building;
-
+	
 	UFUNCTION()
-	void OnRep_Building();
-
 	void BuildingChanged();
 
 	void OnBuildingFinishedConstruction();

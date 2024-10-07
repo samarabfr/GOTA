@@ -330,11 +330,6 @@ void ATile::Unbuild()
 	ValidateSpawnLayout();
 }
 
-void ATile::OnRep_Building()
-{
-	BuildingChanged();
-}
-
 void ATile::BuildingChanged()
 {
 	OnBuildingChanged.Broadcast(this);
