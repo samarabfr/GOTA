@@ -75,7 +75,8 @@ void ABuildingPlacer::Init(AMouseUtils* InMouseUtils)
 void ABuildingPlacer::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	RefreshPlaceability(MouseUtils->GetHoverTile());
+	if (MouseUtils)
+		RefreshPlaceability(MouseUtils->GetHoverTile());
 }
 
 void ABuildingPlacer::StartPlacingBuilding(UBuildingSettings* Building)
