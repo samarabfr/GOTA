@@ -4,6 +4,7 @@
 #include "BuildingPlacer.h"
 
 #include "BuildingPlacerSettings.h"
+#include "BuildingSettings.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "GOTA/CoreSystems/Utility/MouseUtils.h"
@@ -68,13 +69,14 @@ void ABuildingPlacer::Init(AMouseUtils* InMouseUtils)
 {
 	MouseUtils = InMouseUtils;
 	MouseUtils->AttachToTilePosition(this);
+	MouseUtils->OnHoverTileChanged.AddDynamic(this, &ABuildingPlacer::RefreshPlaceability);
 }
 
 void ABuildingPlacer::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	RefreshPlaceability(MouseUtils->GetHoverTile());
 }
-
 
 void ABuildingPlacer::StartPlacingBuilding(UBuildingSettings* Building)
 {
@@ -90,7 +92,6 @@ void ABuildingPlacer::StopPlacingBuilding()
 	MeshComponent->SetVisibility(false);
 }
 
-
 void ABuildingPlacer::PlaceBuilding()
 {
 	if (MouseUtils && MouseUtils->GetHoverTile() && BuildingToPlace)
@@ -99,4 +100,37 @@ void ABuildingPlacer::PlaceBuilding()
 		MouseUtils->GetHoverTile()->TryBuild(BuildingToPlace, GameState->Tribe);
 		StopPlacingBuilding();
 	}
+}
+
+void ABuildingPlacer::RefreshPlaceability(ATile* NewTile)
+{
+	if (CanPlace(MouseUtils->GetHoverTile()))
+	{
+		MeshComponent->SetMaterial(0, Settings->PlacingPossibleMaterial);
+	}
+	else
+	{
+		MeshComponent->SetMaterial(0, Settings->PlacingImpossibleMaterial);
+	}
+}
+
+bool ABuildingPlacer::CanPlace(ATile* Tile)
+{
+	if (!Tile) return false;
+	bool bNextToTribe = false;
+	for (ATile* Neighbor : Tile->Neighbors)
+	{
+		if (Neighbor && Neighbor->GetClaimant() && Neighbor->GetClaimant()->Affiliation == EAffiliation::Ally)
+		{
+			bNextToTribe = true;
+			break;
+		}
+	}
+	if (!bNextToTribe) return false;
+	for (FGameplayTagRule PlacementRule : BuildingToPlace->PlacementRules)
+	{
+		if (!PlacementRule.IsValid(Tile->GameplayTags))
+			return false;
+	}
+	return true;
 }

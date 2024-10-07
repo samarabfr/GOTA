@@ -4,6 +4,7 @@
 
 #include "BuildingPlacer.generated.h"
 
+class ATile;
 class UBuildingSettings;
 class AMouseUtils;
 class UBuildingPlacerSettings;
@@ -44,4 +45,10 @@ public:
 	void PlaceBuilding();
 
 	bool IsPlacing() { return bIsPlacingBuilding; }
+
+private:
+	UFUNCTION()
+	void RefreshPlaceability(ATile* NewTile);
+	
+	bool CanPlace(ATile* Tile);
 };
