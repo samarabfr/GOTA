@@ -117,7 +117,8 @@ void ABuildingPlacer::RefreshPlaceability(ATile* NewTile)
 
 bool ABuildingPlacer::CanPlace(ATile* Tile)
 {
-	if (!Tile) return false;
+	if (!Tile || !BuildingToPlace) return false;
+	// Check if Tile is next to the Tribe
 	bool bNextToTribe = false;
 	for (ATile* Neighbor : Tile->Neighbors)
 	{
@@ -128,6 +129,7 @@ bool ABuildingPlacer::CanPlace(ATile* Tile)
 		}
 	}
 	if (!bNextToTribe) return false;
+	// Check if the Building allows to be placed on this Tile
 	for (FGameplayTagRule PlacementRule : BuildingToPlace->PlacementRules)
 	{
 		if (!PlacementRule.IsValid(Tile->GameplayTags))
