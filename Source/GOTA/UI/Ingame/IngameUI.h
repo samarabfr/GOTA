@@ -5,6 +5,8 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "IngameUI.generated.h"
 
+class UBuildingMenu;
+class UButton;
 class UGuardianInfo;
 class UTextBlock;
 class ACombat;
@@ -35,6 +37,12 @@ protected:
 	
 	UPROPERTY(meta = (BindWidget))
 	UGuardianInfo* GuardianInfo4;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* Btn_Build;
+
+	UPROPERTY(meta = (BindWidget))
+	UBuildingMenu* BuildingMenu;
 	
 	// --------------------------------------------------
 	
@@ -54,4 +62,7 @@ public:
 
 	UFUNCTION()
 	void OnGameEnding(const EGameEnding Ending, const FString& EndingMessage);
+
+	UFUNCTION()
+	void OnBtnBuildPressed();
 };

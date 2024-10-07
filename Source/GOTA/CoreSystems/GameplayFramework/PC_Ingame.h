@@ -2,13 +2,16 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "Combat.h"
+
 #include "GameFramework/PlayerController.h"
-#include "GOTA/CoreSystems/Guardian/Guardian.h"
-#include "GOTA/CoreSystems/Utility/DistanceUtils.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingPlacer.h"
 #include "PC_Ingame.generated.h"
 
+class UBuildingSettings;
+struct FInputActionInstance;
+class AMouseUtils;
+class ADistanceUtils;
+class AGuardian;
 class UIngameUI;
 
 UCLASS()
@@ -20,21 +23,9 @@ class GOTA_API APC_Ingame : public APlayerController
 	UPROPERTY()
 	ADistanceUtils* DistanceUtils;
 
-	UPROPERTY(ReplicatedUsing=OnRep_Guardian, BlueprintGetter=GetGuardian)
-	AGuardian* Guardian;
-
-	UPROPERTY(ReplicatedUsing=OnRep_MouseUtils, BlueprintGetter=GetMouseUtils)
-	AMouseUtils* MouseUtils;
-
 	// ---------------------------------------------------------
 	// Setup
 	virtual void BeginPlay() override;
-
-public:
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="PlayerController")
-	void InitInput();
-
-	virtual void OnPossess(APawn* InPawn) override;
 
 	// -------------------------UI Stuff------------------------
 
@@ -67,32 +58,66 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category="PlayerController")
 	void CreateIngameUI();
 
-	// ---------------------------------------------------------
-	// Getter & Setter
+	// ------------------------ Guardian ------------------------
+public:
+	virtual void OnPossess(APawn* InPawn) override;
 
-	UFUNCTION(BlueprintGetter)
-	AGuardian* GetGuardian();
+private:
+	UPROPERTY(ReplicatedUsing=GuardianChanged)
+	AGuardian* Guardian;
 
-	void SetGuardian(AGuardian* Guardian_);
+public:
+	AGuardian* GetGuardian() { return Guardian; }
+
+private:
+	void SetGuardian(AGuardian* NewGuardian);
 
 	UFUNCTION()
-	void OnRep_Guardian();
-
 	void GuardianChanged();
 
-	UFUNCTION(BlueprintGetter)
-	AMouseUtils* GetMouseUtils();
+	// ---------------------- InteractionMode ----------------------
 
-	void SetMouseUtils(AMouseUtils* MouseUtils_);
+	void ClickActor();
+
+	UPROPERTY(Replicated)
+	ABuildingPlacer* BuildingPlacer;
+
+public:
+	void SetBuildingPlacer(ABuildingPlacer* NewBuildingPlacer);
+
+	void StartPlacingBuilding(UBuildingSettings* Building);
+
+	void StopPlacingBuilding();
+	
+private:
+	void PlaceBuilding();
+
+	// ----------------------- Input -----------------------
+public:
+	void InitInput();
+
+	UPROPERTY(ReplicatedUsing=MouseUtilsChanged)
+	AMouseUtils* MouseUtils;
+
+	AMouseUtils* GetMouseUtils() const { return MouseUtils; }
+
+	void SetMouseUtils(AMouseUtils* NewMouseUtils);
 
 	UFUNCTION()
-	void OnRep_MouseUtils();
-
 	void MouseUtilsChanged();
 
 	UFUNCTION()
 	void OnHoverActorChanged(AActor* Actor);
 
-	UFUNCTION(BlueprintCallable)
-	void ClickActor();
+private:
+	void LeftClick(const FInputActionInstance& Instance);
+
+	void StartJump(const FInputActionInstance& Instance);
+	void StopJump(const FInputActionInstance& Instance);
+
+	bool bIsLookingAround = false;
+	FVector2D MousePositionWhenStartingLookingAround;
+	void LookAround(const FInputActionInstance& Instance);
+	void StartLookingAround(const FInputActionInstance& Instance);
+	void StopLookingAround(const FInputActionInstance& Instance);
 };

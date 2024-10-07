@@ -68,7 +68,7 @@ public:
 
 	void CreateGuardians();
 
-	void CreateMouseUtils();
+	void CreateUtilActors();
 
 	void InitialPossession();
 };
