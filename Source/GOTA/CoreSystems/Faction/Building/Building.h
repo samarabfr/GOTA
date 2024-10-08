@@ -58,9 +58,6 @@ public:
 	UPROPERTY(VisibleInstanceOnly)
 	ACivilian* Civilian;
 	
-	float GetCivilianWorkRate() const;
-	float GetCivilianMovementRate() const;
-	
 	//---------------------Construction phase----------------
 private:
 	UPROPERTY(VisibleInstanceOnly)

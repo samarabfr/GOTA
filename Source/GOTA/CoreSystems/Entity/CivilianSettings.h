@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include "CivilianDataAsset.generated.h"
+#include "CivilianSettings.generated.h"
 
 UCLASS()
-class GOTA_API UCivilianDataAsset : public UPrimaryDataAsset
+class GOTA_API UCivilianSettings : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 	

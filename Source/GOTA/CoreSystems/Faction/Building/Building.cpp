@@ -21,7 +21,7 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Settings, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Tile, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Settlement, Params);
-	
+
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Population, Params);
@@ -40,8 +40,8 @@ UBuilding::UBuilding()
 
 void UBuilding::GOTATick(float DeltaSeconds)
 {
-	if(Civilian) Civilian->GOTATick(DeltaSeconds);
-	if(IncomeProgress < Settings->IncomeTime)
+	if (Civilian) Civilian->GOTATick(DeltaSeconds);
+	if (IncomeProgress < Settings->IncomeTime)
 	{
 		IncomeProgress = FMath::Min(IncomeProgress + DeltaSeconds, Settings->IncomeTime);
 	}
@@ -68,7 +68,8 @@ void UBuilding::ClientInit()
 void UBuilding::BeginDestroy()
 {
 	UObject::BeginDestroy();
-	Settlement->OnBuildingRemoved(this, Tile);
+	if (Settlement && Tile)
+		Settlement->OnBuildingRemoved(this, Tile);
 }
 
 float UBuilding::GetCurrentIncomePerSecond() const
@@ -79,11 +80,11 @@ float UBuilding::GetCurrentIncomePerSecond() const
 void UBuilding::AddIncomeToSettlement()
 {
 	FGameResources NewResources;
-	if(Settings->IncomeType == EProductionType::Food)
+	if (Settings->IncomeType == EProductionType::Food)
 		NewResources.Food = Settings->IncomeAmount;
-	if(Settings->IncomeType == EProductionType::Wood)
+	if (Settings->IncomeType == EProductionType::Wood)
 		NewResources.Wood = Settings->IncomeAmount;
-	if(Settings->IncomeType == EProductionType::Stone)
+	if (Settings->IncomeType == EProductionType::Stone)
 		NewResources.Stone = Settings->IncomeAmount;
 	Settlement->AddResources(NewResources, true);
 }
@@ -91,16 +92,6 @@ void UBuilding::AddIncomeToSettlement()
 void UBuilding::ProductionChanged(int16 Change)
 {
 	OnIncomeChanged.Broadcast(Settings->IncomeTime * Change, Settings->IncomeType);
-}
-
-float UBuilding::GetCivilianWorkRate() const
-{
-	return 100 / Settings->SecondsPerWorkCycle;
-}
-
-float UBuilding::GetCivilianMovementRate() const
-{
-	return 100 / Settings->SecondsPerMove;
 }
 
 FGameResources UBuilding::GetResourceProgress() const
@@ -111,7 +102,7 @@ FGameResources UBuilding::GetResourceProgress() const
 void UBuilding::SetResourceProgress(const FGameResources NewResourcesProgress)
 {
 	ResourceProgress = NewResourcesProgress;
-	if(ResourceProgress >= Settings->Cost)
+	if (ResourceProgress >= Settings->Cost)
 		FinishConstruction();
 }
 
@@ -123,6 +114,6 @@ void UBuilding::FinishConstruction()
 	if (Settings->CivilianClass)
 	{
 		Civilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);
-		Civilian->Init(Settlement, Tile, GetCivilianWorkRate(), Settings->WorkAmountPerCycle, GetCivilianMovementRate());
+		Civilian->Init(this, Tile);
 	}
 }

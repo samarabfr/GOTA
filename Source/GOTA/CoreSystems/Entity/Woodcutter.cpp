@@ -1,13 +1,15 @@
 ﻿#include "Woodcutter.h"
 
-#include "CivilianDataAsset.h"
+#include "CivilianSettings.h"
+#include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 
 AWoodcutter::AWoodcutter()
 {
-	Mesh->SetStaticMesh(CivilianDataAsset->WoodCutterMesh);
+	if (Settings)
+		MeshComponent->SetStaticMesh(Settings->WoodCutterMesh);
 }
 
 void AWoodcutter::ValidateStatus()
@@ -41,13 +43,13 @@ void AWoodcutter::Work()
 	CurrentTile->EcoValues->SubtractTrees(1);
 	FGameResources WorkResources = FGameResources();
 	WorkResources.Wood = WorkAmount;
-	Settlement->AddResources(WorkResources);
+	Building->Settlement->AddResources(WorkResources);
 }
 
 bool AWoodcutter::TryFindPath()
 {
 	bool HasBorderingTileWithTrees = false;
-	for (ATile* Tile : Settlement->BorderingUnclaimedTiles)
+	for (ATile* Tile : Building->Settlement->BorderingUnclaimedTiles)
 	{
 		if (Tile->EcoValues->GetTrees() > 0)
 		{
@@ -59,7 +61,7 @@ bool AWoodcutter::TryFindPath()
 	{
 		Path = GameState->TileMap->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
 		{
-			return Tile->EcoValues->GetTrees() > 0 && Settlement->IsBorderingUnclaimedTile(Tile);
+			return Tile->EcoValues->GetTrees() > 0 && Building->Settlement->IsBorderingUnclaimedTile(Tile);
 		});
 	}
 	else

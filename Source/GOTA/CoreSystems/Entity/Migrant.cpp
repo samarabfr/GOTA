@@ -1,6 +1,6 @@
 ﻿#include "Migrant.h"
 
-#include "CivilianDataAsset.h"
+#include "CivilianSettings.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
@@ -9,7 +9,8 @@
 
 AMigrant::AMigrant()
 {
-	Mesh->SetStaticMesh(CivilianDataAsset->MigrantMesh);
+	if (Settings)
+		MeshComponent->SetStaticMesh(Settings->MigrantMesh);
 }
 
 void AMigrant::ValidateStatus()
@@ -36,7 +37,7 @@ void AMigrant::ValidateStatus()
 				SetStatus(ECivilianStatus::Idle);
 		}
 	}
-	if(Size <= 0)
+	if (Size <= 0)
 	{
 		Destroy();
 	}
@@ -51,7 +52,7 @@ void AMigrant::Work()
 bool AMigrant::TryFindPath()
 {
 	bool HasValidTiles = false;
-	for (ATile* Tile : Settlement->ClaimedTiles)
+	for (ATile* Tile : Building->Settlement->ClaimedTiles)
 	{
 		if (IsTileValidForWork(Tile))
 		{
@@ -59,8 +60,8 @@ bool AMigrant::TryFindPath()
 			break;
 		}
 	}
-	if(!HasValidTiles) return false;
-	Path = 	GameState->TileMap->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
+	if (!HasValidTiles) return false;
+	Path = GameState->TileMap->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
 	{
 		return IsTileValidForWork(Tile);
 	});
@@ -72,7 +73,7 @@ bool AMigrant::IsTileValidForWork(const ATile* Tile) const
 	return Tile->GetBuilding()
 		&& Tile->GetBuilding()->Population->GetSize() < Tile->GetBuilding()->Population->GetMaxSize()
 		&& Tile->GetClaimant()
-		&& Tile->GetClaimant() == Settlement;
+		&& Tile->GetClaimant() == Building->Settlement;
 }
 
 void AMigrant::SetSize(const int32 NewSize)

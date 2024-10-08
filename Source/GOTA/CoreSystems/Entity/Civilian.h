@@ -1,46 +1,54 @@
 ﻿#pragma once
-#include "GOTA/CoreSystems/Utility/Enums.h"
 
+#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Civilian.generated.h"
 
 class AGS_Ingame;
 class ATile;
 class ASettlement;
-class UCivilianDataAsset;
+class UCivilianSettings;
+class UBuilding;
 
 UCLASS()
 class GOTA_API ACivilian : public AActor
 {
 	GENERATED_BODY()
-
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 protected:
 	ACivilian();
 
 public:
-	void Init(ASettlement* Settlement_, ATile* SpawnTile, float WorkRate_, int32 WorkAmount_, float MovementRate_);
+	void Init(UBuilding* InBuilding, ATile* SpawnTile);
 	void GOTATick(float DeltaSeconds);
 
 protected:	
-	UPROPERTY(VisibleInstanceOnly)
-	ASettlement* Settlement;
-
+	UPROPERTY(Replicated)
+	UBuilding* Building;
+	
+	UPROPERTY(Replicated)
+	UCivilianSettings* Settings;
+	
 	UPROPERTY()
 	AGS_Ingame* GameState;
 
 	UPROPERTY()
-	UCivilianDataAsset* CivilianDataAsset;
-
-	UPROPERTY()
-	UStaticMeshComponent* Mesh;
-
+	UStaticMeshComponent* MeshComponent;
+	
+	// Progress of current Action in percent
 	UPROPERTY(VisibleInstanceOnly)
-	float Progress; // in percent
+	float Progress;
+	
+	// How fast the progress increases when working, in percent per second
 	UPROPERTY(VisibleInstanceOnly)
-	float WorkRate; // in percent per second
+	float WorkRate;
+
+	// How much impact the Work has, for example when producing resources how many resources get produced
 	UPROPERTY(VisibleInstanceOnly)
 	int32 WorkAmount;
+
+	// How fast the progress increases when moving, in percent per second
 	UPROPERTY(VisibleInstanceOnly)
-	float MovementRate; // in percent per second
+	float MovementRate; 
 
 	void Move();
 	virtual void Work();
