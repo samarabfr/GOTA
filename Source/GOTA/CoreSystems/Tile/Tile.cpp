@@ -58,9 +58,7 @@ ATile::ATile()
 	SM_Hexagon->SetupAttachment(RootComponent);
 
 	EcoValues = CreateDefaultSubobject<UEcoValues>(TEXT("EcoValues"));
-	EcoValues->OnTreesChanged.AddDynamic(this, &ATile::TreesChanged);
-	EcoValues->OnWildlifeChanged.AddDynamic(this, &ATile::WildlifeChanged);
-	EcoValues->OnForageChanged.AddDynamic(this, &ATile::ForageChanged);
+	SetupEcoValuesChanging();
 }
 
 void ATile::BeginPlay()
@@ -343,6 +341,13 @@ void ATile::PopSizeChanged(const int16 Change)
 	{
 		if (Neighbors[i] && Neighbors[i]->Building) Neighbors[i]->Building->Population->NeighborChangedPopSize(Change);
 	}
+}
+
+void ATile::SetupEcoValuesChanging()
+{
+	EcoValues->OnTreesChanged.AddDynamic(this, &ATile::TreesChanged);
+	EcoValues->OnWildlifeChanged.AddDynamic(this, &ATile::WildlifeChanged);
+	EcoValues->OnForageChanged.AddDynamic(this, &ATile::ForageChanged);
 }
 
 void ATile::TreesChanged(const int32 Change)

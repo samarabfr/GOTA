@@ -41,6 +41,7 @@ class GOTA_API ATile : public AActor
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+
 	ATile();
 
 	virtual void BeginPlay() override;
@@ -156,7 +157,9 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	UEcoValues* EcoValues;
-
+	
+	void SetupEcoValuesChanging();
+	
 	UFUNCTION()
 	void TreesChanged(const int32 Change);
 
