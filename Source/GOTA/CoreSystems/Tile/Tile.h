@@ -133,16 +133,7 @@ public:
 	void UpdateClaimWallsWithNeighbors();
 
 	void UpdateClaimWalls();
-
-	UFUNCTION(BlueprintCallable, Category="Tile")
-	bool IsClaimable() const;
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
-	bool TryClaim(ASettlement* PotentialClaimant);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="Tile")
-	void Unclaim();
-
+	
 	// -----------------------Building---------------------
 	
 	bool CanBuild();

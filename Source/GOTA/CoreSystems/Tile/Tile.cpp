@@ -249,37 +249,6 @@ void ATile::UpdateClaimWalls()
 	}
 }
 
-bool ATile::IsClaimable() const
-{
-	return !Claimant;
-}
-
-bool ATile::TryClaim(ASettlement* PotentialClaimant)
-{
-	if (!IsClaimable()) return false;
-	Claimant = PotentialClaimant;
-	if (Building)
-	{
-		Claimant->OnBuildingAdded(Building, this);
-	}
-	GameplayTags.AppendTags(Claimant->GameplayTags);
-	UpdateClaimWallsWithNeighbors();
-	OnGameplayTagsChanged.Broadcast();
-	return true;
-}
-
-void ATile::Unclaim()
-{
-	if (!Claimant) return;
-	if (Building)
-	{
-		Claimant->OnBuildingRemoved(Building, this);
-	}
-	GameplayTags.RemoveTags(Claimant->GameplayTags);
-	OnGameplayTagsChanged.Broadcast();
-	Claimant = nullptr;
-}
-
 // ---------------------------------------------------------
 // Building
 
