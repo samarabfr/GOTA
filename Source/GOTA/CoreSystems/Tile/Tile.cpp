@@ -336,6 +336,9 @@ void ATile::BuildingChanged()
 	if (Building)
 	{
 		Building->Population->OnSizeChanged.AddDynamic(this, &ATile::PopSizeChanged);
+		// notify the neighbors of this population size
+		PopSizeChanged(Building->Population->GetSize());
+		// notify this population of all neighbor population sizes
 		for (ATile* Neighbor : Neighbors)
 		{
 			if (Neighbor && Neighbor->Building)
