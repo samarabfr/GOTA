@@ -63,11 +63,11 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	TArray<ATile*> Neighbors;
-	
+
 private:
 	UPROPERTY()
 	AGS_Ingame* GameState;
-	
+
 	// ------------------------Entity---------------------------
 private:
 	UPROPERTY(VisibleInstanceOnly, BlueprintGetter=GetAlliedEntity, Replicated, Category="Tile")
@@ -109,57 +109,51 @@ public:
 	void AddCivilian(ACivilian* Civilian);
 	void RemoveCivilian(const ACivilian* Civilian);
 
-	// -------------------Claimant and claiming-------------------
+	// ----------------------- Building and Claiming ---------------------
 
 private:
-	UPROPERTY(VisibleInstanceOnly, BlueprintSetter=SetClaimant, BlueprintGetter=GetClaimant,
-		ReplicatedUsing=OnRep_Claimant, Category="Tile")
-	ASettlement* Claimant;
-
 	TMap<uint8, FPrimitiveInstanceId> ClaimWallsInstanceIds;
 
-public:
-	UFUNCTION(BlueprintGetter)
-	ASettlement* GetClaimant() const;
-
-	UFUNCTION(BlueprintSetter)
-	void SetClaimant(ASettlement* NewClaimant);
-
-private:
-	UFUNCTION()
-	void OnRep_Claimant(ASettlement* NewClaimant);
-
-public:
-	void UpdateClaimWallsWithNeighbors();
-
-	void UpdateClaimWalls();
-	
-	// -----------------------Building---------------------
-	
-	bool CanBuild();
-	bool TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder);
-	void Unbuild();
-	
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=BuildingChanged, Category="Tile")
 	UBuilding* Building;
-	
+
 	UFUNCTION()
 	void BuildingChanged();
 
-	void OnBuildingFinishedConstruction();
+public:
+	UBuilding* GetBuilding() const { return Building; }
 	
 	FOnTileChangedSignature OnBuildingChanged;
 
-	// -------------------Ticking-------------------------
+	bool CanBuild();
+
+	bool TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder);
+
+	void Unbuild();
+
+	void OnBuildingFinishedConstruction();
+
+	ASettlement* GetClaimant() const;
+
+	bool IsClaimed() { return Building != nullptr; }
+
+private:
+	void UpdateClaimWallsWithNeighbors();
+
+	void UpdateClaimWalls();
+
+	// ------------------- Ticking -------------------------
 private:
 	double LastTick = -1.0;
-	
+
 public:
 	void GOTATick();
 
+	void SetupPopSizeChanging();
+
 	UFUNCTION()
 	void PopSizeChanged(const int16 Change);
-	
+
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	UEcoValues* EcoValues;
 

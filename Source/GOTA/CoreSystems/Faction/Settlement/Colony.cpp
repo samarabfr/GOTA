@@ -29,7 +29,7 @@ bool AColony::ShouldBuild() const
 {
 	for (const ATile* Tile : ClaimedTiles)
 	{
-		if (Tile->Building->GetIsUnderConstruction())
+		if (Tile->GetBuilding()->GetIsUnderConstruction())
 			return false;
 	}
 	return true;

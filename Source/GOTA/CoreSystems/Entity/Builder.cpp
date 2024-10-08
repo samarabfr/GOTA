@@ -41,10 +41,10 @@ void ABuilder::ValidateStatus()
 void ABuilder::Work()
 {
 	int32 WorkAmountLeft = WorkAmount;
-	const FGameResources ResourcesProgress = CurrentTile->Building->GetResourceProgress();
+	const FGameResources ResourcesProgress = CurrentTile->GetBuilding()->GetResourceProgress();
 	FGameResources ResourcesProgressToAdd = FGameResources();
 	// Food
-	const int32 FoodNeeded = CurrentTile->Building->Settings->Cost.Food - ResourcesProgress.Food;
+	const int32 FoodNeeded = CurrentTile->GetBuilding()->Settings->Cost.Food - ResourcesProgress.Food;
 	if (FoodNeeded > 0 && WorkAmountLeft > 0)
 	{
 		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, FoodNeeded), Settlement->GetResources().Food);
@@ -52,7 +52,7 @@ void ABuilder::Work()
 		WorkAmountLeft -= DoneWork;
 	}
 	// Wood
-	const int32 WoodNeeded = CurrentTile->Building->Settings->Cost.Wood - ResourcesProgress.Wood;
+	const int32 WoodNeeded = CurrentTile->GetBuilding()->Settings->Cost.Wood - ResourcesProgress.Wood;
 	if (WoodNeeded > 0 && WorkAmountLeft > 0)
 	{
 		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, WoodNeeded), Settlement->GetResources().Wood);
@@ -60,14 +60,14 @@ void ABuilder::Work()
 		WorkAmountLeft -= DoneWork;
 	}
 	// Stone
-	const int32 StoneNeeded = CurrentTile->Building->Settings->Cost.Stone - ResourcesProgress.Stone;
+	const int32 StoneNeeded = CurrentTile->GetBuilding()->Settings->Cost.Stone - ResourcesProgress.Stone;
 	if (StoneNeeded > 0 && WorkAmountLeft > 0)
 	{
 		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, StoneNeeded), Settlement->GetResources().Stone);
 		ResourcesProgressToAdd.Stone = DoneWork;
 		WorkAmountLeft -= DoneWork;
 	}
-	CurrentTile->Building->SetResourceProgress(ResourcesProgress + ResourcesProgressToAdd);
+	CurrentTile->GetBuilding()->SetResourceProgress(ResourcesProgress + ResourcesProgressToAdd);
 	Settlement->RemoveResources(ResourcesProgressToAdd);
 }
 
@@ -92,5 +92,5 @@ bool ABuilder::TryFindPath()
 
 bool ABuilder::IsTileValidForWork(const ATile* Tile) const
 {
-	return Tile->Building && Tile->Building->GetIsUnderConstruction();
+	return Tile->GetBuilding() && Tile->GetBuilding()->GetIsUnderConstruction();
 }

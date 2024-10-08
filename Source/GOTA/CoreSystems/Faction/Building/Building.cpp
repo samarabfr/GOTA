@@ -19,7 +19,9 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Params.Condition = COND_InitialOnly;
 	Params.RepNotifyCondition = REPNOTIFY_Always;
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Settings, Params);
-
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, Tile, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, Settlement, Params);
+	
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Population, Params);
@@ -56,6 +58,17 @@ void UBuilding::ServerInit(UBuildingSettings* DataAsset_, ATile* Tile_, ASettlem
 	Tile = Tile_;
 	IsUnderConstruction = true;
 	Settlement = Settlement_;
+}
+
+void UBuilding::ClientInit()
+{
+	Settlement->OnBuildingAdded(this, Tile);
+}
+
+void UBuilding::BeginDestroy()
+{
+	UObject::BeginDestroy();
+	Settlement->OnBuildingRemoved(this, Tile);
 }
 
 float UBuilding::GetCurrentIncomePerSecond() const

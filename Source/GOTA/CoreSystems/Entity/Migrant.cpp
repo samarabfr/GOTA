@@ -44,7 +44,7 @@ void AMigrant::ValidateStatus()
 
 void AMigrant::Work()
 {
-	CurrentTile->Building->Population->IncreaseSize(1);
+	CurrentTile->GetBuilding()->Population->IncreaseSize(1);
 	--Size;
 }
 
@@ -69,8 +69,8 @@ bool AMigrant::TryFindPath()
 
 bool AMigrant::IsTileValidForWork(const ATile* Tile) const
 {
-	return Tile->Building
-		&& Tile->Building->Population->GetSize() < Tile->Building->Population->GetMaxSize()
+	return Tile->GetBuilding()
+		&& Tile->GetBuilding()->Population->GetSize() < Tile->GetBuilding()->Population->GetMaxSize()
 		&& Tile->GetClaimant()
 		&& Tile->GetClaimant() == Settlement;
 }

@@ -76,17 +76,17 @@ void ASettlement::StartingSetup(ATile* SpawnTile)
 		               : Settings->N_GameplayTags;
 	Resources += StartingResources;
 	SpawnTile->TryBuild(StartingBuildings[0], this);
-	SpawnTile->Building->FinishConstruction();
+	SpawnTile->GetBuilding()->FinishConstruction();
 	for (int32 i = 1; i < StartingBuildings.Num(); ++i)
 	{
 		if (BorderingUnclaimedTiles.Num() <= 0) break;
 		ATile* Tile = BorderingUnclaimedTiles[FMath::RandRange(0, BorderingUnclaimedTiles.Num() - 1)];
 		Tile->TryBuild(StartingBuildings[i], this);
-		Tile->Building->FinishConstruction();
+		Tile->GetBuilding()->FinishConstruction();
 	}
 	for (ATile* Tile : ClaimedTiles)
 	{
-		Tile->Building->Population->ChangeSize(100);
+		Tile->GetBuilding()->Population->ChangeSize(100);
 	}
 }
 

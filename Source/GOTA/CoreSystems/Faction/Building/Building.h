@@ -21,8 +21,12 @@ class GOTA_API UBuilding : public UObject
 	
 public:
 	void ServerInit(UBuildingSettings* DataAsset_, ATile* Tile_, ASettlement* Settlement_);
-	void GOTATick(float DeltaSeconds);
+	void ClientInit();
+	virtual void BeginDestroy() override;
 	
+	void GOTATick(float DeltaSeconds);
+
+
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UBuildingSettings* Settings;
 
@@ -32,10 +36,10 @@ public:
 	UFUNCTION()
 	void ProductionChanged(int16 Change);
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	ATile* Tile;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	ASettlement* Settlement;
 
 	//---------------------base income----------------
