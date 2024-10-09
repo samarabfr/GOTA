@@ -1,11 +1,11 @@
 ﻿#include "Civilian.h"
-
 #include "CivilianSettings.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 void ACivilian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -17,10 +17,17 @@ void ACivilian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Params.RepNotifyCondition = REPNOTIFY_Always;
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, Building, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, Settings, Params);
+	DOREPLIFETIME_WITH_PARAMS(ACivilian, WorkAmount, Params);
+	DOREPLIFETIME_WITH_PARAMS(ACivilian, MovementRate, Params);
 
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
+	DOREPLIFETIME_WITH_PARAMS(ACivilian, Progress, Params);
+	DOREPLIFETIME_WITH_PARAMS(ACivilian, Status, Params);
+	DOREPLIFETIME_WITH_PARAMS(ACivilian, CurrentTile, Params);
 }
+
+// ----------------------- LifeCycle -----------------------
 
 ACivilian::ACivilian()
 {
@@ -45,22 +52,40 @@ ACivilian::ACivilian()
 	MeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
 }
 
-void ACivilian::Init(UBuilding* InBuilding, ATile* SpawnTile)
+void ACivilian::ServerInit(UBuilding* InBuilding, ATile* SpawnTile)
 {
 	GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	Building = InBuilding;
 	CurrentTile = SpawnTile;
-	SpawnTile->AddCivilian(this);
+	FVector NewLocation = FVector();
+	SpawnTile->AddCivilian(this, NewLocation);
+	SetActorLocation(NewLocation);
 
-	UBuildingSettings* BuildingSettings = Building->Settings;
-	WorkRate = 100 / BuildingSettings->SecondsPerWorkCycle;
+	const UBuildingSettings* BuildingSettings = Building->Settings;
 	WorkAmount = BuildingSettings->WorkAmountPerCycle;
 	MovementRate = 100 / BuildingSettings->SecondsPerMove;
+
+	SetupPopSizeChanging();
 }
 
-void ACivilian::GOTATick(float DeltaSeconds)
+void ACivilian::ServerTick(const float DeltaSeconds)
 {
 	ValidateStatus();
+	ClientTick(DeltaSeconds);
+	if (Progress >= 100)
+	{
+		if (GetStatus() == ECivilianStatus::Moving)
+			Move();
+		else if (GetStatus() == ECivilianStatus::Working)
+			Work();
+		Progress = 0.0f;
+		MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Progress, this)
+		ValidateStatus();
+	}
+}
+
+void ACivilian::ClientTick(const float DeltaSeconds)
+{
 	if (GetStatus() == ECivilianStatus::Moving)
 	{
 		Progress += MovementRate * DeltaSeconds;
@@ -69,27 +94,60 @@ void ACivilian::GOTATick(float DeltaSeconds)
 	{
 		Progress += WorkRate * DeltaSeconds;
 	}
-	if (Progress >= 100)
-	{
-		if (GetStatus() == ECivilianStatus::Moving)
-			Move();
-		else if (GetStatus() == ECivilianStatus::Working)
-			Work();
-		Progress = 0.0f;
-		ValidateStatus();
-	}
 }
+
+void ACivilian::BeginDestroy()
+{
+	Super::BeginDestroy();
+}
+
+// -----------------------  -----------------------
+
+void ACivilian::OnRep_Building()
+{
+	if (Building)
+		SetupPopSizeChanging();
+}
+
+void ACivilian::SetupPopSizeChanging()
+{
+	Building->Population->OnSizeChanged.AddDynamic(this, &ACivilian::OnPopSizeChanged);
+	CalculateWorkRate();
+}
+
+void ACivilian::OnPopSizeChanged(int16 Change)
+{
+	CalculateWorkRate();
+}
+
+void ACivilian::CalculateWorkRate()
+{
+	const float Pop = Building->Population->GetSize();
+	const UBuildingSettings* BuildingSettings = Building->Settings;
+	float Factor = Pop / BuildingSettings->Housing;
+	WorkRate = (Factor * 100) / BuildingSettings->SecondsPerWorkCycle;
+}
+
+void ACivilian::Work()
+{
+}
+
+// ----------------------- Status -----------------------
 
 void ACivilian::ValidateStatus()
 {
 }
 
-void ACivilian::SetStatus(ECivilianStatus NewStatus)
+void ACivilian::SetStatus(const ECivilianStatus NewStatus)
 {
 	if (Status == NewStatus) return;
 	Status = NewStatus;
 	Progress = 0.0f;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Status, this)
+	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Progress, this)
 }
+
+// ----------------- Moving on Path ------------------------
 
 void ACivilian::Move()
 {
@@ -100,10 +158,9 @@ void ACivilian::Move()
 	}
 	if (!NewCurrent) return;
 	CurrentTile->RemoveCivilian(this);
-	NewCurrent->AddCivilian(this);
+	FVector NewLocation = FVector();
+	NewCurrent->AddCivilian(this, NewLocation);
+	SetActorLocation(NewLocation);
 	CurrentTile = NewCurrent;
-}
-
-void ACivilian::Work()
-{
+	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, CurrentTile, this)
 }

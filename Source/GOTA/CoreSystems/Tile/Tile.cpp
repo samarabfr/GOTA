@@ -149,14 +149,14 @@ bool ATile::AcceptsCivilian() const
 	return false;
 }
 
-void ATile::AddCivilian(ACivilian* Civilian)
+void ATile::AddCivilian(ACivilian* Civilian, FVector& NewLocation)
 {
 	for (int32 i = 0; i < Civilians.Num(); ++i)
 	{
 		if (!Civilians[i])
 		{
 			Civilians[i] = Civilian;
-			Civilian->SetActorLocation(Settings->CivilianSlots[i] + GetActorLocation());
+			NewLocation = Settings->CivilianSlots[i] + GetActorLocation();
 			return;
 		}
 	}
@@ -179,12 +179,20 @@ AEntity* ATile::GetEntityByAffiliation(EAffiliation Affiliation) const
 
 // ----------------------- Building and Claiming ---------------------
 
+void ATile::OnRep_Building()
+{
+	if (Building)
+	{
+		Building->ClientInit();
+	}
+	BuildingChanged();
+}
+
 void ATile::BuildingChanged()
 {
 	OnBuildingChanged.Broadcast(this);
 	if (Building)
 	{
-		Building->ClientInit();
 		SetupPopSizeChanging();
 		UpdateClaimWallsWithNeighbors();
 	}
@@ -204,7 +212,7 @@ bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 	AddReplicatedSubObject(Building->Population);
 
 	UpdateClaimWallsWithNeighbors();
-	
+
 	GameplayTags.AppendTags(Builder->GameplayTags);
 	GameplayTags.AppendTags(BuildingDataAsset->GameplayTags);
 	GameplayTags.AddTag(Settings->BuildingUnderConstructionTag);
@@ -307,16 +315,12 @@ void ATile::GOTATick()
 	if (HasAuthority())
 	{
 		EcoValues->ServerTick(DeltaSeconds);
-		if (Building)
-		{
-			Building->Population->ServerTick(DeltaSeconds);
-			Building->GOTATick(DeltaSeconds); // TODO: Client side prediction
-		}
+		if (Building) Building->ServerTick(DeltaSeconds);
 	}
 	else
 	{
 		EcoValues->ClientTick(DeltaSeconds);
-		if (Building) Building->Population->ClientTick(DeltaSeconds);
+		if (Building) Building->ClientTick(DeltaSeconds);
 	}
 	LastTick = GetWorld()->GetTimeSeconds();
 }

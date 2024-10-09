@@ -18,14 +18,17 @@ class GOTA_API UBuilding : public UObject
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
 	UBuilding();
-	
+
 public:
-	void ServerInit(UBuildingSettings* DataAsset_, ATile* Tile_, ASettlement* Settlement_);
+	void ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement);
 	void ClientInit();
+	
+private:
 	virtual void BeginDestroy() override;
 	
-	void GOTATick(float DeltaSeconds);
-
+public:
+	void ServerTick(float DeltaSeconds);
+	void ClientTick(const float DeltaSeconds);
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UBuildingSettings* Settings;
@@ -42,32 +45,41 @@ public:
 	UPROPERTY(Replicated)
 	ASettlement* Settlement;
 
-	//---------------------base income----------------
+	// --------------------- base income ---------------------
 
 	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnIncomeChangedSig, float, IncomeChange, EProductionType, ProductionType);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnIncomeChangedSig, float, IncomeChange, EProductionType,
+	                                             ProductionType);
+
 	FOnIncomeChangedSig OnIncomeChanged;
 	float GetCurrentIncomePerSecond() const;
 	void AddIncomeToSettlement();
-	
-	UPROPERTY(VisibleInstanceOnly)
+
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float IncomeProgress = 0.0f;
 
-	//---------------------Civilian Entity----------------
-	
-	UPROPERTY(VisibleInstanceOnly)
+	// ---------------- Civilian Entity ----------------
+private:
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	ACivilian* Civilian;
-	
-	//---------------------Construction phase----------------
+
+	void SetCivilian(ACivilian* NewCivilian);
+
+public:
+	ACivilian* GetCivilian() const { return Civilian; }
+
+	// --------------------- Construction phase ---------------------
 private:
 	UPROPERTY(VisibleInstanceOnly)
 	bool IsUnderConstruction;
+
 public:
 	bool GetIsUnderConstruction() const { return IsUnderConstruction; }
 
 private:
 	UPROPERTY(VisibleInstanceOnly)
 	FGameResources ResourceProgress;
+
 public:
 	FGameResources GetResourceProgress() const;
 	void SetResourceProgress(const FGameResources NewResourcesProgress);

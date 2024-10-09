@@ -107,7 +107,7 @@ private:
 
 public:
 	bool AcceptsCivilian() const;
-	void AddCivilian(ACivilian* Civilian);
+	void AddCivilian(ACivilian* Civilian, FVector& NewLocation);
 	void RemoveCivilian(const ACivilian* Civilian);
 
 	// ----------------------- Building and Claiming ---------------------
@@ -115,10 +115,12 @@ public:
 private:
 	TMap<uint8, FPrimitiveInstanceId> ClaimWallsInstanceIds;
 
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=BuildingChanged, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Building, Category="Tile")
 	UBuilding* Building;
-
+	
 	UFUNCTION()
+	void OnRep_Building();
+
 	void BuildingChanged();
 
 public:
