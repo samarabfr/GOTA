@@ -1,6 +1,6 @@
 ﻿#include "Builder.h"
 
-#include "CivilianDataAsset.h"
+#include "CivilianSettings.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
@@ -9,7 +9,8 @@
 
 ABuilder::ABuilder()
 {
-	Mesh->SetStaticMesh(CivilianDataAsset->BuilderMesh);
+	if (Settings)
+		MeshComponent->SetStaticMesh(Settings->BuilderMesh);
 }
 
 void ABuilder::ValidateStatus()
@@ -41,40 +42,43 @@ void ABuilder::ValidateStatus()
 void ABuilder::Work()
 {
 	int32 WorkAmountLeft = WorkAmount;
-	const FGameResources ResourcesProgress = CurrentTile->Building->GetResourceProgress();
+	const FGameResources ResourcesProgress = CurrentTile->GetBuilding()->GetResourceProgress();
 	FGameResources ResourcesProgressToAdd = FGameResources();
 	// Food
-	const int32 FoodNeeded = CurrentTile->Building->Settings->Cost.Food - ResourcesProgress.Food;
+	const int32 FoodNeeded = CurrentTile->GetBuilding()->Settings->Cost.Food - ResourcesProgress.Food;
 	if (FoodNeeded > 0 && WorkAmountLeft > 0)
 	{
-		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, FoodNeeded), Settlement->GetResources().Food);
+		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, FoodNeeded),
+		                                  Building->Settlement->GetResources().Food);
 		ResourcesProgressToAdd.Food = DoneWork;
 		WorkAmountLeft -= DoneWork;
 	}
 	// Wood
-	const int32 WoodNeeded = CurrentTile->Building->Settings->Cost.Wood - ResourcesProgress.Wood;
+	const int32 WoodNeeded = CurrentTile->GetBuilding()->Settings->Cost.Wood - ResourcesProgress.Wood;
 	if (WoodNeeded > 0 && WorkAmountLeft > 0)
 	{
-		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, WoodNeeded), Settlement->GetResources().Wood);
+		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, WoodNeeded),
+		                                  Building->Settlement->GetResources().Wood);
 		ResourcesProgressToAdd.Wood = DoneWork;
 		WorkAmountLeft -= DoneWork;
 	}
 	// Stone
-	const int32 StoneNeeded = CurrentTile->Building->Settings->Cost.Stone - ResourcesProgress.Stone;
+	const int32 StoneNeeded = CurrentTile->GetBuilding()->Settings->Cost.Stone - ResourcesProgress.Stone;
 	if (StoneNeeded > 0 && WorkAmountLeft > 0)
 	{
-		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, StoneNeeded), Settlement->GetResources().Stone);
+		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, StoneNeeded),
+		                                  Building->Settlement->GetResources().Stone);
 		ResourcesProgressToAdd.Stone = DoneWork;
 		WorkAmountLeft -= DoneWork;
 	}
-	CurrentTile->Building->SetResourceProgress(ResourcesProgress + ResourcesProgressToAdd);
-	Settlement->RemoveResources(ResourcesProgressToAdd);
+	CurrentTile->GetBuilding()->SetResourceProgress(ResourcesProgress + ResourcesProgressToAdd);
+	Building->Settlement->RemoveResources(ResourcesProgressToAdd);
 }
 
 bool ABuilder::TryFindPath()
 {
 	bool HasValidTiles = false;
-	for (ATile* Tile : Settlement->ClaimedTiles)
+	for (ATile* Tile : Building->Settlement->ClaimedTiles)
 	{
 		if (IsTileValidForWork(Tile))
 		{
@@ -82,8 +86,8 @@ bool ABuilder::TryFindPath()
 			break;
 		}
 	}
-	if(!HasValidTiles) return false;
-	Path = 	GameState->TileMap->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
+	if (!HasValidTiles) return false;
+	Path = GameState->TileMap->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
 	{
 		return IsTileValidForWork(Tile);
 	});
@@ -92,5 +96,5 @@ bool ABuilder::TryFindPath()
 
 bool ABuilder::IsTileValidForWork(const ATile* Tile) const
 {
-	return Tile->Building && Tile->Building->GetIsUnderConstruction();
+	return Tile->GetBuilding() && Tile->GetBuilding()->GetIsUnderConstruction();
 }

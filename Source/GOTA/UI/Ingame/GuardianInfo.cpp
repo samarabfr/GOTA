@@ -19,6 +19,9 @@ void UGuardianInfo::SetGuardian(AGuardian* NewGuardian)
 {
 	Guardian = NewGuardian;
 	if (!Guardian) return;
-	Icon->SetBrushFromTexture(Guardian->Settings->Icon);
-	Name->SetText(FText::FromString(Guardian->Settings->Name));
+	if (const UGuardianSettings* GuardianSettings = Guardian->GetSettings())
+	{
+		Icon->SetBrushFromTexture(GuardianSettings->Icon);
+		Name->SetText(FText::FromString(GuardianSettings->Name));
+	}
 }

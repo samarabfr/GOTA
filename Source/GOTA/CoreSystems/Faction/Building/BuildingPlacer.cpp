@@ -75,7 +75,8 @@ void ABuildingPlacer::Init(AMouseUtils* InMouseUtils)
 void ABuildingPlacer::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	RefreshPlaceability(MouseUtils->GetHoverTile());
+	if (MouseUtils)
+		RefreshPlaceability(MouseUtils->GetHoverTile());
 }
 
 void ABuildingPlacer::StartPlacingBuilding(UBuildingSettings* Building)
@@ -97,7 +98,7 @@ void ABuildingPlacer::PlaceBuilding()
 	if (MouseUtils && MouseUtils->GetHoverTile() && BuildingToPlace)
 	{
 		const AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
-		MouseUtils->GetHoverTile()->TryBuild(BuildingToPlace, GameState->Tribe);
+		MouseUtils->GetHoverTile()->TryBuild(BuildingToPlace, GameState->GetTribe());
 		StopPlacingBuilding();
 	}
 }
@@ -116,7 +117,8 @@ void ABuildingPlacer::RefreshPlaceability(ATile* NewTile)
 
 bool ABuildingPlacer::CanPlace(ATile* Tile)
 {
-	if (!Tile) return false;
+	if (!Tile || !BuildingToPlace) return false;
+	// Check if Tile is next to the Tribe
 	bool bNextToTribe = false;
 	for (ATile* Neighbor : Tile->Neighbors)
 	{
@@ -127,6 +129,7 @@ bool ABuildingPlacer::CanPlace(ATile* Tile)
 		}
 	}
 	if (!bNextToTribe) return false;
+	// Check if the Building allows to be placed on this Tile
 	for (FGameplayTagRule PlacementRule : BuildingToPlace->PlacementRules)
 	{
 		if (!PlacementRule.IsValid(Tile->GameplayTags))

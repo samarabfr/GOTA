@@ -20,8 +20,8 @@ void UClickedInfo::WatchActor(AActor* Actor)
 	if (Tile)
 	{
 		TileInfo->WatchTile(Tile);
-		if (Tile->Building)
+		if (Tile->GetBuilding())
 			
-			BuildingInfo->WatchBuilding(Tile->Building);
+			BuildingInfo->WatchBuilding(Tile->GetBuilding());
 	}
 }

@@ -67,7 +67,7 @@ void AEntity::KillIndividuals(int32 Kills)
 bool AEntity::ShouldCombatTrigger() const
 {
 	// Combat between this unit and enemy building
-	if (CurrentTile->Building
+	if (CurrentTile->GetBuilding()
 		&& CurrentTile->GetClaimant()
 		&& CurrentTile->GetClaimant()->Affiliation != Affiliation)
 	{

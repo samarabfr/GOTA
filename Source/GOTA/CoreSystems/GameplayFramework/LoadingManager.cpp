@@ -94,8 +94,8 @@ void ALoadingManager::ServerTick()
 			LocalPlayerController->RemoveLoadingUI();
 			GameMode->StartGame();
 			GameState->TileMap->EnableTick();
-			GameState->Colony->EnableTick();
-			GameState->Tribe->EnableTick();
+			GameState->GetColony()->EnableTick();
+			GameState->GetTribe()->EnableTick();
 			LoadingStatus->SetCurrentStatus(ELoadingStatus::Finished);
 			GracePeriodTime = 0.0;
 		}
@@ -165,6 +165,7 @@ void ALoadingManager::ClientTick()
 			LocalPlayerController->InitInput();
 			LocalPlayerController->RemoveLoadingUI();
 			GameState->TileMap->EnableTick();
+			LoadingStatus->SetCurrentStatus(ELoadingStatus::Finished);
 		}
 		break;
 

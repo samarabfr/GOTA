@@ -1,13 +1,15 @@
 ﻿#include "Forager.h"
 
-#include "CivilianDataAsset.h"
+#include "CivilianSettings.h"
+#include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 
 AForager::AForager()
 {
-	Mesh->SetStaticMesh(CivilianDataAsset->ForagerMesh);
+	if (Settings)
+		MeshComponent->SetStaticMesh(Settings->ForagerMesh);
 }
 
 void AForager::ValidateStatus()
@@ -41,13 +43,13 @@ void AForager::Work()
 	CurrentTile->EcoValues->SubtractForage(1);
 	FGameResources WorkResources = FGameResources();
 	WorkResources.Food = WorkAmount;
-	Settlement->AddResources(WorkResources);
+	Building->Settlement->AddResources(WorkResources);
 }
 
 bool AForager::TryFindPath()
 {
 	bool HasBorderingTileWithTrees = false;
-	for (ATile* Tile : Settlement->BorderingUnclaimedTiles)
+	for (ATile* Tile : Building->Settlement->BorderingUnclaimedTiles)
 	{
 		if (IsTileValidForWork(Tile))
 		{
@@ -59,7 +61,7 @@ bool AForager::TryFindPath()
 	{
 		Path = GameState->TileMap->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
 		{
-			return IsTileValidForWork(Tile) && Settlement->IsBorderingUnclaimedTile(Tile);
+			return IsTileValidForWork(Tile) && Building->Settlement->IsBorderingUnclaimedTile(Tile);
 		});
 	}
 	else

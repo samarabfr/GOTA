@@ -9,6 +9,7 @@
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -19,10 +20,16 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Params.Condition = COND_InitialOnly;
 	Params.RepNotifyCondition = REPNOTIFY_Always;
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Settings, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, Tile, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, Settlement, Params);
 
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Population, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, IncomeProgress, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, Civilian, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, IsUnderConstruction, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, ResourceProgress, Params);
 }
 
 bool UBuilding::IsSupportedForNetworking() const
@@ -36,10 +43,12 @@ UBuilding::UBuilding()
 	Population->OnSizeChanged.AddDynamic(this, &UBuilding::ProductionChanged);
 }
 
-void UBuilding::GOTATick(float DeltaSeconds)
+void UBuilding::ServerTick(const float DeltaSeconds)
 {
-	if(Civilian) Civilian->GOTATick(DeltaSeconds);
-	if(IncomeProgress < Settings->IncomeTime)
+	Population->ServerTick(DeltaSeconds);
+	if (Civilian)
+		Civilian->ServerTick(DeltaSeconds);
+	if (IncomeProgress < Settings->IncomeTime)
 	{
 		IncomeProgress = FMath::Min(IncomeProgress + DeltaSeconds, Settings->IncomeTime);
 	}
@@ -47,16 +56,40 @@ void UBuilding::GOTATick(float DeltaSeconds)
 	{
 		AddIncomeToSettlement();
 		IncomeProgress = 0.0f;
+		MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, IncomeProgress, this)
 	}
 }
 
-void UBuilding::ServerInit(UBuildingSettings* DataAsset_, ATile* Tile_, ASettlement* Settlement_)
+void UBuilding::ClientTick(const float DeltaSeconds)
 {
-	Settings = DataAsset_;
-	Tile = Tile_;
-	IsUnderConstruction = true;
-	Settlement = Settlement_;
+	Population->ClientTick(DeltaSeconds);
+	if (Civilian)
+		Civilian->ClientTick(DeltaSeconds);
+
+	IncomeProgress = FMath::Min(IncomeProgress + DeltaSeconds, Settings->IncomeTime);
 }
+
+void UBuilding::ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
+{
+	Settings = InSettings;
+	Tile = InTile;
+	Settlement = InSettlement;
+	Settlement->OnBuildingAdded(this, Tile);
+}
+
+void UBuilding::ClientInit()
+{
+	Settlement->OnBuildingAdded(this, Tile);
+}
+
+void UBuilding::BeginDestroy()
+{
+	UObject::BeginDestroy();
+	if (Settlement && Tile)
+		Settlement->OnBuildingRemoved(this, Tile);
+}
+
+// --------------------- base income ---------------------
 
 float UBuilding::GetCurrentIncomePerSecond() const
 {
@@ -66,11 +99,11 @@ float UBuilding::GetCurrentIncomePerSecond() const
 void UBuilding::AddIncomeToSettlement()
 {
 	FGameResources NewResources;
-	if(Settings->IncomeType == EProductionType::Food)
+	if (Settings->IncomeType == EProductionType::Food)
 		NewResources.Food = Settings->IncomeAmount;
-	if(Settings->IncomeType == EProductionType::Wood)
+	if (Settings->IncomeType == EProductionType::Wood)
 		NewResources.Wood = Settings->IncomeAmount;
-	if(Settings->IncomeType == EProductionType::Stone)
+	if (Settings->IncomeType == EProductionType::Stone)
 		NewResources.Stone = Settings->IncomeAmount;
 	Settlement->AddResources(NewResources, true);
 }
@@ -80,15 +113,15 @@ void UBuilding::ProductionChanged(int16 Change)
 	OnIncomeChanged.Broadcast(Settings->IncomeTime * Change, Settings->IncomeType);
 }
 
-float UBuilding::GetCivilianWorkRate() const
+// ---------------- Civilian Entity ----------------
+
+void UBuilding::SetCivilian(ACivilian* NewCivilian)
 {
-	return 100 / Settings->SecondsPerWorkCycle;
+	Civilian = NewCivilian;
+	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, Civilian, this)
 }
 
-float UBuilding::GetCivilianMovementRate() const
-{
-	return 100 / Settings->SecondsPerMove;
-}
+// --------------------- Construction phase ---------------------
 
 FGameResources UBuilding::GetResourceProgress() const
 {
@@ -98,18 +131,21 @@ FGameResources UBuilding::GetResourceProgress() const
 void UBuilding::SetResourceProgress(const FGameResources NewResourcesProgress)
 {
 	ResourceProgress = NewResourcesProgress;
-	if(ResourceProgress >= Settings->Cost)
+	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, ResourceProgress, this)
+	if (ResourceProgress >= Settings->Cost)
 		FinishConstruction();
 }
 
 void UBuilding::FinishConstruction()
 {
 	IsUnderConstruction = false;
+	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, IsUnderConstruction, this)
 	Tile->OnBuildingFinishedConstruction();
 	Population->ChangeMaxSize(Settings->Housing);
 	if (Settings->CivilianClass)
 	{
-		Civilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);
-		Civilian->Init(Settlement, Tile, GetCivilianWorkRate(), Settings->WorkAmountPerCycle, GetCivilianMovementRate());
+		ACivilian* NewCivilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);
+		NewCivilian->ServerInit(this, Tile);
+		SetCivilian(NewCivilian);
 	}
 }

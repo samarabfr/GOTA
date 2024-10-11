@@ -29,17 +29,41 @@ public:
 	// ---------------------------------------------------------
 	// Stuff in the World
 
-	UPROPERTY(BlueprintReadWrite, Replicated, Category="GOTAGameState")
+	UPROPERTY(Replicated)
 	ATileMap* TileMap;
 
-	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
-	AColony* Colony;
-
-	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+private:
+	UPROPERTY(Replicated)
 	ATribe* Tribe;
 
-	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+public:
+	void SetTribe(ATribe* NewTribe);
+	ATribe* GetTribe() const { return Tribe; }
+
+private:
+	UPROPERTY(Replicated)
+	AColony* Colony;
+
+public:
+	void SetColony(AColony* NewColony);
+	AColony* GetColony() const { return Colony; }
+
+private:
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGuardiansChangedSig, AGS_Ingame*, GameState);
+
+	UPROPERTY(ReplicatedUsing=GuardiansChanged)
 	TArray<AGuardian*> Guardians;
+
+	UFUNCTION()
+	void GuardiansChanged();
+
+public:
+	FOnGuardiansChangedSig OnGuardiansChanged;
+	TArray<AGuardian*> GetGuardians() const;
+	AGuardian* GetGuardian(int32 GOTAPlayerID) const;
+	void SetGuardian(int32 GOTAPlayerID, AGuardian* Guardian);
+
 
 	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
 	TArray<AEntity*> TileEntities;

@@ -5,6 +5,7 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "IngameUI.generated.h"
 
+class AGS_Ingame;
 class UBuildingMenu;
 class UButton;
 class UGuardianInfo;
@@ -17,7 +18,7 @@ UCLASS(Blueprintable)
 class GOTA_API UIngameUI : public UUserWidget
 {
 	GENERATED_BODY()
-	
+
 	// -------------------Widgets------------------------
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -34,7 +35,7 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UGuardianInfo* GuardianInfo3;
-	
+
 	UPROPERTY(meta = (BindWidget))
 	UGuardianInfo* GuardianInfo4;
 
@@ -43,20 +44,23 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UBuildingMenu* BuildingMenu;
-	
+
 	// --------------------------------------------------
-	
+
 private:
 	virtual void NativeConstruct() override;
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+	UFUNCTION()
+	void RefreshGuardianWidgets(AGS_Ingame* GameState);
 
 public:
 	UFUNCTION(BlueprintCallable)
 	void ClickActor(AActor* Actor);
 
 	void HoverActor(AActor* Actor);
-	
+
 	UFUNCTION(BlueprintCallable)
 	void WatchCombat(ACombat* Combat);
 

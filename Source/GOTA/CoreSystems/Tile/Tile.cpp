@@ -35,7 +35,6 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME_WITH_PARAMS(ATile, EcoValues, Params);
 	DOREPLIFETIME_WITH_PARAMS(ATile, GameplayTags, Params);
 	DOREPLIFETIME_WITH_PARAMS(ATile, Building, Params);
-	DOREPLIFETIME_WITH_PARAMS(ATile, Claimant, Params);
 
 	DOREPLIFETIME(ATile, AlliedEntity);
 	DOREPLIFETIME(ATile, EnemyEntity);
@@ -59,9 +58,7 @@ ATile::ATile()
 	SM_Hexagon->SetupAttachment(RootComponent);
 
 	EcoValues = CreateDefaultSubobject<UEcoValues>(TEXT("EcoValues"));
-	EcoValues->OnTreesChanged.AddDynamic(this, &ATile::TreesChanged);
-	EcoValues->OnWildlifeChanged.AddDynamic(this, &ATile::WildlifeChanged);
-	EcoValues->OnForageChanged.AddDynamic(this, &ATile::ForageChanged);
+	SetupEcoValuesChanging();
 }
 
 void ATile::BeginPlay()
@@ -152,14 +149,14 @@ bool ATile::AcceptsCivilian() const
 	return false;
 }
 
-void ATile::AddCivilian(ACivilian* Civilian)
+void ATile::AddCivilian(ACivilian* Civilian, FVector& NewLocation)
 {
 	for (int32 i = 0; i < Civilians.Num(); ++i)
 	{
 		if (!Civilians[i])
 		{
 			Civilians[i] = Civilian;
-			Civilian->SetActorLocation(Settings->CivilianSlots[i] + GetActorLocation());
+			NewLocation = Settings->CivilianSlots[i] + GetActorLocation();
 			return;
 		}
 	}
@@ -180,24 +177,81 @@ AEntity* ATile::GetEntityByAffiliation(EAffiliation Affiliation) const
 	return nullptr;
 }
 
-// ---------------------------------------------------------
-// Claimant and claiming
+// ----------------------- Building and Claiming ---------------------
+
+void ATile::OnRep_Building()
+{
+	if (Building)
+	{
+		Building->ClientInit();
+	}
+	BuildingChanged();
+}
+
+void ATile::BuildingChanged()
+{
+	OnBuildingChanged.Broadcast(this);
+	if (Building)
+	{
+		SetupPopSizeChanging();
+		UpdateClaimWallsWithNeighbors();
+	}
+}
+
+bool ATile::CanBuild()
+{
+	return !Building && Terrain.Biome != EBiome::Volcano;
+}
+
+bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
+{
+	if (!CanBuild() || !Builder) return false;
+	Building = NewObject<UBuilding>();
+	Building->ServerInit(BuildingDataAsset, this, Builder);
+	AddReplicatedSubObject(Building);
+	AddReplicatedSubObject(Building->Population);
+
+	UpdateClaimWallsWithNeighbors();
+
+	GameplayTags.AppendTags(Builder->GameplayTags);
+	GameplayTags.AppendTags(BuildingDataAsset->GameplayTags);
+	GameplayTags.AddTag(Settings->BuildingUnderConstructionTag);
+
+	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, GameplayTags, this);
+	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, Building, this);
+
+	OnGameplayTagsChanged.Broadcast();
+	BuildingChanged();
+	ValidateSpawnLayout();
+	return true;
+}
+
+void ATile::Unbuild()
+{
+	if (!Building) return;
+	GameplayTags.RemoveTags(Building->Settings->GameplayTags);
+	OnGameplayTagsChanged.Broadcast();
+	RemoveReplicatedSubObject(Building);
+	RemoveReplicatedSubObject(Building->Population);
+	Building = nullptr;
+	BuildingChanged();
+	ValidateSpawnLayout();
+}
+
+void ATile::OnBuildingFinishedConstruction()
+{
+	GameplayTags.RemoveTag(Settings->BuildingUnderConstructionTag);
+	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, GameplayTags, this);
+	OnGameplayTagsChanged.Broadcast();
+}
 
 ASettlement* ATile::GetClaimant() const
 {
-	return Claimant;
-}
-
-void ATile::SetClaimant(ASettlement* NewClaimant)
-{
-	Claimant = NewClaimant;
-	UpdateClaimWallsWithNeighbors();
-}
-
-void ATile::OnRep_Claimant(ASettlement* NewClaimant)
-{
-	if (!GameState) GameState = GetWorld()->GetGameState<AGS_Ingame>();
-	UpdateClaimWallsWithNeighbors();
+	if (Building)
+	{
+		return Building->Settlement;
+	}
+	return nullptr;
 }
 
 void ATile::UpdateClaimWallsWithNeighbors()
@@ -211,11 +265,11 @@ void ATile::UpdateClaimWallsWithNeighbors()
 
 void ATile::UpdateClaimWalls()
 {
-	if (Claimant)
+	if (IsClaimed())
 	{
 		for (uint8 i = 0; i < 6; ++i)
 		{
-			if (!Neighbors[i] || !Neighbors[i]->Claimant || Neighbors[i]->Claimant != Claimant)
+			if (!Neighbors[i] || !Neighbors[i]->IsClaimed() || Neighbors[i]->GetClaimant() != GetClaimant())
 			{
 				// Should have flag in this direction
 				if (!ClaimWallsInstanceIds.Contains(i))
@@ -249,113 +303,7 @@ void ATile::UpdateClaimWalls()
 	}
 }
 
-bool ATile::IsClaimable() const
-{
-	return !Claimant;
-}
-
-bool ATile::TryClaim(ASettlement* PotentialClaimant)
-{
-	if (!IsClaimable()) return false;
-	Claimant = PotentialClaimant;
-	if (Building)
-	{
-		Claimant->OnBuildingAdded(Building, this);
-	}
-	GameplayTags.AppendTags(Claimant->GameplayTags);
-	UpdateClaimWallsWithNeighbors();
-	OnGameplayTagsChanged.Broadcast();
-	return true;
-}
-
-void ATile::Unclaim()
-{
-	if (!Claimant) return;
-	if (Building)
-	{
-		Claimant->OnBuildingRemoved(Building, this);
-	}
-	GameplayTags.RemoveTags(Claimant->GameplayTags);
-	OnGameplayTagsChanged.Broadcast();
-	Claimant = nullptr;
-}
-
-// ---------------------------------------------------------
-// Building
-
-bool ATile::CanBuild()
-{
-	return !Building && Terrain.Biome != EBiome::Volcano;
-}
-
-bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
-{
-	if (!CanBuild() || !Builder) return false;
-	Building = NewObject<UBuilding>();
-	Building->ServerInit(BuildingDataAsset, this, Builder);
-	AddReplicatedSubObject(Building);
-	AddReplicatedSubObject(Building->Population);
-
-	SetClaimant(Builder);
-	Claimant->OnBuildingAdded(Building, this);
-
-	GameplayTags.AppendTags(Claimant->GameplayTags);
-	GameplayTags.AppendTags(BuildingDataAsset->GameplayTags);
-	GameplayTags.AddTag(Settings->BuildingUnderConstructionTag);
-
-	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, GameplayTags, this);
-	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, Claimant, this);
-	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, Building, this);
-
-	OnGameplayTagsChanged.Broadcast();
-	BuildingChanged();
-	ValidateSpawnLayout();
-	return true;
-}
-
-
-void ATile::Unbuild()
-{
-	if (!Building) return;
-	if (Claimant)
-	{
-		Claimant->OnBuildingRemoved(Building, this);
-	}
-	GameplayTags.RemoveTags(Building->Settings->GameplayTags);
-	OnGameplayTagsChanged.Broadcast();
-	RemoveReplicatedSubObject(Building);
-	RemoveReplicatedSubObject(Building->Population);
-	Building = nullptr;
-	BuildingChanged();
-	ValidateSpawnLayout();
-}
-
-void ATile::OnRep_Building()
-{
-	BuildingChanged();
-}
-
-void ATile::BuildingChanged()
-{
-	OnBuildingChanged.Broadcast(this);
-	if (Building)
-	{
-		Building->Population->OnSizeChanged.AddDynamic(this, &ATile::PopSizeChanged);
-		for (ATile* Neighbor : Neighbors)
-		{
-			if (Neighbor && Neighbor->Building)
-				Building->Population->NeighborChangedPopSize(Neighbor->Building->Population->GetSize());
-		}
-	}
-}
-
-void ATile::OnBuildingFinishedConstruction()
-{
-	GameplayTags.RemoveTag(Settings->BuildingUnderConstructionTag);
-	OnGameplayTagsChanged.Broadcast();
-}
-
-// -------------------Ecosystem-------------------------
+// ------------------- Ticking -------------------------
 
 void ATile::GOTATick()
 {
@@ -368,18 +316,27 @@ void ATile::GOTATick()
 	if (HasAuthority())
 	{
 		EcoValues->ServerTick(DeltaSeconds);
-		if (Building)
-		{
-			Building->Population->ServerTick(DeltaSeconds);
-			Building->GOTATick(DeltaSeconds); // TODO: Client side prediction
-		}
+		if (Building) Building->ServerTick(DeltaSeconds);
 	}
 	else
 	{
 		EcoValues->ClientTick(DeltaSeconds);
-		if (Building) Building->Population->ClientTick(DeltaSeconds);
+		if (Building) Building->ClientTick(DeltaSeconds);
 	}
 	LastTick = GetWorld()->GetTimeSeconds();
+}
+
+void ATile::SetupPopSizeChanging()
+{
+	Building->Population->OnSizeChanged.AddDynamic(this, &ATile::PopSizeChanged);
+	// notify the neighbors of this population size
+	PopSizeChanged(Building->Population->GetSize());
+	// notify this population of all neighbor population sizes
+	for (ATile* Neighbor : Neighbors)
+	{
+		if (Neighbor && Neighbor->Building)
+			Building->Population->NeighborChangedPopSize(Neighbor->Building->Population->GetSize());
+	}
 }
 
 void ATile::PopSizeChanged(const int16 Change)
@@ -389,6 +346,13 @@ void ATile::PopSizeChanged(const int16 Change)
 	{
 		if (Neighbors[i] && Neighbors[i]->Building) Neighbors[i]->Building->Population->NeighborChangedPopSize(Change);
 	}
+}
+
+void ATile::SetupEcoValuesChanging()
+{
+	EcoValues->OnTreesChanged.AddDynamic(this, &ATile::TreesChanged);
+	EcoValues->OnWildlifeChanged.AddDynamic(this, &ATile::WildlifeChanged);
+	EcoValues->OnForageChanged.AddDynamic(this, &ATile::ForageChanged);
 }
 
 void ATile::TreesChanged(const int32 Change)
