@@ -241,6 +241,7 @@ void ATile::Unbuild()
 void ATile::OnBuildingFinishedConstruction()
 {
 	GameplayTags.RemoveTag(Settings->BuildingUnderConstructionTag);
+	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, GameplayTags, this);
 	OnGameplayTagsChanged.Broadcast();
 }
 
