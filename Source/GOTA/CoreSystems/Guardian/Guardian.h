@@ -18,10 +18,14 @@ class GOTA_API AGuardian : public ACharacter
 
 	virtual void BeginPlay() override;
 
+	UPROPERTY(Replicated)
+	UGuardianSettings* Settings;
+
 public:
+	void Init(UGuardianSettings* InSettings);
+
+	UGuardianSettings* GetSettings() const { return Settings; }
+
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCosmetic, Category="PlayerController")
 	void SetupGAM(AMouseUtils* MouseUtils_);
-
-	UPROPERTY()
-	UGuardianSettings* Settings;
 };

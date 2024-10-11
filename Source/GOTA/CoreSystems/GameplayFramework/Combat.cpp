@@ -108,7 +108,7 @@ void ACombat::BuildingChanged(ATile* Tile)
 {
 	CalcKills();
 	// register to delegates, unregister not necessary
-	if (!Tile->Building) return;
+	if (!Tile->GetBuilding()) return;
 	//	Tile->Building->PopContainer->CombatValues->OnChanged.AddDynamic(this, &ACombat::CombatValuesChanged);
 }
 
@@ -238,10 +238,10 @@ void ACombat::SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft
 	int32 TotalHP = 0;
 	for (FCombatTile& CombatTile : CombatTiles)
 	{
-		if (CombatTile.Tile->Building
+		if (CombatTile.Tile->GetBuilding()
 			&& CombatTile.Tile->GetClaimant()
 			&& CombatTile.Tile->GetClaimant()->Affiliation == Receiver
-			&& CombatTile.Tile->Building->Population->GetSize() > 0)
+			&& CombatTile.Tile->GetBuilding()->Population->GetSize() > 0)
 		{
 			/*
 			BuildingPopCombatTiles.Add(&CombatTile);
@@ -347,7 +347,7 @@ void ACombat::CountKills()
 	{
 		AlliedPopKills += CombatTile.AlliedEntityKills;
 		EnemyPopKills += CombatTile.EnemyEntityKills;
-		if (CombatTile.Tile->Building && CombatTile.Tile->GetClaimant())
+		if (CombatTile.Tile->GetBuilding() && CombatTile.Tile->GetClaimant())
 		{
 			if (CombatTile.Tile->GetClaimant()->Affiliation == EAffiliation::Ally)
 			{
@@ -377,9 +377,9 @@ void ACombat::TriggerCombat()
 		{
 			Tile->GetEnemyEntity()->KillIndividuals(CombatTile.EnemyEntityKills);
 		}
-		if (Tile->Building)
+		if (Tile->GetBuilding())
 		{
-			Tile->Building->Population->DecreaseSize(CombatTile.BuildingPopKills);
+			Tile->GetBuilding()->Population->DecreaseSize(CombatTile.BuildingPopKills);
 			if (CombatTile.BuildingDowngrade > 0) Tile->Unbuild(); // TODO: Downgrade instead
 		}
 	}

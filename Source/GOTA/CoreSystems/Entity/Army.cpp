@@ -29,7 +29,7 @@ bool AArmy::IsTargetValid()
 	// no target
 	if (!Target) return false;
 	// target has no building
-	if (!Target->Building) return false;
+	if (!Target->GetBuilding()) return false;
 	// target is not claimed
 	if (!Target->GetClaimant()) return false;
 	// target is not claimed by the enemy
