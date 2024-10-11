@@ -25,6 +25,7 @@ void ACivilian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, Progress, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, Status, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, CurrentTile, Params);
+	DOREPLIFETIME_WITH_PARAMS(ACivilian, NetLocation, Params);
 }
 
 // ----------------------- LifeCycle -----------------------
@@ -59,7 +60,7 @@ void ACivilian::ServerInit(UBuilding* InBuilding, ATile* SpawnTile)
 	CurrentTile = SpawnTile;
 	FVector NewLocation = FVector();
 	SpawnTile->AddCivilian(this, NewLocation);
-	SetActorLocation(NewLocation);
+	SetNetLocation(NewLocation);
 
 	const UBuildingSettings* BuildingSettings = Building->Settings;
 	WorkAmount = BuildingSettings->WorkAmountPerCycle;
@@ -109,6 +110,23 @@ void ACivilian::OnRep_Building()
 		SetupPopSizeChanging();
 }
 
+// ----------------------- Status -----------------------
+
+void ACivilian::ValidateStatus()
+{
+}
+
+void ACivilian::SetStatus(const ECivilianStatus NewStatus)
+{
+	if (Status == NewStatus) return;
+	Status = NewStatus;
+	Progress = 0.0f;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Status, this)
+	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Progress, this)
+}
+
+// ----------------- Working ------------------------
+
 void ACivilian::SetupPopSizeChanging()
 {
 	Building->Population->OnSizeChanged.AddDynamic(this, &ACivilian::OnPopSizeChanged);
@@ -132,22 +150,19 @@ void ACivilian::Work()
 {
 }
 
-// ----------------------- Status -----------------------
-
-void ACivilian::ValidateStatus()
+void ACivilian::OnRep_NetLocation()
 {
+	SetActorLocation(NetLocation);
 }
 
-void ACivilian::SetStatus(const ECivilianStatus NewStatus)
+void ACivilian::SetNetLocation(const FVector& NewNetLocation)
 {
-	if (Status == NewStatus) return;
-	Status = NewStatus;
-	Progress = 0.0f;
-	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Status, this)
-	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Progress, this)
+	SetActorLocation(NewNetLocation);
+	NetLocation = NewNetLocation;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, NetLocation, this)
 }
 
-// ----------------- Moving on Path ------------------------
+// ----------------- Moving ------------------------
 
 void ACivilian::Move()
 {
@@ -160,7 +175,7 @@ void ACivilian::Move()
 	CurrentTile->RemoveCivilian(this);
 	FVector NewLocation = FVector();
 	NewCurrent->AddCivilian(this, NewLocation);
-	SetActorLocation(NewLocation);
+	SetNetLocation(NewLocation);
 	CurrentTile = NewCurrent;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, CurrentTile, this)
 }

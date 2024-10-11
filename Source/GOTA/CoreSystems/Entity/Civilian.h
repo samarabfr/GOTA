@@ -22,7 +22,7 @@ protected:
 
 public:
 	void ServerInit(UBuilding* InBuilding, ATile* SpawnTile);
-	
+
 	void ServerTick(const float DeltaSeconds);
 	void ClientTick(const float DeltaSeconds);
 
@@ -47,9 +47,22 @@ protected:
 	UPROPERTY()
 	UStaticMeshComponent* MeshComponent;
 
+	// ----------------------- Status -----------------------
+private:
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	ECivilianStatus Status;
+
+protected:
 	// Progress of current Action in percent
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float Progress;
+
+	virtual void ValidateStatus();
+
+	ECivilianStatus GetStatus() const { return Status; }
+	void SetStatus(ECivilianStatus NewStatus);
+
+	// ----------------- Working ------------------------
 
 	// How fast the progress increases when working, in percent per second
 	UPROPERTY(VisibleInstanceOnly)
@@ -59,13 +72,9 @@ protected:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	int32 WorkAmount;
 
-	// How fast the progress increases when moving, in percent per second
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	float MovementRate;
-
 private:
 	void SetupPopSizeChanging();
-	
+
 	UFUNCTION()
 	void OnPopSizeChanged(int16 Change);
 
@@ -74,21 +83,24 @@ private:
 protected:
 	virtual void Work();
 
-	// ----------------------- Status -----------------------
-private:
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	ECivilianStatus Status;
-
-protected:
-	virtual void ValidateStatus();
-
-	ECivilianStatus GetStatus() const { return Status; }
-	void SetStatus(ECivilianStatus NewStatus);
-
-	// ----------------- Moving on Path ------------------------
+	// ----------------- Moving ------------------------
 
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	ATile* CurrentTile;
+
+private:
+	UPROPERTY(ReplicatedUsing=OnRep_NetLocation)
+	FVector NetLocation;
+
+	UFUNCTION()
+	void OnRep_NetLocation();
+
+	void SetNetLocation(const FVector& NewNetLocation);
+
+protected:
+	// How fast the progress increases when moving, in percent per second
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	float MovementRate;
 
 	UPROPERTY(VisibleInstanceOnly)
 	TArray<ATile*> Path;
