@@ -70,14 +70,14 @@ public:
 
 	// --------------------- Construction phase ---------------------
 private:
-	UPROPERTY(VisibleInstanceOnly)
-	bool IsUnderConstruction;
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	bool IsUnderConstruction = true;
 
 public:
 	bool GetIsUnderConstruction() const { return IsUnderConstruction; }
 
 private:
-	UPROPERTY(VisibleInstanceOnly)
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	FGameResources ResourceProgress;
 
 public:

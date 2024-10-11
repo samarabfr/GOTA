@@ -28,6 +28,8 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Population, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, IncomeProgress, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Civilian, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, IsUnderConstruction, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, ResourceProgress, Params);
 }
 
 bool UBuilding::IsSupportedForNetworking() const
@@ -72,7 +74,6 @@ void UBuilding::ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettle
 	Settings = InSettings;
 	Tile = InTile;
 	Settlement = InSettlement;
-	IsUnderConstruction = true;
 	Settlement->OnBuildingAdded(this, Tile);
 }
 
@@ -130,6 +131,7 @@ FGameResources UBuilding::GetResourceProgress() const
 void UBuilding::SetResourceProgress(const FGameResources NewResourcesProgress)
 {
 	ResourceProgress = NewResourcesProgress;
+	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, ResourceProgress, this)
 	if (ResourceProgress >= Settings->Cost)
 		FinishConstruction();
 }
@@ -137,6 +139,7 @@ void UBuilding::SetResourceProgress(const FGameResources NewResourcesProgress)
 void UBuilding::FinishConstruction()
 {
 	IsUnderConstruction = false;
+	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, IsUnderConstruction, this)
 	Tile->OnBuildingFinishedConstruction();
 	Population->ChangeMaxSize(Settings->Housing);
 	if (Settings->CivilianClass)
