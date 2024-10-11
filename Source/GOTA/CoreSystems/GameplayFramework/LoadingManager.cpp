@@ -165,6 +165,7 @@ void ALoadingManager::ClientTick()
 			LocalPlayerController->InitInput();
 			LocalPlayerController->RemoveLoadingUI();
 			GameState->TileMap->EnableTick();
+			LoadingStatus->SetCurrentStatus(ELoadingStatus::Finished);
 		}
 		break;
 
