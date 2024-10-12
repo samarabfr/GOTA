@@ -69,7 +69,7 @@ void ABuildingPlacer::BeginPlay()
 void ABuildingPlacer::Init(AMouseUtils* InMouseUtils)
 {
 	MouseUtils = InMouseUtils;
-	MouseUtils->AttachToTilePosition(this);
+	MouseUtils->AttachActorToTilePosition(this);
 	MouseUtils->OnHoverTileChanged.AddDynamic(this, &ABuildingPlacer::RefreshPlaceability);
 }
 

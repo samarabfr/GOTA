@@ -10,9 +10,13 @@
 void AMouseUtils::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(AMouseUtils, NetLocation)
-	DOREPLIFETIME(AMouseUtils, NetTileLocation)
+	FDoRepLifetimeParams Params;
+	Params.bIsPushBased = false;
+	
+	Params.Condition = COND_SkipOwner;
+	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
+	DOREPLIFETIME_WITH_PARAMS(AMouseUtils, NetMouseLocation, Params)
+	DOREPLIFETIME_WITH_PARAMS(AMouseUtils, NetMouseTileLocation, Params)
 }
 
 AMouseUtils::AMouseUtils()
@@ -44,15 +48,13 @@ void AMouseUtils::Tick(float DeltaSeconds)
 	FHitResult HitResult;
 	if (PlayerController->GetHitResultUnderCursor(ECC_Visibility, false, HitResult))
 	{
-		SetNetLocation(HitResult.Location);
-		MouseLocation->SetWorldLocation(HitResult.Location);
-
+		SetMouseLocation(HitResult.Location);
+		
 		ATile* HitTile = Cast<ATile>(HitResult.GetActor());
 		if (HitTile && HoverTile != HitTile)
 		{
 			HoverTile = HitTile;
-			MouseTileLocation->SetWorldLocation(HitTile->GetActorLocation());
-			SetNetTileLocation(HitTile->GetActorLocation());
+			SetMouseTileLocation(HitTile->GetActorLocation());
 			OnHoverTileChanged.Broadcast(HitTile);
 		}
 
@@ -84,37 +86,53 @@ void AMouseUtils::SetPlayerController(APC_Ingame* PC)
 	PlayerController = PC;
 }
 
-void AMouseUtils::AttachToTilePosition(AActor* Actor)
+void AMouseUtils::AttachActorToTilePosition(AActor* Actor)
 {
 	Actor->AttachToComponent(MouseTileLocation, FAttachmentTransformRules::SnapToTargetIncludingScale);
 }
 
-// ---------------------------------------------------------
-// Replicated Locations to prevent Lag on MouseUtils
+// ------------------ Mouse Location ------------------
 
-void AMouseUtils::OnRep_NetLocation()
+void AMouseUtils::SetMouseLocation(const FVector Location)
 {
-	// ignore updates on its own MouseUtils because its kinda ClientSide
-	if (PlayerController && PlayerController->IsLocalController()) return;
-	MouseLocation->SetWorldLocation(NetLocation);
+	SRPC_SetNetMouseLocation(Location);
+	if(!HasAuthority())
+	{
+		// if the server calls this, it does this in the RPC
+		MouseLocation->SetWorldLocation(Location);
+	}
 }
 
-void AMouseUtils::SetNetLocation_Implementation(FVector Location)
+void AMouseUtils::SRPC_SetNetMouseLocation_Implementation(const FVector Location)
 {
-	NetLocation = Location;
-	// ignore updates on its own MouseUtils because its kinda ClientSide
-	if(PlayerController && !PlayerController->IsLocalController()) return;
-	MouseLocation->SetWorldLocation(NetLocation);
+	NetMouseLocation = Location;
+	MouseLocation->SetWorldLocation(Location);
 }
 
-void AMouseUtils::OnRep_NetTileLocation()
+void AMouseUtils::OnRep_NetMouseLocation()
 {
-	// ignore updates on its own MouseUtils because its kinda ClientSide
-	if (PlayerController && PlayerController->IsLocalController()) return;
-	MouseTileLocation->SetWorldLocation(NetTileLocation);
+	MouseLocation->SetWorldLocation(NetMouseLocation);
 }
 
-void AMouseUtils::SetNetTileLocation_Implementation(FVector Location)
+// ------------------ Mouse Tile Location ------------------
+
+void AMouseUtils::SetMouseTileLocation(const FVector Location)
 {
-	NetTileLocation = Location;
+	SRPC_SetNetMouseTileLocation(Location);
+	if(!HasAuthority())
+	{
+		// if the server calls this, it does this in the RPC
+		MouseTileLocation->SetWorldLocation(Location);
+	}
+}
+
+void AMouseUtils::SRPC_SetNetMouseTileLocation_Implementation(const FVector Location)
+{
+	NetMouseTileLocation = Location;
+	MouseTileLocation->SetWorldLocation(Location);
+}
+
+void AMouseUtils::OnRep_NetMouseTileLocation()
+{
+	MouseTileLocation->SetWorldLocation(NetMouseTileLocation);
 }

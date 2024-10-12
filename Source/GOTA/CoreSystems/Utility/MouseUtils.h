@@ -24,13 +24,7 @@ class GOTA_API AMouseUtils : public AActor
 
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHoverActorChangedSig, AActor*, NewActor);
-
-	UPROPERTY(VisibleInstanceOnly)
-	USceneComponent* MouseLocation;
-
-	UPROPERTY(VisibleInstanceOnly)
-	USceneComponent* MouseTileLocation;
-
+	
 	UPROPERTY(BlueprintGetter=GetHoverTile)
 	ATile* HoverTile = nullptr;
 
@@ -55,26 +49,39 @@ public:
 	void SetPlayerController(APC_Ingame* PC);
 
 	UFUNCTION(BlueprintCallable, Category="MouseUtils")
-	void AttachToTilePosition(AActor* Actor);
+	void AttachActorToTilePosition(AActor* Actor);
 
-	// ---------------------------------------------------------
-	// Replicated Locations to prevent Lag on MouseUtils
+	// ------------------ Mouse Location ------------------
+
 private:
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_NetLocation)
-	FVector NetLocation;
+	UPROPERTY(VisibleInstanceOnly)
+	USceneComponent* MouseLocation;
 
-	UFUNCTION()
-	void OnRep_NetLocation();
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_NetMouseLocation)
+	FVector NetMouseLocation;
 
-	UFUNCTION(Server, Unreliable)
-	void SetNetLocation(FVector Location);
-
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_NetTileLocation)
-	FVector NetTileLocation;
-
-	UFUNCTION()
-	void OnRep_NetTileLocation();
+	void SetMouseLocation(const FVector Location);
 
 	UFUNCTION(Server, Unreliable)
-	void SetNetTileLocation(FVector Location);
+	void SRPC_SetNetMouseLocation(const FVector Location);
+
+	UFUNCTION()
+	void OnRep_NetMouseLocation();
+
+	// ------------------ Mouse Tile Location ------------------
+	
+private:
+	UPROPERTY(VisibleInstanceOnly)
+	USceneComponent* MouseTileLocation;
+
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_NetMouseTileLocation)
+	FVector NetMouseTileLocation;
+
+	void SetMouseTileLocation(const FVector Location);
+
+	UFUNCTION(Server, Unreliable)
+	void SRPC_SetNetMouseTileLocation(const FVector Location);
+
+	UFUNCTION()
+	void OnRep_NetMouseTileLocation();
 };
