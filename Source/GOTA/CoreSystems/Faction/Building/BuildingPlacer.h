@@ -28,12 +28,10 @@ private:
 
 	UPROPERTY()
 	UBuildingPlacerSettings* Settings;
-
-	bool bIsPlacingBuilding = false;
-
-	UPROPERTY()
+	
+	UPROPERTY(ReplicatedUsing=OnRep_BuildingToPlace)
 	UBuildingSettings* BuildingToPlace = nullptr;
-
+	
 	UPROPERTY(Replicated)
 	AMouseUtils* MouseUtils;
 
@@ -41,14 +39,28 @@ public:
 	void StartPlacingBuilding(UBuildingSettings* Building);
 
 	void StopPlacingBuilding();
+private:
+	UFUNCTION(Server, Reliable)
+	void SRPC_StartPlacingBuilding(UBuildingSettings* Building);
 
+	UFUNCTION(Server, Reliable)
+	void SRPC_StopPlacingBuilding();
+	
+	UFUNCTION()
+	void OnRep_BuildingToPlace();
+
+	void ShowPlacingBuilding();
+	void StopShowingPlacingBuilding();
+	
+public:
 	void PlaceBuilding();
 
-	bool IsPlacing() { return bIsPlacingBuilding; }
+	bool IsPlacing() { return BuildingToPlace != nullptr; }
 
 private:
 	UFUNCTION()
 	void RefreshPlaceability(ATile* NewTile);
-	
+
 	bool CanPlace(ATile* Tile);
 };
+

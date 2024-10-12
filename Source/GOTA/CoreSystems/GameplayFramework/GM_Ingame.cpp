@@ -193,6 +193,7 @@ void AGM_Ingame::CreateUtilActors()
 		// Create BuildingPlacer
 		ABuildingPlacer* BuildingPlacer = GetWorld()->SpawnActor<ABuildingPlacer>();
 		BuildingPlacer->Init(MouseUtils);
+		BuildingPlacer->SetOwner(PlayerController);
 		PlayerController->SetBuildingPlacer(BuildingPlacer);
 	}
 }

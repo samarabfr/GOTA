@@ -21,8 +21,9 @@ void ABuildingPlacer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutL
 	Params.RepNotifyCondition = REPNOTIFY_Always;
 	DOREPLIFETIME_WITH_PARAMS(ABuildingPlacer, MouseUtils, Params)
 
-	Params.Condition = COND_None;
+	Params.Condition = COND_SkipOwner;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
+	DOREPLIFETIME_WITH_PARAMS(ABuildingPlacer, BuildingToPlace, Params)
 }
 
 bool ABuildingPlacer::IsSupportedForNetworking() const
@@ -81,15 +82,61 @@ void ABuildingPlacer::Tick(float DeltaSeconds)
 
 void ABuildingPlacer::StartPlacingBuilding(UBuildingSettings* Building)
 {
-	bIsPlacingBuilding = true;
-	BuildingToPlace = Building;
-	MeshComponent->SetVisibility(true);
-	//Show it somehow
+	SRPC_StartPlacingBuilding(Building);
+	if(!HasAuthority())
+	{
+		// if the server calls this, it does this in the RPC
+		BuildingToPlace = Building;
+		ShowPlacingBuilding();
+	}
 }
 
 void ABuildingPlacer::StopPlacingBuilding()
 {
-	bIsPlacingBuilding = false;
+	SRPC_StopPlacingBuilding();
+	if(!HasAuthority())
+	{
+		// if the server calls this, it does this in the RPC
+		BuildingToPlace = nullptr;
+		StopShowingPlacingBuilding();
+	}
+}
+
+void ABuildingPlacer::SRPC_StartPlacingBuilding_Implementation(UBuildingSettings* Building)
+{
+	BuildingToPlace = Building;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ABuildingPlacer, BuildingToPlace, this)
+	ForceNetUpdate();
+	ShowPlacingBuilding();
+}
+
+void ABuildingPlacer::SRPC_StopPlacingBuilding_Implementation()
+{
+	BuildingToPlace = nullptr;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ABuildingPlacer, BuildingToPlace, this)
+	ForceNetUpdate();
+	StopShowingPlacingBuilding();
+}
+
+void ABuildingPlacer::OnRep_BuildingToPlace()
+{
+	if (BuildingToPlace)
+	{
+		ShowPlacingBuilding();
+	}
+	else
+	{
+		StopShowingPlacingBuilding();
+	}
+}
+
+void ABuildingPlacer::ShowPlacingBuilding()
+{
+	MeshComponent->SetVisibility(true);
+}
+
+void ABuildingPlacer::StopShowingPlacingBuilding()
+{
 	MeshComponent->SetVisibility(false);
 }
 
