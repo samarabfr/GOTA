@@ -31,6 +31,8 @@ bool ABuildingPlacer::IsSupportedForNetworking() const
 	return true;
 }
 
+// ----------------- LifeCycle -----------------
+
 ABuildingPlacer::ABuildingPlacer()
 {
 	static ConstructorHelpers::FObjectFinder<UBuildingPlacerSettings> SettingsFinder(
@@ -45,7 +47,7 @@ ABuildingPlacer::ABuildingPlacer()
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
-	PrimaryActorTick.TickInterval = 0.5f;
+	PrimaryActorTick.TickInterval = 2.0f;
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
@@ -64,13 +66,29 @@ void ABuildingPlacer::BeginPlay()
 	Super::BeginPlay();
 	const AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
+	if (!HasAuthority())
+	{
+		C_Init();
+	}
 }
 
-void ABuildingPlacer::Init(AMouseUtils* InMouseUtils)
+void ABuildingPlacer::S_Init(AMouseUtils* InMouseUtils)
 {
 	MouseUtils = InMouseUtils;
 	MouseUtils->AttachActorToTilePosition(this);
 	MouseUtils->OnHoverTileChanged.AddDynamic(this, &ABuildingPlacer::RefreshPlaceability);
+}
+
+void ABuildingPlacer::C_Init()
+{
+	if (MouseUtils)
+	{
+		MouseUtils->OnHoverTileChanged.AddDynamic(this, &ABuildingPlacer::RefreshPlaceability);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BuildingPlacer could not initialize properly on a client."))
+	}
 }
 
 void ABuildingPlacer::Tick(float DeltaSeconds)
@@ -80,65 +98,7 @@ void ABuildingPlacer::Tick(float DeltaSeconds)
 		RefreshPlaceability(MouseUtils->GetHoverTile());
 }
 
-void ABuildingPlacer::StartPlacingBuilding(UBuildingSettings* Building)
-{
-	SRPC_StartPlacingBuilding(Building);
-	if(!HasAuthority())
-	{
-		// if the server calls this, it does this in the RPC
-		BuildingToPlace = Building;
-		ShowPlacingBuilding();
-	}
-}
-
-void ABuildingPlacer::StopPlacingBuilding()
-{
-	SRPC_StopPlacingBuilding();
-	if(!HasAuthority())
-	{
-		// if the server calls this, it does this in the RPC
-		BuildingToPlace = nullptr;
-		StopShowingPlacingBuilding();
-	}
-}
-
-void ABuildingPlacer::SRPC_StartPlacingBuilding_Implementation(UBuildingSettings* Building)
-{
-	BuildingToPlace = Building;
-	MARK_PROPERTY_DIRTY_FROM_NAME(ABuildingPlacer, BuildingToPlace, this)
-	ForceNetUpdate();
-	ShowPlacingBuilding();
-}
-
-void ABuildingPlacer::SRPC_StopPlacingBuilding_Implementation()
-{
-	BuildingToPlace = nullptr;
-	MARK_PROPERTY_DIRTY_FROM_NAME(ABuildingPlacer, BuildingToPlace, this)
-	ForceNetUpdate();
-	StopShowingPlacingBuilding();
-}
-
-void ABuildingPlacer::OnRep_BuildingToPlace()
-{
-	if (BuildingToPlace)
-	{
-		ShowPlacingBuilding();
-	}
-	else
-	{
-		StopShowingPlacingBuilding();
-	}
-}
-
-void ABuildingPlacer::ShowPlacingBuilding()
-{
-	MeshComponent->SetVisibility(true);
-}
-
-void ABuildingPlacer::StopShowingPlacingBuilding()
-{
-	MeshComponent->SetVisibility(false);
-}
+// ----------------- Placing -----------------
 
 void ABuildingPlacer::PlaceBuilding()
 {
@@ -183,4 +143,66 @@ bool ABuildingPlacer::CanPlace(ATile* Tile)
 			return false;
 	}
 	return true;
+}
+
+// ----------------- Start & Stop Placing -----------------
+
+void ABuildingPlacer::StartPlacingBuilding(UBuildingSettings* Building)
+{
+	SRPC_StartPlacingBuilding(Building);
+	if (!HasAuthority())
+	{
+		// if the server calls this, it does this in the RPC
+		BuildingToPlace = Building;
+		StartShowingPlacingBuilding();
+	}
+}
+
+void ABuildingPlacer::StopPlacingBuilding()
+{
+	SRPC_StopPlacingBuilding();
+	if (!HasAuthority())
+	{
+		// if the server calls this, it does this in the RPC
+		BuildingToPlace = nullptr;
+		StopShowingPlacingBuilding();
+	}
+}
+
+void ABuildingPlacer::SRPC_StartPlacingBuilding_Implementation(UBuildingSettings* Building)
+{
+	BuildingToPlace = Building;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ABuildingPlacer, BuildingToPlace, this)
+	ForceNetUpdate();
+	StartShowingPlacingBuilding();
+}
+
+void ABuildingPlacer::SRPC_StopPlacingBuilding_Implementation()
+{
+	BuildingToPlace = nullptr;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ABuildingPlacer, BuildingToPlace, this)
+	ForceNetUpdate();
+	StopShowingPlacingBuilding();
+}
+
+void ABuildingPlacer::OnRep_BuildingToPlace()
+{
+	if (BuildingToPlace)
+	{
+		StartShowingPlacingBuilding();
+	}
+	else
+	{
+		StopShowingPlacingBuilding();
+	}
+}
+
+void ABuildingPlacer::StartShowingPlacingBuilding()
+{
+	MeshComponent->SetVisibility(true);
+}
+
+void ABuildingPlacer::StopShowingPlacingBuilding()
+{
+	MeshComponent->SetVisibility(false);
 }

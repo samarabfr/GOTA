@@ -15,43 +15,37 @@ class GOTA_API ABuildingPlacer : public AActor
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
+
+	// ----------------- LifeCycle -----------------
+
 	ABuildingPlacer();
+
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaSeconds) override;
 
 public:
-	void Init(AMouseUtils* InMouseUtils);
+	void S_Init(AMouseUtils* InMouseUtils);
+
+	void C_Init();
 
 private:
+	virtual void Tick(float DeltaSeconds) override;
+
+	// ------------- Variables -----------------
+
 	UPROPERTY()
 	UStaticMeshComponent* MeshComponent;
 
 	UPROPERTY()
 	UBuildingPlacerSettings* Settings;
-	
+
 	UPROPERTY(ReplicatedUsing=OnRep_BuildingToPlace)
 	UBuildingSettings* BuildingToPlace = nullptr;
-	
+
 	UPROPERTY(Replicated)
 	AMouseUtils* MouseUtils;
 
-public:
-	void StartPlacingBuilding(UBuildingSettings* Building);
+	// ----------------- Placing -----------------
 
-	void StopPlacingBuilding();
-private:
-	UFUNCTION(Server, Reliable)
-	void SRPC_StartPlacingBuilding(UBuildingSettings* Building);
-
-	UFUNCTION(Server, Reliable)
-	void SRPC_StopPlacingBuilding();
-	
-	UFUNCTION()
-	void OnRep_BuildingToPlace();
-
-	void ShowPlacingBuilding();
-	void StopShowingPlacingBuilding();
-	
 public:
 	void PlaceBuilding();
 
@@ -62,5 +56,25 @@ private:
 	void RefreshPlaceability(ATile* NewTile);
 
 	bool CanPlace(ATile* Tile);
-};
 
+	// ----------------- Start & Stop Placing -----------------
+
+public:
+	void StartPlacingBuilding(UBuildingSettings* Building);
+
+	void StopPlacingBuilding();
+
+private:
+	UFUNCTION(Server, Reliable)
+	void SRPC_StartPlacingBuilding(UBuildingSettings* Building);
+
+	UFUNCTION(Server, Reliable)
+	void SRPC_StopPlacingBuilding();
+
+	UFUNCTION()
+	void OnRep_BuildingToPlace();
+
+	void StartShowingPlacingBuilding();
+	
+	void StopShowingPlacingBuilding();
+};
