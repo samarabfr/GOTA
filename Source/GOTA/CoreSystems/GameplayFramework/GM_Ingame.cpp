@@ -186,14 +186,18 @@ void AGM_Ingame::CreateUtilActors()
 	for (const APlayerState* PlayerState : GOTAGameState->PlayerArray)
 	{
 		APC_Ingame* PlayerController = Cast<APC_Ingame>(PlayerState->GetOwningController());
+		
 		// Create MouseUtils
-		AMouseUtils* MouseUtils = GetWorld()->SpawnActor<AMouseUtils>(MouseUtilsClass);
-		MouseUtils->SetOwner(PlayerController);
+		FActorSpawnParameters MouseUtilsSpawnParams;
+		MouseUtilsSpawnParams.Owner = PlayerController;
+		AMouseUtils* MouseUtils = GetWorld()->SpawnActor<AMouseUtils>(MouseUtilsClass, MouseUtilsSpawnParams);
 		PlayerController->SetMouseUtils(MouseUtils);
+		
 		// Create BuildingPlacer
-		ABuildingPlacer* BuildingPlacer = GetWorld()->SpawnActor<ABuildingPlacer>();
+		FActorSpawnParameters BuildingPlacerSpawnParams;
+		BuildingPlacerSpawnParams.Owner = PlayerController;
+		ABuildingPlacer* BuildingPlacer = GetWorld()->SpawnActor<ABuildingPlacer>(BuildingPlacerSpawnParams);
 		BuildingPlacer->S_Init(MouseUtils);
-		BuildingPlacer->SetOwner(PlayerController);
 		PlayerController->SetBuildingPlacer(BuildingPlacer);
 	}
 }
