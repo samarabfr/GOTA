@@ -12,69 +12,79 @@ class GOTA_API AMouseUtils : public AActor
 {
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	// ------------------ LifeCycle ------------------
+
 	AMouseUtils();
+
 	virtual void BeginPlay() override;
+
 	virtual void Tick(float DeltaSeconds) override;
 
 	UPROPERTY()
 	APC_Ingame* PlayerController = nullptr;
 
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHoverTileChangedSig, ATile*, NewTile);
+public:
+	void SetPlayerController(APC_Ingame* PC);
+	
+	// ------------------ Mouse Location ------------------
 
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHoverActorChangedSig, AActor*, NewActor);
-
+private:
 	UPROPERTY(VisibleInstanceOnly)
 	USceneComponent* MouseLocation;
 
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_NetMouseLocation)
+	FVector NetMouseLocation;
+
+	FVector GetMouseLocation() const { return MouseLocation->GetRelativeLocation(); }
+
+	void SetMouseLocation(const FVector Location);
+
+	UFUNCTION(Server, Unreliable)
+	void SRPC_SetNetMouseLocation(const FVector Location);
+
+	UFUNCTION()
+	void OnRep_NetMouseLocation();
+	
+	// ------------------ Hover Tile ------------------
+	
+private:
 	UPROPERTY(VisibleInstanceOnly)
 	USceneComponent* MouseTileLocation;
+	
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHoverTileChangedSig, ATile*, NewTile);
 
-	UPROPERTY(BlueprintGetter=GetHoverTile)
+	UPROPERTY(ReplicatedUsing=OnRep_HoverTile)
 	ATile* HoverTile = nullptr;
+
+	void SetHoverTile(ATile* NewTile);
+
+	UFUNCTION(Server, Reliable)
+	void SRPC_SetHoverTile(ATile* NewTile);
+	
+	UFUNCTION()
+	void OnRep_HoverTile();
+
+	void HoverTileChanged();
+	
+public:
+	ATile* GetHoverTile() const { return HoverTile; }
+	
+	FHoverTileChangedSig OnHoverTileChanged;
+	
+	void AttachActorToTilePosition(AActor* Actor);
+
+	// ------------------ Hover Actor ------------------
+private:
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHoverActorChangedSig, AActor*, NewActor);
 
 	UPROPERTY()
 	AActor* HoverActor = nullptr;
 
 public:
-	UPROPERTY(BlueprintAssignable, Category="MouseUtils")
-	FHoverTileChangedSig OnHoverTileChanged;
-
 	FHoverActorChangedSig OnHoverActorChanged;
 
-	UFUNCTION(BlueprintGetter)
-	ATile* GetHoverTile() const;
-
-	AActor* GetHoverActor() const { return HoverActor; }
-
-	FVector GetMouseLocation() const;
-
-	FVector GetMouseTileLocation() const;
-
-	void SetPlayerController(APC_Ingame* PC);
-
-	UFUNCTION(BlueprintCallable, Category="MouseUtils")
-	void AttachToTilePosition(AActor* Actor);
-
-	// ---------------------------------------------------------
-	// Replicated Locations to prevent Lag on MouseUtils
-private:
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_NetLocation)
-	FVector NetLocation;
-
-	UFUNCTION()
-	void OnRep_NetLocation();
-
-	UFUNCTION(Server, Unreliable)
-	void SetNetLocation(FVector Location);
-
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_NetTileLocation)
-	FVector NetTileLocation;
-
-	UFUNCTION()
-	void OnRep_NetTileLocation();
-
-	UFUNCTION(Server, Unreliable)
-	void SetNetTileLocation(FVector Location);
+	AActor* GetHoverActor() const { return HoverActor; }	
 };
