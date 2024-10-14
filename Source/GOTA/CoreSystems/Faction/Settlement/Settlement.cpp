@@ -7,6 +7,7 @@
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -74,7 +75,7 @@ void ASettlement::StartingSetup(ATile* SpawnTile)
 	GameplayTags = Affiliation == EAffiliation::Enemy
 		               ? Settings->C_GameplayTags
 		               : Settings->N_GameplayTags;
-	Resources += StartingResources;
+	S_AddResources(StartingResources);
 	SpawnTile->TryBuild(StartingBuildings[0], this);
 	SpawnTile->GetBuilding()->FinishConstruction();
 	for (int32 i = 1; i < StartingBuildings.Num(); ++i)
@@ -163,9 +164,11 @@ void ASettlement::UpdateLastMinuteResources()
 	}
 }
 
-void ASettlement::AddResources(FGameResources Amount, bool CountTowardsIncomeLastMinute)
+void ASettlement::S_AddResources(FGameResources Amount, bool CountTowardsIncomeLastMinute)
 {
 	Resources += Amount;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
+	ForceNetUpdate();
 	if (CountTowardsIncomeLastMinute)
 	{
 		LastMinuteIncome += Amount;
@@ -173,9 +176,11 @@ void ASettlement::AddResources(FGameResources Amount, bool CountTowardsIncomeLas
 	}
 }
 
-void ASettlement::RemoveResources(FGameResources Amount, bool CountTowardsLastMinuteConsumption)
+void ASettlement::S_RemoveResources(FGameResources Amount, bool CountTowardsLastMinuteConsumption)
 {
 	Resources -= Amount;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
+	ForceNetUpdate();
 	if (CountTowardsLastMinuteConsumption)
 	{
 		LastMinuteConsumption += Amount;

@@ -93,6 +93,6 @@ private:
 
 public:
 	FGameResources GetResources() const { return Resources; }
-	void AddResources(FGameResources Amount, bool CountTowardsLastMinuteIncome = false);
-	void RemoveResources(FGameResources Amount, bool CountTowardsLastMinuteConsumption = false);
+	void S_AddResources(FGameResources Amount, bool CountTowardsLastMinuteIncome = false);
+	void S_RemoveResources(FGameResources Amount, bool CountTowardsLastMinuteConsumption = false);
 };

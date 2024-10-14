@@ -108,7 +108,7 @@ void UBuilding::AddIncomeToSettlement()
 		NewResources.Wood = Settings->IncomeAmount;
 	if (Settings->IncomeType == EProductionType::Stone)
 		NewResources.Stone = Settings->IncomeAmount;
-	Settlement->AddResources(NewResources, true);
+	Settlement->S_AddResources(NewResources, true);
 }
 
 void UBuilding::ProductionChanged(int16 Change)
