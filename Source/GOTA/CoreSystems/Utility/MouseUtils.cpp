@@ -50,7 +50,6 @@ void AMouseUtils::BeginPlay()
 	if (IsOwnedBy(GetWorld()->GetFirstPlayerController()))
 	{
 		SetActorTickEnabled(true);
-		UE_LOG(LogTemp, Warning, TEXT("MouseUtils Tick Activated"))
 	}
 }
 
