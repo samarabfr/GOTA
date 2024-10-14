@@ -48,15 +48,18 @@ void UBuilding::ServerTick(const float DeltaSeconds)
 	Population->ServerTick(DeltaSeconds);
 	if (Civilian)
 		Civilian->ServerTick(DeltaSeconds);
-	if (IncomeProgress < Settings->IncomeTime)
+	if(Settings->bIncomeEnabled)
 	{
-		IncomeProgress = FMath::Min(IncomeProgress + DeltaSeconds, Settings->IncomeTime);
-	}
-	else
-	{
-		AddIncomeToSettlement();
-		IncomeProgress = 0.0f;
-		MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, IncomeProgress, this)
+		if (IncomeProgress < Settings->IncomeTime)
+		{
+			IncomeProgress = FMath::Min(IncomeProgress + DeltaSeconds, Settings->IncomeTime);
+		}
+		else
+		{
+			AddIncomeToSettlement();
+			IncomeProgress = 0.0f;
+			MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, IncomeProgress, this)
+		}
 	}
 }
 
