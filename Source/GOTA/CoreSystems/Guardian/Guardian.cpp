@@ -20,6 +20,18 @@ void AGuardian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 }
 
+AGuardian::AGuardian()
+{
+	bReplicates = true;
+	bAlwaysRelevant = true;
+	bReplicateUsingRegisteredSubObjectList = false;
+	NetUpdateFrequency = 1.0f;
+
+	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.TickInterval = 0.5f;
+}
+
 void AGuardian::BeginPlay()
 {
 	Super::BeginPlay();

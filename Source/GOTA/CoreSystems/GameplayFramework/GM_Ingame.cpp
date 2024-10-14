@@ -170,12 +170,21 @@ void AGM_Ingame::CreateSettlements()
 
 void AGM_Ingame::CreateGuardians()
 {
-	for (APlayerState* PlayerState : GOTAGameState->PlayerArray)
+	ATile* TribeStartingTile = GOTAGameState->TileMap->NativesStarts[0];
+	for (int32 i = 0; i < GOTAGameState->PlayerArray.Num(); ++i)
 	{
-		const APS_Ingame* PlayerStateIngame = Cast<APS_Ingame>(PlayerState);
-		const FVector Location = FVector(0, 0, 1000);
+		const APS_Ingame* PlayerStateIngame = Cast<APS_Ingame>(GOTAGameState->PlayerArray[i]);
+		FVector SpawnLocation = FVector(0, 0, 1000);
+		if (TribeStartingTile->Neighbors[i])
+		{
+			SpawnLocation = TribeStartingTile->Neighbors[i]->GetActorLocation() + FVector(0, 0, 100);
+		}
+		else
+		{
+			SpawnLocation = TribeStartingTile->GetActorLocation() + FVector(0, 0, 100);
+		}
 		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(PlayerStateIngame->SelectedGuardian->GuardianBlueprint,
-		                                                        Location, FRotator::ZeroRotator);
+		                                                        SpawnLocation, FRotator::ZeroRotator);
 		GOTAGameState->SetGuardian(PlayerStateIngame->GOTAPlayerID, Guardian);
 		Guardian->Init(PlayerStateIngame->SelectedGuardian);
 	}
@@ -186,13 +195,13 @@ void AGM_Ingame::CreateUtilActors()
 	for (const APlayerState* PlayerState : GOTAGameState->PlayerArray)
 	{
 		APC_Ingame* PlayerController = Cast<APC_Ingame>(PlayerState->GetOwningController());
-		
+
 		// Create MouseUtils
 		FActorSpawnParameters MouseUtilsSpawnParams;
 		MouseUtilsSpawnParams.Owner = PlayerController;
 		AMouseUtils* MouseUtils = GetWorld()->SpawnActor<AMouseUtils>(MouseUtilsClass, MouseUtilsSpawnParams);
 		PlayerController->SetMouseUtils(MouseUtils);
-		
+
 		// Create BuildingPlacer
 		FActorSpawnParameters BuildingPlacerSpawnParams;
 		BuildingPlacerSpawnParams.Owner = PlayerController;
