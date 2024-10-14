@@ -66,10 +66,6 @@ void ABuildingPlacer::BeginPlay()
 	Super::BeginPlay();
 	const AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
-	if (!HasAuthority())
-	{
-		C_Init();
-	}
 }
 
 void ABuildingPlacer::S_Init(AMouseUtils* InMouseUtils)
@@ -79,18 +75,6 @@ void ABuildingPlacer::S_Init(AMouseUtils* InMouseUtils)
 	MouseUtils->OnHoverTileChanged.AddDynamic(this, &ABuildingPlacer::RefreshPlaceability);
 }
 
-void ABuildingPlacer::C_Init()
-{
-	if (MouseUtils)
-	{
-		MouseUtils->OnHoverTileChanged.AddDynamic(this, &ABuildingPlacer::RefreshPlaceability);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("BuildingPlacer could not initialize properly on a client."))
-	}
-}
-
 void ABuildingPlacer::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -98,16 +82,38 @@ void ABuildingPlacer::Tick(float DeltaSeconds)
 		RefreshPlaceability(MouseUtils->GetHoverTile());
 }
 
+// ------------- Variables -----------------
+
+void ABuildingPlacer::OnRep_MouseUtils()
+{
+	if (MouseUtils)
+	{
+		MouseUtils->OnHoverTileChanged.AddDynamic(this, &ABuildingPlacer::RefreshPlaceability);
+	}
+}
+
 // ----------------- Placing -----------------
 
 void ABuildingPlacer::PlaceBuilding()
 {
-	if (MouseUtils && MouseUtils->GetHoverTile() && BuildingToPlace)
+	ATile* HoverTile = nullptr;
+	if (MouseUtils)
 	{
-		const AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
-		MouseUtils->GetHoverTile()->TryBuild(BuildingToPlace, GameState->GetTribe());
-		StopPlacingBuilding();
+		HoverTile = MouseUtils->GetHoverTile();
 	}
+	if (HoverTile && BuildingToPlace && CanPlace(HoverTile))
+	{
+		SRPC_PlaceBuilding(HoverTile, BuildingToPlace);
+	}
+	StopPlacingBuilding();
+}
+
+void ABuildingPlacer::SRPC_PlaceBuilding_Implementation(ATile* Tile, UBuildingSettings* Building)
+{
+	if (!Tile || !Building || !CanPlace(Tile)) return;
+
+	const AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
+	Tile->TryBuild(BuildingToPlace, GameState->GetTribe());
 }
 
 void ABuildingPlacer::RefreshPlaceability(ATile* NewTile)

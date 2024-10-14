@@ -25,13 +25,11 @@ class GOTA_API ABuildingPlacer : public AActor
 public:
 	void S_Init(AMouseUtils* InMouseUtils);
 
-	void C_Init();
-
 private:
 	virtual void Tick(float DeltaSeconds) override;
 
 	// ------------- Variables -----------------
-
+private:
 	UPROPERTY()
 	UStaticMeshComponent* MeshComponent;
 
@@ -41,8 +39,11 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_BuildingToPlace)
 	UBuildingSettings* BuildingToPlace = nullptr;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(ReplicatedUsing=OnRep_MouseUtils)
 	AMouseUtils* MouseUtils;
+
+	UFUNCTION()
+	void OnRep_MouseUtils();
 
 	// ----------------- Placing -----------------
 
@@ -52,6 +53,9 @@ public:
 	bool IsPlacing() { return BuildingToPlace != nullptr; }
 
 private:
+	UFUNCTION(Server, Reliable)
+	void SRPC_PlaceBuilding(ATile* Tile, UBuildingSettings* Building);
+
 	UFUNCTION()
 	void RefreshPlaceability(ATile* NewTile);
 
@@ -75,6 +79,6 @@ private:
 	void OnRep_BuildingToPlace();
 
 	void StartShowingPlacingBuilding();
-	
+
 	void StopShowingPlacingBuilding();
 };
