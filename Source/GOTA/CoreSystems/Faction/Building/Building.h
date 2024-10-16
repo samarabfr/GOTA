@@ -59,24 +59,25 @@ public:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float IncomeProgress = 0.0f;
 
-	// ---------------- Civilian Entity ----------------
+	// ---------------- Army ----------------
 private:
+
 	UPROPERTY(VisibleInstanceOnly, Replicated)
-	ACivilian* Civilian;
-
-	float GetCivilianWorkRate() const;
-	float GetCivilianMovementRate() const;
-
-	UPROPERTY(VisibleInstanceOnly)
 	AArmy* Army;
 
 	UPROPERTY(VisibleInstanceOnly)
 	float ArmyRespawnTimer = 0.0F;
 
-	float GetArmyRecruitRate() const;
-	float GetArmyMovementRate() const;
+	void SetArmy(AArmy* NewArmy);
 
-	//---------------------Construction phase----------------
+public:
+	AArmy* GetArmy() const { return Army; }
+
+	//--------------------- Civilian ----------------
+
+private:
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	ACivilian* Civilian;
 
 	void SetCivilian(ACivilian* NewCivilian);
 

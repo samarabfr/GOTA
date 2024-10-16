@@ -21,10 +21,10 @@ protected:
 	ACivilian();
 
 public:
-	void ServerInit(UBuilding* InBuilding, ATile* SpawnTile);
+	void S_Init(UBuilding* InBuilding, ATile* SpawnTile);
 
-	void ServerTick(const float DeltaSeconds);
-	void ClientTick(const float DeltaSeconds);
+	void S_Tick(const float DeltaSeconds);
+	void C_Tick(const float DeltaSeconds);
 
 private:
 	virtual void BeginDestroy() override;

@@ -4,47 +4,97 @@
 
 #include "ArmySettings.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
+#include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
+
+void AArmy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	FDoRepLifetimeParams Params;
+	Params.bIsPushBased = true;
+
+	Params.Condition = COND_InitialOnly;
+	Params.RepNotifyCondition = REPNOTIFY_Always;
+	DOREPLIFETIME_WITH_PARAMS(AArmy, Building, Params);
+	DOREPLIFETIME_WITH_PARAMS(AArmy, Settings, Params);
+	DOREPLIFETIME_WITH_PARAMS(AArmy, MovementRate, Params);
+	DOREPLIFETIME_WITH_PARAMS(AArmy, Affiliation, Params);
+
+	Params.Condition = COND_None;
+	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
+	DOREPLIFETIME_WITH_PARAMS(AArmy, Progress, Params);
+	DOREPLIFETIME_WITH_PARAMS(AArmy, Status, Params);
+	DOREPLIFETIME_WITH_PARAMS(AArmy, CurrentTile, Params);
+	DOREPLIFETIME_WITH_PARAMS(AArmy, NetLocation, Params);
+}
+
+// ----------------------- LifeCycle -----------------------
 
 AArmy::AArmy()
 {
+	ConstructorHelpers::FObjectFinder<UArmySettings> SettingsFinder(
+		TEXT("/Game/CoreSystems/Entity/DA_Army"));
+	Settings = SettingsFinder.Object;
+	
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
 	NetUpdateFrequency = 1.0f;
 
-	ConstructorHelpers::FObjectFinder<UArmySettings> DataAsset(
-		TEXT("/Game/CoreSystems/Entity/DA_Army"));
-	Settings = DataAsset.Object;
-
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Static Mesh");
-	Mesh->SetupAttachment(RootComponent);
-	Mesh->SetRelativeScale3D(FVector(1, 1, 4));
-	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Static Mesh");
+	MeshComponent->SetupAttachment(RootComponent);
+	MeshComponent->SetRelativeScale3D(FVector(1, 1, 4));// I still don't understand why i need to set both: the ResponseChannel and CollisionEnabled
+	// but this way it will only collide with ray casts, as intended
+	MeshComponent->SetSimulatePhysics(false);
+	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	MeshComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+	MeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
 }
 
-void AArmy::Init(ASettlement* InSettlement, ATile* SpawnTile, float InRecruitRate, float InMovementRate, int32 InSize)
+
+void AArmy::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 {
 	GameState = GetWorld()->GetGameState<AGS_Ingame>();
-	Settlement = InSettlement;
+	Building = InBuilding;
 	CurrentTile = SpawnTile;
-	SpawnTile->SetArmy(this);
-	RecruitRate = InRecruitRate;
-	MovementRate = InMovementRate;
-	Size = InSize;
-	Affiliation = Settlement->Affiliation;
-	if(Affiliation == EAffiliation::Enemy)
-		Mesh->SetStaticMesh(Settings->ColonyArmyMesh);
+	FVector NewLocation = FVector();
+	SpawnTile->SetArmy(this, NewLocation);
+	SetNetLocation(NewLocation);
+
+	const UBuildingSettings* BuildingSettings = Building->Settings;
+	RecruitRate = 100 / BuildingSettings->SecondsPerRecruitCycle;
+	MovementRate = 100 / BuildingSettings->ArmySecondsPerMove;
+	Size = 0;
+	Affiliation = Building->Settlement->Affiliation;
+	if (Affiliation == EAffiliation::Enemy)
+		MeshComponent->SetStaticMesh(Settings->ColonyArmyMesh);
 	else
-		Mesh->SetStaticMesh(Settings->NativeArmyMesh);
+		MeshComponent->SetStaticMesh(Settings->NativeArmyMesh);
 }
 
-void AArmy::GOTATick(float DeltaSeconds)
+void AArmy::S_Tick(const float DeltaSeconds)
 {
 	ValidateStatus();
+	C_Tick(DeltaSeconds);
+	if (Progress >= 100)
+	{
+		if (GetStatus() == EArmyStatus::Moving)
+			Move();
+		else if (GetStatus() == EArmyStatus::Recruiting)
+			Recruit();
+		Progress = 0.0f;
+		MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, Progress, this)
+		ValidateStatus();
+	}
+}
+
+void AArmy::C_Tick(const float DeltaSeconds)
+{
 	if (GetStatus() == EArmyStatus::Moving)
 	{
 		Progress += MovementRate * DeltaSeconds;
@@ -53,21 +103,29 @@ void AArmy::GOTATick(float DeltaSeconds)
 	{
 		Progress += RecruitRate * DeltaSeconds;
 	}
-	if (Progress >= 100)
-	{
-		if (GetStatus() == EArmyStatus::Moving)
-			Move();
-		else if (GetStatus() == EArmyStatus::Recruiting)
-			Recruit();
-		Progress = 0.0f;
-		ValidateStatus();
-	}
 }
+
+void AArmy::BeginDestroy()
+{
+	Super::BeginDestroy();
+}
+
+// -----------------------  -----------------------
 
 EAffiliation AArmy::GetAffiliation() const
 {
 	return Affiliation;
 }
+
+void AArmy::OnRep_Affiliation()
+{
+	if (Affiliation == EAffiliation::Enemy)
+		MeshComponent->SetStaticMesh(Settings->ColonyArmyMesh);
+	else
+		MeshComponent->SetStaticMesh(Settings->NativeArmyMesh);
+}
+
+// ----------------------- Status -----------------------
 
 void AArmy::ValidateStatus()
 {
@@ -97,10 +155,63 @@ void AArmy::ValidateStatus()
 	}
 }
 
+bool AArmy::IsTileValidForRecruiting(const ATile* Tile) const
+{
+	return Tile->GetBuilding()
+		&& Tile->GetBuilding()->Population->GetSize() == Tile->GetBuilding()->Population->GetMaxSize()
+		&& Tile->GetClaimant()
+		&& Tile->GetClaimant() == Building->Settlement;
+}
+
+void AArmy::SetStatus(EArmyStatus NewStatus)
+{
+	if (Status == NewStatus) return;
+	Status = NewStatus;
+	Progress = 0.0f;
+}
+	
+// ----------------- Recruiting ------------------------
+
+void AArmy::Recruit()
+{
+	++Size;
+	CurrentTile->GetBuilding()->Population->DecreaseSize(1);
+}
+
+// ----------------- Moving ------------------------
+
+void AArmy::OnRep_NetLocation()
+{
+	SetActorLocation(NetLocation);
+}
+
+void AArmy::SetNetLocation(const FVector& NewNetLocation)
+{
+	SetActorLocation(NewNetLocation);
+	NetLocation = NewNetLocation;
+	MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, NetLocation, this)
+}
+
+void AArmy::Move()
+{
+	ATile* NewCurrent = nullptr;
+	if (!Path.IsEmpty())
+	{
+		NewCurrent = Path.Pop();
+	}
+	if (!NewCurrent) return;
+	CurrentTile->RemoveArmy();
+	FVector NewLocation = FVector();
+	NewCurrent->SetArmy(this, NewLocation);
+	SetNetLocation(NewLocation);
+	CurrentTile = NewCurrent;
+	MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, CurrentTile, this)
+}
+
 bool AArmy::TryFindPath()
 {
 	bool HasValidTiles = false;
-	for (ATile* Tile : Settlement->ClaimedTiles)
+	for (ATile* Tile : Building->Settlement->ClaimedTiles)
 	{
 		if (IsTileValidForRecruiting(Tile))
 		{
@@ -116,39 +227,7 @@ bool AArmy::TryFindPath()
 	return !Path.IsEmpty();
 }
 
-bool AArmy::IsTileValidForRecruiting(const ATile* Tile) const
-{
-	return Tile->GetBuilding()
-		&& Tile->GetBuilding()->Population->GetSize() == Tile->GetBuilding()->Population->GetMaxSize()
-		&& Tile->GetClaimant()
-		&& Tile->GetClaimant() == Settlement;
-}
-
-void AArmy::SetStatus(EArmyStatus NewStatus)
-{
-	if (Status == NewStatus) return;
-	Status = NewStatus;
-	Progress = 0.0f;
-}
-
-void AArmy::Move()
-{
-	ATile* NewCurrent = nullptr;
-	if (!Path.IsEmpty())
-	{
-		NewCurrent = Path.Pop();
-	}
-	if (!NewCurrent) return;
-	CurrentTile->RemoveArmy();
-	NewCurrent->SetArmy(this);
-	CurrentTile = NewCurrent;
-}
-
-void AArmy::Recruit()
-{
-	++Size;
-	CurrentTile->GetBuilding()->Population->DecreaseSize(1);
-}
+// ----------------- Combat ------------------------
 
 void AArmy::CheckForCombat()
 {

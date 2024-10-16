@@ -82,7 +82,7 @@ private:
 public:
 	AArmy* GetArmy() const;
 	bool AcceptsArmy() const;
-	void SetArmy(AArmy* NewArmy);
+	void SetArmy(AArmy* NewArmy, FVector& NewLocation);
 	void RemoveArmy();
 
 	// ------------------------Civilians---------------------------

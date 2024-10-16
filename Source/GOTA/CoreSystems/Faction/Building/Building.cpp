@@ -29,7 +29,7 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Population, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, IncomeProgress, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Civilian, Params);
-	DOREPLIFETIME_WITH_PARAMS(UBuilding, IsUnderConstruction, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, bIsUnderConstruction, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, ResourceProgress, Params);
 }
 
@@ -48,9 +48,10 @@ void UBuilding::ServerTick(const float DeltaSeconds)
 {
 	Population->ServerTick(DeltaSeconds);
 	if (Civilian)
-		Civilian->ServerTick(DeltaSeconds);
-	if (Army) Army->GOTATick(DeltaSeconds);
-	if(Settings->bIncomeEnabled)
+		Civilian->S_Tick(DeltaSeconds);
+	if (Army)
+		Army->S_Tick(DeltaSeconds);
+	if (Settings->bIncomeEnabled)
 	{
 		if (IncomeProgress < Settings->IncomeTime)
 		{
@@ -70,11 +71,12 @@ void UBuilding::ServerTick(const float DeltaSeconds)
 		{
 			ArmyRespawnTimer += DeltaSeconds;
 		}
-		else if(Tile->AcceptsArmy())
+		else if (Tile->AcceptsArmy())
 		{
 			ArmyRespawnTimer = 0.0f;
-			Army = Tile->GetWorld()->SpawnActor<AArmy>();
-			Army->Init(Settlement, Tile, GetArmyRecruitRate(), GetArmyMovementRate(), 1);
+			AArmy* NewArmy = Tile->GetWorld()->SpawnActor<AArmy>();
+			NewArmy->S_Init(this, Tile);
+			SetArmy(NewArmy);
 		}
 	}
 }
@@ -83,7 +85,7 @@ void UBuilding::ClientTick(const float DeltaSeconds)
 {
 	Population->ClientTick(DeltaSeconds);
 	if (Civilian)
-		Civilian->ClientTick(DeltaSeconds);
+		Civilian->C_Tick(DeltaSeconds);
 
 	IncomeProgress = FMath::Min(IncomeProgress + DeltaSeconds, Settings->IncomeTime);
 }
@@ -133,7 +135,15 @@ void UBuilding::ProductionChanged(int16 Change)
 	OnIncomeChanged.Broadcast(Settings->IncomeTime * Change, Settings->IncomeType);
 }
 
-// ---------------- Civilian Entity ----------------
+// ---------------- Army ----------------
+
+void UBuilding::SetArmy(AArmy* NewArmy)
+{
+	Army = NewArmy;
+	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, Army, this)
+}
+
+// ---------------- Civilian ----------------
 
 void UBuilding::SetCivilian(ACivilian* NewCivilian)
 {
@@ -141,25 +151,6 @@ void UBuilding::SetCivilian(ACivilian* NewCivilian)
 	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, Civilian, this)
 }
 
-float UBuilding::GetCivilianWorkRate() const
-{
-	return 100 / Settings->SecondsPerWorkCycle;
-}
-
-float UBuilding::GetCivilianMovementRate() const
-{
-	return 100 / Settings->CivilianSecondsPerMove;
-}
-
-float UBuilding::GetArmyRecruitRate() const
-{
-	return 100 / Settings->SecondsPerRecruitCycle;
-}
-
-float UBuilding::GetArmyMovementRate() const
-{
-	return 100 / Settings->ArmySecondsPerMove;
-}
 // --------------------- Construction phase ---------------------
 
 FGameResources UBuilding::GetResourceProgress() const
@@ -184,8 +175,7 @@ void UBuilding::FinishConstruction()
 	if (Settings->bCivilianEnabled)
 	{
 		ACivilian* NewCivilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);
-		NewCivilian->ServerInit(this, Settlement, Tile, GetCivilianWorkRate(), Settings->WorkAmountPerCycle,
-					   GetCivilianMovementRate());
+		NewCivilian->S_Init(this, Tile);
 		SetCivilian(NewCivilian);
 	}
 }

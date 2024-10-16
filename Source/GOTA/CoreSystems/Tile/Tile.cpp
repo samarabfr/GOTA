@@ -97,15 +97,16 @@ bool ATile::AcceptsArmy() const
 	return !Army;
 }
 
-void ATile::SetArmy(AArmy* NewArmy)
+void ATile::SetArmy(AArmy* NewArmy, FVector& NewLocation)
 {
 	Army = NewArmy;
-	if (Army) Army->SetActorLocation(Settings->ArmySlot + GetActorLocation());
+	if (Army) NewLocation = Settings->ArmySlot + GetActorLocation();
 }
 
 void ATile::RemoveArmy()
 {
-	SetArmy(nullptr);
+	FVector _;
+	SetArmy(nullptr, _);
 }
 
 bool ATile::AcceptsCivilian() const

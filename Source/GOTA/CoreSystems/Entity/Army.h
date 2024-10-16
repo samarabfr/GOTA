@@ -5,6 +5,7 @@
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "Army.generated.h"
 
+class UBuilding;
 class AGS_Ingame;
 class ATile;
 class ASettlement;
@@ -15,63 +16,103 @@ class GOTA_API AArmy : public AActor
 {
 	GENERATED_BODY()
 
+	// ----------------------- LifeCycle -----------------------
 protected:
 	AArmy();
-
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
 public:
-	void Init(ASettlement* InSettlement, ATile* SpawnTile, float InRecruitRate, float InMovementRate, int32 InSize);
-	void GOTATick(float DeltaSeconds);
+	void S_Init(UBuilding* InBuilding, ATile* SpawnTile);
+
+	void S_Tick(const float DeltaSeconds);
+	void C_Tick(const float DeltaSeconds);
 
 private:
-	UPROPERTY(VisibleInstanceOnly)
+	virtual void BeginDestroy() override;
+
+	// -----------------------  -----------------------
+	
+protected:
+	UPROPERTY(Replicated)
+	UBuilding* Building;
+
+	UPROPERTY(Replicated)
+	UArmySettings* Settings;
+
+	UPROPERTY()
+	AGS_Ingame* GameState;
+
+	UPROPERTY()
+	UStaticMeshComponent* MeshComponent;
+	
+private:
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Affiliation)
 	EAffiliation Affiliation;
 
 public:
 	EAffiliation GetAffiliation() const;
 
 private:
-	UPROPERTY(VisibleInstanceOnly)
-	ASettlement* Settlement;
-
-	UPROPERTY()
-	AGS_Ingame* GameState;
-
-	UPROPERTY()
-	UArmySettings* Settings;
-
-	UPROPERTY()
-	UStaticMeshComponent* Mesh;
-
-	UPROPERTY(VisibleInstanceOnly)
-	float Progress; // in percent
+	UFUNCTION()
+	void OnRep_Affiliation();
+	
 	UPROPERTY(VisibleInstanceOnly)
 	int32 Size = 0;
-	UPROPERTY(VisibleInstanceOnly)
-	float RecruitRate; // in percent per second
-	UPROPERTY(VisibleInstanceOnly)
-	float MovementRate; // in percent per second
 
-	void Move();
-	void Recruit();
+
 
 	// -----------------Status------------------------
+
 private:
-	UPROPERTY(VisibleInstanceOnly)
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	EArmyStatus Status = EArmyStatus::Idle;
 
+protected:
+	// Progress of current Action in percent
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	float Progress;
+
 	virtual void ValidateStatus();
-	bool TryFindPath();
+	
 	bool IsTileValidForRecruiting(const ATile* Tile) const;
 
 	EArmyStatus GetStatus() const { return Status; }
 	void SetStatus(EArmyStatus NewStatus);
+	
+	// ----------------- Recruiting ------------------------
 
-	// -----------------Moving on Path------------------------
+protected:
 	UPROPERTY(VisibleInstanceOnly)
+	float RecruitRate; // in percent per second
+	
+	bool TryFindPath();
+	void Recruit();
+
+	// ----------------- Moving ------------------------
+	
+protected:
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	ATile* CurrentTile;
+
+private:
+	UPROPERTY(ReplicatedUsing=OnRep_NetLocation)
+	FVector NetLocation;
+
+	UFUNCTION()
+	void OnRep_NetLocation();
+
+	void SetNetLocation(const FVector& NewNetLocation);
+
+protected:	
+	// How fast the progress increases when moving, in percent per second
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	float MovementRate; // in percent per second
 
 	UPROPERTY(VisibleInstanceOnly)
 	TArray<ATile*> Path;
+	
+private:
+	void Move();
 
 	// -----------------Combat------------------------
 private:
@@ -81,4 +122,5 @@ private:
 
 public:
 	void ChallengeToCombat();
+
 };
