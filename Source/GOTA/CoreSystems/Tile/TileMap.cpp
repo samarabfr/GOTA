@@ -301,7 +301,7 @@ TArray<ATile*> ATileMap::GetPathToNearestAffiliatedBuilding(ATile* Start, EAffil
 		ATile* Current = Frontier[0];
 		Frontier.Remove(Current);
 		// check if Current Tile is a valid Target
-		if (Current->Building
+		if (Current->GetBuilding()
 			&& Current->GetClaimant()
 			&& Current->GetClaimant()->Affiliation == TargetAffiliation
 			&& Current->AcceptsArmy())
@@ -355,7 +355,7 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 				               ? AlreadyChecked[ClaimedTile->Neighbors[i]->HexCoords.Q * Size.R
 					               + ClaimedTile->Neighbors[i]->HexCoords.R]
 				               : true;
-			if (!Checked && !NeighborTile->Building)
+			if (!Checked && !NeighborTile->GetBuilding())
 			{
 				Border.Add(NeighborTile);
 				AlreadyChecked[ClaimedTile->Neighbors[i]->HexCoords.Q * Size.R
@@ -482,7 +482,7 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 					               ? AlreadyChecked[BorderTile->Neighbors[i]->HexCoords.Q * Size.R
 						               + BorderTile->Neighbors[i]->HexCoords.R]
 					               : true;
-				if (!Checked && !NeighborTile->Building)
+				if (!Checked && !NeighborTile->GetBuilding())
 				{
 					NewBorder.Add(NeighborTile);
 					AlreadyChecked[BorderTile->Neighbors[i]->HexCoords.Q * Size.R

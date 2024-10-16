@@ -7,6 +7,7 @@
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -36,12 +37,13 @@ ASettlement::ASettlement()
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 
-	PopulationSummary = CreateDefaultSubobject<USettlementPopulation>(TEXT("Population"));
+	Population = CreateDefaultSubobject<USettlementPopulation>(TEXT("Population"));
 
 	// Load Settlement Settings DataAsset
-	ConstructorHelpers::FObjectFinder<USettlementSettings> DataAsset(
+	static ConstructorHelpers::FObjectFinder<USettlementSettings> SettingsFinder(
 		TEXT("/Game/CoreSystems/Faction/DA_SettlementSettings"));
-	Settings = DataAsset.Object;
+	if (SettingsFinder.Succeeded())
+		Settings = SettingsFinder.Object;
 }
 
 void ASettlement::BeginPlay()
@@ -53,7 +55,7 @@ void ASettlement::BeginPlay()
 void ASettlement::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	
+
 	UpdateLastMinuteResources();
 }
 
@@ -68,24 +70,24 @@ void ASettlement::StartingSetup(ATile* SpawnTile)
 		                                          ? Settings->C_StartingResources
 		                                          : Settings->N_StartingResources;
 	const TArray<UBuildingSettings*>& StartingBuildings = Affiliation == EAffiliation::Enemy
-		                                                       ? Settings->C_StartingBuildings
-		                                                       : Settings->N_StartingBuildings;
+		                                                      ? Settings->C_StartingBuildings
+		                                                      : Settings->N_StartingBuildings;
 	GameplayTags = Affiliation == EAffiliation::Enemy
 		               ? Settings->C_GameplayTags
 		               : Settings->N_GameplayTags;
-	Resources += StartingResources;
+	S_AddResources(StartingResources);
 	SpawnTile->TryBuild(StartingBuildings[0], this);
-	SpawnTile->Building->FinishConstruction();
+	SpawnTile->GetBuilding()->FinishConstruction();
 	for (int32 i = 1; i < StartingBuildings.Num(); ++i)
 	{
 		if (BorderingUnclaimedTiles.Num() <= 0) break;
 		ATile* Tile = BorderingUnclaimedTiles[FMath::RandRange(0, BorderingUnclaimedTiles.Num() - 1)];
 		Tile->TryBuild(StartingBuildings[i], this);
-		Tile->Building->FinishConstruction();
+		Tile->GetBuilding()->FinishConstruction();
 	}
 	for (ATile* Tile : ClaimedTiles)
 	{
-		Tile->Building->Population->ChangeSize(100);
+		Tile->GetBuilding()->Population->ChangeSize(100);
 	}
 }
 
@@ -115,14 +117,14 @@ bool ASettlement::IsBorderingUnclaimedTile(const ATile* Tile) const
 
 void ASettlement::OnBuildingAdded(UBuilding* Building, ATile* Tile)
 {
-	PopulationSummary->RegisterPop(Building->Population);
+	Population->RegisterPop(Building->Population);
 	ClaimedTiles.Add(Tile);
 	RefreshBorderingUnclaimedTiles();
 }
 
 void ASettlement::OnBuildingRemoved(UBuilding* Building, ATile* Tile)
 {
-	PopulationSummary->UnregisterPop(Building->Population);
+	Population->UnregisterPop(Building->Population);
 	ClaimedTiles.Remove(Tile);
 	RefreshBorderingUnclaimedTiles();
 }
@@ -162,9 +164,11 @@ void ASettlement::UpdateLastMinuteResources()
 	}
 }
 
-void ASettlement::AddResources(FGameResources Amount, bool CountTowardsIncomeLastMinute)
+void ASettlement::S_AddResources(FGameResources Amount, bool CountTowardsIncomeLastMinute)
 {
 	Resources += Amount;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
+	ForceNetUpdate();
 	if (CountTowardsIncomeLastMinute)
 	{
 		LastMinuteIncome += Amount;
@@ -172,9 +176,11 @@ void ASettlement::AddResources(FGameResources Amount, bool CountTowardsIncomeLas
 	}
 }
 
-void ASettlement::RemoveResources(FGameResources Amount, bool CountTowardsLastMinuteConsumption)
+void ASettlement::S_RemoveResources(FGameResources Amount, bool CountTowardsLastMinuteConsumption)
 {
 	Resources -= Amount;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
+	ForceNetUpdate();
 	if (CountTowardsLastMinuteConsumption)
 	{
 		LastMinuteConsumption += Amount;

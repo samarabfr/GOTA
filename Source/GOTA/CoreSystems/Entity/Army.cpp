@@ -118,8 +118,8 @@ bool AArmy::TryFindPath()
 
 bool AArmy::IsTileValidForRecruiting(const ATile* Tile) const
 {
-	return Tile->Building
-		&& Tile->Building->Population->GetSize() == Tile->Building->Population->GetMaxSize()
+	return Tile->GetBuilding()
+		&& Tile->GetBuilding()->Population->GetSize() == Tile->GetBuilding()->Population->GetMaxSize()
 		&& Tile->GetClaimant()
 		&& Tile->GetClaimant() == Settlement;
 }
@@ -147,7 +147,7 @@ void AArmy::Move()
 void AArmy::Recruit()
 {
 	++Size;
-	CurrentTile->Building->Population->DecreaseSize(1);
+	CurrentTile->GetBuilding()->Population->DecreaseSize(1);
 }
 
 void AArmy::CheckForCombat()

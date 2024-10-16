@@ -14,6 +14,7 @@ public class GOTA : ModuleRules
 			"CoreUObject",
 			"Engine",
 			"InputCore",
+			"EnhancedInput",
 			"GameplayTags",
 			"FastNoiseGenerator",
 			"FastNoise",

@@ -21,8 +21,15 @@ class GOTA_API UBuilding : public UObject
 	UBuilding();
 
 public:
-	void ServerInit(UBuildingSettings* DataAsset_, ATile* Tile_, ASettlement* Settlement_);
-	void GOTATick(float DeltaSeconds);
+	void ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement);
+	void ClientInit();
+	
+private:
+	virtual void BeginDestroy() override;
+	
+public:
+	void ServerTick(float DeltaSeconds);
+	void ClientTick(const float DeltaSeconds);
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UBuildingSettings* Settings;
@@ -33,13 +40,13 @@ public:
 	UFUNCTION()
 	void ProductionChanged(int16 Change);
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	ATile* Tile;
 
-	UPROPERTY()
+	UPROPERTY(Replicated)
 	ASettlement* Settlement;
 
-	//---------------------base income----------------
+	// --------------------- base income ---------------------
 
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnIncomeChangedSig, float, IncomeChange, EProductionType,
@@ -49,18 +56,16 @@ public:
 	float GetCurrentIncomePerSecond() const;
 	void AddIncomeToSettlement();
 
-	UPROPERTY(VisibleInstanceOnly)
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float IncomeProgress = 0.0f;
 
-	//---------------------Civilian Entity----------------
-
-	UPROPERTY(VisibleInstanceOnly)
+	// ---------------- Civilian Entity ----------------
+private:
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	ACivilian* Civilian;
 
 	float GetCivilianWorkRate() const;
 	float GetCivilianMovementRate() const;
-
-	//---------------------Civilian Entity----------------
 
 	UPROPERTY(VisibleInstanceOnly)
 	AArmy* Army;
@@ -72,15 +77,22 @@ public:
 	float GetArmyMovementRate() const;
 
 	//---------------------Construction phase----------------
+
+	void SetCivilian(ACivilian* NewCivilian);
+
+public:
+	ACivilian* GetCivilian() const { return Civilian; }
+
+	// --------------------- Construction phase ---------------------
 private:
-	UPROPERTY(VisibleInstanceOnly)
-	bool bIsUnderConstruction;
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	bool bIsUnderConstruction = true;
 
 public:
 	bool GetIsUnderConstruction() const { return bIsUnderConstruction; }
 
 private:
-	UPROPERTY(VisibleInstanceOnly)
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	FGameResources ResourceProgress;
 
 public:

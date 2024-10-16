@@ -7,6 +7,7 @@
 #include "PC_Ingame.h"
 #include "PS_Ingame.h"
 #include "GameFramework/GameStateBase.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingPlacer.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
@@ -109,12 +110,12 @@ void AGM_Ingame::EndGame(EGameEnding Ending, const FString& EndingMessage)
 void AGM_Ingame::CheckGameEndingConditions()
 {
 	if (GOTAGameState->GameEnded) return;
-	if (!GOTAGameState->Colony) return;
-	if (!GOTAGameState->Tribe) return;
+	if (!GOTAGameState->GetColony()) return;
+	if (!GOTAGameState->GetTribe()) return;
 
 	// based on SettlementPop
-	int32 ColonialPop = GOTAGameState->Colony->PopulationSummary->GetSize();
-	int32 NativePop = GOTAGameState->Tribe->PopulationSummary->GetSize();
+	int32 ColonialPop = GOTAGameState->GetColony()->Population->GetSize();
+	int32 NativePop = GOTAGameState->GetTribe()->Population->GetSize();
 	int32 TotalPop = ColonialPop + NativePop;
 
 	if (ColonialPop == 0)
@@ -158,36 +159,55 @@ void AGM_Ingame::CreateWorld()
 
 void AGM_Ingame::CreateSettlements()
 {
-	GOTAGameState->Colony = GetWorld()->SpawnActor<AColony>();
-	GOTAGameState->Colony->StartingSetup(GOTAGameState->TileMap->ColonistsStarts[0]);
+	AColony* Colony = GetWorld()->SpawnActor<AColony>();
+	Colony->StartingSetup(GOTAGameState->TileMap->ColonistsStarts[0]);
+	GOTAGameState->SetColony(Colony);
 
-	GOTAGameState->Tribe = GetWorld()->SpawnActor<ATribe>();
-	GOTAGameState->Tribe->StartingSetup(GOTAGameState->TileMap->NativesStarts[0]);
+	ATribe* Tribe = GetWorld()->SpawnActor<ATribe>();
+	Tribe->StartingSetup(GOTAGameState->TileMap->NativesStarts[0]);
+	GOTAGameState->SetTribe(Tribe);
 }
 
 void AGM_Ingame::CreateGuardians()
 {
-	// 4 because max players, but maybe this should be a constant somewhere
-	GOTAGameState->Guardians.SetNumZeroed(4);
-	for (APlayerState* PlayerState : GOTAGameState->PlayerArray)
+	ATile* TribeStartingTile = GOTAGameState->TileMap->NativesStarts[0];
+	for (int32 i = 0; i < GOTAGameState->PlayerArray.Num(); ++i)
 	{
-		APS_Ingame* PS = Cast<APS_Ingame>(PlayerState);
-		FVector Location = FVector(0, 0, 1000);
-		AGuardian* G = GetWorld()->SpawnActor<AGuardian>(PS->SelectedGuardian->GuardianBlueprint,
-		                                                 Location, FRotator::ZeroRotator);
-		GOTAGameState->Guardians[PS->GOTAPlayerID] = G;
-		G->Settings = PS->SelectedGuardian;
+		const APS_Ingame* PlayerStateIngame = Cast<APS_Ingame>(GOTAGameState->PlayerArray[i]);
+		FVector SpawnLocation = FVector(0, 0, 1000);
+		if (TribeStartingTile->Neighbors[i])
+		{
+			SpawnLocation = TribeStartingTile->Neighbors[i]->GetActorLocation() + FVector(0, 0, 100);
+		}
+		else
+		{
+			SpawnLocation = TribeStartingTile->GetActorLocation() + FVector(0, 0, 100);
+		}
+		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(PlayerStateIngame->SelectedGuardian->GuardianBlueprint,
+		                                                        SpawnLocation, FRotator::ZeroRotator);
+		GOTAGameState->SetGuardian(PlayerStateIngame->GOTAPlayerID, Guardian);
+		Guardian->Init(PlayerStateIngame->SelectedGuardian);
 	}
 }
 
-void AGM_Ingame::CreateMouseUtils()
+void AGM_Ingame::CreateUtilActors()
 {
-	for (APlayerState* PlayerState : GOTAGameState->PlayerArray)
+	for (const APlayerState* PlayerState : GOTAGameState->PlayerArray)
 	{
-		APC_Ingame* PC = Cast<APC_Ingame>(PlayerState->GetOwningController());
-		AMouseUtils* MU = GetWorld()->SpawnActor<AMouseUtils>(MouseUtilsClass);
-		MU->SetOwner(PC);
-		PC->SetMouseUtils(MU);
+		APC_Ingame* PlayerController = Cast<APC_Ingame>(PlayerState->GetOwningController());
+
+		// Create MouseUtils
+		FActorSpawnParameters MouseUtilsSpawnParams;
+		MouseUtilsSpawnParams.Owner = PlayerController;
+		AMouseUtils* MouseUtils = GetWorld()->SpawnActor<AMouseUtils>(MouseUtilsClass, MouseUtilsSpawnParams);
+		PlayerController->SetMouseUtils(MouseUtils);
+
+		// Create BuildingPlacer
+		FActorSpawnParameters BuildingPlacerSpawnParams;
+		BuildingPlacerSpawnParams.Owner = PlayerController;
+		ABuildingPlacer* BuildingPlacer = GetWorld()->SpawnActor<ABuildingPlacer>(BuildingPlacerSpawnParams);
+		BuildingPlacer->S_Init(MouseUtils);
+		PlayerController->SetBuildingPlacer(BuildingPlacer);
 	}
 }
 
@@ -198,6 +218,6 @@ void AGM_Ingame::InitialPossession()
 	{
 		APS_Ingame* PS = Cast<APS_Ingame>(PlayerState);
 		APC_Ingame* PC = Cast<APC_Ingame>(PS->GetOwningController());
-		PC->Possess(GOTAGameState->Guardians[PS->GOTAPlayerID]);
+		PC->Possess(GOTAGameState->GetGuardian(PS->GOTAPlayerID));
 	}
 }

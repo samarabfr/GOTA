@@ -38,7 +38,7 @@ public:
 	FGameplayTagContainer GameplayTags;
 
 	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	USettlementPopulation* PopulationSummary;
+	USettlementPopulation* Population;
 
 	void StartingSetup(ATile* SpawnTile);
 
@@ -62,7 +62,7 @@ public:
 	void OnBuildingAdded(UBuilding* Building, ATile* Tile);
 
 	void OnBuildingRemoved(UBuilding* Building, ATile* Tile);
-
+	
 	// -------------------Resources-------------------------
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
@@ -93,6 +93,6 @@ private:
 
 public:
 	FGameResources GetResources() const { return Resources; }
-	void AddResources(FGameResources Amount, bool CountTowardsLastMinuteIncome = false);
-	void RemoveResources(FGameResources Amount, bool CountTowardsLastMinuteConsumption = false);
+	void S_AddResources(FGameResources Amount, bool CountTowardsLastMinuteIncome = false);
+	void S_RemoveResources(FGameResources Amount, bool CountTowardsLastMinuteConsumption = false);
 };
