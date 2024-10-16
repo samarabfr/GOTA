@@ -27,9 +27,9 @@ AGuardian::AGuardian()
 	bReplicateUsingRegisteredSubObjectList = false;
 	NetUpdateFrequency = 1.0f;
 
-	PrimaryActorTick.bCanEverTick = false;
-	PrimaryActorTick.bStartWithTickEnabled = false;
-	PrimaryActorTick.TickInterval = 0.5f;
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
+	PrimaryActorTick.TickInterval = 0.2f;
 }
 
 void AGuardian::BeginPlay()
