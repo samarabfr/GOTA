@@ -84,9 +84,9 @@ void AArmy::S_Tick(const float DeltaSeconds)
 	if (Progress >= 100)
 	{
 		if (GetStatus() == EArmyStatus::Moving)
-			Move();
+			MoveToNextTileOnPath();
 		else if (GetStatus() == EArmyStatus::Recruiting)
-			Recruit();
+			TakePopFromTile();
 		Progress = 0.0f;
 		MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, Progress, this)
 		ValidateStatus();
@@ -135,19 +135,19 @@ void AArmy::ValidateStatus()
 	{
 		if (IsTileValidForRecruiting(CurrentTile))
 			SetStatus(EArmyStatus::Recruiting);
-		else if (TryFindPath())
+		else if (TryFindNearestRecruitable())
 			SetStatus(EArmyStatus::Moving);
 	}
 	else if (GetStatus() == EArmyStatus::Moving)
 	{
-		if ((Path.IsEmpty() || !Path[Path.Num() - 1]->AcceptsArmy()) && !TryFindPath())
+		if ((Path.IsEmpty() || !Path[Path.Num() - 1]->AcceptsArmy()) && !TryFindNearestRecruitable())
 			SetStatus(EArmyStatus::Idle);
 	}
 	else if (GetStatus() == EArmyStatus::Recruiting)
 	{
 		if (!IsTileValidForRecruiting(CurrentTile))
 		{
-			if (TryFindPath())
+			if (TryFindNearestRecruitable())
 				SetStatus(EArmyStatus::Moving);
 			else
 				SetStatus(EArmyStatus::Idle);
@@ -172,7 +172,7 @@ void AArmy::SetStatus(EArmyStatus NewStatus)
 	
 // ----------------- Recruiting ------------------------
 
-void AArmy::Recruit()
+void AArmy::TakePopFromTile()
 {
 	++Size;
 	CurrentTile->GetBuilding()->Population->DecreaseSize(1);
@@ -192,7 +192,7 @@ void AArmy::SetNetLocation(const FVector& NewNetLocation)
 	MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, NetLocation, this)
 }
 
-void AArmy::Move()
+void AArmy::MoveToNextTileOnPath()
 {
 	ATile* NewCurrent = nullptr;
 	if (!Path.IsEmpty())
@@ -208,7 +208,7 @@ void AArmy::Move()
 	MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, CurrentTile, this)
 }
 
-bool AArmy::TryFindPath()
+bool AArmy::TryFindNearestRecruitable()
 {
 	bool HasValidTiles = false;
 	for (ATile* Tile : Building->Settlement->ClaimedTiles)

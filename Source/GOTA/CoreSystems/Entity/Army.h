@@ -85,8 +85,8 @@ protected:
 	UPROPERTY(VisibleInstanceOnly)
 	float RecruitRate; // in percent per second
 	
-	bool TryFindPath();
-	void Recruit();
+	bool TryFindNearestRecruitable();
+	void TakePopFromTile();
 
 	// ----------------- Moving ------------------------
 	
@@ -112,7 +112,7 @@ protected:
 	TArray<ATile*> Path;
 	
 private:
-	void Move();
+	void MoveToNextTileOnPath();
 
 	// -----------------Combat------------------------
 private:
