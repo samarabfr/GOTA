@@ -23,31 +23,37 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UImage* Power_Disk;
-	
+
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Colony_Pop;
-	
+
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Colony_Food;
-	
+
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Colony_Wood;
-	
+
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Colony_Stone;
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Tribe_Pop;
-	
+
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Tribe_Food;
-	
+
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Tribe_Wood;
-	
+
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Tribe_Stone;
+
+	UPROPERTY(EditDefaultsOnly)
+	float MaxDayRotation;
 	
+	UPROPERTY(EditDefaultsOnly)
+	float MaxNightRotation;
+
 	// --------------------------------------------------
 private:
 	UPROPERTY()
@@ -56,4 +62,6 @@ private:
 	virtual void NativeConstruct() override;
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
+	void RefreshClock();
 };

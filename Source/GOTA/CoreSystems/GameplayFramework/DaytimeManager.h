@@ -38,17 +38,20 @@ public:
 	float GetNightLength() { return NightLength; }
 	float GetFullDayLength() { return DayLength + NightLength; }
 
+	// SunHeight is -1 on midnight, 1 on midday and 0 on Dawn/Dusk
+	float GetSunHeight() { return SunHeight; }
+
 private:
 	void StartDay();
 	void StartNight();
 
-	
+
 	void RefreshSunHeight();
-	
+
 	void RefreshMaterial();
 
 	void RefreshLightSetup();
-	
+
 	// --------------- Settings ---------------
 
 private:
@@ -66,14 +69,14 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="Daytime Settings")
 	float SunHeight;
-	
+
 
 	UPROPERTY(EditAnywhere, Category="Daytime Settings")
 	FLinearColor SunColor;
 
 	UPROPERTY(EditAnywhere, Category="Daytime Settings")
 	float SunBrightness;
-	
+
 	UPROPERTY(EditAnywhere, Category="Daytime Settings")
 	FLinearColor MoonColor;
 
@@ -90,10 +93,10 @@ private:
 	float StarBrightness = 1.0f;
 
 	// --------------- References ---------------
-	
+
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	ADirectionalLight* SunActor;
-	
+
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	ASkyLight* SkyLight;
 
@@ -102,16 +105,16 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	AExponentialHeightFog* HorizonFog;
-	
+
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	UStaticMesh* SkyboxMesh;
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	UMaterial* SkyboxMaterial;
-	
+
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	UCurveLinearColor* LightsIntensityCurve;
-	
+
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	UCurveLinearColor* HorizonColorCurve;
 
@@ -120,29 +123,28 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	UCurveLinearColor* CloudsColorCurve;
-	
+
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	UCurveLinearColor* HorizonFogColorCurve;
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	FRuntimeFloatCurve HorizonFalloffCurve;
-	
+
 	UPROPERTY()
 	UMaterialInstanceDynamic* DynamicMaterial;
-	
+
 	UPROPERTY()
 	UMaterialParameterCollectionInstance* ParameterCollection;
 
 	UPROPERTY()
 	UStaticMeshComponent* SkyboxComponent;
-	
+
 	UPROPERTY()
 	ULightComponent* SunLightComponent;
-		
+
 	UPROPERTY()
 	USkyLightComponent* SkyLightComponent;
-	
+
 	UPROPERTY()
 	ULightComponent* MoonLightComponent;
-
 };
