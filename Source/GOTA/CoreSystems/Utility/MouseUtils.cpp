@@ -6,21 +6,33 @@
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "GOTA/CoreSystems/GameplayFramework/PC_Ingame.h"
 #include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
 
 void AMouseUtils::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	FDoRepLifetimeParams Params;
+	Params.bIsPushBased = false;
+	Params.Condition = COND_SkipOwner;
+	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
+	DOREPLIFETIME_WITH_PARAMS(AMouseUtils, NetMouseLocation, Params)
 
-	DOREPLIFETIME(AMouseUtils, NetLocation)
-	DOREPLIFETIME(AMouseUtils, NetTileLocation)
+	Params.bIsPushBased = true;
+	Params.Condition = COND_SkipOwner;
+	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
+	DOREPLIFETIME_WITH_PARAMS(AMouseUtils, HoverTile, Params)
 }
+
+// ------------------ LifeCycle ------------------
 
 AMouseUtils::AMouseUtils()
 {
-	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.bStartWithTickEnabled = true;
 	bReplicates = true;
 	bAlwaysRelevant = true;
+
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.TickInterval = 0.0f;
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	MouseLocation = CreateDefaultSubobject<USceneComponent>("Mouse Location");
@@ -34,29 +46,27 @@ void AMouseUtils::BeginPlay()
 	Super::BeginPlay();
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
+
+	if (IsOwnedBy(GetWorld()->GetFirstPlayerController()))
+	{
+		SetActorTickEnabled(true);
+	}
 }
 
 void AMouseUtils::Tick(float DeltaSeconds)
 {
-	if (!PlayerController)return;
-	if (!PlayerController->IsLocalController())return;
-
 	FHitResult HitResult;
-	if (PlayerController->GetHitResultUnderCursor(ECC_Visibility, false, HitResult))
+	if (PlayerController && PlayerController->GetHitResultUnderCursor(ECC_Visibility, false, HitResult))
 	{
-		SetNetLocation(HitResult.Location);
-		MouseLocation->SetWorldLocation(HitResult.Location);
+		SetMouseLocation(HitResult.Location);
 
 		ATile* HitTile = Cast<ATile>(HitResult.GetActor());
 		if (HitTile && HoverTile != HitTile)
 		{
-			HoverTile = HitTile;
-			MouseTileLocation->SetWorldLocation(HitTile->GetActorLocation());
-			SetNetTileLocation(HitTile->GetActorLocation());
-			OnHoverTileChanged.Broadcast(HitTile);
+			SetHoverTile(HitTile);
 		}
 
-		if(HitResult.GetActor() != HoverActor)
+		if (HitResult.GetActor() != HoverActor)
 		{
 			HoverActor = HitResult.GetActor();
 			OnHoverActorChanged.Broadcast(HoverActor);
@@ -64,57 +74,74 @@ void AMouseUtils::Tick(float DeltaSeconds)
 	}
 }
 
-ATile* AMouseUtils::GetHoverTile() const
-{
-	return HoverTile;
-}
-
-FVector AMouseUtils::GetMouseLocation() const
-{
-	return MouseLocation->GetRelativeLocation();
-}
-
-FVector AMouseUtils::GetMouseTileLocation() const
-{
-	return MouseTileLocation->GetRelativeLocation();
-}
-
 void AMouseUtils::SetPlayerController(APC_Ingame* PC)
 {
 	PlayerController = PC;
 }
 
-void AMouseUtils::AttachToTilePosition(AActor* Actor)
+// ------------------ Mouse Location ------------------
+
+void AMouseUtils::SetMouseLocation(const FVector Location)
+{
+	SRPC_SetNetMouseLocation(Location);
+	if (!HasAuthority())
+	{
+		// if the server calls this, it does this in the RPC
+		MouseLocation->SetWorldLocation(Location);
+	}
+}
+
+void AMouseUtils::SRPC_SetNetMouseLocation_Implementation(const FVector Location)
+{
+	NetMouseLocation = Location;
+	MouseLocation->SetWorldLocation(Location);
+}
+
+void AMouseUtils::OnRep_NetMouseLocation()
+{
+	MouseLocation->SetWorldLocation(NetMouseLocation);
+}
+
+// ------------------ Hover Tile ------------------
+
+void AMouseUtils::SetHoverTile(ATile* NewTile)
+{
+	if (NewTile == HoverTile) return;
+	SRPC_SetHoverTile(NewTile);
+	if (!HasAuthority())
+	{
+		// if the server calls this, it does this in the RPC
+		HoverTile = NewTile;
+		HoverTileChanged();
+	}
+}
+
+void AMouseUtils::SRPC_SetHoverTile_Implementation(ATile* NewTile)
+{
+	HoverTile = NewTile;
+	MARK_PROPERTY_DIRTY_FROM_NAME(AMouseUtils, HoverTile, this);
+	HoverTileChanged();
+}
+
+void AMouseUtils::OnRep_HoverTile()
+{
+	HoverTileChanged();
+}
+
+void AMouseUtils::HoverTileChanged()
+{
+	if(HoverTile)
+	{
+		MouseTileLocation->SetRelativeLocation(HoverTile->GetActorLocation());
+	}
+	OnHoverTileChanged.Broadcast(HoverTile);
+}
+
+void AMouseUtils::AttachActorToTilePosition(AActor* Actor)
 {
 	Actor->AttachToComponent(MouseTileLocation, FAttachmentTransformRules::SnapToTargetIncludingScale);
 }
 
-// ---------------------------------------------------------
-// Replicated Locations to prevent Lag on MouseUtils
+// ------------------ Hover Actor ------------------
 
-void AMouseUtils::OnRep_NetLocation()
-{
-	// ignore updates on its own MouseUtils because its kinda ClientSide
-	if (PlayerController && PlayerController->IsLocalController()) return;
-	MouseLocation->SetWorldLocation(NetLocation);
-}
 
-void AMouseUtils::SetNetLocation_Implementation(FVector Location)
-{
-	NetLocation = Location;
-	// ignore updates on its own MouseUtils because its kinda ClientSide
-	if(PlayerController && !PlayerController->IsLocalController()) return;
-	MouseLocation->SetWorldLocation(NetLocation);
-}
-
-void AMouseUtils::OnRep_NetTileLocation()
-{
-	// ignore updates on its own MouseUtils because its kinda ClientSide
-	if (PlayerController && PlayerController->IsLocalController()) return;
-	MouseTileLocation->SetWorldLocation(NetTileLocation);
-}
-
-void AMouseUtils::SetNetTileLocation_Implementation(FVector Location)
-{
-	NetTileLocation = Location;
-}

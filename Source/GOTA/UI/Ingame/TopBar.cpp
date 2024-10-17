@@ -3,6 +3,7 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "GOTA/CoreSystems/GameplayFramework/DaytimeManager.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 
 
@@ -16,11 +17,8 @@ void UTopBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	float Gametime = GetWorld()->GetTimeSeconds();
-	float RotationPerSecond = 1;
-	float NewRotation = static_cast<int32>(Gametime * RotationPerSecond);
-	Daytime_Disk->SetRenderTransformAngle(Gametime);
-	
+	RefreshClock();
+
 	if (!GameState) return;
 	int16 Colonists = GameState->GetColony()->Population->GetSize();
 	int16 Natives = GameState->GetTribe()->Population->GetSize();
@@ -42,4 +40,30 @@ void UTopBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	Tribe_Food->SetText(FText::AsNumber(TribeRes.Food));
 	Tribe_Wood->SetText(FText::AsNumber(TribeRes.Wood));
 	Tribe_Stone->SetText(FText::AsNumber(TribeRes.Stone));
+}
+
+void UTopBar::RefreshClock()
+{
+	if (!GameState || !GameState->DaytimeManager) return;
+	const float SunHeight = GameState->DaytimeManager->GetSunHeight();
+
+	float NewRotation = 0.0f;
+	if (SunHeight < 0)
+	{
+		// Night
+		NewRotation = FMath::GetMappedRangeValueUnclamped(
+			FVector2D(0, -1),
+			FVector2D(0, MaxNightRotation),
+			SunHeight);
+	}
+	else
+	{
+		// Day
+		NewRotation = FMath::GetMappedRangeValueUnclamped(
+			FVector2D(0, 1),
+			FVector2D(0, MaxDayRotation),
+			SunHeight);
+	}
+
+	Daytime_Disk->SetRenderTransformAngle(NewRotation);
 }

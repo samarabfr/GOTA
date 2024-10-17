@@ -72,7 +72,7 @@ void ABuilder::Work()
 		WorkAmountLeft -= DoneWork;
 	}
 	CurrentTile->GetBuilding()->SetResourceProgress(ResourcesProgress + ResourcesProgressToAdd);
-	Building->Settlement->RemoveResources(ResourcesProgressToAdd);
+	Building->Settlement->S_RemoveResources(ResourcesProgressToAdd);
 }
 
 bool ABuilder::TryFindPath()

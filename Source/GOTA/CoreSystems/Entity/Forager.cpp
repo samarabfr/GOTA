@@ -43,7 +43,7 @@ void AForager::Work()
 	CurrentTile->EcoValues->SubtractForage(1);
 	FGameResources WorkResources = FGameResources();
 	WorkResources.Food = WorkAmount;
-	Building->Settlement->AddResources(WorkResources);
+	Building->Settlement->S_AddResources(WorkResources);
 }
 
 bool AForager::TryFindPath()
