@@ -4,6 +4,8 @@
 
 #include "DaytimeManager.generated.h"
 
+class ASkyLight;
+class AExponentialHeightFog;
 class ADirectionalLight;
 
 UCLASS()
@@ -21,89 +23,95 @@ private:
 
 	virtual void Tick(float DeltaSeconds) override;
 
-	// --------------- Current Time ---------------
+	// --------------- Time ---------------
 
 
 private:
-	UPROPERTY(EditAnywhere, Category="Daytime")
+	UPROPERTY(EditAnywhere, Category="Daytime Settings", Replicated)
 	float CurrentTime;
 
 public:
 	float GetTime() { return CurrentTime; }
 	void SetTime(const float NewTime);
 
+	float GetDayLength() { return DayLength; }
+	float GetNightLength() { return NightLength; }
 	float GetFullDayLength() { return DayLength + NightLength; }
 
+private:
 	void StartDay();
 	void StartNight();
+
+	
+	void RefreshSunHeight();
+	
+	void RefreshMaterial();
+
+	void RefreshLightSetup();
 	
 	// --------------- Settings ---------------
-	
+
 private:
-	UPROPERTY(VisibleAnywhere, Category="Daytime")
+	UPROPERTY(VisibleAnywhere, Category="Daytime Settings")
 	bool bIsDay;
 
-	UPROPERTY(EditAnywhere, Category="Daytime")
+	UPROPERTY(EditAnywhere, Category="Daytime Settings")
 	int32 DayLength = 10;
 
-	UPROPERTY(EditAnywhere, Category="Daytime")
+	UPROPERTY(EditAnywhere, Category="Daytime Settings")
 	int32 NightLength = 5;
 
-	UPROPERTY(EditAnywhere, Category="Daytime")
+	UPROPERTY(EditAnywhere, Category="Daytime Settings")
 	float DayTimeSpeed = 1.0f;
 
-	UPROPERTY(EditAnywhere, Category="Daytime")
+	UPROPERTY(EditAnywhere, Category="Daytime Settings")
 	float SunHeight;
+	
 
-
-	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
-	ADirectionalLight* SunActor;
-
-	UPROPERTY(EditAnywhere, Category="DayTime Graphics")
+	UPROPERTY(EditAnywhere, Category="Daytime Settings")
 	FLinearColor SunColor;
 
-	UPROPERTY(EditAnywhere, Category="DayTime Graphics")
+	UPROPERTY(EditAnywhere, Category="Daytime Settings")
 	float SunBrightness;
-
-	UPROPERTY(EditAnywhere, Category="DayTime Graphics")
-	FVector2D SunPitchRange;
 	
+	UPROPERTY(EditAnywhere, Category="Daytime Settings")
+	FLinearColor MoonColor;
+
+	UPROPERTY(EditAnywhere, Category="Daytime Settings")
+	float MoonBrightness;
+
+	UPROPERTY(EditAnywhere, Category="Daytime Settings")
+	float CloudSpeed = 1.0f;
+
+	UPROPERTY(EditAnywhere, Category="Daytime Settings")
+	float CloudOpacity = 1.0f;
+
+	UPROPERTY(EditAnywhere, Category="Daytime Settings")
+	float StarBrightness = 1.0f;
+
+	// --------------- References ---------------
+	
+	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
+	ADirectionalLight* SunActor;
+	
+	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
+	ASkyLight* SkyLight;
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	ADirectionalLight* MoonActor;
 
-	UPROPERTY(EditAnywhere, Category="DayTime Graphics")
-	FLinearColor MoonColor;
-
-	UPROPERTY(EditAnywhere, Category="DayTime Graphics")
-	float MoonBrightness;
+	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
+	AExponentialHeightFog* HorizonFog;
 	
-
-	UPROPERTY(EditAnywhere, Category="DaytimeManager")
-	float CloudSpeed = 1.0f;
-
-	UPROPERTY(EditAnywhere, Category="DaytimeManager")
-	float CloudOpacity = 1.0f;
-
-	UPROPERTY(EditAnywhere, Category="DaytimeManager")
-	float StarBrightness = 1.0f;
-
-	UPROPERTY()
-	UMaterialParameterCollectionInstance* ParameterCollection;
-
-	UPROPERTY()
-	UStaticMeshComponent* SkyboxComponent;
-
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	UStaticMesh* SkyboxMesh;
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	UMaterial* SkyboxMaterial;
-
-	UPROPERTY()
-	UMaterialInstanceDynamic* DynamicMaterial;
-
-
+	
+	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
+	UCurveLinearColor* LightsIntensityCurve;
+	
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	UCurveLinearColor* HorizonColorCurve;
 
@@ -112,11 +120,29 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	UCurveLinearColor* CloudsColorCurve;
+	
+	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
+	UCurveLinearColor* HorizonFogColorCurve;
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	FRuntimeFloatCurve HorizonFalloffCurve;
+	
+	UPROPERTY()
+	UMaterialInstanceDynamic* DynamicMaterial;
+	
+	UPROPERTY()
+	UMaterialParameterCollectionInstance* ParameterCollection;
 
+	UPROPERTY()
+	UStaticMeshComponent* SkyboxComponent;
+	
+	UPROPERTY()
+	ULightComponent* SunLightComponent;
+		
+	UPROPERTY()
+	USkyLightComponent* SkyLightComponent;
+	
+	UPROPERTY()
+	ULightComponent* MoonLightComponent;
 
-
-	void RefreshMaterial();
 };

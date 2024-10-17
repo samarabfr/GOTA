@@ -3,6 +3,7 @@
 
 #include "LoadingManager.h"
 
+#include "DaytimeManager.h"
 #include "PC_Ingame.h"
 #include "PS_Ingame.h"
 #include "Net/UnrealNetwork.h"
@@ -96,6 +97,7 @@ void ALoadingManager::ServerTick()
 			GameState->TileMap->EnableTick();
 			GameState->GetColony()->EnableTick();
 			GameState->GetTribe()->EnableTick();
+			GameState->DaytimeManager->SetActorTickEnabled(true);
 			LoadingStatus->SetCurrentStatus(ELoadingStatus::Finished);
 			GracePeriodTime = 0.0;
 		}
@@ -165,6 +167,7 @@ void ALoadingManager::ClientTick()
 			LocalPlayerController->InitInput();
 			LocalPlayerController->RemoveLoadingUI();
 			GameState->TileMap->EnableTick();
+			GameState->DaytimeManager->SetActorTickEnabled(true);
 			LoadingStatus->SetCurrentStatus(ELoadingStatus::Finished);
 		}
 		break;
