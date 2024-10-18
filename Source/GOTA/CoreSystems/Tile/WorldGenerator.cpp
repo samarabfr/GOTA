@@ -665,7 +665,7 @@ void UWorldGenerator::SpawnTiles()
 			Terrain.Biome = Tile.Biome;
 			Terrain.bIsRiver = Tile.HasRiver;
 			Terrain.RiverConnections = Tile.RiverConnections;
-			NewTile->TerrainServerInit(Terrain);
+			NewTile->S_TerrainInit(Terrain);
 			if (Tile.IsColonistStart) TileMap->ColonistsStarts.Add(NewTile);
 			else if (Tile.IsNativeStart) TileMap->NativesStarts.Add(NewTile);
 		}
