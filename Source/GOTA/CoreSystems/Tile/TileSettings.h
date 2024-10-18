@@ -31,6 +31,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Claim Meshes")
 	UStaticMesh* ClaimMeshRiver;
 
+	UPROPERTY(EditDefaultsOnly, Category="Claim Meshes")
+	UStaticMesh* OceanLinesMesh;
+
+	UPROPERTY(EditDefaultsOnly, Category="Claim Meshes")
+	UStaticMesh* OceanLinesAtRiverDeltaMesh;
+
 	UPROPERTY(EditDefaultsOnly, Category="Tile Content")
 	FGameplayTag BuildingTag;
 
