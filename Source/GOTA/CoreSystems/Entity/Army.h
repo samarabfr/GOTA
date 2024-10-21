@@ -86,13 +86,13 @@ protected:
 	UPROPERTY(VisibleInstanceOnly)
 	float RecruitRate; // in percent per second
 	
-	bool IsTileValidForRecruiting(const ATile* Tile) const;
-	bool TryFindNearestRecruitable();
 	void TakePopFromTile();
+	bool IsTileValidForRecruiting(const ATile* Tile) const;
 
 public:
 	void RecruitFromTile();
 	bool IsCurrentTileValidForRecruiting() const;
+	bool TryFindPathToNearestRecruitable();
 
 	// ----------------- Moving ------------------------
 
@@ -117,8 +117,10 @@ protected:
 	UPROPERTY(VisibleInstanceOnly)
 	TArray<ATile*> Path;
 
-private:
+public:
+	bool IsPathValid();
 	void MoveToNextTileOnPath();
+	void MovePositionToNextTileOnPath();
 
 	// -----------------Combat------------------------
 private:

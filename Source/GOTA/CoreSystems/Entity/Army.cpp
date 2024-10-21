@@ -87,7 +87,7 @@ void AArmy::S_Tick(const float DeltaSeconds)
 	if (Progress >= 100)
 	{
 		if (GetStatus() == EArmyStatus::MovingToNextTile)
-			MoveToNextTileOnPath();
+			MovePositionToNextTileOnPath();
 		else if (GetStatus() == EArmyStatus::RecruitingFromTile)
 			TakePopFromTile();
 		SetStatus(EArmyStatus::Idling);
@@ -140,23 +140,39 @@ void AArmy::SetStatus(EArmyStatus NewStatus)
 
 // ----------------------- Recruiting -----------------------
 
-bool AArmy::IsCurrentTileValidForRecruiting() const
+void AArmy::TakePopFromTile()
 {
-	return IsTileValidForRecruiting(CurrentTile);
+	if(CurrentTile->GetBuilding()->Population->GetSize() <= 0)
+		return;
+	++Size;
+	CurrentTile->GetBuilding()->Population->DecreaseSize(1);
+	MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, Size, this)
 }
 
 bool AArmy::IsTileValidForRecruiting(const ATile* Tile) const
 {
 	return Tile
-	    && Tile->GetBuilding()
+		&& Tile->GetBuilding()
 		&& Tile->GetBuilding()->Population->GetSize() == Tile->GetBuilding()->Population->GetMaxSize()
 		&& Tile->GetClaimant()
 		&& Tile->GetClaimant() == Building->Settlement;
 }
 
-bool AArmy::TryFindNearestRecruitable()
+void AArmy::RecruitFromTile()
+{
+	Progress = 0.f;
+	SetStatus(EArmyStatus::RecruitingFromTile);
+}
+
+bool AArmy::IsCurrentTileValidForRecruiting() const
+{
+	return IsTileValidForRecruiting(CurrentTile);
+}
+
+bool AArmy::TryFindPathToNearestRecruitable()
 {
 	bool HasValidTiles = false;
+	if(!Building) return false;
 	for (ATile* Tile : Building->Settlement->ClaimedTiles)
 	{
 		if (IsTileValidForRecruiting(Tile))
@@ -173,19 +189,6 @@ bool AArmy::TryFindNearestRecruitable()
 	return !Path.IsEmpty();
 }
 
-void AArmy::TakePopFromTile()
-{
-	++Size;
-	CurrentTile->GetBuilding()->Population->DecreaseSize(1);
-	MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, Size, this)
-}
-
-void AArmy::RecruitFromTile()
-{
-	Progress = 0.f;
-	SetStatus(EArmyStatus::RecruitingFromTile);
-}
-
 // ----------------- Moving ------------------------
 
 void AArmy::OnRep_NetLocation()
@@ -200,10 +203,21 @@ void AArmy::SetNetLocation(const FVector& NewNetLocation)
 	MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, NetLocation, this)
 }
 
+bool AArmy::IsPathValid()
+{
+	return !Path.IsEmpty() && Path[Path.Num() - 1]->AcceptsArmy();
+}
+
 void AArmy::MoveToNextTileOnPath()
 {
+	Progress = 0.f;
+	SetStatus(EArmyStatus::MovingToNextTile);
+}
+
+void AArmy::MovePositionToNextTileOnPath()
+{
 	ATile* NewCurrent = nullptr;
-	if (!Path.IsEmpty())
+	if (IsPathValid())
 	{
 		NewCurrent = Path.Pop();
 	}

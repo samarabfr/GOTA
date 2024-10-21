@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "STT_RecruitFromTile.h"
+#include "STT_MoveToNextTile.h"
 
 #include "StateTreeExecutionContext.h"
 #include "GOTA/CoreSystems/Entity/Army.h"
 
-EStateTreeRunStatus FSTT_RecruitFromTile::EnterState(FStateTreeExecutionContext& Context,
-                                                     const FStateTreeTransitionResult& Transition) const
+EStateTreeRunStatus FSTT_MoveToNextTile::EnterState(FStateTreeExecutionContext& Context,
+                                                    const FStateTreeTransitionResult& Transition) const
 {
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
 	if (!InstanceData.ArmyRef)
@@ -16,7 +16,6 @@ EStateTreeRunStatus FSTT_RecruitFromTile::EnterState(FStateTreeExecutionContext&
 		return EStateTreeRunStatus::Failed;
 	}
 
-	InstanceData.ArmyRef.Get()->RecruitFromTile();
-
+	InstanceData.ArmyRef.Get()->MoveToNextTileOnPath();
 	return EStateTreeRunStatus::Running;
 }
