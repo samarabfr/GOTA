@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
+#include "GameplayTagContainer.h"
 
 #include "ArmySettings.generated.h"
 
@@ -15,4 +16,7 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMesh* NativeArmyMesh;
+
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTag StateTreeCompletedTaskEventTag;
 };

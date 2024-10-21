@@ -88,9 +88,9 @@ enum class ECivilianStatus : uint8
 UENUM()
 enum class EArmyStatus : uint8
 {
-	Idle UMETA(DisplayName = "Idle"),
-	Moving UMETA(DisplayName = "Moving"),
-	Recruiting UMETA(DisplayName = "Recruiting"),
+	Idling UMETA(DisplayName = "Idle"),
+	MovingToNextTile UMETA(DisplayName = "Moving"),
+	RecruitingFromTile UMETA(DisplayName = "Recruiting"),
 	Fighting UMETA(DisplayName = "Fighting")
 };
 

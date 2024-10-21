@@ -10,6 +10,7 @@
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
+#include "StateTree/StateTreeComponentArmy.h"
 
 void AArmy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -26,6 +27,7 @@ void AArmy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
+	DOREPLIFETIME_WITH_PARAMS(AArmy, Size, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, Progress, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, Status, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, CurrentTile, Params);
@@ -39,7 +41,7 @@ AArmy::AArmy()
 	ConstructorHelpers::FObjectFinder<UArmySettings> SettingsFinder(
 		TEXT("/Game/CoreSystems/Entity/DA_Army"));
 	Settings = SettingsFinder.Object;
-	
+
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
@@ -47,8 +49,10 @@ AArmy::AArmy()
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Static Mesh");
+	StateTree = CreateDefaultSubobject<UStateTreeComponentArmy>("StateTree");
 	MeshComponent->SetupAttachment(RootComponent);
-	MeshComponent->SetRelativeScale3D(FVector(1, 1, 4));// I still don't understand why i need to set both: the ResponseChannel and CollisionEnabled
+	MeshComponent->SetRelativeScale3D(FVector(1, 1, 4));
+	// I still don't understand why i need to set both: the ResponseChannel and CollisionEnabled
 	// but this way it will only collide with ray casts, as intended
 	MeshComponent->SetSimulatePhysics(false);
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
@@ -79,27 +83,27 @@ void AArmy::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 
 void AArmy::S_Tick(const float DeltaSeconds)
 {
-	ValidateStatus();
 	C_Tick(DeltaSeconds);
 	if (Progress >= 100)
 	{
-		if (GetStatus() == EArmyStatus::Moving)
+		if (GetStatus() == EArmyStatus::MovingToNextTile)
 			MoveToNextTileOnPath();
-		else if (GetStatus() == EArmyStatus::Recruiting)
+		else if (GetStatus() == EArmyStatus::RecruitingFromTile)
 			TakePopFromTile();
+		SetStatus(EArmyStatus::Idling);
 		Progress = 0.0f;
+		StateTree->SendStateTreeEvent(Settings->StateTreeCompletedTaskEventTag, FConstStructView(), FName(GetName()));
 		MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, Progress, this)
-		ValidateStatus();
 	}
 }
 
 void AArmy::C_Tick(const float DeltaSeconds)
 {
-	if (GetStatus() == EArmyStatus::Moving)
+	if (GetStatus() == EArmyStatus::MovingToNextTile)
 	{
 		Progress += MovementRate * DeltaSeconds;
 	}
-	else if (GetStatus() == EArmyStatus::Recruiting)
+	else if (GetStatus() == EArmyStatus::RecruitingFromTile)
 	{
 		Progress += RecruitRate * DeltaSeconds;
 	}
@@ -127,33 +131,14 @@ void AArmy::OnRep_Affiliation()
 
 // ----------------------- Status -----------------------
 
-void AArmy::ValidateStatus()
+void AArmy::SetStatus(EArmyStatus NewStatus)
 {
-	CheckForCombat();
-	if (Status == EArmyStatus::Fighting) return;
-	if (Status == EArmyStatus::Idle)
-	{
-		if (IsTileValidForRecruiting(CurrentTile))
-			SetStatus(EArmyStatus::Recruiting);
-		else if (TryFindNearestRecruitable())
-			SetStatus(EArmyStatus::Moving);
-	}
-	else if (GetStatus() == EArmyStatus::Moving)
-	{
-		if ((Path.IsEmpty() || !Path[Path.Num() - 1]->AcceptsArmy()) && !TryFindNearestRecruitable())
-			SetStatus(EArmyStatus::Idle);
-	}
-	else if (GetStatus() == EArmyStatus::Recruiting)
-	{
-		if (!IsTileValidForRecruiting(CurrentTile))
-		{
-			if (TryFindNearestRecruitable())
-				SetStatus(EArmyStatus::Moving);
-			else
-				SetStatus(EArmyStatus::Idle);
-		}
-	}
+	if (Status == NewStatus) return;
+	Status = NewStatus;
+	MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, Status, this)
 }
+
+// ----------------------- Recruiting -----------------------
 
 bool AArmy::IsTileValidForRecruiting(const ATile* Tile) const
 {
@@ -163,19 +148,36 @@ bool AArmy::IsTileValidForRecruiting(const ATile* Tile) const
 		&& Tile->GetClaimant() == Building->Settlement;
 }
 
-void AArmy::SetStatus(EArmyStatus NewStatus)
+bool AArmy::TryFindNearestRecruitable()
 {
-	if (Status == NewStatus) return;
-	Status = NewStatus;
-	Progress = 0.0f;
+	bool HasValidTiles = false;
+	for (ATile* Tile : Building->Settlement->ClaimedTiles)
+	{
+		if (IsTileValidForRecruiting(Tile))
+		{
+			HasValidTiles = true;
+			break;
+		}
+	}
+	if (!HasValidTiles) return false;
+	Path = GameState->TileMap->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
+	{
+		return IsTileValidForRecruiting(Tile);
+	});
+	return !Path.IsEmpty();
 }
-	
-// ----------------- Recruiting ------------------------
 
 void AArmy::TakePopFromTile()
 {
 	++Size;
 	CurrentTile->GetBuilding()->Population->DecreaseSize(1);
+	MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, Size, this)
+}
+
+void AArmy::RecruitFromTile()
+{
+	Progress = 0.f;
+	SetStatus(EArmyStatus::RecruitingFromTile);
 }
 
 // ----------------- Moving ------------------------
@@ -208,29 +210,12 @@ void AArmy::MoveToNextTileOnPath()
 	MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, CurrentTile, this)
 }
 
-bool AArmy::TryFindNearestRecruitable()
-{
-	bool HasValidTiles = false;
-	for (ATile* Tile : Building->Settlement->ClaimedTiles)
-	{
-		if (IsTileValidForRecruiting(Tile))
-		{
-			HasValidTiles = true;
-			break;
-		}
-	}
-	if (!HasValidTiles) return false;
-	Path = GameState->TileMap->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
-	{
-		return IsTileValidForRecruiting(Tile);
-	});
-	return !Path.IsEmpty();
-}
-
 // ----------------- Combat ------------------------
 
 void AArmy::CheckForCombat()
 {
+	// soll in stateTree
+	/*
 	if (Status == EArmyStatus::Fighting) return;
 	for (ATile* Neighbor : CurrentTile->Neighbors)
 	{
@@ -248,6 +233,7 @@ void AArmy::CheckForCombat()
 			}
 		}
 	}
+	*/
 }
 
 void AArmy::InitializeCombat(AArmy* Enemy)

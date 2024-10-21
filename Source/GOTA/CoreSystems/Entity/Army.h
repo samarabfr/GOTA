@@ -5,6 +5,7 @@
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "Army.generated.h"
 
+class UStateTreeComponentArmy;
 class UBuilding;
 class AGS_Ingame;
 class ATile;
@@ -20,7 +21,7 @@ class GOTA_API AArmy : public AActor
 protected:
 	AArmy();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
 public:
 	void S_Init(UBuilding* InBuilding, ATile* SpawnTile);
 
@@ -31,7 +32,7 @@ private:
 	virtual void BeginDestroy() override;
 
 	// -----------------------  -----------------------
-	
+
 protected:
 	UPROPERTY(Replicated)
 	UBuilding* Building;
@@ -44,7 +45,7 @@ protected:
 
 	UPROPERTY()
 	UStaticMeshComponent* MeshComponent;
-	
+
 private:
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Affiliation)
 	EAffiliation Affiliation;
@@ -55,41 +56,45 @@ public:
 private:
 	UFUNCTION()
 	void OnRep_Affiliation();
-	
-	UPROPERTY(VisibleInstanceOnly)
+
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	int32 Size = 0;
 
-
-
-	// -----------------Status------------------------
-
+	// ----------------- Status ------------------------
 private:
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	EArmyStatus Status = EArmyStatus::Idle;
-
-protected:
 	// Progress of current Action in percent
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float Progress;
 
-	virtual void ValidateStatus();
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	EArmyStatus Status = EArmyStatus::Idling;
 	
-	bool IsTileValidForRecruiting(const ATile* Tile) const;
+	UPROPERTY()
+	UStateTreeComponentArmy* StateTree;
 
-	EArmyStatus GetStatus() const { return Status; }
+protected:
 	void SetStatus(EArmyStatus NewStatus);
 	
+public:
+
+	float GetProgress() const { return Progress; }
+	EArmyStatus GetStatus() const { return Status; }
+
 	// ----------------- Recruiting ------------------------
 
 protected:
 	UPROPERTY(VisibleInstanceOnly)
 	float RecruitRate; // in percent per second
 	
+	bool IsTileValidForRecruiting(const ATile* Tile) const;
 	bool TryFindNearestRecruitable();
 	void TakePopFromTile();
 
+public:
+	void RecruitFromTile();
+
 	// ----------------- Moving ------------------------
-	
+
 protected:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	ATile* CurrentTile;
@@ -103,14 +108,14 @@ private:
 
 	void SetNetLocation(const FVector& NewNetLocation);
 
-protected:	
+protected:
 	// How fast the progress increases when moving, in percent per second
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float MovementRate; // in percent per second
 
 	UPROPERTY(VisibleInstanceOnly)
 	TArray<ATile*> Path;
-	
+
 private:
 	void MoveToNextTileOnPath();
 
@@ -122,5 +127,4 @@ private:
 
 public:
 	void ChallengeToCombat();
-
 };
