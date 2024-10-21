@@ -66,12 +66,17 @@ void ATile::BeginPlay()
 	Super::BeginPlay();
 	GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
+	if(!HasAuthority())
+	{
+		SpawnOceanLineMeshes();
+	}
 }
 
 void ATile::ServerInit()
 {
 	AddReplicatedSubObject(EcoValues);
 	Civilians.SetNumZeroed(Settings->CivilianSlots.Num());
+	SpawnOceanLineMeshes();
 }
 
 void ATile::OnRep_GameplayTags()
@@ -390,9 +395,9 @@ void ATile::InitHexagonMesh()
 	if (HexagonMesh) UpdateHexagonMaterial();
 }
 
-// -----------------------Terrain---------------------------
+// ----------------------- Terrain ---------------------------
 
-void ATile::TerrainClientInit()
+void ATile::C_TerrainInit()
 {
 	if (!TileContent) InitTileContent();
 	TileContent->SetTerrain(Terrain);
@@ -400,12 +405,12 @@ void ATile::TerrainClientInit()
 	EcoValues->Init(Terrain.Biome);
 }
 
-void ATile::TerrainServerInit(const FTerrain& Terrain_)
+void ATile::S_TerrainInit(const FTerrain& Terrain_)
 {
 	FTerrain OldTerrain = Terrain;
 	Terrain = Terrain_;
 	GameplayTags.AddTag(DA_Biomes->EnumToTag[Terrain_.Biome]);
-	TerrainClientInit();
+	C_TerrainInit();
 	InitTileLayout();
 }
 
@@ -426,6 +431,36 @@ void ATile::UpdateHexagonMaterial()
 	case EBiome::Volcano:
 		SM_Hexagon->SetMaterial(0, Settings->M_Volcano);
 		break;
+	}
+}
+
+void ATile::SpawnOceanLineMeshes()
+{
+	if (!GameState)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("OceanLines couldn't be spawned, because GameState is nullptr"))
+		return;
+	}
+
+	for (int32 i = 0; i < 6; ++i)
+	{
+		if (Neighbors[i]) continue;
+
+		FTransform T = FTransform();
+
+		FVector Location = GetActorLocation();
+		Location.Z = 1.0f;
+		T.SetLocation(Location);
+		T.SetRotation(FRotator(0, i * 60 + 180, 0).Quaternion());
+		
+		if (Terrain.RiverConnections[i])
+		{
+			GameState->StaticMeshBatcher->AddStaticMeshInstance(Settings->OceanLinesAtRiverDeltaMesh, T);
+		}
+		else
+		{
+			GameState->StaticMeshBatcher->AddStaticMeshInstance(Settings->OceanLinesMesh, T);
+		}
 	}
 }
 
