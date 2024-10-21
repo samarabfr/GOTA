@@ -171,7 +171,7 @@ private:
 	UFUNCTION()
 	void InitHexagonMesh();
 
-	/* -----------------------Terrain---------------------------
+	/* ----------------------- Terrain ---------------------------
 	 * Terrain is only Set in TerrainInit (called by WorldGen) and nowhere else.
 	 * No Value of Terrain is allowed to change after TerrainInit was called.
 	 * IDK how we could enforce it on compiler level tho
@@ -179,17 +179,18 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="Tile")
 	UBiomesDataAsset* DA_Biomes;
 
-	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=TerrainClientInit, Category="Tile")
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=C_TerrainInit, Category="Tile")
 	FTerrain Terrain;
 
 	UFUNCTION()
-	void TerrainClientInit();
+	void C_TerrainInit();
 
 public:
-	void TerrainServerInit(const FTerrain& Terrain_);
+	void S_TerrainInit(const FTerrain& Terrain_);
 
 private:
 	void UpdateHexagonMaterial();
+	void SpawnOceanLineMeshes();
 
 	// ------------------TileContent--------------------
 private:
