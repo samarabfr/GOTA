@@ -140,9 +140,15 @@ void AArmy::SetStatus(EArmyStatus NewStatus)
 
 // ----------------------- Recruiting -----------------------
 
+bool AArmy::IsCurrentTileValidForRecruiting() const
+{
+	return IsTileValidForRecruiting(CurrentTile);
+}
+
 bool AArmy::IsTileValidForRecruiting(const ATile* Tile) const
 {
-	return Tile->GetBuilding()
+	return Tile
+	    && Tile->GetBuilding()
 		&& Tile->GetBuilding()->Population->GetSize() == Tile->GetBuilding()->Population->GetMaxSize()
 		&& Tile->GetClaimant()
 		&& Tile->GetClaimant() == Building->Settlement;

@@ -92,6 +92,7 @@ protected:
 
 public:
 	void RecruitFromTile();
+	bool IsCurrentTileValidForRecruiting() const;
 
 	// ----------------- Moving ------------------------
 
