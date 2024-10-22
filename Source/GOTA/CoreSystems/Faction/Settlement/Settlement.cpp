@@ -164,19 +164,19 @@ void ASettlement::UpdateLastMinuteResources()
 	}
 }
 
-void ASettlement::S_AddResources(FGameResources Amount, bool CountTowardsIncomeLastMinute)
+void ASettlement::S_AddResources(const FGameResources Amount, const bool CountTowardsLastMinuteIncome)
 {
 	Resources += Amount;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
 	ForceNetUpdate();
-	if (CountTowardsIncomeLastMinute)
+	if (CountTowardsLastMinuteIncome)
 	{
 		LastMinuteIncome += Amount;
 		IncomeEvents.Enqueue(FIncomeEvent(Amount, GetWorld()->GetTimeSeconds()));
 	}
 }
 
-void ASettlement::S_RemoveResources(FGameResources Amount, bool CountTowardsLastMinuteConsumption)
+void ASettlement::S_RemoveResources(const FGameResources Amount, const bool CountTowardsLastMinuteConsumption)
 {
 	Resources -= Amount;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
