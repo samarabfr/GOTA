@@ -36,9 +36,15 @@ void AGS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 
 AGS_Ingame::AGS_Ingame()
 {
-	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
+	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
+	NetUpdateFrequency = 1.0f;
+
+	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.TickInterval = 1.0f;
+	
 	TotalTrees = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Trees"));
 	TotalForage = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Forage"));
 	TotalWildlife = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Wildlife"));
