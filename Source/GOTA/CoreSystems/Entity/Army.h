@@ -68,15 +68,14 @@ private:
 
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	EArmyStatus Status = EArmyStatus::Idling;
-	
+
 	UPROPERTY()
 	UStateTreeComponentArmy* StateTree;
 
 protected:
 	void SetStatus(EArmyStatus NewStatus);
-	
-public:
 
+public:
 	float GetProgress() const { return Progress; }
 	EArmyStatus GetStatus() const { return Status; }
 
@@ -85,12 +84,12 @@ public:
 protected:
 	UPROPERTY(VisibleInstanceOnly)
 	float RecruitRate; // in percent per second
-	
+
 	void TakePopFromTile();
 	bool IsTileValidForRecruiting(const ATile* Tile) const;
 
 public:
-	void RecruitFromTile();
+	void StartRecruitFromTile();
 	bool IsCurrentTileValidForRecruiting() const;
 	bool TryFindPathToNearestRecruitable();
 
@@ -108,6 +107,7 @@ private:
 	void OnRep_NetLocation();
 
 	void SetNetLocation(const FVector& NewNetLocation);
+	void MoveToNextTileOnPath();
 
 protected:
 	// How fast the progress increases when moving, in percent per second
@@ -119,8 +119,7 @@ protected:
 
 public:
 	bool IsPathValid();
-	void MoveToNextTileOnPath();
-	void MovePositionToNextTileOnPath();
+	void StartMoveToNextTileOnPath();
 
 	// -----------------Combat------------------------
 private:

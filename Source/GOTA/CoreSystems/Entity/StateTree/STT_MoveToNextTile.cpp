@@ -16,6 +16,6 @@ EStateTreeRunStatus FSTT_MoveToNextTile::EnterState(FStateTreeExecutionContext& 
 		return EStateTreeRunStatus::Failed;
 	}
 
-	InstanceData.ArmyRef.Get()->MoveToNextTileOnPath();
+	InstanceData.ArmyRef.Get()->StartMoveToNextTileOnPath();
 	return EStateTreeRunStatus::Running;
 }

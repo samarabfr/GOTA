@@ -87,7 +87,7 @@ void AArmy::S_Tick(const float DeltaSeconds)
 	if (Progress >= 100)
 	{
 		if (GetStatus() == EArmyStatus::MovingToNextTile)
-			MovePositionToNextTileOnPath();
+			MoveToNextTileOnPath();
 		else if (GetStatus() == EArmyStatus::RecruitingFromTile)
 			TakePopFromTile();
 		SetStatus(EArmyStatus::Idling);
@@ -142,7 +142,7 @@ void AArmy::SetStatus(EArmyStatus NewStatus)
 
 void AArmy::TakePopFromTile()
 {
-	if(CurrentTile->GetBuilding()->Population->GetSize() <= 0)
+	if (CurrentTile->GetBuilding()->Population->GetSize() <= 0)
 		return;
 	++Size;
 	CurrentTile->GetBuilding()->Population->DecreaseSize(1);
@@ -158,7 +158,7 @@ bool AArmy::IsTileValidForRecruiting(const ATile* Tile) const
 		&& Tile->GetClaimant() == Building->Settlement;
 }
 
-void AArmy::RecruitFromTile()
+void AArmy::StartRecruitFromTile()
 {
 	Progress = 0.f;
 	SetStatus(EArmyStatus::RecruitingFromTile);
@@ -172,7 +172,7 @@ bool AArmy::IsCurrentTileValidForRecruiting() const
 bool AArmy::TryFindPathToNearestRecruitable()
 {
 	bool HasValidTiles = false;
-	if(!Building) return false;
+	if (!Building) return false;
 	for (ATile* Tile : Building->Settlement->ClaimedTiles)
 	{
 		if (IsTileValidForRecruiting(Tile))
@@ -208,13 +208,13 @@ bool AArmy::IsPathValid()
 	return !Path.IsEmpty() && Path[Path.Num() - 1]->AcceptsArmy();
 }
 
-void AArmy::MoveToNextTileOnPath()
+void AArmy::StartMoveToNextTileOnPath()
 {
 	Progress = 0.f;
 	SetStatus(EArmyStatus::MovingToNextTile);
 }
 
-void AArmy::MovePositionToNextTileOnPath()
+void AArmy::MoveToNextTileOnPath()
 {
 	ATile* NewCurrent = nullptr;
 	if (IsPathValid())

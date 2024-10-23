@@ -16,7 +16,7 @@ EStateTreeRunStatus FSTT_RecruitFromTile::EnterState(FStateTreeExecutionContext&
 		return EStateTreeRunStatus::Failed;
 	}
 
-	InstanceData.ArmyRef.Get()->RecruitFromTile();
+	InstanceData.ArmyRef.Get()->StartRecruitFromTile();
 
 	return EStateTreeRunStatus::Running;
 }
