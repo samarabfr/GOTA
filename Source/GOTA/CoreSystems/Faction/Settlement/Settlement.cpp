@@ -57,6 +57,20 @@ void ASettlement::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 	UpdateLastMinuteResources();
+	Resources.Food -= Population->GetSize() * Settings->PopEatingPerSecond * DeltaSeconds;
+
+	if (HasAuthority())
+	{
+		if (Resources.Food < Settings->StarvingThreshold)
+		{
+			int32 Count = Resources.Food / Settings->StarvingThreshold;
+			Resources.Food += Count * Settings->StarvingThreshold * -1;
+			for (int32 i = 0; i < Count; ++i)
+			{
+				Population->StarveRandomPop();
+			}
+		}
+	}
 }
 
 void ASettlement::EnableTick()

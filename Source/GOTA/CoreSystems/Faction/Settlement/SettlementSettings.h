@@ -30,6 +30,7 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Colonist Settlement")
 	FGameResources C_StartingResources;
+
 	
 	UPROPERTY(EditDefaultsOnly, Category="Native Settlement")
 	TSubclassOf<AArmy> N_ArmyClass;
@@ -42,6 +43,7 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Native Settlement")
 	FGameResources N_StartingResources;
+
 	
 	UPROPERTY(EditDefaultsOnly, Category="Population")
 	int32 PopulationGrowthThreshold;
@@ -52,6 +54,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Population")
 	float PopGrowthPerNeighborPop;
 
+	
+	UPROPERTY(EditDefaultsOnly, Category="Eating and Starving")
+	float PopEatingPerSecond;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Eating and Starving")
+	float StarvingThreshold;
+
+	
 	UPROPERTY(EditDefaultsOnly, Category="EcoValues")
 	int32 NativeTreeThreshold;
 
@@ -70,6 +80,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="EcoValues")
 	int32 ColonistMaxRange;
 
+	
 	UPROPERTY(EditDefaultsOnly, Category="Army Spawning Condition")
 	int32 MinimumPopulationToSpawnArmy;
 
@@ -82,6 +93,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Army Spawning Condition")
 	float AggressiveMoodMaximumImpact;
 
+	
 	UPROPERTY(EditDefaultsOnly, Category="Army Spawning")
 	float MinRatioOfEligiblePopJoiningArmy;
 
@@ -106,6 +118,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Army Spawning")
 	int FearMoodPickBias;
 
+	
 	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
 	float FoodImportance = 1;
 

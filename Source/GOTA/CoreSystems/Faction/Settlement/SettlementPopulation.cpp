@@ -32,6 +32,20 @@ void USettlementPopulation::UnregisterPop(UPopulation* Pop)
 	Populations.Remove(Pop);
 }
 
+void USettlementPopulation::StarveRandomPop()
+{
+	int32 RandomCursor = FMath::RandRange(0, GetSize());
+	for (UPopulation* Pop : Populations)
+	{
+		RandomCursor -= Pop->GetSize();
+		if(RandomCursor < 0)
+		{
+			Pop->ChangeSize(-1);
+			return;
+		}
+	}
+}
+
 void USettlementPopulation::UpdateSize(int16 ChangedBy)
 {
 	Size += ChangedBy;
