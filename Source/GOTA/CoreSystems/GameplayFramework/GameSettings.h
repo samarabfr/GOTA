@@ -9,13 +9,13 @@
 
 class USettlementSettings;
 
-UCLASS(Blueprintable)
-class GOTA_API UGameSettings : public UObject
+UCLASS()
+class GOTA_API AGameSettings : public AActor
 {
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
-	UGameSettings();
+	AGameSettings();
 
 private:
 	UPROPERTY()

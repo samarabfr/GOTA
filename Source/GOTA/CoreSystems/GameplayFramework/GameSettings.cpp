@@ -5,7 +5,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
-void UGameSettings::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void AGameSettings::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
@@ -16,12 +16,12 @@ void UGameSettings::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	//	DOREPLIFETIME_WITH_PARAMS(UPopulation, Size, Params)
 }
 
-bool UGameSettings::IsSupportedForNetworking() const
+bool AGameSettings::IsSupportedForNetworking() const
 {
 	return true;
 }
 
-UGameSettings::UGameSettings()
+AGameSettings::AGameSettings()
 {
 	const ConstructorHelpers::FObjectFinder<UPopulationSettingsDefaults> TribePopulationFinder(
 		TEXT("/Game/CoreSystems/Faction/DA_TribePopulationSettings"));

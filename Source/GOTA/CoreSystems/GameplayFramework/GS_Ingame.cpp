@@ -47,8 +47,6 @@ AGS_Ingame::AGS_Ingame()
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	PrimaryActorTick.TickInterval = 1.0f;
 
-	GameSettings = CreateDefaultSubobject<UGameSettings>(TEXT("Game Settings"));
-	
 	TotalTrees = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Trees"));
 	TotalForage = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Forage"));
 	TotalWildlife = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Wildlife"));
@@ -62,17 +60,23 @@ AGS_Ingame::AGS_Ingame()
 void AGS_Ingame::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Spawn Static Mesh Batcher
+	StaticMeshBatcher = GetWorld()->SpawnActor<AStaticMeshBatcher>();
+
 	if (HasAuthority())
 	{
-		AddReplicatedSubObject(GameSettings);
 		AddReplicatedSubObject(TotalTrees);
 		AddReplicatedSubObject(TotalForage);
 		AddReplicatedSubObject(TotalWildlife);
 		AddReplicatedSubObject(CombatSystem);
 		AddReplicatedSubObject(StartParameter);
+
+		// Spawn GameSettings Actor
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Name = FName("GameSettings");
+		GameSettings = GetWorld()->SpawnActor<AGameSettings>(SpawnParams);
 	}
-	// Spawn Static Mesh Batcher
-	StaticMeshBatcher = GetWorld()->SpawnActor<AStaticMeshBatcher>();
 }
 
 void AGS_Ingame::SetTribe(ATribe* NewTribe)
