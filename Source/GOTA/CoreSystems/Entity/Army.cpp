@@ -45,7 +45,7 @@ UCombatValues* AArmy::GetCombatValues() const
 
 void AArmy::KillIndividuals(int32 Kills)
 {
-	PopCon->DecreaseSize(Kills);
+	PopCon->S_DecreaseSize(Kills);
 	if (PopCon->GetSize() <= 0)
 		Kill();
 }
@@ -58,6 +58,6 @@ void AArmy::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void AArmy::Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 MovementSpeed_)
 {
 	Super::Init(Affiliation_, CurrentTile_, MovementSpeed_);
-	PopCon->DecreaseSize(100);
-	PopCon->IncreaseSize(FMath::RandRange(3,10));
+	PopCon->S_DecreaseSize(100);
+	PopCon->S_IncreaseSize(FMath::RandRange(3,10));
 }

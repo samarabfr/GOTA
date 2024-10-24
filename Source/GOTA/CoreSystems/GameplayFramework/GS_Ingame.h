@@ -15,6 +15,7 @@
 #include "GOTA/CoreSystems/Utility/StaticMeshBatcher.h"
 #include "GS_Ingame.generated.h"
 
+class AGameSettings;
 class ADaytimeManager;
 class ALoadingManager;
 
@@ -23,13 +24,16 @@ class GOTA_API AGS_Ingame : public AGameState
 {
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	AGS_Ingame();
-	virtual void BeginPlay() override;
 
-public:
+	// ------------------- LifeCycle -------------------
+	
+	AGS_Ingame();
+	
+	virtual void BeginPlay() override;
+	
 	// ---------------------------------------------------------
 	// Stuff in the World
-
+public:
 	UPROPERTY(Replicated)
 	ATileMap* TileMap;
 
@@ -89,10 +93,16 @@ public:
 
 	// ---------------------------------------------------------
 	// Useful Stuff
+private:
+	UPROPERTY()
+	AGameSettings* GameSettings;
 
+public:
+	AGameSettings* GetGameSettings() { return GameSettings; }
+	
 	UPROPERTY()
 	ADaytimeManager* DaytimeManager;
-		
+
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UStartParameter* StartParameter;
 

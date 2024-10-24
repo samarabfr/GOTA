@@ -12,13 +12,13 @@ struct FGameResources
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category = "Resources")
-	int32 Food = 0;
+	float Food = 0;
 
 	UPROPERTY(EditAnywhere, Category = "Resources")
-	int32 Wood = 0;
+	float Wood = 0;
 	
 	UPROPERTY(EditAnywhere, Category = "Resources")
-	int32 Stone = 0;
+	float Stone = 0;
 	
 	FGameResources& operator+=(const FGameResources& Other);
 	FGameResources& operator-=(const FGameResources& Other);

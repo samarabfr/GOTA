@@ -7,6 +7,8 @@
 #include "Population.h"
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
+#include "GOTA/CoreSystems/GameplayFramework/GameSettings.h"
+#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
@@ -45,10 +47,10 @@ UBuilding::UBuilding()
 
 void UBuilding::ServerTick(const float DeltaSeconds)
 {
-	Population->ServerTick(DeltaSeconds);
+	Population->S_Tick(DeltaSeconds);
 	if (Civilian)
 		Civilian->ServerTick(DeltaSeconds);
-	if(Settings->bIncomeEnabled)
+	if (Settings->bIncomeEnabled)
 	{
 		if (IncomeProgress < Settings->IncomeTime)
 		{
@@ -65,7 +67,7 @@ void UBuilding::ServerTick(const float DeltaSeconds)
 
 void UBuilding::ClientTick(const float DeltaSeconds)
 {
-	Population->ClientTick(DeltaSeconds);
+	Population->C_Tick(DeltaSeconds);
 	if (Civilian)
 		Civilian->ClientTick(DeltaSeconds);
 
@@ -74,6 +76,7 @@ void UBuilding::ClientTick(const float DeltaSeconds)
 
 void UBuilding::ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
 {
+	Population->S_Init(InSettlement->GetPopulationSettings());
 	Settings = InSettings;
 	Tile = InTile;
 	Settlement = InSettlement;
@@ -144,7 +147,7 @@ void UBuilding::FinishConstruction()
 	IsUnderConstruction = false;
 	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, IsUnderConstruction, this)
 	Tile->OnBuildingFinishedConstruction();
-	Population->ChangeMaxSize(Settings->Housing);
+	Population->S_ChangeMaxSize(Settings->Housing);
 	if (Settings->CivilianClass)
 	{
 		ACivilian* NewCivilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);

@@ -2,6 +2,8 @@
 
 
 #include "GS_Ingame.h"
+
+#include "GameSettings.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -36,9 +38,15 @@ void AGS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 
 AGS_Ingame::AGS_Ingame()
 {
-	PrimaryActorTick.bCanEverTick = true;
 	bReplicates = true;
+	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
+	NetUpdateFrequency = 1.0f;
+
+	PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bStartWithTickEnabled = false;
+	PrimaryActorTick.TickInterval = 1.0f;
+
 	TotalTrees = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Trees"));
 	TotalForage = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Forage"));
 	TotalWildlife = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Wildlife"));
@@ -52,6 +60,10 @@ AGS_Ingame::AGS_Ingame()
 void AGS_Ingame::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Spawn Static Mesh Batcher
+	StaticMeshBatcher = GetWorld()->SpawnActor<AStaticMeshBatcher>();
+
 	if (HasAuthority())
 	{
 		AddReplicatedSubObject(TotalTrees);
@@ -59,9 +71,12 @@ void AGS_Ingame::BeginPlay()
 		AddReplicatedSubObject(TotalWildlife);
 		AddReplicatedSubObject(CombatSystem);
 		AddReplicatedSubObject(StartParameter);
+
+		// Spawn GameSettings Actor
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Name = FName("GameSettings");
+		GameSettings = GetWorld()->SpawnActor<AGameSettings>(SpawnParams);
 	}
-	// Spawn Static Mesh Batcher
-	StaticMeshBatcher = GetWorld()->SpawnActor<AStaticMeshBatcher>();
 }
 
 void AGS_Ingame::SetTribe(ATribe* NewTribe)

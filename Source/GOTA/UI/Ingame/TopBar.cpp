@@ -31,15 +31,15 @@ void UTopBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 	FGameResources ColonyRes = GameState->GetColony()->GetResources();
 	Colony_Pop->SetText(FText::AsNumber(Colonists));
-	Colony_Food->SetText(FText::AsNumber(ColonyRes.Food));
-	Colony_Wood->SetText(FText::AsNumber(ColonyRes.Wood));
-	Colony_Stone->SetText(FText::AsNumber(ColonyRes.Stone));
+	Colony_Food->SetText(FText::AsNumber(static_cast<int32>(ColonyRes.Food)));
+	Colony_Wood->SetText(FText::AsNumber(static_cast<int32>(ColonyRes.Wood)));
+	Colony_Stone->SetText(FText::AsNumber(static_cast<int32>(ColonyRes.Stone)));
 
 	FGameResources TribeRes = GameState->GetTribe()->GetResources();
 	Tribe_Pop->SetText(FText::AsNumber(Natives));
-	Tribe_Food->SetText(FText::AsNumber(TribeRes.Food));
-	Tribe_Wood->SetText(FText::AsNumber(TribeRes.Wood));
-	Tribe_Stone->SetText(FText::AsNumber(TribeRes.Stone));
+	Tribe_Food->SetText(FText::AsNumber(static_cast<int32>(TribeRes.Food)));
+	Tribe_Wood->SetText(FText::AsNumber(static_cast<int32>(TribeRes.Wood)));
+	Tribe_Stone->SetText(FText::AsNumber(static_cast<int32>(TribeRes.Stone)));
 }
 
 void UTopBar::RefreshClock()

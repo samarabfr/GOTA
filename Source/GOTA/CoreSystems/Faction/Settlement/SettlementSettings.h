@@ -30,6 +30,7 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Colonist Settlement")
 	FGameResources C_StartingResources;
+
 	
 	UPROPERTY(EditDefaultsOnly, Category="Native Settlement")
 	TSubclassOf<AArmy> N_ArmyClass;
@@ -42,70 +43,15 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Native Settlement")
 	FGameResources N_StartingResources;
+
 	
-	UPROPERTY(EditDefaultsOnly, Category="Population")
-	int32 PopulationGrowthThreshold;
+	UPROPERTY(EditDefaultsOnly, Category="Eating and Starving")
+	float PopEatingPerSecond;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Eating and Starving")
+	float StarvingThreshold;
 
-	UPROPERTY(EditDefaultsOnly, Category="Population")
-	float PopGrowthPerOwnPop;
-
-	UPROPERTY(EditDefaultsOnly, Category="Population")
-	float PopGrowthPerNeighborPop;
-
-	UPROPERTY(EditDefaultsOnly, Category="EcoValues")
-	int32 NativeTreeThreshold;
-
-	UPROPERTY(EditDefaultsOnly, Category="EcoValues")
-	int32 NativeWildlifeThreshold;
-
-	UPROPERTY(EditDefaultsOnly, Category="EcoValues")
-	int32 NativeForageThreshold;
-
-	UPROPERTY(EditDefaultsOnly, Category="EcoValues")
-	float ForagingFoodToWoodRatio;
-
-	UPROPERTY(EditDefaultsOnly, Category="EcoValues")
-	int32 NativeMaxRange;
-
-	UPROPERTY(EditDefaultsOnly, Category="EcoValues")
-	int32 ColonistMaxRange;
-
-	UPROPERTY(EditDefaultsOnly, Category="Army Spawning Condition")
-	int32 MinimumPopulationToSpawnArmy;
-
-	UPROPERTY(EditDefaultsOnly, Category="Army Spawning Condition")
-	int32 HighPopulationThreshold;
-
-	UPROPERTY(EditDefaultsOnly, Category="Army Spawning Condition")
-	float HighPopulationImpact;
-
-	UPROPERTY(EditDefaultsOnly, Category="Army Spawning Condition")
-	float AggressiveMoodMaximumImpact;
-
-	UPROPERTY(EditDefaultsOnly, Category="Army Spawning")
-	float MinRatioOfEligiblePopJoiningArmy;
-
-	UPROPERTY(EditDefaultsOnly, Category="Army Spawning")
-	float MaxRatioOfEligiblePopJoiningArmy;
-
-	UPROPERTY(EditDefaultsOnly, Category="Army Spawning")
-	float BonusArmySizePerAngryPop;
-
-	UPROPERTY(EditDefaultsOnly, Category="Army Spawning")
-	int MinBuildingPopToJoinArmy;
-
-	UPROPERTY(EditDefaultsOnly, Category="Army Spawning")
-	int MinBuildingPopRemainingAfterJoining;
-
-	UPROPERTY(EditDefaultsOnly, Category="Army Spawning")
-	int ContentMoodPickBias;
-
-	UPROPERTY(EditDefaultsOnly, Category="Army Spawning")
-	int AngryMoodPickBias;
-
-	UPROPERTY(EditDefaultsOnly, Category="Army Spawning")
-	int FearMoodPickBias;
-
+		
 	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
 	float FoodImportance = 1;
 

@@ -45,7 +45,7 @@ void AMigrant::ValidateStatus()
 
 void AMigrant::Work()
 {
-	CurrentTile->GetBuilding()->Population->IncreaseSize(1);
+	CurrentTile->GetBuilding()->Population->S_IncreaseSize(1);
 	--Size;
 }
 
