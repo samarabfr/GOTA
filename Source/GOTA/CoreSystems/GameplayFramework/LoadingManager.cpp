@@ -6,6 +6,9 @@
 #include "DaytimeManager.h"
 #include "PC_Ingame.h"
 #include "PS_Ingame.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
+#include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "Net/UnrealNetwork.h"
 
 void ALoadingManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -83,7 +86,7 @@ void ALoadingManager::ServerTick()
 			LocalPlayerController->CreateIngameUI();
 			GameMode->InitialPossession();
 			LoadingStatus->SetCurrentStatus(ELoadingStatus::WaitForFinished);
-			GameState->TileMap->MaxAllEcoValues();
+			GameState->GetTileMap()->MaxAllEcoValues();
 			GracePeriodTime = 0.0;
 		}
 		break;
@@ -94,7 +97,7 @@ void ALoadingManager::ServerTick()
 			LocalPlayerController->InitInput();
 			LocalPlayerController->RemoveLoadingUI();
 			GameMode->StartGame();
-			GameState->TileMap->EnableTick();
+			GameState->GetTileMap()->EnableTick();
 			GameState->GetColony()->EnableTick();
 			GameState->GetTribe()->EnableTick();
 			GameState->DaytimeManager->SetActorTickEnabled(true);
@@ -166,7 +169,7 @@ void ALoadingManager::ClientTick()
 		{
 			LocalPlayerController->InitInput();
 			LocalPlayerController->RemoveLoadingUI();
-			GameState->TileMap->EnableTick();
+			GameState->GetTileMap()->EnableTick();
 			GameState->DaytimeManager->SetActorTickEnabled(true);
 			LoadingStatus->SetCurrentStatus(ELoadingStatus::Finished);
 		}

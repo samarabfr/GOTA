@@ -6,6 +6,7 @@
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
+#include "GOTA/CoreSystems/Tile/TileMap.h"
 
 AMigrant::AMigrant()
 {
@@ -61,7 +62,7 @@ bool AMigrant::TryFindPath()
 		}
 	}
 	if (!HasValidTiles) return false;
-	Path = GameState->TileMap->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
+	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
 	{
 		return IsTileValidForWork(Tile);
 	});

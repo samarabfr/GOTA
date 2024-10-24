@@ -6,6 +6,7 @@
 #include "InputMappingContext.h"
 #include "InputAction.h"
 #include "InputDataAsset.h"
+#include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Utility/DistanceUtils.h"
 #include "GOTA/UI/Ingame/IngameUI.h"
 #include "Net/UnrealNetwork.h"

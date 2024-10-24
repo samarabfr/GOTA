@@ -3,8 +3,11 @@
 
 #include "DistanceUtils.h"
 
+#include "GOTA/CoreSystems/GameplayFramework/Combat.h"
+#include "GOTA/CoreSystems/GameplayFramework/CombatSystem.h"
 #include "GOTA/CoreSystems/GameplayFramework/PC_Ingame.h"
 #include "GOTA/CoreSystems/Tile/HexCoordsFunctions.h"
+#include "GOTA/CoreSystems/Tile/TileMap.h"
 
 ADistanceUtils::ADistanceUtils()
 {
@@ -36,7 +39,7 @@ void ADistanceUtils::BeginPlay()
 void ADistanceUtils::Tick(float DeltaSeconds)
 {
 	// TileMap doesn't exist yet. Idk why this should ever happen but it did. LoadingManager should prevent this
-	if (!GameState->TileMap) return;
+	if (!GameState->GetTileMap()) return;
 	FVector CurrentLocation = GetActorLocation();
 	FHexCoords NewCoords = UHexCoordsFunctions::VectorToHexCoords(CurrentLocation);
 	if (CurrentCoords == NewCoords) return;
@@ -54,7 +57,7 @@ void ADistanceUtils::UpdateDistanceToTiles()
 	{
 		if (!CurrentCoordsInRange.Contains(Coords))
 		{
-			if (ATile* Tile = GameState->TileMap->GetTile(Coords))
+			if (ATile* Tile = GameState->GetTileMap()->GetTile(Coords))
 			{
 				// Tile->OnEnteringActiveRangeOfGuardian();
 			}
@@ -64,7 +67,7 @@ void ADistanceUtils::UpdateDistanceToTiles()
 	{
 		if (!NextCoordsInRange.Contains(Coords))
 		{
-			if (ATile* Tile = GameState->TileMap->GetTile(Coords))
+			if (ATile* Tile = GameState->GetTileMap()->GetTile(Coords))
 			{
 				// Tile->OnLeavingActiveRangeOfGuardian();
 			}

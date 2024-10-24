@@ -6,6 +6,7 @@
 #include "DistanceUtilsSettings.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
+#include "GOTA/CoreSystems/Tile/HexCoords.h"
 #include "DistanceUtils.generated.h"
 
 UCLASS()

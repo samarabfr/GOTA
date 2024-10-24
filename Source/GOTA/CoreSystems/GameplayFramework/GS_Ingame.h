@@ -2,19 +2,20 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "CombatSystem.h"
-#include "StartParameter.h"
 #include "GameFramework/GameState.h"
-#include "GOTA/CoreSystems/Entity/Entity.h"
-#include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
-#include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
-#include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
-#include "GOTA/CoreSystems/Guardian/Guardian.h"
-#include "GOTA/CoreSystems/Tile/TileMap.h"
-#include "GOTA/CoreSystems/Utility/StaticMeshBatcher.h"
+#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "GS_Ingame.generated.h"
 
+class ATile;
+class UGOTAAttribute;
+class AEntity;
+class AGuardian;
+class ATribe;
+class AColony;
+class UCombatSystem;
+class UStartParameter;
+class AStaticMeshBatcher;
+class ATileMap;
 class AGameSettings;
 class ADaytimeManager;
 class ALoadingManager;
@@ -23,36 +24,85 @@ UCLASS()
 class GOTA_API AGS_Ingame : public AGameState
 {
 	GENERATED_BODY()
+
+	// ------------------- Replication Setup -------------------
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	void AddReplicatedSubobjects();
+
 	// ------------------- LifeCycle -------------------
-	
+
 	AGS_Ingame();
-	
+
 	virtual void BeginPlay() override;
-	
-	// ---------------------------------------------------------
-	// Stuff in the World
+
+	void S_Init();
+
+	void C_Init();
+
+	// ------------------- Utility -------------------
 public:
+	UPROPERTY()
+	ADaytimeManager* DaytimeManager;
+
+	UPROPERTY(Replicated)
+	UStartParameter* StartParameter;
+
+	UPROPERTY(Replicated)
+	UCombatSystem* CombatSystem;
+
+	UPROPERTY()
+	ALoadingManager* LoadingManager;
+
+	// ------------------- TileMap -------------------
+private:
 	UPROPERTY(Replicated)
 	ATileMap* TileMap;
 
+public:
+	ATileMap* GetTileMap() const { return TileMap; }
+
+	void SetTileMap(ATileMap* NewTileMap);
+	
+	// ------------------- GameSettings -------------------
 private:
 	UPROPERTY(Replicated)
-	ATribe* Tribe;
+	AGameSettings* GameSettings;
+
+	void SpawnGameSettingsActor();
 
 public:
-	void SetTribe(ATribe* NewTribe);
-	ATribe* GetTribe() const { return Tribe; }
+	AGameSettings* GetGameSettings() { return GameSettings; }
 
+	// ------------------- StaticMeshBatcher -------------------
+private:
+	UPROPERTY()
+	AStaticMeshBatcher* StaticMeshBatcher;
+
+	void SpawnStaticMeshBatcher();
+
+public:
+	AStaticMeshBatcher* GetStaticMeshBatcher() { return StaticMeshBatcher; }
+
+	// ------------------- Settlements -------------------
 private:
 	UPROPERTY(Replicated)
 	AColony* Colony;
 
+	UPROPERTY(Replicated)
+	ATribe* Tribe;
+
 public:
-	void SetColony(AColony* NewColony);
 	AColony* GetColony() const { return Colony; }
 
+	void SetColony(AColony* NewColony);
+
+	ATribe* GetTribe() const { return Tribe; }
+
+	void SetTribe(ATribe* NewTribe);
+
+	// ------------------- Guardians -------------------
 private:
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGuardiansChangedSig, AGS_Ingame*, GameState);
@@ -65,76 +115,56 @@ private:
 
 public:
 	FOnGuardiansChangedSig OnGuardiansChanged;
-	TArray<AGuardian*> GetGuardians() const;
+
+	TArray<AGuardian*> GetGuardians() const { return Guardians; }
+
 	AGuardian* GetGuardian(int32 GOTAPlayerID) const;
+
 	void SetGuardian(int32 GOTAPlayerID, AGuardian* Guardian);
 
+	// ------------------- Entities -------------------
 
-	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
+	UPROPERTY()
 	TArray<AEntity*> TileEntities;
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
-	UGOTAAttribute* TotalTrees;
+	// ------------------- Island Health -------------------
 
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
-	UGOTAAttribute* TotalForage;
-
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
-	UGOTAAttribute* TotalWildlife;
-
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
-	int32 IslandMaxTrees;
-
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
-	int32 IslandMaxWildlife;
-
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
-	int32 IslandMaxForage;
-
-	// ---------------------------------------------------------
-	// Useful Stuff
-private:
-	UPROPERTY()
-	AGameSettings* GameSettings;
-
-public:
-	AGameSettings* GetGameSettings() { return GameSettings; }
-	
-	UPROPERTY()
-	ADaytimeManager* DaytimeManager;
-
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
-	UStartParameter* StartParameter;
-
-	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
-	UCombatSystem* CombatSystem;
-
-	UPROPERTY(BlueprintReadWrite, Category="GOTAGameState")
-	ALoadingManager* LoadingManager;
-
-	UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category="GOTAGameState")
-	AStaticMeshBatcher* StaticMeshBatcher;
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, BlueprintAuthorityOnly, Category="GOTAGameState")
 	void RegisterTileForTotalsUpdates(ATile* Tile);
 
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FGameEndingSignature,
-	                                             const EGameEnding, Ending,
-	                                             const FString&, EndMessage);
+	void CountIslandMaxEcoValues();
 
-	UPROPERTY(BlueprintAssignable, Category="GOTAGameState")
+	UPROPERTY(Replicated)
+	UGOTAAttribute* TotalTrees;
+
+	UPROPERTY(Replicated)
+	UGOTAAttribute* TotalForage;
+
+	UPROPERTY(Replicated)
+	UGOTAAttribute* TotalWildlife;
+
+	UPROPERTY(Replicated)
+	int32 IslandMaxTrees;
+
+	UPROPERTY(Replicated)
+	int32 IslandMaxWildlife;
+
+	UPROPERTY(Replicated)
+	int32 IslandMaxForage;
+
+	// ------------------- Game Ending -------------------
+private:
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
+		FGameEndingSignature, const EGameEnding, Ending, const FString&, EndMessage);
+
+public:
+	UPROPERTY()
+	EGameStatus GameStatus = EGameStatus::Lobby;
+
 	FGameEndingSignature OnGameEnding;
 
-	UPROPERTY(BlueprintReadOnly, Category="GOTAGameState")
 	bool GameEnded = false;
 
 	UFUNCTION(NetMulticast, Reliable)
-	void EndGame(EGameEnding Ending, const FString& EndingMessage);
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTAGameState")
-	void CountIslandMaxEcoValues();
-
-	UPROPERTY()
-	EGameStatus GameStatus = EGameStatus::Lobby;
+	void S_EndGame(EGameEnding Ending, const FString& EndingMessage);
 };
