@@ -24,6 +24,8 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME_WITH_PARAMS(ASettlement, Resources, Params);
 }
 
+// ------------------- LifeCycle -------------------
+
 ASettlement::ASettlement()
 {
 	bReplicates = true;
@@ -52,34 +54,9 @@ void ASettlement::BeginPlay()
 	GetWorld()->GetGameState<AGS_Ingame>()->LoadingManager->IncrementReplicationCount();
 }
 
-void ASettlement::Tick(float DeltaSeconds)
+void ASettlement::S_Init(ATile* SpawnTile, UPopulationSettings* InPopulationSettings)
 {
-	Super::Tick(DeltaSeconds);
-
-	UpdateLastMinuteResources();
-	Resources.Food -= Population->GetSize() * Settings->PopEatingPerSecond * DeltaSeconds;
-
-	if (HasAuthority())
-	{
-		if (Resources.Food < Settings->StarvingThreshold)
-		{
-			int32 Count = Resources.Food / Settings->StarvingThreshold;
-			Resources.Food += Count * Settings->StarvingThreshold * -1;
-			for (int32 i = 0; i < Count; ++i)
-			{
-				Population->StarveRandomPop();
-			}
-		}
-	}
-}
-
-void ASettlement::EnableTick()
-{
-	SetActorTickEnabled(true);
-}
-
-void ASettlement::StartingSetup(ATile* SpawnTile)
-{
+	PopulationSettings = InPopulationSettings;
 	const FGameResources& StartingResources = Affiliation == EAffiliation::Enemy
 		                                          ? Settings->C_StartingResources
 		                                          : Settings->N_StartingResources;
@@ -102,6 +79,32 @@ void ASettlement::StartingSetup(ATile* SpawnTile)
 	for (ATile* Tile : ClaimedTiles)
 	{
 		Tile->GetBuilding()->Population->ChangeSize(100);
+	}
+}
+
+void ASettlement::EnableTick()
+{
+	SetActorTickEnabled(true);
+}
+
+void ASettlement::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	UpdateLastMinuteResources();
+	Resources.Food -= Population->GetSize() * Settings->PopEatingPerSecond * DeltaSeconds;
+
+	if (HasAuthority())
+	{
+		if (Resources.Food < Settings->StarvingThreshold)
+		{
+			int32 Count = Resources.Food / Settings->StarvingThreshold;
+			Resources.Food += Count * Settings->StarvingThreshold * -1;
+			for (int32 i = 0; i < Count; ++i)
+			{
+				Population->StarveRandomPop();
+			}
+		}
 	}
 }
 

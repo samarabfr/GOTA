@@ -15,6 +15,7 @@
 #include "GOTA/CoreSystems/Utility/StaticMeshBatcher.h"
 #include "GS_Ingame.generated.h"
 
+class UGameSettings;
 class ADaytimeManager;
 class ALoadingManager;
 
@@ -89,10 +90,16 @@ public:
 
 	// ---------------------------------------------------------
 	// Useful Stuff
+private:
+	UPROPERTY(VisibleInstanceOnly)
+	UGameSettings* GameSettings;
 
+public:
+	UGameSettings* GetGameSettings() { return GameSettings; }
+	
 	UPROPERTY()
 	ADaytimeManager* DaytimeManager;
-		
+
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="GOTAGameState")
 	UStartParameter* StartParameter;
 

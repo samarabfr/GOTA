@@ -2,6 +2,8 @@
 
 
 #include "GS_Ingame.h"
+
+#include "GameSettings.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -44,6 +46,8 @@ AGS_Ingame::AGS_Ingame()
 	PrimaryActorTick.bCanEverTick = false;
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	PrimaryActorTick.TickInterval = 1.0f;
+
+	GameSettings = CreateDefaultSubobject<UGameSettings>(TEXT("Game Settings"));
 	
 	TotalTrees = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Trees"));
 	TotalForage = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Forage"));
@@ -60,6 +64,7 @@ void AGS_Ingame::BeginPlay()
 	Super::BeginPlay();
 	if (HasAuthority())
 	{
+		AddReplicatedSubObject(GameSettings);
 		AddReplicatedSubObject(TotalTrees);
 		AddReplicatedSubObject(TotalForage);
 		AddReplicatedSubObject(TotalWildlife);

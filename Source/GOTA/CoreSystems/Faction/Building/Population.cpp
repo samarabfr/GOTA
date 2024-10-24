@@ -2,7 +2,9 @@
 
 
 #include "Population.h"
-#include "GOTA/CoreSystems/Faction/Settlement/SettlementSettings.h"
+
+#include "PopulationSettings.h"
+#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -26,32 +28,43 @@ bool UPopulation::IsSupportedForNetworking() const
 	return true;
 }
 
-UPopulation::UPopulation()
+void UPopulation::S_Init(UPopulationSettings* InSettings)
 {
-	ConstructorHelpers::FObjectFinder<USettlementSettings> DataAsset(
-		TEXT("/Game/CoreSystems/Faction/DA_SettlementSettings"));
-	SettlementSettings = DataAsset.Object;
+	Settings = InSettings;
 }
 
-void UPopulation::ServerTick(const float DeltaSeconds)
+void UPopulation::S_Tick(const float DeltaSeconds)
 {
-	ClientTick(DeltaSeconds);
+	ApplyGrowth(DeltaSeconds);
 
-	if (GrowthProgress >= SettlementSettings->PopulationGrowthThreshold)
+	if (GrowthProgress >= Settings->PopulationGrowthThreshold)
 	{
-		int32 Count = GrowthProgress / SettlementSettings->PopulationGrowthThreshold;
+		int32 Count = GrowthProgress / Settings->PopulationGrowthThreshold;
 		IncreaseSize(Count);
-		GrowthProgress -= Count * SettlementSettings->PopulationGrowthThreshold;
+		GrowthProgress -= Count * Settings->PopulationGrowthThreshold;
 		MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, GrowthProgress, this)
 	}
 }
 
-void UPopulation::ClientTick(const float DeltaSeconds)
+void UPopulation::C_Tick(const float DeltaSeconds)
 {
+	ApplyGrowth(DeltaSeconds);
+}
+
+void UPopulation::ApplyGrowth(const float DeltaSeconds)
+{
+	// If this Population is already filled, growth is ignored
 	if (Size == MaxSize)
+	{
 		GrowthProgress = 0.0f;
-	else
-		GrowthProgress += Growth * DeltaSeconds;
+		return;
+	}
+
+	// If Settlement is starving, this Population should not grow
+	if (Settings->IsStarving)
+		return;
+
+	GrowthProgress += Growth * DeltaSeconds;
 }
 
 // ---------------Changing Population Values-----------------------
@@ -235,12 +248,12 @@ void UPopulation::OnRep_Fear(const int16 OldValue)
 
 void UPopulation::NeighborChangedPopSize(int16 Amount)
 {
-	Growth += Amount * SettlementSettings->PopGrowthPerNeighborPop;
+	Growth += Amount * Settings->PopGrowthPerNeighborPop;
 }
 
 void UPopulation::SizeChanged(const int16 Change)
 {
-	Growth += Change * SettlementSettings->PopGrowthPerOwnPop;
+	Growth += Change * Settings->PopGrowthPerOwnPop;
 	OnSizeChanged.Broadcast(Change);
 }
 
@@ -264,7 +277,7 @@ void UPopulation::FearChanged(const int16 Change)
 
 float UPopulation::GetGrowthThreshold() const
 {
-	return SettlementSettings->PopulationGrowthThreshold;
+	return Settings->PopulationGrowthThreshold;
 }
 
 int16 UPopulation::GetContentMood() const

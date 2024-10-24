@@ -6,6 +6,7 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Population.generated.h"
 
+class UPopulationSettings;
 class USettlementSettings;
 
 UCLASS(Blueprintable)
@@ -14,16 +15,18 @@ class GOTA_API UPopulation : public UObject
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
-	UPopulation();
 	
 public:
-	void ServerTick(const float DeltaSeconds);
-	void ClientTick(const float DeltaSeconds);
+	void S_Init(UPopulationSettings* InSettings);
+	void S_Tick(const float DeltaSeconds);
+	void C_Tick(const float DeltaSeconds);
+
+private:
+	void ApplyGrowth(const float DeltaSeconds);
 	
 	// ------------------Variable Definition----------------------
 private:
-	UPROPERTY()
-	USettlementSettings* SettlementSettings;
+	UPopulationSettings* Settings;
 
 	UPROPERTY(VisibleInstanceOnly, Category = "Population")
 	EFaction Faction = EFaction::None;
