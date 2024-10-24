@@ -40,7 +40,7 @@ void USettlementPopulation::StarveRandomPop()
 		RandomCursor -= Pop->GetSize();
 		if(RandomCursor < 0)
 		{
-			Pop->ChangeSize(-1);
+			Pop->S_ChangeSize(-1);
 			return;
 		}
 	}

@@ -13,16 +13,28 @@ UCLASS()
 class GOTA_API AGameSettings : public AActor
 {
 	GENERATED_BODY()
+
+	// ------------------- Replication Setup -------------------
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	virtual bool IsSupportedForNetworking() const override;
+
+	void AddReplicatedSubObjects();
+	
+	// ------------------- LifeCycle -------------------
+	
 	AGameSettings();
+	
+	virtual void BeginPlay() override;
 
+	// ------------------- Population Settings -------------------
 private:
-	UPROPERTY()
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	UPopulationSettings* TribePopulationSettings;
-	UPROPERTY()
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	UPopulationSettings* ColonyPopulationSettings;
-
+	
+	void LoadPopulationSettings();
+	
 public:
 	UPopulationSettings* GetTribePopulationSettings() { return TribePopulationSettings; }
 	UPopulationSettings* GetColonyPopulationSettings() { return ColonyPopulationSettings; }

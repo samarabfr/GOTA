@@ -147,7 +147,7 @@ void UBuilding::FinishConstruction()
 	IsUnderConstruction = false;
 	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, IsUnderConstruction, this)
 	Tile->OnBuildingFinishedConstruction();
-	Population->ChangeMaxSize(Settings->Housing);
+	Population->S_ChangeMaxSize(Settings->Housing);
 	if (Settings->CivilianClass)
 	{
 		ACivilian* NewCivilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);

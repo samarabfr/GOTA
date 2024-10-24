@@ -78,7 +78,7 @@ void ASettlement::S_Init(ATile* SpawnTile, UPopulationSettings* InPopulationSett
 	}
 	for (ATile* Tile : ClaimedTiles)
 	{
-		Tile->GetBuilding()->Population->ChangeSize(100);
+		Tile->GetBuilding()->Population->S_ChangeSize(100);
 	}
 }
 
