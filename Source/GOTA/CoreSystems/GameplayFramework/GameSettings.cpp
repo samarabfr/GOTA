@@ -12,7 +12,7 @@ void AGameSettings::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 
 	FDoRepLifetimeParams Params;
 	Params.bIsPushBased = true;
-	
+
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(AGameSettings, TribePopulationSettings, Params)
@@ -37,14 +37,14 @@ AGameSettings::AGameSettings()
 	PrimaryActorTick.bCanEverTick = false;
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	PrimaryActorTick.TickInterval = 1.0f;
-	
+
 	LoadPopulationSettings();
 }
 
 void AGameSettings::BeginPlay()
 {
 	Super::BeginPlay();
-	if(HasAuthority())
+	if (HasAuthority())
 	{
 		AddReplicatedSubObjects();
 	}
@@ -55,12 +55,18 @@ void AGameSettings::BeginPlay()
 void AGameSettings::LoadPopulationSettings()
 {
 	const ConstructorHelpers::FObjectFinder<UPopulationSettingsDefaults> TribePopulationFinder(
-	TEXT("/Game/CoreSystems/Faction/DA_TribePopulationSettings"));
+		TEXT("/Game/CoreSystems/Faction/DA_TribePopulationSettings"));
 	if (TribePopulationFinder.Succeeded())
-		TribePopulationSettings = TribePopulationFinder.Object->PopulationSettings;
+	{
+		TribePopulationSettings = DuplicateObject<UPopulationSettings>(
+			TribePopulationFinder.Object->PopulationSettings, GetOuter());
+	}
 
 	const ConstructorHelpers::FObjectFinder<UPopulationSettingsDefaults> ColonyPopulationFinder(
 		TEXT("/Game/CoreSystems/Faction/DA_ColonyPopulationSettings"));
 	if (ColonyPopulationFinder.Succeeded())
-		ColonyPopulationSettings = ColonyPopulationFinder.Object->PopulationSettings;
+	{
+		ColonyPopulationSettings = DuplicateObject<UPopulationSettings>(
+			ColonyPopulationFinder.Object->PopulationSettings, GetOuter());
+	}
 }
