@@ -4,6 +4,7 @@
 
 #include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/Faction/Building/PopulationSettings.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "Net/UnrealNetwork.h"
@@ -94,6 +95,11 @@ void ASettlement::Tick(float DeltaSeconds)
 	UpdateLastMinuteResources();
 	Resources.Food -= Population->GetSize() * Settings->PopEatingPerSecond * DeltaSeconds;
 
+	if(Resources.Food < 0)
+		PopulationSettings->IsStarving = true;
+	else
+		PopulationSettings->IsStarving = false;
+		
 	if (HasAuthority())
 	{
 		if (Resources.Food < Settings->StarvingThreshold)
