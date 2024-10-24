@@ -7,7 +7,6 @@
 #include "Population.generated.h"
 
 class UPopulationSettings;
-class USettlementSettings;
 
 UCLASS(Blueprintable)
 class GOTA_API UPopulation : public UObject
@@ -140,7 +139,7 @@ public:
 	
 	FOnInt16ChangedSig OnFearChanged;
 
-	void IncreaseFear(const int16 Change);
+	void S_IncreaseFear(const int16 Change);
 
-	void DecreaseFear(const int16 Change);
+	void S_DecreaseFear(const int16 Change);
 };

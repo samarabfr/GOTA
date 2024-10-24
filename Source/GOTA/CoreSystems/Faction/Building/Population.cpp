@@ -222,7 +222,7 @@ void UPopulation::S_IncreaseMood(const EMood Mood, const int16 Change)
 	if (Mood == EMood::Angry)
 		S_IncreaseAngry(Change);
 	else if (Mood == EMood::Fear)
-		IncreaseFear(Change);
+		S_IncreaseFear(Change);
 }
 
 void UPopulation::S_DecreaseMood(const EMood Mood, const int16 Change)
@@ -230,7 +230,7 @@ void UPopulation::S_DecreaseMood(const EMood Mood, const int16 Change)
 	if (Mood == EMood::Angry)
 		S_DecreaseAngry(Change);
 	else if (Mood == EMood::Fear)
-		DecreaseFear(Change);
+		S_DecreaseFear(Change);
 }
 
 // ------------------- Angry Mood -------------------
@@ -277,7 +277,7 @@ void UPopulation::FearChanged(const int16 Change)
 	OnFearChanged.Broadcast(Change);
 }
 
-void UPopulation::IncreaseFear(const int16 Change)
+void UPopulation::S_IncreaseFear(const int16 Change)
 {
 	if (Change <= 0 || Fear == Size) return;
 	const int16 OldFear = Fear;
@@ -293,7 +293,7 @@ void UPopulation::IncreaseFear(const int16 Change)
 	OnFearChanged.Broadcast(Fear - OldFear);
 }
 
-void UPopulation::DecreaseFear(const int16 Change)
+void UPopulation::S_DecreaseFear(const int16 Change)
 {
 	if (Change <= 0 || Fear == 0) return;
 	const int16 OldFear = Fear;
