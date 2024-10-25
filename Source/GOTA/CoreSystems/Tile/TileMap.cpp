@@ -193,8 +193,8 @@ ATile* ATileMap::FindNearestTileInRange(ATile* Origin, int32 Range,
 {
 	if(!Origin || Range < 0) return nullptr;
 	if(Range == 0) return Condition(Origin) ? Origin : nullptr;
-
 	
+	return nullptr;
 }
 
 TArray<ATile*> ATileMap::FindPathToNearestTile(ATile* Origin, const EEntityType EntityType,

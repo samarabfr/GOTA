@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "STT_RecruitFromTile.h"
+#include "STT_CheckForNearbyEnemyArmy.h"
 
 #include "StateTreeExecutionContext.h"
 #include "GOTA/CoreSystems/Entity/Army.h"
 
-EStateTreeRunStatus FSTT_RecruitFromTile::EnterState(FStateTreeExecutionContext& Context,
+EStateTreeRunStatus FSTT_CheckForNearbyEnemyArmy::EnterState(FStateTreeExecutionContext& Context,
                                                      const FStateTreeTransitionResult& Transition) const
 {
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);

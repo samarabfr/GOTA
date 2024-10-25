@@ -274,5 +274,6 @@ void AArmy::ChallengeToCombat()
 
 bool AArmy::HasEnemyInGuardModeInterceptRange()
 {
+	return false;
 	//if()
 }

@@ -4,12 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/StateTreeTaskBlueprintBase.h"
-#include "STT_RecruitFromTile.generated.h"
+#include "STT_CheckForNearbyEnemyArmy.generated.h"
 
 class AArmy;
 
 USTRUCT()
-struct GOTA_API FRecruitFromTileInstanceData
+struct GOTA_API FCheckForNearbyEnemyArmyInstanceData
 {
 	GENERATED_BODY()
 
@@ -19,11 +19,11 @@ struct GOTA_API FRecruitFromTileInstanceData
 };
 
 USTRUCT(DisplayName="Recruit from Tile")
-struct GOTA_API FSTT_RecruitFromTile : public FStateTreeTaskCommonBase
+struct GOTA_API FSTT_CheckForNearbyEnemyArmy : public FStateTreeTaskCommonBase
 {
 	GENERATED_BODY()
 
-	using FInstanceDataType = FRecruitFromTileInstanceData;
+	using FInstanceDataType = FCheckForNearbyEnemyArmyInstanceData;
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 
 	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context,
