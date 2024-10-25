@@ -2,12 +2,16 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
+#include "GameResources.h"
 #include "SettlementSettings.h"
-#include "SettlementPopulation.h"
+#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "GameFramework/Actor.h"
 #include "Settlement.generated.h"
 
+class USettlementPopulation;
+class UPopulationSettings;
+class USettlementSettings;
 class ACivilian;
 class UBuilding;
 class ATile;
@@ -17,9 +21,10 @@ class ASettlement : public AActor
 {
 	GENERATED_BODY()
 
+	// ------------------- Replication Setup -------------------
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
+	
 	// ------------------- LifeCycle -------------------
 
 	ASettlement();
@@ -28,32 +33,39 @@ private:
 	virtual void BeginPlay() override;
 
 public:
-	void S_Init(ATile* SpawnTile, UPopulationSettings* InPopulationSettings);
+	void S_Init(ATile* SpawnTile,
+	            USettlementSettings* InSettlementSettings,
+	            UPopulationSettings* InPopulationSettings);
 
 	void EnableTick();
 
 protected:
 	virtual void Tick(float DeltaSeconds) override;
 
-public:
-	UPROPERTY()
+	// ------------------- Utility -------------------
+private:
+	UPROPERTY(Replicated)
 	USettlementSettings* Settings;
 
+public:
+	USettlementSettings* GetSettings() const { return Settings; }
+
+	EAffiliation GetAffiliation() const { return Settings->GetAffiliation(); }
+
+	FGameplayTagContainer GetGameplayTags() const { return Settings->GetGameplayTags(); }
+
+	// ------------------- Population -------------------
 private:
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
+	USettlementPopulation* Population;
+
 	UPROPERTY()
 	UPopulationSettings* PopulationSettings;
 
 public:
+	USettlementPopulation* GetPopulation() { return Population; }
+
 	UPopulationSettings* GetPopulationSettings() { return PopulationSettings; }
-	
-	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
-	EAffiliation Affiliation;
-
-	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	FGameplayTagContainer GameplayTags;
-
-	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	USettlementPopulation* Population;
 
 	// -------------------Claims-------------------------
 

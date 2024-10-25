@@ -35,9 +35,7 @@ AGuardian::AGuardian()
 void AGuardian::BeginPlay()
 {
 	Super::BeginPlay();
-	// IncreaseReplicationCount for LoadingProcess
-	if (GetWorld()->GetGameState<AGS_Ingame>()->LoadingManager)
-		GetWorld()->GetGameState<AGS_Ingame>()->LoadingManager->IncrementReplicationCount();
+	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
 }
 
 void AGuardian::Init(UGuardianSettings* InSettings)

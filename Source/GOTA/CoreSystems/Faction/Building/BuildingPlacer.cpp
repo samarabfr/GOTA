@@ -5,8 +5,9 @@
 
 #include "BuildingPlacerSettings.h"
 #include "BuildingSettings.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
-#include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "GOTA/CoreSystems/Utility/MouseUtils.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
@@ -64,8 +65,7 @@ ABuildingPlacer::ABuildingPlacer()
 void ABuildingPlacer::BeginPlay()
 {
 	Super::BeginPlay();
-	const AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
-	GameState->LoadingManager->IncrementReplicationCount();
+	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
 }
 
 void ABuildingPlacer::S_Init(AMouseUtils* InMouseUtils)
@@ -135,7 +135,7 @@ bool ABuildingPlacer::CanPlace(ATile* Tile)
 	bool bNextToTribe = false;
 	for (ATile* Neighbor : Tile->Neighbors)
 	{
-		if (Neighbor && Neighbor->GetClaimant() && Neighbor->GetClaimant()->Affiliation == EAffiliation::Ally)
+		if (Neighbor && Neighbor->GetClaimant() && Neighbor->GetClaimant()->GetAffiliation() == EAffiliation::Ally)
 		{
 			bNextToTribe = true;
 			break;

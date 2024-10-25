@@ -33,7 +33,7 @@ bool AArmy::IsTargetValid()
 	// target is not claimed
 	if (!Target->GetClaimant()) return false;
 	// target is not claimed by the enemy
-	if (Target->GetClaimant()->Affiliation == GetAffiliation()) return false;
+	if (Target->GetClaimant()->GetAffiliation() == GetAffiliation()) return false;
 	return true;
 }
 

@@ -3,6 +3,9 @@
 #include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
+#include "GOTA/CoreSystems/Faction/Settlement/SettlementPopulation.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
 #include "GOTA/CoreSystems/GameplayFramework/DaytimeManager.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 
@@ -20,8 +23,8 @@ void UTopBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	RefreshClock();
 
 	if (!GameState) return;
-	int16 Colonists = GameState->GetColony()->Population->GetSize();
-	int16 Natives = GameState->GetTribe()->Population->GetSize();
+	int16 Colonists = GameState->GetColony()->GetPopulation()->GetSize();
+	int16 Natives = GameState->GetTribe()->GetPopulation()->GetSize();
 	if (Colonists + Natives != 0)
 	{
 		float NativeProportion = Natives / static_cast<float>(Colonists + Natives);

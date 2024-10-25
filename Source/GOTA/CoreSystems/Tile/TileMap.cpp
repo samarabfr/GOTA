@@ -304,7 +304,7 @@ TArray<ATile*> ATileMap::GetPathToNearestAffiliatedBuilding(ATile* Start, EAffil
 		// check if Current Tile is a valid Target
 		if (Current->GetBuilding()
 			&& Current->GetClaimant()
-			&& Current->GetClaimant()->Affiliation == TargetAffiliation
+			&& Current->GetClaimant()->GetAffiliation() == TargetAffiliation
 			&& Current->IsWalkable(Walker))
 		{
 			// found target Tile

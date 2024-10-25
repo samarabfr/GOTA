@@ -2,6 +2,7 @@
 #include "CivilianSettings.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
+#include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "Net/UnrealNetwork.h"

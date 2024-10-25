@@ -32,7 +32,7 @@ void ALoadingManager::BeginPlay()
 	Super::BeginPlay();
 	GameMode = GetWorld()->GetAuthGameMode<AGM_Ingame>();
 	GameState = GetWorld()->GetGameState<AGS_Ingame>();
-	GameState->LoadingManager = this;
+	GameState->SetLoadingManager(this);
 	LocalPlayerController = GetWorld()->GetFirstPlayerController<APC_Ingame>();
 	LocalPlayerController->RemoveLobbyUI();
 	LocalPlayerController->CreateLoadingUI();

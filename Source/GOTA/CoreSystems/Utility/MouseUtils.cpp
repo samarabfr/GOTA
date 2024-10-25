@@ -44,8 +44,7 @@ AMouseUtils::AMouseUtils()
 void AMouseUtils::BeginPlay()
 {
 	Super::BeginPlay();
-	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
-	GameState->LoadingManager->IncrementReplicationCount();
+	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
 
 	if (IsOwnedBy(GetWorld()->GetFirstPlayerController()))
 	{

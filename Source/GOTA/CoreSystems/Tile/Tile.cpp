@@ -6,6 +6,7 @@
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
+#include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
@@ -65,8 +66,7 @@ ATile::ATile()
 void ATile::BeginPlay()
 {
 	Super::BeginPlay();
-	GameState = GetWorld()->GetGameState<AGS_Ingame>();
-	GameState->LoadingManager->IncrementReplicationCount();
+	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
 	if(!HasAuthority())
 	{
 		SpawnOceanLineMeshes();
@@ -219,7 +219,7 @@ bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 
 	UpdateClaimWallsWithNeighbors();
 
-	GameplayTags.AppendTags(Builder->GameplayTags);
+	GameplayTags.AppendTags(Builder->GetGameplayTags());
 	GameplayTags.AppendTags(BuildingDataAsset->GameplayTags);
 	GameplayTags.AddTag(Settings->BuildingUnderConstructionTag);
 

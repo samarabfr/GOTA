@@ -52,9 +52,6 @@ public:
 	UPROPERTY(Replicated)
 	UCombatSystem* CombatSystem;
 
-	UPROPERTY()
-	ALoadingManager* LoadingManager;
-
 	// ------------------- TileMap -------------------
 private:
 	UPROPERTY(Replicated)
@@ -64,7 +61,7 @@ public:
 	ATileMap* GetTileMap() const { return TileMap; }
 
 	void SetTileMap(ATileMap* NewTileMap);
-	
+
 	// ------------------- GameSettings -------------------
 private:
 	UPROPERTY(Replicated)
@@ -74,6 +71,16 @@ private:
 
 public:
 	AGameSettings* GetGameSettings() { return GameSettings; }
+
+	// ------------------- LoadingManager -------------------
+private:
+	UPROPERTY()
+	ALoadingManager* LoadingManager;
+
+public:
+	ALoadingManager* GetLoadingManager() const { return LoadingManager; }
+	void SetLoadingManager(ALoadingManager* NewLoadingManager);
+	void IncrementReplicationCount();
 
 	// ------------------- StaticMeshBatcher -------------------
 private:
