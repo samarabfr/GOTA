@@ -188,6 +188,15 @@ ATile* ATileMap::GetRandomTile()
 	return nullptr;
 }
 
+ATile* ATileMap::FindNearestTileInRange(ATile* Origin, int32 Range,
+	const std::function<bool(const ATile*)>& Condition) const
+{
+	if(!Origin || Range < 0) return nullptr;
+	if(Range == 0) return Condition(Origin) ? Origin : nullptr;
+
+	
+}
+
 TArray<ATile*> ATileMap::FindPathToNearestTile(ATile* Origin, const EEntityType EntityType,
                                                const std::function<bool(const ATile*)>& Condition = [](const ATile*)
                                                {

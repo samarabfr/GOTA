@@ -271,3 +271,8 @@ void AArmy::ChallengeToCombat()
 {
 	Status = EArmyStatus::Fighting;
 }
+
+bool AArmy::HasEnemyInGuardModeInterceptRange()
+{
+	//if()
+}

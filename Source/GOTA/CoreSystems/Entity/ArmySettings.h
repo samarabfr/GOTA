@@ -19,4 +19,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	FGameplayTag StateTreeCompletedTaskEventTag;
+
+	UPROPERTY(EditDefaultsOnly)
+	int32 GarrisonModeInterceptingRange = 4;
 };

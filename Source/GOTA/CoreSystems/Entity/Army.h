@@ -129,4 +129,5 @@ private:
 
 public:
 	void ChallengeToCombat();
+	bool HasEnemyInGuardModeInterceptRange();
 };
