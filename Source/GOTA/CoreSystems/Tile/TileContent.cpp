@@ -2,6 +2,7 @@
 #include "Tile.h"
 #include "Algo/RandomShuffle.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
+#include "GOTA/CoreSystems/Utility/StaticMeshBatcher.h"
 
 void UTileContent::Init(ATile* InTile, AGS_Ingame* InGameState)
 {
@@ -198,7 +199,7 @@ void UTileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<
 		{
 			FTransform T = FTransform();
 			CalculateTransform(Array[i].SpawnPoint, T);
-			GameState->StaticMeshBatcher->UpdateStaticMeshTransform(
+			GameState->GetStaticMeshBatcher()->UpdateStaticMeshTransform(
 				Array[i].TileAsset->MeshFinished, Array[i].InstanceId, T);
 		}
 	}
@@ -318,7 +319,7 @@ void UTileContent::SpawnTileAsset(FTileAssetSpawn& TileAssetSpawn, const ESpawnS
 	FTransform T = FTransform();
 	CalculateTransform(TileAssetSpawn.SpawnPoint, T);
 
-	TileAssetSpawn.InstanceId = GameState->StaticMeshBatcher->AddStaticMeshInstance(
+	TileAssetSpawn.InstanceId = GameState->GetStaticMeshBatcher()->AddStaticMeshInstance(
 		SelectedMesh, T);
 	TileAssetSpawn.bIsSpawned = true;
 	TileAssetSpawn.SpawnState = SelectedSpawnState;
@@ -327,7 +328,7 @@ void UTileContent::SpawnTileAsset(FTileAssetSpawn& TileAssetSpawn, const ESpawnS
 void UTileContent::DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn)
 {
 	if (!FTileAssetSpawn.bIsSpawned) return;
-	GameState->StaticMeshBatcher->RemoveStaticMeshInstance(
+	GameState->GetStaticMeshBatcher()->RemoveStaticMeshInstance(
 		FTileAssetSpawn.GetMeshForSpawnState(FTileAssetSpawn.SpawnState),
 		FTileAssetSpawn.InstanceId);
 	FTileAssetSpawn.bIsSpawned = false;

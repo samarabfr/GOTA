@@ -5,6 +5,7 @@
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
+#include "GOTA/CoreSystems/Tile/TileMap.h"
 
 AWoodcutter::AWoodcutter()
 {
@@ -59,14 +60,14 @@ bool AWoodcutter::TryFindPath()
 	}
 	if (HasBorderingTileWithTrees)
 	{
-		Path = GameState->TileMap->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
+		Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
 		{
 			return Tile->EcoValues->GetTrees() > 0 && Building->Settlement->IsBorderingUnclaimedTile(Tile);
 		});
 	}
 	else
 	{
-		Path = GameState->TileMap->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [](const ATile* Tile)
+		Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [](const ATile* Tile)
 		{
 			return Tile->EcoValues->GetTrees() > 0;
 		});

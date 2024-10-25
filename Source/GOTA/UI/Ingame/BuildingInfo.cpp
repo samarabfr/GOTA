@@ -37,8 +37,8 @@ void UBuildingInfo::RefreshPopulation()
 	UPopulation* Pop = CurrentBuilding->Population;
 	Population_Current->SetText(FText::AsNumber(Pop->GetSize()));
 	Population_Max->SetText(FText::AsNumber(Pop->GetMaxSize()));
-	Population_Growth->SetText(FText::Format(FText::FromString(TEXT("+{0}")), Pop->GetGrowth()));
-	Population_Progress->SetPercent(Pop->GetGrowthProgress() * 0.01f);
+	Population_Growth->SetText(FText::Format(FText::FromString(TEXT("+{0}")), Pop->GetGrowth() * 100));
+	Population_Progress->SetPercent(Pop->GetGrowthProgress());
 
 	Mood_Angry->SetText(FText::AsNumber(Pop->GetAngry()));
 	Mood_Fear->SetText(FText::AsNumber(Pop->GetFear()));

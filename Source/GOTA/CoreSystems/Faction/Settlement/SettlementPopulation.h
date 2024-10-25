@@ -24,6 +24,8 @@ public:
 	void RegisterPop(UPopulation* Pop);
 
 	void UnregisterPop(UPopulation* Pop);
+	
+	void StarveRandomPop();
 
 private:
 	UFUNCTION()

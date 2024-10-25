@@ -9,6 +9,7 @@
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
+#include "GOTA/CoreSystems/Utility/StaticMeshBatcher.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -248,14 +249,14 @@ void ATile::UpdateClaimWalls()
 					Transform.SetLocation(GetActorLocation());
 					Transform.SetRotation(
 						FRotator(0, 60 * i, 0).Quaternion());
-					ClaimWallsInstanceIds.Add(i, GameState->StaticMeshBatcher->AddStaticMeshInstance(
+					ClaimWallsInstanceIds.Add(i, GameState->GetStaticMeshBatcher()->AddStaticMeshInstance(
 						                          Settings->ClaimMesh, Transform));
 				}
 			}
 			else if (ClaimWallsInstanceIds.Contains(i))
 			{
 				// Should NOT have flag in this direction
-				GameState->StaticMeshBatcher->RemoveStaticMeshInstance(
+				GameState->GetStaticMeshBatcher()->RemoveStaticMeshInstance(
 					Settings->ClaimMesh, *ClaimWallsInstanceIds.Find(i));
 				ClaimWallsInstanceIds.Remove(i);
 			}
@@ -266,7 +267,7 @@ void ATile::UpdateClaimWalls()
 		// remove all flags
 		for (TTuple<uint8, FPrimitiveInstanceId> Tuple : ClaimWallsInstanceIds)
 		{
-			GameState->StaticMeshBatcher->RemoveStaticMeshInstance(Settings->ClaimMesh, Tuple.Value);
+			GameState->GetStaticMeshBatcher()->RemoveStaticMeshInstance(Settings->ClaimMesh, Tuple.Value);
 		}
 		ClaimWallsInstanceIds.Empty();
 	}
@@ -419,11 +420,11 @@ void ATile::SpawnOceanLineMeshes()
 		
 		if (Terrain.RiverConnections[i])
 		{
-			GameState->StaticMeshBatcher->AddStaticMeshInstance(Settings->OceanLinesAtRiverDeltaMesh, T);
+			GameState->GetStaticMeshBatcher()->AddStaticMeshInstance(Settings->OceanLinesAtRiverDeltaMesh, T);
 		}
 		else
 		{
-			GameState->StaticMeshBatcher->AddStaticMeshInstance(Settings->OceanLinesMesh, T);
+			GameState->GetStaticMeshBatcher()->AddStaticMeshInstance(Settings->OceanLinesMesh, T);
 		}
 	}
 }

@@ -384,7 +384,7 @@ void ACombat::TriggerCombat()
 		}
 		if (Tile->GetBuilding())
 		{
-			Tile->GetBuilding()->Population->DecreaseSize(CombatTile.BuildingPopKills);
+			Tile->GetBuilding()->Population->S_DecreaseSize(CombatTile.BuildingPopKills);
 			if (CombatTile.BuildingDowngrade > 0) Tile->Unbuild(); // TODO: Downgrade instead
 		}
 	}

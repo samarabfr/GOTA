@@ -46,7 +46,7 @@ UBuilding::UBuilding()
 
 void UBuilding::ServerTick(const float DeltaSeconds)
 {
-	Population->ServerTick(DeltaSeconds);
+	Population->S_Tick(DeltaSeconds);
 	if (Civilian)
 		Civilian->S_Tick(DeltaSeconds);
 	if (Army)
@@ -83,7 +83,7 @@ void UBuilding::ServerTick(const float DeltaSeconds)
 
 void UBuilding::ClientTick(const float DeltaSeconds)
 {
-	Population->ClientTick(DeltaSeconds);
+	Population->C_Tick(DeltaSeconds);
 	if (Civilian)
 		Civilian->C_Tick(DeltaSeconds);
 
@@ -92,6 +92,7 @@ void UBuilding::ClientTick(const float DeltaSeconds)
 
 void UBuilding::ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
 {
+	Population->S_Init(InSettlement->GetPopulationSettings());
 	Settings = InSettings;
 	Tile = InTile;
 	Settlement = InSettlement;
@@ -171,7 +172,7 @@ void UBuilding::FinishConstruction()
 	bIsUnderConstruction = false;
 	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, bIsUnderConstruction, this)
 	Tile->OnBuildingFinishedConstruction();
-	Population->ChangeMaxSize(Settings->Housing);
+	Population->S_ChangeMaxSize(Settings->Housing);
 	if (Settings->bCivilianEnabled)
 	{
 		ACivilian* NewCivilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);

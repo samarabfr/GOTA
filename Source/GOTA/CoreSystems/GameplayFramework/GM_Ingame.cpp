@@ -2,15 +2,20 @@
 
 
 #include "GM_Ingame.h"
+
+#include "GameSettings.h"
 #include "GOTAGameInstance.h"
 #include "LoadingManager.h"
 #include "PC_Ingame.h"
 #include "PS_Ingame.h"
+#include "StartParameter.h"
 #include "GameFramework/GameStateBase.h"
+#include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingPlacer.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
+#include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
 #include "GOTA/CoreSystems/Tile/WorldGenerator.h"
 #include "Kismet/GameplayStatics.h"
@@ -104,7 +109,7 @@ void AGM_Ingame::UnpauseGame()
 void AGM_Ingame::EndGame(EGameEnding Ending, const FString& EndingMessage)
 {
 	GOTAGameState->GameStatus = EGameStatus::Ended;
-	GOTAGameState->EndGame(Ending, EndingMessage);
+	GOTAGameState->S_EndGame(Ending, EndingMessage);
 }
 
 void AGM_Ingame::CheckGameEndingConditions()
@@ -146,31 +151,33 @@ void AGM_Ingame::CheckGameEndingConditions()
 
 void AGM_Ingame::CreateWorld()
 {
-	GOTAGameState->TileMap = GetWorld()->SpawnActor<ATileMap>(TileMapClass);
+	GOTAGameState->SetTileMap(GetWorld()->SpawnActor<ATileMap>(TileMapClass));
 	UGOTAGameInstance* GameInstance = GetGameInstance<UGOTAGameInstance>();
 	UWorldGenerator* WorldGen = NewObject<UWorldGenerator>();
-	WorldGen->Init(GOTAGameState->TileMap,
+	WorldGen->Init(GOTAGameState->GetTileMap(),
 	               GOTAGameState->StartParameter->GetIslandSize(),
 	               1,
 	               1);
 	WorldGen->GenerateWorld();
-	GOTAGameState->TileMap->Init();
+	GOTAGameState->GetTileMap()->Init();
 }
 
 void AGM_Ingame::CreateSettlements()
 {
 	AColony* Colony = GetWorld()->SpawnActor<AColony>();
-	Colony->StartingSetup(GOTAGameState->TileMap->ColonistsStarts[0]);
+	Colony->S_Init(GOTAGameState->GetTileMap()->ColonistsStarts[0],
+		GOTAGameState->GetGameSettings()->GetColonyPopulationSettings());
 	GOTAGameState->SetColony(Colony);
 
 	ATribe* Tribe = GetWorld()->SpawnActor<ATribe>();
-	Tribe->StartingSetup(GOTAGameState->TileMap->NativesStarts[0]);
+	Tribe->S_Init(GOTAGameState->GetTileMap()->NativesStarts[0],
+		GOTAGameState->GetGameSettings()->GetTribePopulationSettings());
 	GOTAGameState->SetTribe(Tribe);
 }
 
 void AGM_Ingame::CreateGuardians()
 {
-	ATile* TribeStartingTile = GOTAGameState->TileMap->NativesStarts[0];
+	ATile* TribeStartingTile = GOTAGameState->GetTileMap()->NativesStarts[0];
 	for (int32 i = 0; i < GOTAGameState->PlayerArray.Num(); ++i)
 	{
 		const APS_Ingame* PlayerStateIngame = Cast<APS_Ingame>(GOTAGameState->PlayerArray[i]);

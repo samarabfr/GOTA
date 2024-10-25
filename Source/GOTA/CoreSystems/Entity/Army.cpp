@@ -8,6 +8,7 @@
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
+#include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 #include "StateTree/StateTreeComponentArmy.h"
@@ -145,7 +146,7 @@ void AArmy::TakePopFromTile()
 	if (CurrentTile->GetBuilding()->Population->GetSize() <= 0)
 		return;
 	++Size;
-	CurrentTile->GetBuilding()->Population->DecreaseSize(1);
+	CurrentTile->GetBuilding()->Population->S_DecreaseSize(1);
 	MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, Size, this)
 }
 
@@ -182,7 +183,7 @@ bool AArmy::TryFindPathToNearestRecruitable()
 		}
 	}
 	if (!HasValidTiles) return false;
-	Path = GameState->TileMap->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
+	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
 	{
 		return IsTileValidForRecruiting(Tile);
 	});
