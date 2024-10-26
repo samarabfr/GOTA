@@ -49,16 +49,20 @@ protected:
 private:
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Affiliation)
 	EAffiliation Affiliation;
-
-public:
-	EAffiliation GetAffiliation() const;
-
-private:
+	
 	UFUNCTION()
 	void OnRep_Affiliation();
 
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	int32 Size = 0;
+
+	UPROPERTY(EditInstanceOnly, Replicated)
+	EArmyMode Mode = EArmyMode::GarrisonMode;
+
+public:
+	EAffiliation GetAffiliation() const;
+	EArmyMode GetMode() const;
+	void SetArmyMode(EArmyMode NewMode);
 
 	// ----------------- Status ------------------------
 private:
@@ -130,5 +134,6 @@ private:
 public:
 	void ChallengeToCombat();
 	bool TryFindPathToNearestEnemy();
+	bool TryFindPathToNearestEnemyBuilding();
 	bool HasEnemyInGarrisonModeRange();
 };

@@ -30,6 +30,7 @@ void AArmy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(AArmy, Size, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, Progress, Params);
+	DOREPLIFETIME_WITH_PARAMS(AArmy, Mode, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, Status, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, CurrentTile, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, NetLocation, Params);
@@ -120,6 +121,18 @@ void AArmy::BeginDestroy()
 EAffiliation AArmy::GetAffiliation() const
 {
 	return Affiliation;
+}
+
+EArmyMode AArmy::GetMode() const
+{
+	return Mode;
+}
+
+void AArmy::SetArmyMode(EArmyMode NewMode)
+{
+	if (Mode == NewMode) return;
+	Mode = NewMode;
+	MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, Mode, this)
 }
 
 void AArmy::OnRep_Affiliation()
@@ -278,6 +291,16 @@ bool AArmy::TryFindPathToNearestEnemy()
 	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Army, [this](const ATile* Tile)
 	{
 		return Tile && Tile->GetArmy() && Tile->GetArmy()->GetAffiliation() != GetAffiliation();
+	});
+	return !Path.IsEmpty();
+}
+
+bool AArmy::TryFindPathToNearestEnemyBuilding()
+{
+	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Army, [this](const ATile* Tile)
+	{
+		return Tile && Tile->GetBuilding() && Tile->GetClaimant()
+			&& Tile->GetClaimant()->Affiliation != GetAffiliation();
 	});
 	return !Path.IsEmpty();
 }
