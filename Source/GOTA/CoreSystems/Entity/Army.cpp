@@ -290,7 +290,13 @@ bool AArmy::TryFindPathToNearestEnemy()
 {
 	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Army, [this](const ATile* Tile)
 	{
-		return Tile && Tile->GetArmy() && Tile->GetArmy()->GetAffiliation() != GetAffiliation();
+		if(!Tile) return false;
+		for (ATile* Neighbor : Tile->Neighbors)
+		{
+			if(Neighbor && Neighbor->GetArmy() && Neighbor->GetArmy()->GetAffiliation() != GetAffiliation())
+				return true;
+		}
+		return false;
 	});
 	return !Path.IsEmpty();
 }
@@ -305,13 +311,14 @@ bool AArmy::TryFindPathToNearestEnemyBuilding()
 	return !Path.IsEmpty();
 }
 
-bool AArmy::HasEnemyInGarrisonModeRange()
+bool AArmy::HasEnemyInGarrisonModeRange() const
 {
-	return !GameState->GetTileMap()->FindPathToNearestTileInRange(CurrentTile, EEntityType::Army,
-	                                                              Settings->GarrisonModeInterceptingRange,
-	                                                              [this](const ATile* Tile)
-	                                                              {
-		                                                              return Tile && Tile->GetArmy() && Tile->GetArmy()
-			                                                              ->GetAffiliation() != GetAffiliation();
-	                                                              }).IsEmpty();
+	ATile* EnemyOnTile = GameState->GetTileMap()->FindNearestTileInRange(
+		CurrentTile, Settings->GarrisonModeInterceptingRange,
+		[this](const ATile* Tile)
+		{
+			return Tile && Tile->GetArmy() && Tile->GetArmy()
+			                                      ->GetAffiliation() != GetAffiliation();
+		});
+	return EnemyOnTile != nullptr;
 }

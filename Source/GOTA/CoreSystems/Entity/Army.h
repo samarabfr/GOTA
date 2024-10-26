@@ -135,5 +135,5 @@ public:
 	void ChallengeToCombat();
 	bool TryFindPathToNearestEnemy();
 	bool TryFindPathToNearestEnemyBuilding();
-	bool HasEnemyInGarrisonModeRange();
+	bool HasEnemyInGarrisonModeRange() const;
 };
