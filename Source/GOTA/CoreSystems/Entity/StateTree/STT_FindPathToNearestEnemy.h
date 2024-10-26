@@ -4,12 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/StateTreeTaskBlueprintBase.h"
-#include "STT_CheckForNearbyEnemyArmy.generated.h"
+#include "STT_FindPathToNearestEnemy.generated.h"
 
 class AArmy;
 
 USTRUCT()
-struct GOTA_API FCheckForNearbyEnemyArmyInstanceData
+struct GOTA_API FFindPathToNearestEnemyInstanceData
 {
 	GENERATED_BODY()
 
@@ -18,12 +18,12 @@ struct GOTA_API FCheckForNearbyEnemyArmyInstanceData
 	TObjectPtr<AArmy> ArmyRef = nullptr;
 };
 
-USTRUCT(DisplayName="Recruit from Tile")
-struct GOTA_API FSTT_CheckForNearbyEnemyArmy : public FStateTreeTaskCommonBase
+USTRUCT(DisplayName="Find path to nearest enemy")
+struct GOTA_API FSTT_FindPathToNearestEnemy : public FStateTreeTaskCommonBase
 {
 	GENERATED_BODY()
 
-	using FInstanceDataType = FCheckForNearbyEnemyArmyInstanceData;
+	using FInstanceDataType = FFindPathToNearestEnemyInstanceData;
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 
 	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context,

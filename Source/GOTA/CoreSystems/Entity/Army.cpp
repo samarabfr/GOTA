@@ -183,7 +183,7 @@ bool AArmy::TryFindPathToNearestRecruitable()
 		}
 	}
 	if (!HasValidTiles) return false;
-	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
+	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Army, [this](const ATile* Tile)
 	{
 		return IsTileValidForRecruiting(Tile);
 	});
@@ -273,8 +273,22 @@ void AArmy::ChallengeToCombat()
 	Status = EArmyStatus::Fighting;
 }
 
-bool AArmy::HasEnemyInGuardModeInterceptRange()
+bool AArmy::TryFindPathToNearestEnemy()
 {
-	return false;
-	//if()
+	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Army, [this](const ATile* Tile)
+	{
+		return Tile && Tile->GetArmy() && Tile->GetArmy()->GetAffiliation() != GetAffiliation();
+	});
+	return !Path.IsEmpty();
+}
+
+bool AArmy::HasEnemyInGarrisonModeRange()
+{
+	return !GameState->GetTileMap()->FindPathToNearestTileInRange(CurrentTile, EEntityType::Army,
+	                                                              Settings->GarrisonModeInterceptingRange,
+	                                                              [this](const ATile* Tile)
+	                                                              {
+		                                                              return Tile && Tile->GetArmy() && Tile->GetArmy()
+			                                                              ->GetAffiliation() != GetAffiliation();
+	                                                              }).IsEmpty();
 }

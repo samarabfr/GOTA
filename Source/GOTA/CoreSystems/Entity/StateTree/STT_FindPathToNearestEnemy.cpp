@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "STT_CheckForNearbyEnemyArmy.h"
+#include "STT_FindPathToNearestEnemy.h"
 
 #include "StateTreeExecutionContext.h"
 #include "GOTA/CoreSystems/Entity/Army.h"
 
-EStateTreeRunStatus FSTT_CheckForNearbyEnemyArmy::EnterState(FStateTreeExecutionContext& Context,
+EStateTreeRunStatus FSTT_FindPathToNearestEnemy::EnterState(FStateTreeExecutionContext& Context,
                                                      const FStateTreeTransitionResult& Transition) const
 {
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
@@ -16,7 +16,6 @@ EStateTreeRunStatus FSTT_CheckForNearbyEnemyArmy::EnterState(FStateTreeExecution
 		return EStateTreeRunStatus::Failed;
 	}
 
-	InstanceData.ArmyRef.Get()->StartRecruitFromTile();
-
-	return EStateTreeRunStatus::Running;
+	const bool bHasPath = InstanceData.ArmyRef.Get()->TryFindPathToNearestEnemy();
+	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
 }

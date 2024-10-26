@@ -129,5 +129,6 @@ private:
 
 public:
 	void ChallengeToCombat();
-	bool HasEnemyInGuardModeInterceptRange();
+	bool TryFindPathToNearestEnemy();
+	bool HasEnemyInGarrisonModeRange();
 };

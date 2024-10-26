@@ -80,9 +80,12 @@ public:
 	ATile* GetRandomTile();
 
 	ATile* FindNearestTileInRange(ATile* Origin, int32 Range,
-										 const std::function<bool(const ATile*)>& Condition) const;
+	                              const std::function<bool(const ATile*)>& Condition) const;
 
 	TArray<ATile*> FindPathToNearestTile(ATile* Origin, EEntityType EntityType,
+	                                     const std::function<bool(const ATile*)>& Condition) const;
+
+	TArray<ATile*> FindPathToNearestTileInRange(ATile* Origin, EEntityType EntityType, int32 Range,
 	                                     const std::function<bool(const ATile*)>& Condition) const;
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
