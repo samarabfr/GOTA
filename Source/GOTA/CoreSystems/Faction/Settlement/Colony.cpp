@@ -1,7 +1,6 @@
 ﻿#include "Colony.h"
 
 #include "ColonyBrainSettings.h"
-#include "SettlementSettings.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/GameplayFramework/GameSettings.h"

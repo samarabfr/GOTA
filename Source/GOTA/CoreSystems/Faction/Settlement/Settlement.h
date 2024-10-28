@@ -22,14 +22,13 @@ class ASettlement : public AActor
 	GENERATED_BODY()
 
 	// ------------------- Replication Setup -------------------
-protected:
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	// ------------------- LifeCycle -------------------
-
+protected:
 	ASettlement();
-
-private:
+	
 	virtual void BeginPlay() override;
 
 public:
