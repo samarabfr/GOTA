@@ -12,7 +12,7 @@ void AArmy::CalculateMovement()
 	{
 		AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 		EAffiliation Enemy = GetAffiliation() == EAffiliation::Ally ? EAffiliation::Enemy : EAffiliation::Ally;
-		SetPath(GameState->TileMap->GetPathToNearestAffiliatedBuilding(CurrentTile, Enemy, GetAffiliation()));
+		SetPath(GameState->GetTileMap()->GetPathToNearestAffiliatedBuilding(CurrentTile, Enemy, GetAffiliation()));
 		if (GetPath().Num() > 0) Target = GetPath()[0];
 	}
 	Step();
@@ -45,7 +45,7 @@ UCombatValues* AArmy::GetCombatValues() const
 
 void AArmy::KillIndividuals(int32 Kills)
 {
-	PopCon->DecreaseSize(Kills);
+	PopCon->S_DecreaseSize(Kills);
 	if (PopCon->GetSize() <= 0)
 		Kill();
 }
@@ -58,6 +58,6 @@ void AArmy::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void AArmy::Init(EAffiliation Affiliation_, ATile* CurrentTile_, int32 MovementSpeed_)
 {
 	Super::Init(Affiliation_, CurrentTile_, MovementSpeed_);
-	PopCon->DecreaseSize(100);
-	PopCon->IncreaseSize(FMath::RandRange(3,10));
+	PopCon->S_DecreaseSize(100);
+	PopCon->S_IncreaseSize(FMath::RandRange(3,10));
 }

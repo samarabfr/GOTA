@@ -19,18 +19,33 @@ class ASettlement : public AActor
 
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	// ------------------- LifeCycle -------------------
+
 	ASettlement();
 
+private:
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaSeconds) override;
 
 public:
+	void S_Init(ATile* SpawnTile, UPopulationSettings* InPopulationSettings);
+
 	void EnableTick();
+
+protected:
+	virtual void Tick(float DeltaSeconds) override;
 
 public:
 	UPROPERTY()
 	USettlementSettings* Settings;
 
+private:
+	UPROPERTY()
+	UPopulationSettings* PopulationSettings;
+
+public:
+	UPopulationSettings* GetPopulationSettings() { return PopulationSettings; }
+	
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
 	EAffiliation Affiliation;
 
@@ -39,8 +54,6 @@ public:
 
 	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
 	USettlementPopulation* Population;
-
-	void StartingSetup(ATile* SpawnTile);
 
 	// -------------------Claims-------------------------
 
@@ -62,7 +75,7 @@ public:
 	void OnBuildingAdded(UBuilding* Building, ATile* Tile);
 
 	void OnBuildingRemoved(UBuilding* Building, ATile* Tile);
-	
+
 	// -------------------Resources-------------------------
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")

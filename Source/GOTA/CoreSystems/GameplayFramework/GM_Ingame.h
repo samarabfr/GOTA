@@ -8,6 +8,8 @@
 #include "GameFramework/GameMode.h"
 #include "GM_Ingame.generated.h"
 
+class AMouseUtils;
+
 UCLASS()
 class GOTA_API AGM_Ingame : public AGameMode
 {

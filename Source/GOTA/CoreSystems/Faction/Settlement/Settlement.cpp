@@ -4,6 +4,7 @@
 
 #include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/Faction/Building/PopulationSettings.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "Net/UnrealNetwork.h"
@@ -23,6 +24,8 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(ASettlement, Resources, Params);
 }
+
+// ------------------- LifeCycle -------------------
 
 ASettlement::ASettlement()
 {
@@ -52,20 +55,9 @@ void ASettlement::BeginPlay()
 	GetWorld()->GetGameState<AGS_Ingame>()->LoadingManager->IncrementReplicationCount();
 }
 
-void ASettlement::Tick(float DeltaSeconds)
+void ASettlement::S_Init(ATile* SpawnTile, UPopulationSettings* InPopulationSettings)
 {
-	Super::Tick(DeltaSeconds);
-
-	UpdateLastMinuteResources();
-}
-
-void ASettlement::EnableTick()
-{
-	SetActorTickEnabled(true);
-}
-
-void ASettlement::StartingSetup(ATile* SpawnTile)
-{
+	PopulationSettings = InPopulationSettings;
 	const FGameResources& StartingResources = Affiliation == EAffiliation::Enemy
 		                                          ? Settings->C_StartingResources
 		                                          : Settings->N_StartingResources;
@@ -87,7 +79,38 @@ void ASettlement::StartingSetup(ATile* SpawnTile)
 	}
 	for (ATile* Tile : ClaimedTiles)
 	{
-		Tile->GetBuilding()->Population->ChangeSize(100);
+		Tile->GetBuilding()->Population->S_ChangeSize(100);
+	}
+}
+
+void ASettlement::EnableTick()
+{
+	SetActorTickEnabled(true);
+}
+
+void ASettlement::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	UpdateLastMinuteResources();
+	Resources.Food -= Population->GetSize() * Settings->PopEatingPerSecond * DeltaSeconds;
+
+	if(Resources.Food < 0)
+		PopulationSettings->IsStarving = true;
+	else
+		PopulationSettings->IsStarving = false;
+		
+	if (HasAuthority())
+	{
+		if (Resources.Food < Settings->StarvingThreshold)
+		{
+			int32 Count = Resources.Food / Settings->StarvingThreshold;
+			Resources.Food += Count * Settings->StarvingThreshold * -1;
+			for (int32 i = 0; i < Count; ++i)
+			{
+				Population->StarveRandomPop();
+			}
+		}
 	}
 }
 
@@ -164,19 +187,19 @@ void ASettlement::UpdateLastMinuteResources()
 	}
 }
 
-void ASettlement::S_AddResources(FGameResources Amount, bool CountTowardsIncomeLastMinute)
+void ASettlement::S_AddResources(const FGameResources Amount, const bool CountTowardsLastMinuteIncome)
 {
 	Resources += Amount;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
 	ForceNetUpdate();
-	if (CountTowardsIncomeLastMinute)
+	if (CountTowardsLastMinuteIncome)
 	{
 		LastMinuteIncome += Amount;
 		IncomeEvents.Enqueue(FIncomeEvent(Amount, GetWorld()->GetTimeSeconds()));
 	}
 }
 
-void ASettlement::S_RemoveResources(FGameResources Amount, bool CountTowardsLastMinuteConsumption)
+void ASettlement::S_RemoveResources(const FGameResources Amount, const bool CountTowardsLastMinuteConsumption)
 {
 	Resources -= Amount;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
