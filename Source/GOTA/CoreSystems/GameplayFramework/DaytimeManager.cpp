@@ -134,9 +134,6 @@ void ADaytimeManager::StartDay()
 	bIsDay = true;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ADaytimeManager, CurrentTime, this)
 
-	SunLightComponent->SetCastShadows(true);
-	MoonLightComponent->SetCastShadows(false);
-
 	if (ParameterCollection)
 		ParameterCollection->SetScalarParameterValue(FName("IsNight"), 0.0f);
 }
@@ -145,9 +142,6 @@ void ADaytimeManager::StartNight()
 {
 	bIsDay = false;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ADaytimeManager, CurrentTime, this)
-
-	SunLightComponent->SetCastShadows(false);
-	MoonLightComponent->SetCastShadows(true);
 
 	if (ParameterCollection)
 		ParameterCollection->SetScalarParameterValue(FName("IsNight"), 1.0f);
