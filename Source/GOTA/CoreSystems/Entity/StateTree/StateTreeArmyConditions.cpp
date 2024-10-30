@@ -44,3 +44,29 @@ bool FSTC_HasEnemyInGarrisonModeRange::TestCondition(FStateTreeExecutionContext&
 	const bool bResult = InstanceData.ArmyRef.Get()->HasEnemyInGarrisonModeRange();
 	return bResult ^ bInvert;
 }
+
+bool FSTC_HasEnemyOnNeighboringTile::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	if (!InstanceData.ArmyRef)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
+		return false;
+	}
+
+	const bool bResult = InstanceData.ArmyRef.Get()->HasEnemyOnNeighboringTile();
+	return bResult ^ bInvert;
+}
+
+bool FSTC_HasCombatOnNeighboringTile::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	if (!InstanceData.ArmyRef)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
+		return false;
+	}
+
+	const bool bResult = InstanceData.ArmyRef.Get()->HasCombatOnNeighboringTile();
+	return bResult ^ bInvert;
+}

@@ -246,44 +246,34 @@ void AArmy::MoveToNextTileOnPath()
 
 // ----------------- Combat ------------------------
 
-void AArmy::CheckForCombat()
+bool AArmy::HasEnemyOnNeighboringTile() const
 {
-	// soll in stateTree
-	/*
-	if (Status == EArmyStatus::Fighting) return;
+	if(!CurrentTile) return false;
 	for (ATile* Neighbor : CurrentTile->Neighbors)
 	{
 		if (Neighbor &&
 			Neighbor->GetArmy() &&
-			Neighbor->GetArmy()->Affiliation != Affiliation)
+			Neighbor->GetArmy()->GetAffiliation() != GetAffiliation())
 		{
-			if (Neighbor->GetArmy()->Status != EArmyStatus::Fighting)
-			{
-				InitializeCombat(Neighbor->GetArmy());
-			}
-			else
-			{
-				JoinCombat(Neighbor->GetArmy());
-			}
+			return true;
 		}
 	}
-	*/
+	return false;
 }
 
-void AArmy::InitializeCombat(AArmy* Enemy)
+bool AArmy::HasCombatOnNeighboringTile() const
 {
-	Status = EArmyStatus::Fighting;
-	Enemy->ChallengeToCombat();
-}
-
-void AArmy::JoinCombat(AArmy* Enemy)
-{
-	Status = EArmyStatus::Fighting;
-}
-
-void AArmy::ChallengeToCombat()
-{
-	Status = EArmyStatus::Fighting;
+	if(!CurrentTile) return false;
+	for (ATile* Neighbor : CurrentTile->Neighbors)
+	{
+		if (Neighbor &&
+			Neighbor->GetArmy() &&
+			Neighbor->GetArmy()->GetAffiliation() != GetAffiliation())
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 bool AArmy::TryFindPathToNearestEnemy()
@@ -321,4 +311,9 @@ bool AArmy::HasEnemyInGarrisonModeRange() const
 			                                      ->GetAffiliation() != GetAffiliation();
 		});
 	return EnemyOnTile != nullptr;
+}
+
+void AArmy::Fight()
+{
+	SetStatus(EArmyStatus::Fighting);
 }

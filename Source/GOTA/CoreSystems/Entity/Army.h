@@ -126,14 +126,11 @@ public:
 	void StartMoveToNextTileOnPath();
 
 	// -----------------Combat------------------------
-private:
-	void CheckForCombat();
-	void InitializeCombat(AArmy* Enemy);
-	void JoinCombat(AArmy* Enemy);
-
 public:
-	void ChallengeToCombat();
+	bool HasEnemyOnNeighboringTile() const;
+	bool HasCombatOnNeighboringTile() const;
 	bool TryFindPathToNearestEnemy();
 	bool TryFindPathToNearestEnemyBuilding();
 	bool HasEnemyInGarrisonModeRange() const;
+	void Fight();
 };
