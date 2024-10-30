@@ -17,9 +17,6 @@ class GOTA_API USettlementSettings : public UPrimaryDataAsset
 
 public:
 	UPROPERTY(EditDefaultsOnly, Category="Colonist Settlement")
-	TSubclassOf<AArmy> C_ArmyClass;
-
-	UPROPERTY(EditDefaultsOnly, Category="Colonist Settlement")
 	FGameplayTagContainer C_GameplayTags;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Colonist Settlement")
@@ -30,10 +27,6 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Colonist Settlement")
 	FGameResources C_StartingResources;
-
-	
-	UPROPERTY(EditDefaultsOnly, Category="Native Settlement")
-	TSubclassOf<AArmy> N_ArmyClass;
 
 	UPROPERTY(EditDefaultsOnly, Category="Native Settlement")
 	FGameplayTagContainer N_GameplayTags;
