@@ -146,26 +146,16 @@ void UTileContent::OnSpawnPointLayoutChanged()
 	BringArrayToCorrectSize(TreeTileAssetSpawns, Tile->SpawnLayout.Trees.Num());
 	SetSpawnPointsOnArray(TreeTileAssetSpawns, Tile->SpawnLayout.Trees);
 
+	BringArrayToCorrectSize(ForageTileAssetSpawns, Tile->SpawnLayout.Forage.Num());
+	SetSpawnPointsOnArray(ForageTileAssetSpawns, Tile->SpawnLayout.Forage);
+
 	BringArrayToCorrectSize(PropTileAssetSpawns, Tile->SpawnLayout.Props.Num());
 	SetSpawnPointsOnArray(PropTileAssetSpawns, Tile->SpawnLayout.Props);
 
 	BringArrayToCorrectSize(BuildingTileAssetSpawns, Tile->SpawnLayout.Buildings.Num());
 	SetSpawnPointsOnArray(BuildingTileAssetSpawns, Tile->SpawnLayout.Buildings);
 
-	BringArrayToCorrectSize(ForageTileAssetSpawns, Tile->SpawnLayout.Forage.Num());
-	SetSpawnPointsOnArray(ForageTileAssetSpawns, Tile->SpawnLayout.Forage);
-
-	MainBuilding.SpawnPoint = Tile->SpawnLayout.MainBuilding;
-	if (MainBuilding.TileAsset)
-	{
-		MainBuilding.SpawnPoint.Rotation += MainBuilding.TileAsset->GetRotationAfterMode();
-	}
-	if (MainBuilding.bIsSpawned)
-	{
-		ESpawnState BeforeState = MainBuilding.SpawnState;
-		DespawnTileAsset(MainBuilding);
-		SpawnTileAsset(MainBuilding, BeforeState);
-	}
+	SetSpawnPointOnTileAssetSpawn(MainBuilding, Tile->SpawnLayout.MainBuilding);
 
 	ValidateEverything();
 }
@@ -189,18 +179,25 @@ void UTileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<
 {
 	for (int i = 0; i < Array.Num(); ++i)
 	{
-		Array[i].SpawnPoint = SpawnPoints[i];
-		if (Array[i].TileAsset)
-		{
-			Array[i].SpawnPoint.Rotation += Array[i].TileAsset->GetRotationAfterMode();
-		}
-		if (Array[i].bIsSpawned)
-		{
-			FTransform T = FTransform();
-			CalculateTransform(Array[i].SpawnPoint, T);
-			GameState->GetStaticMeshBatcher()->UpdateStaticMeshTransform(
-				Array[i].TileAsset->MeshFinished, Array[i].InstanceId, T);
-		}
+		SetSpawnPointOnTileAssetSpawn(Array[i], SpawnPoints[i]);
+	}
+}
+
+void UTileContent::SetSpawnPointOnTileAssetSpawn(FTileAssetSpawn& TileAssetSpawn, const FSpawnPoint& SpawnPoint)
+{
+	TileAssetSpawn.SpawnPoint = SpawnPoint;
+	// new SpawnPoint so if this TileAssetSpawn has a TileAsset it's Rotation has to be applied again
+	TileAssetSpawn.ApplyAssetRotation();
+
+	// If this Asset is currently spawned, its position needs to be updated
+	if (TileAssetSpawn.bIsSpawned)
+	{
+		FTransform T = FTransform();
+		CalculateTransform(SpawnPoint, T);
+
+		const ESpawnState BeforeState = TileAssetSpawn.SpawnState;
+		DespawnTileAsset(TileAssetSpawn);
+		SpawnTileAsset(TileAssetSpawn, BeforeState);
 	}
 }
 
@@ -209,14 +206,15 @@ void UTileContent::ValidateEverything()
 	ValidateTileAssets(TreeTileAssetSpawns, Tile->Settings->TreeTileAssets);
 	UpdateTrees(0);
 	ValidateTileAssets(PropTileAssetSpawns, Tile->Settings->PropTileAssets);
-	SpawnProps();
+	UpdateProps();
 	ValidateTileAssets(BuildingTileAssetSpawns, Tile->Settings->BuildingTileAssets);
-	ValidateBuildings();
+	ValidateMainBuildingAsset();
+	UpdateBuildings();
 	ValidateTileAssets(ForageTileAssetSpawns, Tile->Settings->ForageTileAssets);
 	UpdateForage(0);
 }
 
-void UTileContent::SpawnProps()
+void UTileContent::UpdateProps()
 {
 	for (FTileAssetSpawn& TileAssetSpawn : PropTileAssetSpawns)
 	{
@@ -224,21 +222,22 @@ void UTileContent::SpawnProps()
 	}
 }
 
-void UTileContent::ValidateBuildings()
+void UTileContent::UpdateBuildings()
 {
-	if (Tile->GameplayTags.HasTag(Tile->Settings->BuildingTag))
+	const UTileSettings* TileSettings = Tile->Settings;
+
+	if (Tile->GameplayTags.HasTag(TileSettings->BuildingTag))
 	{
 		ESpawnState DesiredSpawnState = ESpawnState::Finished;
-		if (Tile->GameplayTags.HasTag(Tile->Settings->BuildingUnderConstructionTag))
+		if (Tile->GameplayTags.HasTag(TileSettings->BuildingUnderConstructionTag))
 			DesiredSpawnState = ESpawnState::Unfinished;
-		if (Tile->GameplayTags.HasTag(Tile->Settings->BuildingDestroyedTag))
+		if (Tile->GameplayTags.HasTag(TileSettings->BuildingDestroyedTag))
 			DesiredSpawnState = ESpawnState::Destroyed;
 
 		for (FTileAssetSpawn& TileAssetSpawn : BuildingTileAssetSpawns)
 		{
 			SpawnTileAsset(TileAssetSpawn, DesiredSpawnState);
 		}
-		MainBuilding.TileAsset = Tile->Settings->DefaultTileAsset;
 		SpawnTileAsset(MainBuilding, DesiredSpawnState);
 	}
 	else
@@ -274,7 +273,7 @@ void UTileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const TArr
 			// Needs asset and is using Forced Asset
 			TileAssetSpawn.TileAsset = TileAssetSpawn.SpawnPoint.ForcedAssets
 				[FMath::RandRange(0, TileAssetSpawn.SpawnPoint.ForcedAssets.Num() - 1)];
-			TileAssetSpawn.SpawnPoint.Rotation += TileAssetSpawn.TileAsset->GetRotationAfterMode();
+			TileAssetSpawn.ApplyAssetRotation();
 		}
 	}
 	// Get new Assets and put them on the Array
@@ -286,9 +285,35 @@ void UTileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const TArr
 		if (!TileAssetSpawn.TileAsset)
 		{
 			TileAssetSpawn.TileAsset = OutFoundAssets.Pop();
-			TileAssetSpawn.SpawnPoint.Rotation += TileAssetSpawn.TileAsset->GetRotationAfterMode();
+			TileAssetSpawn.ApplyAssetRotation();
 		}
 	}
+}
+
+void UTileContent::ValidateMainBuildingAsset()
+{
+	// Current MainBuilding is valid, so we don't need a new one
+	if (MainBuilding.TileAsset
+		&& MainBuilding.TileAsset->IsValidFor(Tile->GameplayTags)
+		&& MainBuilding.TileAsset != Tile->Settings->DefaultTileAsset)
+	{
+		return;
+	}
+
+	// search for an MainBuildingAsset that is allowed to Spawn on this Tile
+	for (UTileAsset* PotentialAsset : Tile->Settings->MainBuildingTileAssets)
+	{
+		if (PotentialAsset->IsValidFor(Tile->GameplayTags))
+		{
+			MainBuilding.TileAsset = PotentialAsset;
+			MainBuilding.ApplyAssetRotation();
+			return;
+		}
+	}
+
+	// if no TileAsset could be found we take a Default
+	MainBuilding.TileAsset = Tile->Settings->DefaultTileAsset;
+	MainBuilding.ApplyAssetRotation();
 }
 
 void UTileContent::SpawnTileAsset(FTileAssetSpawn& TileAssetSpawn, const ESpawnState DesiredSpawnState)
@@ -317,7 +342,6 @@ void UTileContent::SpawnTileAsset(FTileAssetSpawn& TileAssetSpawn, const ESpawnS
 
 	FTransform T = FTransform();
 	CalculateTransform(TileAssetSpawn.SpawnPoint, T);
-	//T.SetScale3D(FVector(1f, 1f, 1f));
 
 	TileAssetSpawn.InstanceId = GameState->GetStaticMeshBatcher()->AddStaticMeshInstance(
 		SelectedMesh, T);

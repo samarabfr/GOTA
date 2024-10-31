@@ -68,7 +68,7 @@ void ATile::BeginPlay()
 	Super::BeginPlay();
 	GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
-	if(!HasAuthority())
+	if (!HasAuthority())
 	{
 		SpawnOceanLineMeshes();
 	}
@@ -454,7 +454,7 @@ void ATile::SpawnOceanLineMeshes()
 		Location.Z = 1.0f;
 		T.SetLocation(Location);
 		T.SetRotation(FRotator(0, i * 60 + 180, 0).Quaternion());
-		
+
 		if (Terrain.RiverConnections[i])
 		{
 			GameState->GetStaticMeshBatcher()->AddStaticMeshInstance(Settings->OceanLinesAtRiverDeltaMesh, T);
