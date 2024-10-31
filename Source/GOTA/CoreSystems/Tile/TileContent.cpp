@@ -187,7 +187,6 @@ void UTileContent::BringArrayToCorrectSize(TArray<FTileAssetSpawn>& Array, int32
 
 void UTileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<FSpawnPoint> SpawnPoints)
 {
-	Algo::RandomShuffle(SpawnPoints);
 	for (int i = 0; i < Array.Num(); ++i)
 	{
 		Array[i].SpawnPoint = SpawnPoints[i];
