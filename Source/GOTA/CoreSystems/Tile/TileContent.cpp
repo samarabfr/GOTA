@@ -318,6 +318,7 @@ void UTileContent::SpawnTileAsset(FTileAssetSpawn& TileAssetSpawn, const ESpawnS
 
 	FTransform T = FTransform();
 	CalculateTransform(TileAssetSpawn.SpawnPoint, T);
+	//T.SetScale3D(FVector(1f, 1f, 1f));
 
 	TileAssetSpawn.InstanceId = GameState->GetStaticMeshBatcher()->AddStaticMeshInstance(
 		SelectedMesh, T);
