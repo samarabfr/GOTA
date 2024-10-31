@@ -3,6 +3,7 @@
 
 #include "Tile.h"
 
+#include "Algo/RandomShuffle.h"
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
@@ -581,10 +582,22 @@ void ATile::ValidateSpawnLayout()
 		SL = SpawnLayoutDataAsset->SpawnLayout;
 	else
 		SL = FSpawnLayout();
+
+	// Apply Spawn Chances and shuffle all arrays. The shuffling causes every Tile with the same SpawnLayout
+	// to have a different order in which they spawn the individual trees
+
 	ApplySpawnChances(SL.Trees);
+	Algo::RandomShuffle(SL.Trees);
+
 	ApplySpawnChances(SL.Forage);
+	Algo::RandomShuffle(SL.Forage);
+
 	ApplySpawnChances(SL.Props);
+	Algo::RandomShuffle(SL.Props);
+
 	ApplySpawnChances(SL.Buildings);
+	Algo::RandomShuffle(SL.Buildings);
+
 	SetSpawnLayout(SL);
 	EcoValues->SetMaxValues(SpawnLayout.Trees.Num(), Terrain.Biome);
 }

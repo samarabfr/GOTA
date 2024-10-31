@@ -113,7 +113,7 @@ void UTileContent::UpdateForage(int32 Change)
 	{
 		if (TileAssetSpawn.bIsSpawned) ++CountHowManyAreSpawned;
 	}
-	int8 RealChange = Tile->EcoValues->GetForage() / 4 - CountHowManyAreSpawned;
+	int8 RealChange = Tile->EcoValues->GetForage() - CountHowManyAreSpawned;
 	if (RealChange == 0) return;
 	int32 Counter = 0;
 	// increase the amount of visible forage
@@ -187,7 +187,6 @@ void UTileContent::BringArrayToCorrectSize(TArray<FTileAssetSpawn>& Array, int32
 
 void UTileContent::SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<FSpawnPoint> SpawnPoints)
 {
-	Algo::RandomShuffle(SpawnPoints);
 	for (int i = 0; i < Array.Num(); ++i)
 	{
 		Array[i].SpawnPoint = SpawnPoints[i];
