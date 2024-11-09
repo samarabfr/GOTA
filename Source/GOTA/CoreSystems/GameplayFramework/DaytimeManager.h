@@ -136,7 +136,7 @@ private:
 	UPROPERTY()
 	UMaterialParameterCollectionInstance* ParameterCollection;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* SkyboxComponent;
 
 	UPROPERTY()

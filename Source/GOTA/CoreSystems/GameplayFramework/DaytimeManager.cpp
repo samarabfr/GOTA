@@ -56,8 +56,7 @@ void ADaytimeManager::BeginPlay()
 		UE_LOG(LogTemp, Warning, TEXT("DaytimeManager missing Material"))
 		return;
 	}
-	SkyboxComponent->SetStaticMesh(SkyboxMesh);
-	SkyboxComponent->SetRelativeScale3D(FVector(400, 400, 400));
+
 	DynamicMaterial = SkyboxComponent->CreateDynamicMaterialInstance(0, SkyboxMaterial);
 
 	SunLightComponent = SunActor->GetLightComponent();
