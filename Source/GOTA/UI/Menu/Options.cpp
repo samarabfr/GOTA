@@ -4,6 +4,7 @@
 #include "Components/ComboBoxString.h"
 #include "GameFramework/GameUserSettings.h"
 #include "GOTA/CoreSystems/GameplayFramework/GOTAGameUserSettings.h"
+#include "GOTA/UI/Widgets/ToggleButton.h"
 
 
 // ------------------- LifeCycle -------------------
@@ -36,21 +37,12 @@ void UOptions::FillComboBoxOptions()
 	CB_ScreenMode->AddOption(TEXT("Borderless"));
 	CB_ScreenMode->AddOption(TEXT("Windowed"));
 
-	CB_VSync->AddOption(TEXT("On"));
-	CB_VSync->AddOption(TEXT("Off"));
-
 	CB_ResolutionScale->AddOption(TEXT("Native"));
 	CB_ResolutionScale->AddOption(TEXT("75%"));
 	CB_ResolutionScale->AddOption(TEXT("50%"));
 
 	CB_ShadowQuality->AddOption(TEXT("High"));
 	CB_ShadowQuality->AddOption(TEXT("Low"));
-
-	CB_CSMShadows->AddOption(TEXT("On"));
-	CB_CSMShadows->AddOption(TEXT("Off"));
-
-	CB_DFShadows->AddOption(TEXT("On"));
-	CB_DFShadows->AddOption(TEXT("Off"));
 
 	CB_AntiAliasingType->AddOption(TEXT("TSR"));
 	CB_AntiAliasingType->AddOption(TEXT("TAA"));
@@ -81,12 +73,12 @@ void UOptions::RegisterDelegates()
 {
 	CB_Resolutions->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyResolution);
 	CB_ScreenMode->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyScreenMode);
-	CB_VSync->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyVSync);
+	TB_VSync->OnActiveChanged.AddDynamic(this, &UOptions::ApplyVSync);
 	CB_ResolutionScale->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyResolutionScale);
 
 	CB_ShadowQuality->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyShadowQuality);
-	CB_CSMShadows->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyCSMShadows);
-	CB_DFShadows->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyDFShadows);
+	TB_CSMShadows->OnActiveChanged.AddDynamic(this, &UOptions::ApplyCSMShadows);
+	TB_DFShadows->OnActiveChanged.AddDynamic(this, &UOptions::ApplyDFShadows);
 
 	CB_AntiAliasingType->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyAntiAliasingType);
 	CB_AntiAliasingQuality->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyAntiAliasingQuality);
@@ -151,13 +143,12 @@ void UOptions::ApplyScreenMode(FString SelectedItem, ESelectInfo::Type Selection
 void UOptions::RefreshVsync()
 {
 	const bool VSyncEnabled = UserSettings->IsVSyncEnabled();
-	CB_VSync->SetSelectedIndex(!VSyncEnabled);
+	TB_VSync->SetIsActive(VSyncEnabled, true);
 }
 
-void UOptions::ApplyVSync(FString SelectedItem, ESelectInfo::Type SelectionType)
+void UOptions::ApplyVSync(bool NewActive)
 {
-	const bool VSyncEnabled = CB_VSync->GetSelectedIndex() == 0;
-	UserSettings->SetVSyncEnabled(VSyncEnabled);
+	UserSettings->SetVSyncEnabled(NewActive);
 	UserSettings->ApplySettings(true);
 }
 
@@ -251,39 +242,37 @@ void UOptions::ApplyShadowQuality(FString SelectedItem, ESelectInfo::Type Select
 void UOptions::RefreshCSMShadows()
 {
 	const bool CSMEnabled = UserSettings->IsCascadedShadowMapsEnabled();
-	CB_CSMShadows->SetSelectedIndex(!CSMEnabled);
+	TB_CSMShadows->SetIsActive(CSMEnabled, true);
 }
 
-void UOptions::ApplyCSMShadows(FString SelectedItem, ESelectInfo::Type SelectionType)
+void UOptions::ApplyCSMShadows(bool NewActive)
 {
-	const bool CSMEnabled = CB_CSMShadows->GetSelectedIndex() == 0;
-	UserSettings->SetCascadedShadowMapsEnabled(CSMEnabled);
+	UserSettings->SetCascadedShadowMapsEnabled(NewActive);
 	UserSettings->ApplySettings(true);
 
 	// if shadows are Off, setting the quality is useless
-	if (CB_DFShadows->GetSelectedIndex() == 1 && CB_CSMShadows->GetSelectedIndex() == 1)
-		CB_ShadowQuality->SetIsEnabled(false);
-	else
+	if (TB_CSMShadows->IsActive() || TB_DFShadows->IsActive())
 		CB_ShadowQuality->SetIsEnabled(true);
+	else
+		CB_ShadowQuality->SetIsEnabled(false);
 }
 
 void UOptions::RefreshDFShadows()
 {
 	const bool DFEnabled = UserSettings->IsDistanceFieldShadowsEnabled();
-	CB_DFShadows->SetSelectedIndex(!DFEnabled);
+	TB_DFShadows->SetIsActive(DFEnabled, true);
 }
 
-void UOptions::ApplyDFShadows(FString SelectedItem, ESelectInfo::Type SelectionType)
+void UOptions::ApplyDFShadows(bool NewActive)
 {
-	const bool DFEnabled = CB_DFShadows->GetSelectedIndex() == 0;
-	UserSettings->SetDistanceFieldShadowsEnabled(DFEnabled);
+	UserSettings->SetDistanceFieldShadowsEnabled(NewActive);
 	UserSettings->ApplySettings(true);
 
 	// if shadows are Off, setting the quality is useless
-	if (CB_DFShadows->GetSelectedIndex() == 1 && CB_CSMShadows->GetSelectedIndex() == 1)
-		CB_ShadowQuality->SetIsEnabled(false);
-	else
+	if (TB_CSMShadows->IsActive() || TB_DFShadows->IsActive())
 		CB_ShadowQuality->SetIsEnabled(true);
+	else
+		CB_ShadowQuality->SetIsEnabled(false);
 }
 
 

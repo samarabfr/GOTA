@@ -27,6 +27,7 @@ void UIngameMenu::Toggle()
 void UIngameMenu::Open()
 {
 	CP_Container->SetVisibility(ESlateVisibility::Visible);
+	VB_Menu->SetVisibility(ESlateVisibility::Visible);
 	WBP_Options->SetVisibility(ESlateVisibility::Hidden);
 }
 

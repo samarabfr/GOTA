@@ -26,11 +26,10 @@ void UGOTAGameUserSettings::ApplySettings(bool bCheckForCommandLineOverrides)
 	}
 
 	IConsoleVariable* CVarDFShadows = IConsoleManager::Get().
-		FindConsoleVariable(TEXT("r.DFShadowQuality"));
+		FindConsoleVariable(TEXT("r.DistanceFieldShadowing"));
 	if (CVarDFShadows)
 	{
-		// 0*3 = O means disabled, 1*3 = 3 means enabled
-		CVarDFShadows->Set(bDistanceFieldShadowsEnabled * 3);
+		CVarDFShadows->Set(bDistanceFieldShadowsEnabled);
 	}
 
 	IConsoleVariable* CVarAntiAliasingType = IConsoleManager::Get().

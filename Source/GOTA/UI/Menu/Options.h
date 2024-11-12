@@ -3,6 +3,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Options.generated.h"
 
+class UToggleButton;
 class UGOTAGameUserSettings;
 class UButton;
 class UComboBoxString;
@@ -29,7 +30,7 @@ private:
 	void RefreshEverything();
 
 	void RegisterDelegates();
-	
+
 	// ------------------- Screen -------------------
 protected:
 	UPROPERTY(meta = (BindWidget))
@@ -39,7 +40,7 @@ protected:
 	UComboBoxString* CB_ScreenMode;
 
 	UPROPERTY(meta = (BindWidget))
-	UComboBoxString* CB_VSync;
+	UToggleButton* TB_VSync;
 
 private:
 	TArray<FIntPoint> Resolutions;
@@ -55,8 +56,9 @@ private:
 	void ApplyScreenMode(FString SelectedItem, ESelectInfo::Type SelectionType);
 
 	void RefreshVsync();
+
 	UFUNCTION()
-	void ApplyVSync(FString SelectedItem, ESelectInfo::Type SelectionType);
+	void ApplyVSync(bool NewActive);
 
 	// ------------------- Quality -------------------
 protected:
@@ -74,10 +76,10 @@ protected:
 	UComboBoxString* CB_ShadowQuality;
 
 	UPROPERTY(meta = (BindWidget))
-	UComboBoxString* CB_CSMShadows;
-
+	UToggleButton* TB_CSMShadows;
+	
 	UPROPERTY(meta = (BindWidget))
-	UComboBoxString* CB_DFShadows;
+	UToggleButton* TB_DFShadows;
 
 private:
 	void RefreshShadowQuality();
@@ -86,11 +88,11 @@ private:
 
 	void RefreshCSMShadows();
 	UFUNCTION()
-	void ApplyCSMShadows(FString SelectedItem, ESelectInfo::Type SelectionType);
+	void ApplyCSMShadows(bool NewActive);
 
 	void RefreshDFShadows();
 	UFUNCTION()
-	void ApplyDFShadows(FString SelectedItem, ESelectInfo::Type SelectionType);
+	void ApplyDFShadows(bool NewActive);
 
 	// ------------------- Anti Aliasing -------------------
 protected:
