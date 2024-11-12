@@ -16,8 +16,11 @@ class GOTA_API AGM_MainMenu : public AGameModeBase
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void Travel(FString LevelPath);
+	void StartGame(const bool StartAsListenServer);
 
 	UFUNCTION(BlueprintCallable)
-	void TravelClient(APlayerController* PlayerController, FString LevelPath);
+	void JoinGame(FString IP);
+
+private:
+	const FString IslandPath = "/Game/CoreSystems/GameplayFramework/Island";
 };

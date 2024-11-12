@@ -5,6 +5,7 @@
 #include "GameFramework/GameUserSettings.h"
 #include "GOTA/CoreSystems/GameplayFramework/GOTAGameUserSettings.h"
 
+
 // ------------------- LifeCycle -------------------
 
 void UOptions::NativeConstruct()
@@ -12,14 +13,15 @@ void UOptions::NativeConstruct()
 	Super::NativeConstruct();
 	UserSettings = Cast<UGOTAGameUserSettings>(UGameUserSettings::GetGameUserSettings());
 
-	BTN_Apply->OnPressed.AddDynamic(this, &UOptions::ApplyEverything);
-
 	FillResolutionsArray();
 
 	FillComboBoxOptions();
 
 	RefreshEverything();
+
+	RegisterDelegates();
 }
+
 
 // ------------------- Utility -------------------
 
@@ -30,13 +32,13 @@ void UOptions::FillComboBoxOptions()
 		CB_Resolutions->AddOption(FString::Printf(TEXT("%dx%d"), Resolution.X, Resolution.Y));
 	}
 
-	CB_ScreenMode->AddOption(TEXT("FullScreen"));
-	CB_ScreenMode->AddOption(TEXT("Borderless FullScreen"));
+	CB_ScreenMode->AddOption(TEXT("Fullscreen"));
+	CB_ScreenMode->AddOption(TEXT("Borderless"));
 	CB_ScreenMode->AddOption(TEXT("Windowed"));
 
 	CB_VSync->AddOption(TEXT("On"));
 	CB_VSync->AddOption(TEXT("Off"));
-	
+
 	CB_ResolutionScale->AddOption(TEXT("Native"));
 	CB_ResolutionScale->AddOption(TEXT("75%"));
 	CB_ResolutionScale->AddOption(TEXT("50%"));
@@ -65,40 +67,29 @@ void UOptions::RefreshEverything()
 	RefreshResolution();
 	RefreshScreenMode();
 	RefreshVsync();
-	
+	RefreshResolutionScale();
 
-	//const float ResolutionScale = UserSettings->GetResolutionScaleNormalized();
-	//	Slider_ResolutionScale->SetValue(ResolutionScale);
+	RefreshShadowQuality();
+	RefreshCSMShadows();
+	RefreshDFShadows();
 
-	const ECheckBoxState CSMShadows = UserSettings->GetCascadedShadowMapsEnabled()
-		                                  ? ECheckBoxState::Checked
-		                                  : ECheckBoxState::Unchecked;
-	//CheckBox_CSMShadows->SetCheckedState(CSMShadows);
-
-	const ECheckBoxState DFShadows = UserSettings->GetDistanceFieldShadowsEnabled()
-		                                 ? ECheckBoxState::Checked
-		                                 : ECheckBoxState::Unchecked;
-	//CheckBox_DFShadows->SetCheckedState(DFShadows);
+	RefreshAntiAliasingType();
+	RefreshAntiAliasingQuality();
 }
 
-void UOptions::ApplyEverything()
+void UOptions::RegisterDelegates()
 {
-	ApplyResolution();
-	ApplyScreenMode();
-	ApplyVSync();
+	CB_Resolutions->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyResolution);
+	CB_ScreenMode->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyScreenMode);
+	CB_VSync->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyVSync);
+	CB_ResolutionScale->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyResolutionScale);
 
-	
+	CB_ShadowQuality->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyShadowQuality);
+	CB_CSMShadows->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyCSMShadows);
+	CB_DFShadows->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyDFShadows);
 
-	//const float ResolutionScale = Slider_ResolutionScale->GetValue();
-	//UserSettings->SetResolutionScaleNormalized(ResolutionScale);
-
-	//const bool CSMShadows = CheckBox_CSMShadows->GetCheckedState() == ECheckBoxState::Checked;
-	//UserSettings->SetCascadedShadowMapsEnabled(CSMShadows);
-
-	//const bool DFShadows = CheckBox_DFShadows->GetCheckedState() == ECheckBoxState::Checked;
-	//UserSettings->SetDistanceFieldShadowsEnabled(DFShadows);
-
-	UserSettings->ApplySettings(true);
+	CB_AntiAliasingType->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyAntiAliasingType);
+	CB_AntiAliasingQuality->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyAntiAliasingQuality);
 }
 
 // ------------------- Screen -------------------
@@ -130,17 +121,18 @@ void UOptions::RefreshResolution()
 	}
 	// Current Resolution is not in the ResolutionsArray... wierd, but maybe it will happen if it is set Custom
 	// with start parameter
-	CB_Resolutions->AddOption(TEXT("Unknown"));
-	CB_Resolutions->SetSelectedOption(TEXT("Unknown"));
+	if (CB_Resolutions->GetOptionCount() == Resolutions.Num())
+		CB_Resolutions->AddOption(TEXT("Custom"));
+	CB_Resolutions->SetSelectedIndex(Resolutions.Num());
 }
 
-void UOptions::ApplyResolution()
+void UOptions::ApplyResolution(FString SelectedItem, ESelectInfo::Type SelectionType)
 {
 	if (!Resolutions.IsValidIndex(CB_Resolutions->GetSelectedIndex())) return;
 
 	const FIntPoint SelectedResolution = Resolutions[CB_Resolutions->GetSelectedIndex()];
 	UserSettings->SetScreenResolution(SelectedResolution);
-	UE_LOG(LogTemp, Warning, TEXT("Set Resolution to: %dx%d"), SelectedResolution.X, SelectedResolution.Y);
+	UserSettings->ApplySettings(true);
 }
 
 void UOptions::RefreshScreenMode()
@@ -149,11 +141,11 @@ void UOptions::RefreshScreenMode()
 	CB_ScreenMode->SetSelectedIndex(ScreenMode);
 }
 
-
-void UOptions::ApplyScreenMode()
+void UOptions::ApplyScreenMode(FString SelectedItem, ESelectInfo::Type SelectionType)
 {
 	const EWindowMode::Type WindowMode = static_cast<EWindowMode::Type>(CB_ScreenMode->GetSelectedIndex());
 	UserSettings->SetFullscreenMode(WindowMode);
+	UserSettings->ApplySettings(true);
 }
 
 void UOptions::RefreshVsync()
@@ -162,10 +154,238 @@ void UOptions::RefreshVsync()
 	CB_VSync->SetSelectedIndex(!VSyncEnabled);
 }
 
-void UOptions::ApplyVSync()
+void UOptions::ApplyVSync(FString SelectedItem, ESelectInfo::Type SelectionType)
 {
 	const bool VSyncEnabled = CB_VSync->GetSelectedIndex() == 0;
 	UserSettings->SetVSyncEnabled(VSyncEnabled);
+	UserSettings->ApplySettings(true);
 }
 
-// ------------------- Widgets -------------------
+
+// ------------------- Quality -------------------
+
+void UOptions::RefreshResolutionScale()
+{
+	const float ResolutionScale = UserSettings->GetResolutionScaleNormalized();
+
+	if (FMath::IsNearlyEqual(ResolutionScale, 1.0f))
+		CB_ResolutionScale->SetSelectedIndex(0);
+
+	else if (FMath::IsNearlyEqual(ResolutionScale, 0.75f))
+		CB_ResolutionScale->SetSelectedIndex(1);
+
+	else if (FMath::IsNearlyEqual(ResolutionScale, 0.5f))
+		CB_ResolutionScale->SetSelectedIndex(2);
+
+	else
+	{
+		// In case ResolutionScale got set custom somehow
+		if (CB_ResolutionScale->GetOptionCount() < 4)
+			CB_ResolutionScale->AddOption(TEXT("Custom"));
+		CB_ResolutionScale->SetSelectedIndex(3);
+	}
+}
+
+void UOptions::ApplyResolutionScale(FString SelectedItem, ESelectInfo::Type SelectionType)
+{
+	switch (CB_ResolutionScale->GetSelectedIndex())
+	{
+	case 0:
+		UserSettings->SetResolutionScaleNormalized(1.0f);
+		break;
+
+	case 1:
+		UserSettings->SetResolutionScaleNormalized(0.75f);
+		break;
+
+	case 2:
+		UserSettings->SetResolutionScaleNormalized(0.5f);
+
+	default:
+		return;
+	}
+	UserSettings->ApplySettings(true);
+}
+
+
+// ------------------- Shadows -------------------
+
+void UOptions::RefreshShadowQuality()
+{
+	switch (UserSettings->GetShadowQuality())
+	{
+	case 3: // High
+		CB_ShadowQuality->SetSelectedIndex(0);
+		return;
+
+	case 1: // Low
+		CB_ShadowQuality->SetSelectedIndex(1);
+		return;
+
+	default:
+		if (CB_ShadowQuality->GetOptionCount() == 2)
+			CB_ShadowQuality->AddOption(TEXT("Custom"));
+		CB_ShadowQuality->SetSelectedIndex(2);
+		return;
+	}
+}
+
+void UOptions::ApplyShadowQuality(FString SelectedItem, ESelectInfo::Type SelectionType)
+{
+	switch (CB_ShadowQuality->GetSelectedIndex())
+	{
+	case 0: // High
+		UserSettings->SetShadowQuality(3);
+		break;
+
+	case 1: // Low
+		UserSettings->SetShadowQuality(1);
+		break;
+
+	default:
+		return;
+	}
+	UserSettings->ApplySettings(true);
+}
+
+void UOptions::RefreshCSMShadows()
+{
+	const bool CSMEnabled = UserSettings->IsCascadedShadowMapsEnabled();
+	CB_CSMShadows->SetSelectedIndex(!CSMEnabled);
+}
+
+void UOptions::ApplyCSMShadows(FString SelectedItem, ESelectInfo::Type SelectionType)
+{
+	const bool CSMEnabled = CB_CSMShadows->GetSelectedIndex() == 0;
+	UserSettings->SetCascadedShadowMapsEnabled(CSMEnabled);
+	UserSettings->ApplySettings(true);
+
+	// if shadows are Off, setting the quality is useless
+	if (CB_DFShadows->GetSelectedIndex() == 1 && CB_CSMShadows->GetSelectedIndex() == 1)
+		CB_ShadowQuality->SetIsEnabled(false);
+	else
+		CB_ShadowQuality->SetIsEnabled(true);
+}
+
+void UOptions::RefreshDFShadows()
+{
+	const bool DFEnabled = UserSettings->IsDistanceFieldShadowsEnabled();
+	CB_DFShadows->SetSelectedIndex(!DFEnabled);
+}
+
+void UOptions::ApplyDFShadows(FString SelectedItem, ESelectInfo::Type SelectionType)
+{
+	const bool DFEnabled = CB_DFShadows->GetSelectedIndex() == 0;
+	UserSettings->SetDistanceFieldShadowsEnabled(DFEnabled);
+	UserSettings->ApplySettings(true);
+
+	// if shadows are Off, setting the quality is useless
+	if (CB_DFShadows->GetSelectedIndex() == 1 && CB_CSMShadows->GetSelectedIndex() == 1)
+		CB_ShadowQuality->SetIsEnabled(false);
+	else
+		CB_ShadowQuality->SetIsEnabled(true);
+}
+
+
+// ------------------- Anti Aliasing -------------------
+
+void UOptions::RefreshAntiAliasingType()
+{
+	switch (UserSettings->GetAntiAliasingType())
+	{
+	case 4: // TSR
+		CB_AntiAliasingType->SetSelectedIndex(0);
+		return;
+
+	case 2: // TAA
+		CB_AntiAliasingType->SetSelectedIndex(1);
+		return;
+
+	case 1: // FXAA
+		CB_AntiAliasingType->SetSelectedIndex(2);
+		return;
+
+	case 0: // Off
+		CB_AntiAliasingType->SetSelectedIndex(3);
+		return;
+
+	default:
+		return;
+	}
+}
+
+void UOptions::ApplyAntiAliasingType(FString SelectedItem, ESelectInfo::Type SelectionType)
+{
+	switch (CB_AntiAliasingType->GetSelectedIndex())
+	{
+	case 0: // TSR
+		UserSettings->SetAntiAliasingType(4);
+		break;
+
+	case 1: // TAA
+		UserSettings->SetAntiAliasingType(2);
+		break;
+
+	case 2: // FXAA
+		UserSettings->SetAntiAliasingType(1);
+		break;
+
+	case 3: // Off
+		UserSettings->SetAntiAliasingType(0);
+		break;
+
+	default:
+		return;
+	}
+	UserSettings->ApplySettings(true);
+
+	// if Anti Aliasing is Off, setting the quality is useless
+	if (CB_AntiAliasingType->GetSelectedIndex() == 3)
+		CB_AntiAliasingQuality->SetIsEnabled(false);
+	else
+		CB_AntiAliasingQuality->SetIsEnabled(true);
+}
+
+void UOptions::RefreshAntiAliasingQuality()
+{
+	switch (UserSettings->GetAntiAliasingQuality())
+	{
+	case 3: // High
+		CB_AntiAliasingQuality->SetSelectedIndex(0);
+		return;
+
+	case 2: //Medium
+		CB_AntiAliasingQuality->SetSelectedIndex(1);
+		return;
+
+	case 1: // Low
+		CB_AntiAliasingQuality->SetSelectedIndex(2);
+
+	default:
+		if (CB_AntiAliasingQuality->GetOptionCount() == 3)
+			CB_AntiAliasingQuality->AddOption("Custom");
+		CB_AntiAliasingQuality->SetSelectedIndex(3);
+	}
+}
+
+void UOptions::ApplyAntiAliasingQuality(FString SelectedItem, ESelectInfo::Type SelectionType)
+{
+	switch (CB_AntiAliasingQuality->GetSelectedIndex())
+	{
+	case 0: // High
+		UserSettings->SetAntiAliasingQuality(3);
+		break;
+
+	case 1: // Medium
+		UserSettings->SetAntiAliasingQuality(2);
+		break;
+
+	case 2: // Low
+		UserSettings->SetAntiAliasingQuality(1);
+		break;
+
+	default:
+		return;
+	}
+	UserSettings->ApplySettings(true);
+}

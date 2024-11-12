@@ -25,8 +25,8 @@ public:
 	// Similar to SetOverallScalabilityLevel(), but only sets the Scalability Settings we actually use
 	// and doesn't set ResolutionScale
 	void GOTASetOverallScalabilityLevel(int32 NewScalability);
-	
-	// ------------------- ShadowSettings -------------------
+
+	// ------------------- Shadows -------------------
 private:
 	UPROPERTY(Config)
 	bool bCascadedShadowMapsEnabled;
@@ -35,9 +35,22 @@ private:
 	bool bDistanceFieldShadowsEnabled;
 
 public:
-	bool GetCascadedShadowMapsEnabled() const { return bCascadedShadowMapsEnabled; }
-	void SetCascadedShadowMapsEnabled(bool NewEnabled) { bCascadedShadowMapsEnabled = NewEnabled; }
+	bool IsCascadedShadowMapsEnabled() const { return bCascadedShadowMapsEnabled; }
+	void SetCascadedShadowMapsEnabled(const bool NewEnabled) { bCascadedShadowMapsEnabled = NewEnabled; }
 
-	bool GetDistanceFieldShadowsEnabled() const { return bDistanceFieldShadowsEnabled; }
-	void SetDistanceFieldShadowsEnabled(bool NewEnabled) { bDistanceFieldShadowsEnabled = NewEnabled; }
+	bool IsDistanceFieldShadowsEnabled() const { return bDistanceFieldShadowsEnabled; }
+	void SetDistanceFieldShadowsEnabled(const bool NewEnabled) { bDistanceFieldShadowsEnabled = NewEnabled; }
+
+	// ------------------- Anti Aliasing -------------------
+private:
+	// 0 = Off, 1 = FXAA, 2 = TAA, 4 = TSR
+	UPROPERTY(Config)
+	int32 AntiAliasingType;
+
+public:
+	// 0 = Off, 1 = FXAA, 2 = TAA, 4 = TSR
+	int32 GetAntiAliasingType() const { return AntiAliasingType; }
+
+	// 0 = Off, 1 = FXAA, 2 = TAA, 4 = TSR
+	void SetAntiAliasingType(const int32 NewType) { AntiAliasingType = NewType; }
 };

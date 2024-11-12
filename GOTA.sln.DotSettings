@@ -2,5 +2,7 @@
 	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/Abbreviations/=BTN/@EntryIndexedValue">BTN</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/Abbreviations/=GOTA/@EntryIndexedValue">GOTA</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/Abbreviations/=SRPC/@EntryIndexedValue">SRPC</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/Abbreviations/=TB/@EntryIndexedValue">TB</s:String>
 	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/Abbreviations/=TXT/@EntryIndexedValue">TXT</s:String>
+	<s:String x:Key="/Default/CodeStyle/Naming/CppNaming/Abbreviations/=WBP/@EntryIndexedValue">WBP</s:String>
 	<s:Boolean x:Key="/Default/UserDictionary/Words/=GOTA/@EntryIndexedValue">True</s:Boolean></wpf:ResourceDictionary>
