@@ -105,10 +105,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	AExponentialHeightFog* HorizonFog;
-
-	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
-	UStaticMesh* SkyboxMesh;
-
+	
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	UMaterial* SkyboxMaterial;
 

@@ -3,12 +3,13 @@
 
 #include "GM_MainMenu.h"
 
-void AGM_MainMenu::Travel(FString LevelPath)
+void AGM_MainMenu::StartGame(const bool StartAsListenServer)
 {
-	GetWorld()->ServerTravel(LevelPath + "?listen", TRAVEL_Absolute);
+	const FString Path = StartAsListenServer ? IslandPath + "?listen" : IslandPath;
+	GetWorld()->ServerTravel(Path, TRAVEL_Absolute);
 }
 
-void AGM_MainMenu::TravelClient(APlayerController* PlayerController, FString LevelPath)
+void AGM_MainMenu::JoinGame(const FString IP)
 {
-	PlayerController->ClientTravel(LevelPath, TRAVEL_Absolute);
+	GetWorld()->GetFirstPlayerController()->ClientTravel(IP + IslandPath, TRAVEL_Absolute);
 }
