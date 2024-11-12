@@ -1,8 +1,9 @@
 ﻿#include "TopBar.h"
 
-#include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
 #include "GOTA/CoreSystems/GameplayFramework/DaytimeManager.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 

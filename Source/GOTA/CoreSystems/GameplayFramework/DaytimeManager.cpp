@@ -45,12 +45,7 @@ void ADaytimeManager::BeginPlay()
 	{
 		ParameterCollection = GetWorld()->GetParameterCollectionInstance(ParameterCollectionFinder);
 	}
-
-	if (!SkyboxMesh)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("DaytimeManager missing Static Mesh"))
-		return;
-	}
+	
 	if (!SkyboxMaterial)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("DaytimeManager missing Material"))

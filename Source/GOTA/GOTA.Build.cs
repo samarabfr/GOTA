@@ -22,7 +22,8 @@ public class GOTA : ModuleRules
 			"UMG",
 			"Slate",
 			"SlateCore",
-			"NetCore"
+			"NetCore",
+			"RHI"
 		});
 
 		// Uncomment if you are using Slate UI
