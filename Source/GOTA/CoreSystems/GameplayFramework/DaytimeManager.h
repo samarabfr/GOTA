@@ -70,6 +70,11 @@ private:
 	UPROPERTY(EditAnywhere, Category="Daytime Settings")
 	float SunHeight;
 
+	UPROPERTY(EditAnywhere, Category="Daytime Settings")
+	float SunOrbitTilt = 70.0f;
+
+	UPROPERTY(EditAnywhere, Category="Daytime Settings")
+	float MoonOrbitTilt = 50.0f;
 
 	UPROPERTY(EditAnywhere, Category="Daytime Settings")
 	FLinearColor SunColor;
@@ -105,7 +110,7 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	AExponentialHeightFog* HorizonFog;
-	
+
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	UMaterial* SkyboxMaterial;
 
@@ -125,7 +130,7 @@ private:
 	UCurveLinearColor* HorizonFogColorCurve;
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
-	FRuntimeFloatCurve HorizonFalloffCurve;
+	UCurveFloat* HorizonFalloffCurve;
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* DynamicMaterial;
