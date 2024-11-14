@@ -37,6 +37,9 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* VB_Menu;
 
+	UPROPERTY(Transient, meta = (BindWidgetAnim ))
+	UWidgetAnimation* Anim_SwipeIn;
+	
 	UFUNCTION(BlueprintCallable)
 	void Toggle();
 	
