@@ -3,6 +3,10 @@
 #include "SpawnPoint.h"
 #include "TileAsset.h"
 
+// Unspawned = is not spawned
+// Unfinished = is spawned, but not finished constructing/growing
+// Finished = is spawned and completed
+// Destroyed = is spawned and destroyed
 enum class ESpawnState
 {
 	Unspawned,
@@ -24,4 +28,6 @@ struct FTileAssetSpawn
 	FPrimitiveInstanceId InstanceId;
 	
 	UStaticMesh* GetMeshForSpawnState(const ESpawnState ForSpawnState) const;
+
+	void ApplyAssetRotation();
 };

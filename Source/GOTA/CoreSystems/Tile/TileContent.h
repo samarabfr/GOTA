@@ -34,9 +34,9 @@ private:
 	UFUNCTION()
 	void UpdateForage(int32 Change);
 
-	void ValidateBuildings();
+	void UpdateBuildings();
 
-	void SpawnProps();
+	void UpdateProps();
 
 	UPROPERTY()
 	ATile* Tile;
@@ -53,17 +53,23 @@ private:
 
 	FTileAssetSpawn MainBuilding;
 
+	// This is the Rotation of this TileContent instance, it is set by Tile whenever Tile gets rotated
 	FRotator Rotation;
 
 	void BringArrayToCorrectSize(TArray<FTileAssetSpawn>& Array, int32 Size);
 	void SetSpawnPointsOnArray(TArray<FTileAssetSpawn>& Array, TArray<FSpawnPoint> SpawnPoints);
-
+	
+	void SetSpawnPointOnTileAssetSpawn(FTileAssetSpawn& TileAssetSpawn, const FSpawnPoint& SpawnPoint);
+	
 	UFUNCTION()
 	void ValidateEverything();
 
 	void ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const TArray<UTileAsset*>& Assets);
 
+	void ValidateMainBuildingAsset();
+	
 	void SpawnTileAsset(FTileAssetSpawn& TileAssetSpawn, const ESpawnState DesiredSpawnState = ESpawnState::Finished);
+
 
 	void DespawnTileAsset(FTileAssetSpawn& FTileAssetSpawn);
 

@@ -12,47 +12,44 @@ UCLASS()
 class GOTA_API ADaytimeManager : public AActor
 {
 	GENERATED_BODY()
+	
+	// ------------------------ Replication Setup ------------------------
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	// --------------- LifeCycle ---------------
-
-private:
+	
+	// ------------------------ LifeCycle ------------------------
+public:
 	ADaytimeManager();
-
+	
+protected:
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaSeconds) override;
+	
+	// ------------------------ Time ------------------------
+public:
+	float GetTime() const { return CurrentTime; }
+	void SetTime(const float NewTime);
 
-	// --------------- Time ---------------
+	float GetDayLength() const { return DayLength; }
+	float GetNightLength() const { return NightLength; }
+	float GetFullDayLength() const { return DayLength + NightLength; }
 
+	// returns -1 on midnight, 1 on midday and 0 on Dawn/Dusk
+	float GetDaytimeNormalized() const;
 
 private:
 	UPROPERTY(EditAnywhere, Category="Daytime Settings", Replicated)
 	float CurrentTime;
-
-public:
-	float GetTime() { return CurrentTime; }
-	void SetTime(const float NewTime);
-
-	float GetDayLength() { return DayLength; }
-	float GetNightLength() { return NightLength; }
-	float GetFullDayLength() { return DayLength + NightLength; }
-
-	// SunHeight is -1 on midnight, 1 on midday and 0 on Dawn/Dusk
-	float GetSunHeight() { return SunHeight; }
-
-private:
+	
 	void StartDay();
 	void StartNight();
-
-
+	
 	void RefreshSunHeight();
-
 	void RefreshMaterial();
-
 	void RefreshLightSetup();
 
-	// --------------- Settings ---------------
+	// ------------------------ Settings ------------------------
 
 private:
 	UPROPERTY(VisibleAnywhere, Category="Daytime Settings")
@@ -70,6 +67,11 @@ private:
 	UPROPERTY(EditAnywhere, Category="Daytime Settings")
 	float SunHeight;
 
+	UPROPERTY(EditAnywhere, Category="Daytime Settings")
+	float SunOrbitTilt = 70.0f;
+
+	UPROPERTY(EditAnywhere, Category="Daytime Settings")
+	float MoonOrbitTilt = 50.0f;
 
 	UPROPERTY(EditAnywhere, Category="Daytime Settings")
 	FLinearColor SunColor;
@@ -92,7 +94,7 @@ private:
 	UPROPERTY(EditAnywhere, Category="Daytime Settings")
 	float StarBrightness = 1.0f;
 
-	// --------------- References ---------------
+	// ------------------------ References ------------------------
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	ADirectionalLight* SunActor;
@@ -105,9 +107,6 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	AExponentialHeightFog* HorizonFog;
-
-	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
-	UStaticMesh* SkyboxMesh;
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	UMaterial* SkyboxMaterial;
@@ -128,7 +127,7 @@ private:
 	UCurveLinearColor* HorizonFogColorCurve;
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
-	FRuntimeFloatCurve HorizonFalloffCurve;
+	UCurveFloat* HorizonFalloffCurve;
 
 	UPROPERTY()
 	UMaterialInstanceDynamic* DynamicMaterial;
@@ -136,7 +135,7 @@ private:
 	UPROPERTY()
 	UMaterialParameterCollectionInstance* ParameterCollection;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* SkyboxComponent;
 
 	UPROPERTY()

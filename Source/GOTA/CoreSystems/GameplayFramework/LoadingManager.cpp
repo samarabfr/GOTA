@@ -6,6 +6,7 @@
 #include "DaytimeManager.h"
 #include "PC_Ingame.h"
 #include "PS_Ingame.h"
+#include "GameFramework/GameUserSettings.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
@@ -36,6 +37,12 @@ void ALoadingManager::BeginPlay()
 	LocalPlayerController = GetWorld()->GetFirstPlayerController<APC_Ingame>();
 	LocalPlayerController->RemoveLobbyUI();
 	LocalPlayerController->CreateLoadingUI();
+
+	// We have to Apply the GameUserSettings once we are on the Island.lvl, and before we show the game because
+	// for some reason some CVars get set when changing the level
+	UGameUserSettings* UserSettings = UGameUserSettings::GetGameUserSettings();
+	UserSettings->LoadSettings();
+	UserSettings->ApplySettings(true);
 }
 
 void ALoadingManager::Tick(float DeltaSeconds)
