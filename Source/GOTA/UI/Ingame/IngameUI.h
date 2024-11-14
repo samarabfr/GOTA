@@ -19,54 +19,63 @@ class GOTA_API UIngameUI : public UUserWidget
 {
 	GENERATED_BODY()
 
-	// -------------------Widgets------------------------
+	// ------------------------------- LifeCycle -------------------------------
 protected:
-	UPROPERTY(meta = (BindWidget))
-	UClickedInfo* ClickedInfo;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* Txt_GameEnding;
-
-	UPROPERTY(meta = (BindWidget))
-	UGuardianInfo* GuardianInfo1;
-
-	UPROPERTY(meta = (BindWidget))
-	UGuardianInfo* GuardianInfo2;
-
-	UPROPERTY(meta = (BindWidget))
-	UGuardianInfo* GuardianInfo3;
-
-	UPROPERTY(meta = (BindWidget))
-	UGuardianInfo* GuardianInfo4;
-
-	UPROPERTY(meta = (BindWidget))
-	UButton* Btn_Build;
-
-	UPROPERTY(meta = (BindWidget))
-	UBuildingMenu* BuildingMenu;
-
-	// --------------------------------------------------
-
-private:
 	virtual void NativeConstruct() override;
 
-	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+	// ------------------------------- Utility -------------------------------
+public:
+	void HoverActor(AActor* Actor);
 
+	// ------------------------------- Guardian Info -------------------------------
+protected:
+	UPROPERTY(meta = (BindWidget))
+	UGuardianInfo* WBP_GuardianInfo1;
+
+	UPROPERTY(meta = (BindWidget))
+	UGuardianInfo* WBP_GuardianInfo2;
+
+	UPROPERTY(meta = (BindWidget))
+	UGuardianInfo* WBP_GuardianInfo3;
+
+	UPROPERTY(meta = (BindWidget))
+	UGuardianInfo* WBP_GuardianInfo4;
+
+private:
 	UFUNCTION()
 	void RefreshGuardianWidgets(AGS_Ingame* GameState);
 
+	// ------------------------------- Click Info -------------------------------
 public:
 	UFUNCTION(BlueprintCallable)
 	void ClickActor(AActor* Actor);
 
-	void HoverActor(AActor* Actor);
+protected:
+	UPROPERTY(meta = (BindWidget))
+	UClickedInfo* WBP_ClickedInfo;
 
-	UFUNCTION(BlueprintCallable)
-	void WatchCombat(ACombat* Combat);
+	// ------------------------------- Build Menu -------------------------------
+public:
+	UFUNCTION()
+	void ToggleBuildMenu();
 
+protected:
+	UPROPERTY(meta = (BindWidget))
+	UButton* BTN_Build;
+
+	UPROPERTY(meta = (BindWidget))
+	UBuildingMenu* WBP_BuildMenu;
+
+private:
+	void CloseBuildMenu();
+	void OpenBuildMenu();
+
+	// ------------------------------- Game Ended -------------------------------
+protected:
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* TXT_GameEnding;
+
+private:
 	UFUNCTION()
 	void OnGameEnding(const EGameEnding Ending, const FString& EndingMessage);
-
-	UFUNCTION()
-	void OnBtnBuildPressed();
 };
