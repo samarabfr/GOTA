@@ -45,13 +45,13 @@ void ADaytimeManager::BeginPlay()
 	{
 		ParameterCollection = GetWorld()->GetParameterCollectionInstance(ParameterCollectionFinder);
 	}
-
-	if (!SkyboxMaterial)
+	
+	if (!SunActor || !MoonActor || !SkyLight || !HorizonFog || !SkyboxMaterial)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("DaytimeManager missing Material"))
+		UE_LOG(LogTemp, Error, TEXT("DaytimeManager: One or more required actors are not set."));
 		return;
 	}
-
+	
 	DynamicMaterial = SkyboxComponent->CreateDynamicMaterialInstance(0, SkyboxMaterial);
 
 	SunLightComponent = SunActor->GetLightComponent();

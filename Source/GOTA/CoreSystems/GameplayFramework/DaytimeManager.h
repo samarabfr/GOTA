@@ -12,24 +12,21 @@ UCLASS()
 class GOTA_API ADaytimeManager : public AActor
 {
 	GENERATED_BODY()
+	
+	// ------------------------ Replication Setup ------------------------
+	
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	// --------------- LifeCycle ---------------
-
-private:
+	
+	// ------------------------ LifeCycle ------------------------
+public:
 	ADaytimeManager();
-
+	
+protected:
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaSeconds) override;
-
-	// --------------- Time ---------------
-
-
-private:
-	UPROPERTY(EditAnywhere, Category="Daytime Settings", Replicated)
-	float CurrentTime;
-
+	
+	// ------------------------ Time ------------------------
 public:
 	float GetTime() const { return CurrentTime; }
 	void SetTime(const float NewTime);
@@ -42,17 +39,17 @@ public:
 	float GetDaytimeNormalized() const;
 
 private:
+	UPROPERTY(EditAnywhere, Category="Daytime Settings", Replicated)
+	float CurrentTime;
+	
 	void StartDay();
 	void StartNight();
-
-
+	
 	void RefreshSunHeight();
-
 	void RefreshMaterial();
-
 	void RefreshLightSetup();
 
-	// --------------- Settings ---------------
+	// ------------------------ Settings ------------------------
 
 private:
 	UPROPERTY(VisibleAnywhere, Category="Daytime Settings")
@@ -97,7 +94,7 @@ private:
 	UPROPERTY(EditAnywhere, Category="Daytime Settings")
 	float StarBrightness = 1.0f;
 
-	// --------------- References ---------------
+	// ------------------------ References ------------------------
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	ADirectionalLight* SunActor;
