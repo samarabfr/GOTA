@@ -120,4 +120,6 @@ private:
 	void LookAround(const FInputActionInstance& Instance);
 	void StartLookingAround(const FInputActionInstance& Instance);
 	void StopLookingAround(const FInputActionInstance& Instance);
+
+	void ToggleBuildMenu();
 };
