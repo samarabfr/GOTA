@@ -7,6 +7,8 @@
 #include "Components/TextBlock.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 
+// ------------------------------- LifeCycle -------------------------------
+
 void UIngameUI::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -14,28 +16,10 @@ void UIngameUI::NativeConstruct()
 	GameState->OnGameEnding.AddDynamic(this, &UIngameUI::OnGameEnding);
 	GameState->OnGuardiansChanged.AddDynamic(this, &UIngameUI::RefreshGuardianWidgets);
 	RefreshGuardianWidgets(GameState);
-	Btn_Build->OnPressed.AddDynamic(this, &UIngameUI::ToggleBuildMenu);
+	BTN_Build->OnPressed.AddDynamic(this, &UIngameUI::ToggleBuildMenu);
 }
 
-void UIngameUI::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
-{
-	Super::NativeTick(MyGeometry, InDeltaTime);
-}
-
-void UIngameUI::RefreshGuardianWidgets(AGS_Ingame* GameState)
-{
-	GuardianInfo1->SetGuardian(GameState->GetGuardian(0));
-	GuardianInfo2->SetGuardian(GameState->GetGuardian(1));
-	GuardianInfo3->SetGuardian(GameState->GetGuardian(2));
-	GuardianInfo4->SetGuardian(GameState->GetGuardian(3));
-}
-
-void UIngameUI::ClickActor(AActor* Actor)
-{
-	BuildingMenu->SetVisibility(ESlateVisibility::Hidden);
-	ClickedInfo->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
-	ClickedInfo->WatchActor(Actor);
-}
+// ------------------------------- Utility -------------------------------
 
 void UIngameUI::HoverActor(AActor* Actor)
 {
@@ -46,17 +30,30 @@ void UIngameUI::WatchCombat(ACombat* Combat)
 	// TODO: implement
 }
 
-// ReSharper disable once CppMemberFunctionMayBeConst
-void UIngameUI::OnGameEnding(const EGameEnding Ending, const FString& EndingMessage)
+// ------------------------------- Guardian Info -------------------------------
+
+void UIngameUI::RefreshGuardianWidgets(AGS_Ingame* GameState)
 {
-	Txt_GameEnding->SetText(FText::FromString(EndingMessage));
+	WBP_GuardianInfo1->SetGuardian(GameState->GetGuardian(0));
+	WBP_GuardianInfo2->SetGuardian(GameState->GetGuardian(1));
+	WBP_GuardianInfo3->SetGuardian(GameState->GetGuardian(2));
+	WBP_GuardianInfo4->SetGuardian(GameState->GetGuardian(3));
+}
+
+// ------------------------------- Click Info -------------------------------
+
+void UIngameUI::ClickActor(AActor* Actor)
+{
+	WBP_BuildMenu->SetVisibility(ESlateVisibility::Hidden);
+	WBP_ClickedInfo->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	WBP_ClickedInfo->WatchActor(Actor);
 }
 
 // ------------------------------- Build Menu -------------------------------
 
 void UIngameUI::ToggleBuildMenu()
 {
-	if (BuildingMenu->IsVisible())
+	if (WBP_BuildMenu->IsVisible())
 		CloseBuildMenu();
 	else
 		OpenBuildMenu();
@@ -64,11 +61,18 @@ void UIngameUI::ToggleBuildMenu()
 
 void UIngameUI::CloseBuildMenu()
 {
-	BuildingMenu->SetVisibility(ESlateVisibility::Hidden);
+	WBP_BuildMenu->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UIngameUI::OpenBuildMenu()
 {
-	BuildingMenu->SetVisibility(ESlateVisibility::Visible);
-	ClickedInfo->SetVisibility(ESlateVisibility::Hidden);
+	WBP_BuildMenu->SetVisibility(ESlateVisibility::Visible);
+	WBP_ClickedInfo->SetVisibility(ESlateVisibility::Hidden);
+}
+
+// ------------------------------- Game Ended -------------------------------
+
+void UIngameUI::OnGameEnding(const EGameEnding Ending, const FString& EndingMessage)
+{
+	TXT_GameEnding->SetText(FText::FromString(EndingMessage));
 }
