@@ -21,14 +21,14 @@ class ASettlement : public AActor
 {
 	GENERATED_BODY()
 
-	// ------------------- Replication Setup -------------------
+	// --------------------------- Replication Setup ---------------------------
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
-	// ------------------- LifeCycle -------------------
+
+	// --------------------------- LifeCycle ---------------------------
 protected:
 	ASettlement();
-	
+
 	virtual void BeginPlay() override;
 
 public:
@@ -41,7 +41,7 @@ public:
 protected:
 	virtual void Tick(float DeltaSeconds) override;
 
-	// ------------------- Utility -------------------
+	// --------------------------- Utility ---------------------------
 private:
 	UPROPERTY(Replicated)
 	USettlementSettings* Settings;
@@ -53,7 +53,7 @@ public:
 
 	FGameplayTagContainer GetGameplayTags() const { return Settings->GetGameplayTags(); }
 
-	// ------------------- Population -------------------
+	// --------------------------- Population ---------------------------
 private:
 	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
 	USettlementPopulation* Population;
@@ -66,7 +66,7 @@ public:
 
 	UPopulationSettings* GetPopulationSettings() { return PopulationSettings; }
 
-	// -------------------Claims-------------------------
+	// --------------------------- Claims ---------------------------
 
 	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
 	TArray<ATile*> ClaimedTiles;
@@ -81,42 +81,19 @@ protected:
 public:
 	bool IsBorderingUnclaimedTile(const ATile* Tile) const;
 
-	// -------------------Building-------------------------
+	// --------------------------- Building ---------------------------
 public:
 	void OnBuildingAdded(UBuilding* Building, ATile* Tile);
 
 	void OnBuildingRemoved(UBuilding* Building, ATile* Tile);
 
-	// -------------------Resources-------------------------
+	// --------------------------- Resources ---------------------------
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
 	FGameResources Resources;
-	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	FGameResources LastMinuteIncome;
-	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	FGameResources LastMinuteConsumption;
-
-	struct FIncomeEvent
-	{
-		FGameResources Amount;
-		float Timestamp;
-
-		FIncomeEvent(): Amount(), Timestamp()
-		{
-		};
-
-		FIncomeEvent(const FGameResources InAmount, const float InTimestamp)
-			: Amount(InAmount), Timestamp(InTimestamp)
-		{
-		}
-	};
-
-	TQueue<FIncomeEvent> IncomeEvents;
-	TQueue<FIncomeEvent> ConsumptionEvents;
-	void UpdateLastMinuteResources();
 
 public:
 	FGameResources GetResources() const { return Resources; }
-	void S_AddResources(FGameResources Amount, bool CountTowardsLastMinuteIncome = false);
-	void S_RemoveResources(FGameResources Amount, bool CountTowardsLastMinuteConsumption = false);
+	void S_AddResources(FGameResources Amount);
+	void S_RemoveResources(FGameResources Amount);
 };

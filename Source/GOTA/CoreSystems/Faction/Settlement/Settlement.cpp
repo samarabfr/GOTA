@@ -12,6 +12,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
+// --------------------------- Replication Setup ---------------------------
+
 void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -27,7 +29,7 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME_WITH_PARAMS(ASettlement, Resources, Params);
 }
 
-// ------------------- LifeCycle -------------------
+// --------------------------- LifeCycle ---------------------------
 
 ASettlement::ASettlement()
 {
@@ -84,7 +86,6 @@ void ASettlement::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	UpdateLastMinuteResources();
 	Resources.Food -= GetPopulation()->GetSize() * Settings->GetPopEatingPerSecond() * DeltaSeconds;
 
 	if (Resources.Food < 0)
@@ -107,11 +108,11 @@ void ASettlement::Tick(float DeltaSeconds)
 	}
 }
 
-// ------------------- Utility -------------------
+// --------------------------- Utility ---------------------------
 
-// ------------------- Population -------------------
+// --------------------------- Population ---------------------------
 
-// -------------------Claims-------------------------
+// --------------------------- Claims ---------------------------
 
 void ASettlement::RefreshBorderingUnclaimedTiles()
 {
@@ -133,7 +134,7 @@ bool ASettlement::IsBorderingUnclaimedTile(const ATile* Tile) const
 	return BorderingUnclaimedTiles.Contains(Tile);
 }
 
-// -------------------Building-------------------------
+// --------------------------- Building ---------------------------
 
 void ASettlement::OnBuildingAdded(UBuilding* Building, ATile* Tile)
 {
@@ -149,61 +150,19 @@ void ASettlement::OnBuildingRemoved(UBuilding* Building, ATile* Tile)
 	RefreshBorderingUnclaimedTiles();
 }
 
-// -------------------Resources-------------------------
+// --------------------------- Resources ---------------------------
 
-void ASettlement::UpdateLastMinuteResources()
-{
-	const float CurrentCutOff = GetWorld()->GetTimeSeconds() - 20.0f;
 
-	// Remove old entries from Income queue
-	while (const FIncomeEvent* Tail = IncomeEvents.Peek())
-	{
-		if (Tail->Timestamp < CurrentCutOff)
-		{
-			LastMinuteIncome -= Tail->Amount;
-			IncomeEvents.Pop();
-		}
-		else
-		{
-			break;
-		}
-	}
-
-	// Remove old entries from Consumption queue
-	while (const FIncomeEvent* Tail = ConsumptionEvents.Peek())
-	{
-		if (Tail->Timestamp < CurrentCutOff)
-		{
-			LastMinuteConsumption -= Tail->Amount;
-			ConsumptionEvents.Pop();
-		}
-		else
-		{
-			break;
-		}
-	}
-}
-
-void ASettlement::S_AddResources(const FGameResources Amount, const bool CountTowardsLastMinuteIncome)
+void ASettlement::S_AddResources(const FGameResources Amount)
 {
 	Resources += Amount;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
 	ForceNetUpdate();
-	if (CountTowardsLastMinuteIncome)
-	{
-		LastMinuteIncome += Amount;
-		IncomeEvents.Enqueue(FIncomeEvent(Amount, GetWorld()->GetTimeSeconds()));
-	}
 }
 
-void ASettlement::S_RemoveResources(const FGameResources Amount, const bool CountTowardsLastMinuteConsumption)
+void ASettlement::S_RemoveResources(const FGameResources Amount)
 {
 	Resources -= Amount;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
 	ForceNetUpdate();
-	if (CountTowardsLastMinuteConsumption)
-	{
-		LastMinuteConsumption += Amount;
-		ConsumptionEvents.Enqueue(FIncomeEvent(Amount, GetWorld()->GetTimeSeconds()));
-	}
 }
