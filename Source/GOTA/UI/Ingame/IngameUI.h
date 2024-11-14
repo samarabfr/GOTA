@@ -39,11 +39,6 @@ protected:
 	UPROPERTY(meta = (BindWidget))
 	UGuardianInfo* GuardianInfo4;
 
-	UPROPERTY(meta = (BindWidget))
-	UButton* Btn_Build;
-
-	UPROPERTY(meta = (BindWidget))
-	UBuildingMenu* BuildingMenu;
 
 	// --------------------------------------------------
 
@@ -67,6 +62,19 @@ public:
 	UFUNCTION()
 	void OnGameEnding(const EGameEnding Ending, const FString& EndingMessage);
 
+	// ------------------------------- Build Menu -------------------------------
+public:
 	UFUNCTION()
-	void OnBtnBuildPressed();
+	void ToggleBuildMenu();
+
+protected:
+	UPROPERTY(meta = (BindWidget))
+	UButton* Btn_Build;
+
+	UPROPERTY(meta = (BindWidget))
+	UBuildingMenu* BuildingMenu;
+
+private:
+	void CloseBuildMenu();
+	void OpenBuildMenu();
 };

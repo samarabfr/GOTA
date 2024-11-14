@@ -14,7 +14,7 @@ void UIngameUI::NativeConstruct()
 	GameState->OnGameEnding.AddDynamic(this, &UIngameUI::OnGameEnding);
 	GameState->OnGuardiansChanged.AddDynamic(this, &UIngameUI::RefreshGuardianWidgets);
 	RefreshGuardianWidgets(GameState);
-	Btn_Build->OnPressed.AddDynamic(this, &UIngameUI::OnBtnBuildPressed);
+	Btn_Build->OnPressed.AddDynamic(this, &UIngameUI::ToggleBuildMenu);
 }
 
 void UIngameUI::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -52,8 +52,23 @@ void UIngameUI::OnGameEnding(const EGameEnding Ending, const FString& EndingMess
 	Txt_GameEnding->SetText(FText::FromString(EndingMessage));
 }
 
-void UIngameUI::OnBtnBuildPressed()
+// ------------------------------- Build Menu -------------------------------
+
+void UIngameUI::ToggleBuildMenu()
 {
-	BuildingMenu->SetVisibility(ESlateVisibility::SelfHitTestInvisible);
+	if (BuildingMenu->IsVisible())
+		CloseBuildMenu();
+	else
+		OpenBuildMenu();
+}
+
+void UIngameUI::CloseBuildMenu()
+{
+	BuildingMenu->SetVisibility(ESlateVisibility::Hidden);
+}
+
+void UIngameUI::OpenBuildMenu()
+{
+	BuildingMenu->SetVisibility(ESlateVisibility::Visible);
 	ClickedInfo->SetVisibility(ESlateVisibility::Hidden);
 }
