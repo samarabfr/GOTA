@@ -46,7 +46,7 @@ void UTopBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 void UTopBar::RefreshClock()
 {
 	if (!GameState || !GameState->DaytimeManager) return;
-	const float SunHeight = GameState->DaytimeManager->GetSunHeight();
+	const float SunHeight = GameState->DaytimeManager->GetDaytimeNormalized();
 
 	float NewRotation = 0.0f;
 	if (SunHeight < 0)

@@ -130,6 +130,33 @@ void ADaytimeManager::SetTime(const float NewTime)
 	}
 }
 
+float ADaytimeManager::GetDaytimeNormalized() const
+{
+	if (GetTime() <= GetDayLength())
+	{
+		float HalfDayLength = DayLength / 2.0f;
+
+		if (CurrentTime <= HalfDayLength)
+		{
+			// Linearly map [0, HalfDayLength] to [0, 1]
+			return CurrentTime / HalfDayLength;
+		}
+		// Linearly map [HalfDayLength, DayLength] to [1, 0]
+		return 1.0f - ((CurrentTime - HalfDayLength) / HalfDayLength);
+	}
+	// It's nighttime
+	float HalfNightLength = NightLength / 2.0f;
+	float NightProgress = CurrentTime - DayLength;
+
+	if (NightProgress <= HalfNightLength)
+	{
+		// Linearly map [0, HalfNightLength] to [0, -1]
+		return -1.0f * NightProgress / HalfNightLength;
+	}
+	// Linearly map [HalfNightLength, NightLength] to [-1, 0]
+	return - 1.0f + ((NightProgress - HalfNightLength) / HalfNightLength);
+}
+
 void ADaytimeManager::StartDay()
 {
 	bIsDay = true;

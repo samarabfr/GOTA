@@ -31,15 +31,15 @@ private:
 	float CurrentTime;
 
 public:
-	float GetTime() { return CurrentTime; }
+	float GetTime() const { return CurrentTime; }
 	void SetTime(const float NewTime);
 
-	float GetDayLength() { return DayLength; }
-	float GetNightLength() { return NightLength; }
-	float GetFullDayLength() { return DayLength + NightLength; }
+	float GetDayLength() const { return DayLength; }
+	float GetNightLength() const { return NightLength; }
+	float GetFullDayLength() const { return DayLength + NightLength; }
 
-	// SunHeight is -1 on midnight, 1 on midday and 0 on Dawn/Dusk
-	float GetSunHeight() { return SunHeight; }
+	// returns -1 on midnight, 1 on midday and 0 on Dawn/Dusk
+	float GetDaytimeNormalized() const;
 
 private:
 	void StartDay();
