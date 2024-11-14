@@ -42,6 +42,9 @@ void APC_Ingame::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	SetGuardian(Cast<AGuardian>(InPawn));
+
+	FRotator InitialRotation = FRotator(-30.0f, 0.0f, 0.0f); // Adjust these values
+	SetControlRotation(InitialRotation);
 }
 
 // -------------------------UI Stuff------------------------
