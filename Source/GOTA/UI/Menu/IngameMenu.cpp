@@ -18,6 +18,9 @@ void UIngameMenu::NativeConstruct()
 
 void UIngameMenu::Toggle()
 {
+	if (IsAnimationPlaying(Anim_SwipeIn))
+		return;
+	
 	if (CP_Container->IsVisible())
 		Close();
 	else
@@ -26,14 +29,14 @@ void UIngameMenu::Toggle()
 
 void UIngameMenu::Open()
 {
-	CP_Container->SetVisibility(ESlateVisibility::Visible);
+	PlayAnimation(Anim_SwipeIn);
 	VB_Menu->SetVisibility(ESlateVisibility::Visible);
 	WBP_Options->SetVisibility(ESlateVisibility::Hidden);
 }
 
 void UIngameMenu::Close()
 {
-	CP_Container->SetVisibility(ESlateVisibility::Hidden);
+	PlayAnimation(Anim_SwipeIn, 0, 1, EUMGSequencePlayMode::Reverse);
 }
 
 void UIngameMenu::OpenOptions()
