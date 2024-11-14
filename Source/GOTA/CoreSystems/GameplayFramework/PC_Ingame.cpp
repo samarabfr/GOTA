@@ -42,9 +42,6 @@ void APC_Ingame::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	SetGuardian(Cast<AGuardian>(InPawn));
-
-	FRotator InitialRotation = FRotator(-30.0f, 0.0f, 0.0f); // Adjust these values
-	SetControlRotation(InitialRotation);
 }
 
 // -------------------------UI Stuff------------------------
@@ -60,10 +57,19 @@ void APC_Ingame::SetGuardian(AGuardian* NewGuardian)
 
 void APC_Ingame::GuardianChanged()
 {
-	if (!Guardian) return;
-	if (!IsLocalController()) return;
+	if (!Guardian)
+		return;
+	
+	if (!IsLocalController())
+		return;
+	
 	DistanceUtils->AttachToActor(Guardian, FAttachmentTransformRules::SnapToTargetIncludingScale);
-	if (MouseUtils) Guardian->SetupGAM(MouseUtils);
+	
+	if (MouseUtils)
+		Guardian->SetupGAM(MouseUtils);
+
+	FRotator InitialRotation = FRotator(-30.0f, 0.0f, 0.0f); // Adjust these values
+	SetControlRotation(InitialRotation);
 }
 
 // ---------------------- InteractionMode ----------------------
