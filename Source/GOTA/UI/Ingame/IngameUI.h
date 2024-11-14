@@ -27,9 +27,6 @@ protected:
 public:
 	void HoverActor(AActor* Actor);
 
-	UFUNCTION(BlueprintCallable)
-	void WatchCombat(ACombat* Combat);
-
 	// ------------------------------- Guardian Info -------------------------------
 protected:
 	UPROPERTY(meta = (BindWidget))

@@ -39,10 +39,7 @@ public:
 
 	UFUNCTION(BlueprintSetter)
 	void SetIngameUI(UIngameUI* InIngameUI) { IngameUI = InIngameUI; }
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="PlayerController")
-	void WatchCombat(ACombat* Combat);
-
+	
 	UFUNCTION(BlueprintImplementableEvent, Category="PlayerController")
 	void CreateLobbyUI();
 

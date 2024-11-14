@@ -25,11 +25,6 @@ void UIngameUI::HoverActor(AActor* Actor)
 {
 }
 
-void UIngameUI::WatchCombat(ACombat* Combat)
-{
-	// TODO: implement
-}
-
 // ------------------------------- Guardian Info -------------------------------
 
 void UIngameUI::RefreshGuardianWidgets(AGS_Ingame* GameState)
