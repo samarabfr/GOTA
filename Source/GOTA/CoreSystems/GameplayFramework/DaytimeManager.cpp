@@ -121,22 +121,11 @@ void ADaytimeManager::SetTime(const float NewTime)
 
 	if (ParameterCollection)
 	{
-		float SmoothNight;
-		if (SunHeight < -0.2f)
-		{
-			SmoothNight = 1.0f;
-		}
-		else if (SunHeight > 0.2f)
-		{
-			SmoothNight = 0.0f;
-		}
-		else
-		{
-			SmoothNight = FMath::GetMappedRangeValueUnclamped(
-				FVector2D(-0.2f, 0.2f),
-				FVector2D(1.0f, 0.0f),
-				SunHeight);
-		}
+		const float SmoothNight = FMath::GetMappedRangeValueClamped(
+			FVector2D(-0.2f, 0.2f),
+			FVector2D(1.0f, 0.0f),
+			SunHeight);
+
 		ParameterCollection->SetScalarParameterValue(FName("IsNightSmooth"), SmoothNight);
 	}
 }
