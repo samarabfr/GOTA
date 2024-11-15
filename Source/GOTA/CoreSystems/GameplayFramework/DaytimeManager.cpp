@@ -45,18 +45,13 @@ void ADaytimeManager::BeginPlay()
 	{
 		ParameterCollection = GetWorld()->GetParameterCollectionInstance(ParameterCollectionFinder);
 	}
-
-	if (!SkyboxMesh)
+	
+	if (!SunActor || !MoonActor || !SkyLight || !HorizonFog || !SkyboxMaterial)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("DaytimeManager missing Static Mesh"))
+		UE_LOG(LogTemp, Error, TEXT("DaytimeManager: One or more required actors are not set."));
 		return;
 	}
-	if (!SkyboxMaterial)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("DaytimeManager missing Material"))
-		return;
-	}
-
+	
 	DynamicMaterial = SkyboxComponent->CreateDynamicMaterialInstance(0, SkyboxMaterial);
 
 	SunLightComponent = SunActor->GetLightComponent();
@@ -84,48 +79,82 @@ void ADaytimeManager::SetTime(const float NewTime)
 		// It should be Day
 		if (!bIsDay) StartDay();
 
-		const float NewSunPitch = FMath::GetMappedRangeValueUnclamped(
-			FVector2D(0, DayLength),
-			FVector2D(-180, 0),
-			CurrentTime);
+		// Calculate sun's position on a tilted circular orbit
+		const float DayProgressNormalized = FMath::Clamp(CurrentTime / DayLength, 0.0f, 1.0f);
 
-		SunActor->SetActorRotation(FRotator(NewSunPitch, 0, 0));
-		MoonActor->SetActorRotation(FRotator(NewSunPitch + 180.0, 0, 0));
+		const float OrbitAngle = DayProgressNormalized * PI;
+
+		const float X = FMath::Cos(OrbitAngle);
+		const float Y = FMath::Sin(OrbitAngle) * FMath::Cos(FMath::DegreesToRadians(SunOrbitTilt));
+		const float Z = FMath::Sin(OrbitAngle) * FMath::Sin(FMath::DegreesToRadians(SunOrbitTilt));
+
+		// Convert to rotation angles
+		const float NewSunElevation = FMath::RadiansToDegrees(FMath::Atan2(Z, FMath::Sqrt(X * X + Y * Y)));
+		const float NewSunAzimuth = FMath::RadiansToDegrees(FMath::Atan2(Y, X));
+
+		// Apply rotation
+		SunActor->SetActorRotation(FRotator(-NewSunElevation, NewSunAzimuth, 0.0f));
+		MoonActor->SetActorRotation(FRotator(-NewSunElevation + 180.0f, NewSunAzimuth, 0.0f));
 	}
 	else
 	{
 		// It should be Night
 		if (bIsDay) StartNight();
 
-		const float NewMoonPitch = FMath::GetMappedRangeValueUnclamped(
-			FVector2D(0, NightLength),
-			FVector2D(-180, 0),
-			CurrentTime);
+		// Calculate sun's position on a tilted circular orbit
+		const float NightProgressNormalized = FMath::Clamp((CurrentTime - DayLength) / NightLength, 0.0f, 1.0f);
 
-		SunActor->SetActorRotation(FRotator(NewMoonPitch + 180.0, 0, 0));
-		MoonActor->SetActorRotation(FRotator(NewMoonPitch, 0, 0));
+		const float OrbitAngle = NightProgressNormalized * PI;
+
+		const float X = FMath::Cos(OrbitAngle);
+		const float Y = FMath::Sin(OrbitAngle) * FMath::Cos(FMath::DegreesToRadians(MoonOrbitTilt));
+		const float Z = FMath::Sin(OrbitAngle) * FMath::Sin(FMath::DegreesToRadians(MoonOrbitTilt));
+
+		// Convert to rotation angles
+		const float NewSunElevation = FMath::RadiansToDegrees(FMath::Atan2(Z, FMath::Sqrt(X * X + Y * Y)));
+		const float NewSunAzimuth = FMath::RadiansToDegrees(FMath::Atan2(Y, X));
+
+		// Apply rotation
+		SunActor->SetActorRotation(FRotator(-NewSunElevation + 180.0f, NewSunAzimuth, 0.0f));
+		MoonActor->SetActorRotation(FRotator(-NewSunElevation, NewSunAzimuth, 0.0f));
 	}
 
 	if (ParameterCollection)
 	{
-		float SmoothNight;
-		if (SunHeight < -0.2f)
-		{
-			SmoothNight = 1.0f;
-		}
-		else if (SunHeight > 0.2f)
-		{
-			SmoothNight = 0.0f;
-		}
-		else
-		{
-			SmoothNight = FMath::GetMappedRangeValueUnclamped(
-				FVector2D(-0.2f, 0.2f),
-				FVector2D(1.0f, 0.0f),
-				SunHeight);
-		}
+		const float SmoothNight = FMath::GetMappedRangeValueClamped(
+			FVector2D(-0.2f, 0.2f),
+			FVector2D(1.0f, 0.0f),
+			SunHeight);
+
 		ParameterCollection->SetScalarParameterValue(FName("IsNightSmooth"), SmoothNight);
 	}
+}
+
+float ADaytimeManager::GetDaytimeNormalized() const
+{
+	if (GetTime() <= GetDayLength())
+	{
+		float HalfDayLength = DayLength / 2.0f;
+
+		if (CurrentTime <= HalfDayLength)
+		{
+			// Linearly map [0, HalfDayLength] to [0, 1]
+			return CurrentTime / HalfDayLength;
+		}
+		// Linearly map [HalfDayLength, DayLength] to [1, 0]
+		return 1.0f - ((CurrentTime - HalfDayLength) / HalfDayLength);
+	}
+	// It's nighttime
+	float HalfNightLength = NightLength / 2.0f;
+	float NightProgress = CurrentTime - DayLength;
+
+	if (NightProgress <= HalfNightLength)
+	{
+		// Linearly map [0, HalfNightLength] to [0, -1]
+		return -1.0f * NightProgress / HalfNightLength;
+	}
+	// Linearly map [HalfNightLength, NightLength] to [-1, 0]
+	return - 1.0f + ((NightProgress - HalfNightLength) / HalfNightLength);
 }
 
 void ADaytimeManager::StartDay()
@@ -165,7 +194,7 @@ void ADaytimeManager::RefreshMaterial()
 	                                         CloudsColorCurve->GetClampedLinearColorValue(SunHeight));
 
 	DynamicMaterial->SetScalarParameterValue(FName("HorizonFalloff"),
-	                                         HorizonFalloffCurve.GetRichCurveConst()->Eval(SunHeight));
+	                                         HorizonFalloffCurve->FloatCurve.Eval(SunHeight));
 
 	const FRotator SunRotator = SunActor->GetActorRotation();
 	DynamicMaterial->SetVectorParameterValue(FName("SunlightDirection"), SunRotator.Vector());

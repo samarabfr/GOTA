@@ -2,3 +2,12 @@
 
 
 #include "GOTAGameInstance.h"
+
+#include "GameFramework/GameUserSettings.h"
+
+void UGOTAGameInstance::Init()
+{
+	Super::Init();
+
+
+}

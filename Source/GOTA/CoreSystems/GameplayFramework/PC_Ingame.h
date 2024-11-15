@@ -39,10 +39,7 @@ public:
 
 	UFUNCTION(BlueprintSetter)
 	void SetIngameUI(UIngameUI* InIngameUI) { IngameUI = InIngameUI; }
-
-	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category="PlayerController")
-	void WatchCombat(ACombat* Combat);
-
+	
 	UFUNCTION(BlueprintImplementableEvent, Category="PlayerController")
 	void CreateLobbyUI();
 
@@ -120,4 +117,6 @@ private:
 	void LookAround(const FInputActionInstance& Instance);
 	void StartLookingAround(const FInputActionInstance& Instance);
 	void StopLookingAround(const FInputActionInstance& Instance);
+
+	void ToggleBuildMenu();
 };
