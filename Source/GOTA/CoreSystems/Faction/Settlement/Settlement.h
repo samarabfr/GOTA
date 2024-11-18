@@ -91,6 +91,9 @@ public:
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
 	FGameResources Resources;
+	
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
+	FGameResources PredictedIncome;
 
 public:
 	FGameResources GetResources() const { return Resources; }
