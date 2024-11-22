@@ -25,7 +25,6 @@ AGuardian::AGuardian()
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = false;
-	NetUpdateFrequency = 1.0f;
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
