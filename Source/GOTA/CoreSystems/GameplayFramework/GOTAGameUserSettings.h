@@ -28,18 +28,13 @@ public:
 
 	// ------------------- Shadows -------------------
 private:
+	// Can be between 0.0f and 2.0f
 	UPROPERTY(Config)
-	bool bCascadedShadowMapsEnabled;
-
-	UPROPERTY(Config)
-	bool bDistanceFieldShadowsEnabled;
+	float ShadowDistanceFactor;
 
 public:
-	bool IsCascadedShadowMapsEnabled() const { return bCascadedShadowMapsEnabled; }
-	void SetCascadedShadowMapsEnabled(const bool NewEnabled) { bCascadedShadowMapsEnabled = NewEnabled; }
-
-	bool IsDistanceFieldShadowsEnabled() const { return bDistanceFieldShadowsEnabled; }
-	void SetDistanceFieldShadowsEnabled(const bool NewEnabled) { bDistanceFieldShadowsEnabled = NewEnabled; }
+	float GetShadowDistanceFactor() const { return ShadowDistanceFactor; }
+	void SetShadowDistanceFactor(const float NewShadowDistanceFactor) { ShadowDistanceFactor = NewShadowDistanceFactor; }
 
 	// ------------------- Anti Aliasing -------------------
 private:
@@ -53,4 +48,19 @@ public:
 
 	// 0 = Off, 1 = FXAA, 2 = TAA, 4 = TSR
 	void SetAntiAliasingType(const int32 NewType) { AntiAliasingType = NewType; }
+
+	// ------------------- FPS -------------------
+private:
+	UPROPERTY(Config)
+	bool bUsingFPSLimit;
+
+	UPROPERTY(Config)
+	int32 FPSLimit;
+
+public:
+	bool IsUsingFPSLimit() const { return bUsingFPSLimit; }
+	void SetIsUsingFPSLimit(const bool NewUsingFPSLimit) { bUsingFPSLimit = NewUsingFPSLimit; }
+
+	int32 GetFPSLimit() const { return FPSLimit; }
+	void SetFPSLimit(const int32 NewFPSLimit) { FPSLimit = NewFPSLimit; }
 };

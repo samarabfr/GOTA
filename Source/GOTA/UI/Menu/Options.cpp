@@ -2,6 +2,7 @@
 
 #include "Components/Button.h"
 #include "Components/ComboBoxString.h"
+#include "Components/EditableTextBox.h"
 #include "GameFramework/GameUserSettings.h"
 #include "GOTA/CoreSystems/GameplayFramework/GOTAGameUserSettings.h"
 #include "GOTA/UI/Widgets/ToggleButton.h"
@@ -43,7 +44,12 @@ void UOptions::FillComboBoxOptions()
 
 	CB_ShadowQuality->AddOption(TEXT("High"));
 	CB_ShadowQuality->AddOption(TEXT("Low"));
+	CB_ShadowQuality->AddOption(TEXT("Off"));
 
+	CB_ShadowDistance->AddOption(TEXT("High"));
+	CB_ShadowDistance->AddOption(TEXT("Medium"));
+	CB_ShadowDistance->AddOption(TEXT("Low"));
+	
 	CB_AntiAliasingType->AddOption(TEXT("TSR"));
 	CB_AntiAliasingType->AddOption(TEXT("TAA"));
 	CB_AntiAliasingType->AddOption(TEXT("FXAA"));
@@ -58,12 +64,14 @@ void UOptions::RefreshEverything()
 {
 	RefreshResolution();
 	RefreshScreenMode();
-	RefreshVsync();
 	RefreshResolutionScale();
+	
+	RefreshVsync();
+	RefreshUsingFPSLimit();
+	RefreshFPSLimit();
 
 	RefreshShadowQuality();
-	RefreshCSMShadows();
-	RefreshDFShadows();
+	RefreshShadowDistance();
 
 	RefreshAntiAliasingType();
 	RefreshAntiAliasingQuality();
@@ -73,12 +81,15 @@ void UOptions::RegisterDelegates()
 {
 	CB_Resolutions->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyResolution);
 	CB_ScreenMode->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyScreenMode);
-	TB_VSync->OnActiveChanged.AddDynamic(this, &UOptions::ApplyVSync);
 	CB_ResolutionScale->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyResolutionScale);
 
+	TB_VSync->OnActiveChanged.AddDynamic(this, &UOptions::ApplyVSync);
+	TB_UsingFPSLimit->OnActiveChanged.AddDynamic(this, &UOptions::ApplyUsingFPSLimit);
+	ETXT_FPSLimit->OnTextChanged.AddDynamic(this, &UOptions::ValidateFPSLimitInput);
+	ETXT_FPSLimit->OnTextCommitted.AddDynamic(this, &UOptions::ApplyFPSLimit);
+
 	CB_ShadowQuality->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyShadowQuality);
-	TB_CSMShadows->OnActiveChanged.AddDynamic(this, &UOptions::ApplyCSMShadows);
-	TB_DFShadows->OnActiveChanged.AddDynamic(this, &UOptions::ApplyDFShadows);
+	CB_ShadowDistance->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyShadowDistance);
 
 	CB_AntiAliasingType->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyAntiAliasingType);
 	CB_AntiAliasingQuality->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyAntiAliasingQuality);
@@ -140,21 +151,6 @@ void UOptions::ApplyScreenMode(FString SelectedItem, ESelectInfo::Type Selection
 	UserSettings->ApplySettings(true);
 }
 
-void UOptions::RefreshVsync()
-{
-	const bool VSyncEnabled = UserSettings->IsVSyncEnabled();
-	TB_VSync->SetIsActive(VSyncEnabled, true);
-}
-
-void UOptions::ApplyVSync(bool NewActive)
-{
-	UserSettings->SetVSyncEnabled(NewActive);
-	UserSettings->ApplySettings(true);
-}
-
-
-// ------------------- Quality -------------------
-
 void UOptions::RefreshResolutionScale()
 {
 	const float ResolutionScale = UserSettings->GetResolutionScaleNormalized();
@@ -199,6 +195,62 @@ void UOptions::ApplyResolutionScale(FString SelectedItem, ESelectInfo::Type Sele
 }
 
 
+// ------------------- FPS -------------------
+
+void UOptions::RefreshVsync()
+{
+	const bool VSyncEnabled = UserSettings->IsVSyncEnabled();
+	TB_VSync->SetIsActive(VSyncEnabled, true);
+}
+
+void UOptions::ApplyVSync(bool NewActive)
+{
+	UserSettings->SetVSyncEnabled(NewActive);
+	UserSettings->ApplySettings(true);
+}
+
+void UOptions::RefreshUsingFPSLimit()
+{
+	const bool UsingFPSLimit = UserSettings->IsUsingFPSLimit();
+	TB_UsingFPSLimit->SetIsActive(UsingFPSLimit, true);
+}
+
+void UOptions::ApplyUsingFPSLimit(bool NewActive)
+{
+	UserSettings->SetIsUsingFPSLimit(NewActive);
+	UserSettings->ApplySettings(true);
+}
+
+void UOptions::RefreshFPSLimit()
+{
+	const int32 FPSLimit = UserSettings->GetFPSLimit();
+	ETXT_FPSLimit->SetText(FText::AsNumber(FPSLimit));
+}
+
+void UOptions::ValidateFPSLimitInput(const FText& Text)
+{
+	FString InputString = Text.ToString();
+	FString ValidString;
+
+	for (const TCHAR& Char : InputString)
+	{
+		if (FChar::IsDigit(Char))
+		{
+			ValidString.AppendChar(Char);
+		}
+	}
+	ETXT_FPSLimit->SetText(FText::FromString(ValidString));
+}
+
+void UOptions::ApplyFPSLimit(const FText& Text, ETextCommit::Type CommitMethod)
+{
+	const int32 InputFPS = FCString::Atoi(*Text.ToString());
+	const int32 ClampedFPS = FMath::Clamp(InputFPS, 15, 999);
+	ETXT_FPSLimit->SetText(FText::AsNumber(ClampedFPS));
+	UserSettings->SetFPSLimit(ClampedFPS);
+	UserSettings->ApplySettings(true);
+}
+
 // ------------------- Shadows -------------------
 
 void UOptions::RefreshShadowQuality()
@@ -209,15 +261,18 @@ void UOptions::RefreshShadowQuality()
 		CB_ShadowQuality->SetSelectedIndex(0);
 		return;
 
-	case 1: // Low
+	case 2: // Low
 		CB_ShadowQuality->SetSelectedIndex(1);
 		return;
 
-	default:
-		if (CB_ShadowQuality->GetOptionCount() == 2)
-			CB_ShadowQuality->AddOption(TEXT("Custom"));
+	case 1: // Off
 		CB_ShadowQuality->SetSelectedIndex(2);
 		return;
+
+	default:
+		if (CB_ShadowQuality->GetOptionCount() == 3)
+			CB_ShadowQuality->AddOption(TEXT("Custom"));
+		CB_ShadowQuality->SetSelectedIndex(3);
 	}
 }
 
@@ -230,6 +285,10 @@ void UOptions::ApplyShadowQuality(FString SelectedItem, ESelectInfo::Type Select
 		break;
 
 	case 1: // Low
+		UserSettings->SetShadowQuality(2);
+		break;
+
+	case 2: // Off
 		UserSettings->SetShadowQuality(1);
 		break;
 
@@ -239,42 +298,49 @@ void UOptions::ApplyShadowQuality(FString SelectedItem, ESelectInfo::Type Select
 	UserSettings->ApplySettings(true);
 }
 
-void UOptions::RefreshCSMShadows()
+void UOptions::RefreshShadowDistance()
 {
-	const bool CSMEnabled = UserSettings->IsCascadedShadowMapsEnabled();
-	TB_CSMShadows->SetIsActive(CSMEnabled, true);
-}
+	const float DistanceFactor = UserSettings->GetShadowDistanceFactor();
+	
+	if (FMath::IsNearlyEqual(DistanceFactor, 1.0f)) // High
+		CB_ShadowDistance->SetSelectedIndex(0);
 
-void UOptions::ApplyCSMShadows(bool NewActive)
-{
-	UserSettings->SetCascadedShadowMapsEnabled(NewActive);
-	UserSettings->ApplySettings(true);
+	else if (FMath::IsNearlyEqual(DistanceFactor, 0.65f)) // Medium
+		CB_ShadowDistance->SetSelectedIndex(1);
 
-	// if shadows are Off, setting the quality is useless
-	if (TB_CSMShadows->IsActive() || TB_DFShadows->IsActive())
-		CB_ShadowQuality->SetIsEnabled(true);
+	else if (FMath::IsNearlyEqual(DistanceFactor, 0.4f)) // Low
+		CB_ShadowDistance->SetSelectedIndex(2);
+
 	else
-		CB_ShadowQuality->SetIsEnabled(false);
+	{
+		// In case ResolutionScale got set custom somehow
+		if (CB_ShadowDistance->GetOptionCount() == 3)
+			CB_ShadowDistance->AddOption(TEXT("Custom"));
+		CB_ShadowDistance->SetSelectedIndex(3);
+	}
 }
 
-void UOptions::RefreshDFShadows()
+void UOptions::ApplyShadowDistance(FString SelectedItem, ESelectInfo::Type SelectionType)
 {
-	const bool DFEnabled = UserSettings->IsDistanceFieldShadowsEnabled();
-	TB_DFShadows->SetIsActive(DFEnabled, true);
-}
+	switch (CB_ShadowDistance->GetSelectedIndex())
+	{
+	case 0: // High
+		UserSettings->SetShadowDistanceFactor(1.0f);
+		break;
 
-void UOptions::ApplyDFShadows(bool NewActive)
-{
-	UserSettings->SetDistanceFieldShadowsEnabled(NewActive);
+	case 1: // Medium
+		UserSettings->SetShadowDistanceFactor(0.65f);
+		break;
+
+	case 2: // Low
+		UserSettings->SetShadowDistanceFactor(0.4f);
+		break;
+
+	default:
+		return;
+	}
 	UserSettings->ApplySettings(true);
-
-	// if shadows are Off, setting the quality is useless
-	if (TB_CSMShadows->IsActive() || TB_DFShadows->IsActive())
-		CB_ShadowQuality->SetIsEnabled(true);
-	else
-		CB_ShadowQuality->SetIsEnabled(false);
 }
-
 
 // ------------------- Anti Aliasing -------------------
 

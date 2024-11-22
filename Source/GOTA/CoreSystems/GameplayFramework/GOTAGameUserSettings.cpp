@@ -1,13 +1,13 @@
 ﻿#include "GOTAGameUserSettings.h"
 
-
 // ------------------- LifeCycle -------------------
 
 UGOTAGameUserSettings::UGOTAGameUserSettings()
 {
-	bCascadedShadowMapsEnabled = true;
-	bDistanceFieldShadowsEnabled = true;
+	ShadowDistanceFactor = 1.0f;
 	AntiAliasingType = 4;
+	bUsingFPSLimit = false;
+	FPSLimit = 60;
 }
 
 
@@ -16,27 +16,33 @@ UGOTAGameUserSettings::UGOTAGameUserSettings()
 void UGOTAGameUserSettings::ApplySettings(bool bCheckForCommandLineOverrides)
 {
 	Super::ApplySettings(bCheckForCommandLineOverrides);
-
-	IConsoleVariable* CVarCascadedShadows = IConsoleManager::Get().
-		FindConsoleVariable(TEXT("r.Shadow.CSM.MaxCascades"));
-	if (CVarCascadedShadows)
+	
+	IConsoleVariable* CVar_LimitFPS = IConsoleManager::Get().
+			FindConsoleVariable(TEXT("t.MaxFPS"));
+	if (CVar_LimitFPS)
 	{
-		// 0*3 = O means disabled, 1*3 = 3 means enabled
-		CVarCascadedShadows->Set(bCascadedShadowMapsEnabled * 3);
+		if (bUsingFPSLimit)
+		{
+			CVar_LimitFPS->Set(FPSLimit);
+		}
+		else
+		{
+			CVar_LimitFPS->Set(0.0f);
+		}
 	}
-
-	IConsoleVariable* CVarDFShadows = IConsoleManager::Get().
-		FindConsoleVariable(TEXT("r.DistanceFieldShadowing"));
-	if (CVarDFShadows)
-	{
-		CVarDFShadows->Set(bDistanceFieldShadowsEnabled);
-	}
-
-	IConsoleVariable* CVarAntiAliasingType = IConsoleManager::Get().
+	
+	IConsoleVariable* CVar_AntiAliasingType = IConsoleManager::Get().
 		FindConsoleVariable(TEXT("r.AntiAliasingMethod"));
-	if (CVarAntiAliasingType)
+	if (CVar_AntiAliasingType)
 	{
-		CVarAntiAliasingType->Set(AntiAliasingType);
+		CVar_AntiAliasingType->Set(AntiAliasingType);
+	}
+
+	IConsoleVariable* CVar_ShadowDistanceScale = IConsoleManager::Get().
+	FindConsoleVariable(TEXT("r.Shadow.DistanceScale"));
+	if (CVar_ShadowDistanceScale)
+	{
+		CVar_ShadowDistanceScale->Set(ShadowDistanceFactor);
 	}
 }
 
