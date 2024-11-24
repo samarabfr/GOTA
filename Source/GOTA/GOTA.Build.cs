@@ -26,7 +26,7 @@ public class GOTA : ModuleRules
 			"StateTreeModule",
 			"StateTreeEditorModule",
 			"GameplayStateTreeModule",
-			"AIModule"
+			"AIModule",
 			"NetCore",
 			"RHI"
 		});
