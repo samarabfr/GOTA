@@ -6,9 +6,8 @@ void UCombatValues::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	UObject::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UCombatValues, IndividualAttack);
-	DOREPLIFETIME(UCombatValues, Defense);
 	DOREPLIFETIME(UCombatValues, IndividualHP);
-	DOREPLIFETIME(UCombatValues, Individuals);
+	DOREPLIFETIME(UCombatValues, IndividualCount);
 }
 
 bool UCombatValues::IsSupportedForNetworking() const
@@ -16,7 +15,7 @@ bool UCombatValues::IsSupportedForNetworking() const
 	return true;
 }
 
-int32 UCombatValues::GetAttack()
+int32 UCombatValues::GetIndividualAttack()
 {
 	return IndividualAttack;
 }
@@ -26,9 +25,9 @@ int32 UCombatValues::GetIndividualHP()
 	return IndividualHP;
 }
 
-int32 UCombatValues::GetIndividuals()
+int32 UCombatValues::GetIndividualCount()
 {
-	return Individuals;
+	return IndividualCount;
 }
 
 float UCombatValues::GetAttackSpeed()
@@ -36,7 +35,7 @@ float UCombatValues::GetAttackSpeed()
 	return AttackSpeed;
 }
 
-void UCombatValues::SetAttack(int32 NewAttack)
+void UCombatValues::SetIndividualAttack(int32 NewAttack)
 {
 	IndividualAttack = NewAttack;
 	OnChanged.Broadcast(this);
@@ -48,9 +47,9 @@ void UCombatValues::SetIndividualHP(int32 NewIndividualHP)
 	OnChanged.Broadcast(this);
 }
 
-void UCombatValues::SetIndividuals(int32 NewIndividuals)
+void UCombatValues::SetIndividualCount(int32 NewIndividuals)
 {
-	Individuals = NewIndividuals;
+	IndividualCount = NewIndividuals;
 	OnChanged.Broadcast(this);
 }
 
@@ -64,17 +63,17 @@ void UCombatValues::SetAll(int32 NewAttack, int32 NewIndividualHP, int32 NewIndi
 {
 	IndividualAttack = NewAttack;
 	IndividualHP = NewIndividualHP;
-	Individuals = NewIndividuals;
+	IndividualCount = NewIndividuals;
 	AttackSpeed = NewAttackSpeed;
 	OnChanged.Broadcast(this);
 }
 
 int32 UCombatValues::GetHP() const
 {
-	return Individuals * IndividualHP;
+	return IndividualCount * IndividualHP;
 }
 
 int32 UCombatValues::GetAttack() const
 {
-	return Individuals * IndividualAttack;
+	return IndividualCount * IndividualAttack;
 }

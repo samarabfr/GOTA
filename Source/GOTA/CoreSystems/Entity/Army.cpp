@@ -28,12 +28,12 @@ void AArmy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
-	DOREPLIFETIME_WITH_PARAMS(AArmy, Size, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, Progress, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, Mode, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, Status, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, CurrentTile, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, NetLocation, Params);
+	DOREPLIFETIME_WITH_PARAMS(AArmy, CombatValues, Params);
 }
 
 // ----------------------- LifeCycle -----------------------
@@ -52,6 +52,7 @@ AArmy::AArmy()
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Static Mesh");
 	StateTree = CreateDefaultSubobject<UStateTreeComponentArmy>("StateTree");
+	CombatValues = CreateDefaultSubobject<UCombatValues>("Combat Values");
 	MeshComponent->SetupAttachment(RootComponent);
 	MeshComponent->SetRelativeScale3D(FVector(1, 1, 4));
 	// I still don't understand why i need to set both: the ResponseChannel and CollisionEnabled
@@ -75,7 +76,10 @@ void AArmy::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	const UBuildingSettings* BuildingSettings = Building->Settings;
 	RecruitRate = 100 / BuildingSettings->SecondsPerRecruitCycle;
 	MovementRate = 100 / BuildingSettings->ArmySecondsPerMove;
-	Size = 0;
+	CombatValues->SetIndividualAttack(BuildingSettings->ArmyIndividualAttack);
+	CombatValues->SetIndividualHP(BuildingSettings->ArmyIndividualHP);
+	CombatValues->SetIndividualCount(BuildingSettings->ArmyIndividualCount);
+	CombatValues->SetAttackSpeed(100 / BuildingSettings->ArmySecondsPerAttack);
 	Affiliation = Building->Settlement->Affiliation;
 	if (Affiliation == EAffiliation::Enemy)
 		MeshComponent->SetStaticMesh(Settings->ColonyArmyMesh);
@@ -108,6 +112,10 @@ void AArmy::C_Tick(const float DeltaSeconds)
 	else if (GetStatus() == EArmyStatus::RecruitingFromTile)
 	{
 		Progress += RecruitRate * DeltaSeconds;
+	}
+	else if (GetStatus() == EArmyStatus::RecruitingFromTile)
+	{
+		Progress += CombatValues->GetAttackSpeed() * DeltaSeconds;
 	}
 }
 
@@ -158,9 +166,8 @@ void AArmy::TakePopFromTile()
 {
 	if (CurrentTile->GetBuilding()->Population->GetSize() <= 0)
 		return;
-	++Size;
+	CombatValues->SetIndividualCount(CombatValues->GetIndividualCount() + 1);
 	CurrentTile->GetBuilding()->Population->S_DecreaseSize(1);
-	MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, Size, this)
 }
 
 bool AArmy::IsTileValidForRecruiting(const ATile* Tile) const
@@ -246,9 +253,14 @@ void AArmy::MoveToNextTileOnPath()
 
 // ----------------- Combat ------------------------
 
+UCombatValues* AArmy::GetCombatValues() const
+{
+	return CombatValues;
+}
+
 bool AArmy::HasEnemyOnNeighboringTile() const
 {
-	if(!CurrentTile) return false;
+	if (!CurrentTile) return false;
 	for (ATile* Neighbor : CurrentTile->Neighbors)
 	{
 		if (Neighbor &&
@@ -263,7 +275,7 @@ bool AArmy::HasEnemyOnNeighboringTile() const
 
 bool AArmy::HasCombatOnNeighboringTile() const
 {
-	if(!CurrentTile) return false;
+	if (!CurrentTile) return false;
 	for (ATile* Neighbor : CurrentTile->Neighbors)
 	{
 		if (Neighbor &&
@@ -280,10 +292,10 @@ bool AArmy::TryFindPathToNearestEnemy()
 {
 	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Army, [this](const ATile* Tile)
 	{
-		if(!Tile) return false;
+		if (!Tile) return false;
 		for (ATile* Neighbor : Tile->Neighbors)
 		{
-			if(Neighbor && Neighbor->GetArmy() && Neighbor->GetArmy()->GetAffiliation() != GetAffiliation())
+			if (Neighbor && Neighbor->GetArmy() && Neighbor->GetArmy()->GetAffiliation() != GetAffiliation())
 				return true;
 		}
 		return false;

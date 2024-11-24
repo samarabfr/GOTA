@@ -77,4 +77,16 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Army")
 	float ArmyRespawnTime = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	int32 ArmyIndividualHP = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	int32 ArmyIndividualAttack = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	int32 ArmyIndividualCount = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	float ArmySecondsPerAttack = 0;
 };

@@ -5,6 +5,7 @@
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "Army.generated.h"
 
+class UCombatValues;
 class UStateTreeComponentArmy;
 class UBuilding;
 class AGS_Ingame;
@@ -49,12 +50,9 @@ protected:
 private:
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Affiliation)
 	EAffiliation Affiliation;
-	
+
 	UFUNCTION()
 	void OnRep_Affiliation();
-
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	int32 Size = 0;
 
 	UPROPERTY(EditInstanceOnly, Replicated)
 	EArmyMode Mode = EArmyMode::GarrisonMode;
@@ -126,7 +124,13 @@ public:
 	void StartMoveToNextTileOnPath();
 
 	// -----------------Combat------------------------
+private:
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	UCombatValues* CombatValues;
+
 public:
+	UCombatValues* GetCombatValues() const;
+
 	bool HasEnemyOnNeighboringTile() const;
 	bool HasCombatOnNeighboringTile() const;
 	bool TryFindPathToNearestEnemy();
