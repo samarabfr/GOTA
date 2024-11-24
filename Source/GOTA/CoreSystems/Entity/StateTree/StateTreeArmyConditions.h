@@ -128,22 +128,3 @@ struct GOTA_API FSTC_HasCombatOnNeighboringTileInstanceData
 	UPROPERTY(EditAnywhere, Category=Context)
 	TObjectPtr<AArmy> ArmyRef = nullptr;
 };
-
-/**
- * Condition checking if current tile is valid for recruiting
- */
-USTRUCT(DisplayName = "Has combat on neighboring tile")
-struct GOTA_API FSTC_HasCombatOnNeighboringTile : public FStateTreeConditionCommonBase
-{
-	GENERATED_BODY()
-
-	using FInstanceDataType = FSTC_HasCombatOnNeighboringTileInstanceData;
-
-	FSTC_HasCombatOnNeighboringTile() = default;
-
-	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
-	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
-
-	UPROPERTY(EditAnywhere, Category = "Parameter")
-	bool bInvert = false;
-};

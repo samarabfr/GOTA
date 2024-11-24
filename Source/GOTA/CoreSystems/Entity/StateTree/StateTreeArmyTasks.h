@@ -18,8 +18,8 @@ struct GOTA_API FArmyInstanceData
 	TObjectPtr<AArmy> ArmyRef = nullptr;
 };
 
-USTRUCT(DisplayName="Fight")
-struct GOTA_API FSTT_Fight : public FStateTreeTaskCommonBase
+USTRUCT(DisplayName="AttackEnemy")
+struct GOTA_API FSTT_AttackEnemy : public FStateTreeTaskCommonBase
 {
 	GENERATED_BODY()
 

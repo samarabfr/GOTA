@@ -6,7 +6,7 @@
 #include "StateTreeExecutionContext.h"
 #include "GOTA/CoreSystems/Entity/Army.h"
 
-EStateTreeRunStatus FSTT_Fight::EnterState(FStateTreeExecutionContext& Context,
+EStateTreeRunStatus FSTT_AttackEnemy::EnterState(FStateTreeExecutionContext& Context,
                                                      const FStateTreeTransitionResult& Transition) const
 {
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
@@ -16,7 +16,7 @@ EStateTreeRunStatus FSTT_Fight::EnterState(FStateTreeExecutionContext& Context,
 		return EStateTreeRunStatus::Failed;
 	}
 
-	InstanceData.ArmyRef.Get()->Fight();
+	InstanceData.ArmyRef.Get()->StartAttacking();
 
 	return EStateTreeRunStatus::Running;
 }

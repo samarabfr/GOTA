@@ -79,7 +79,7 @@ public:
 	float ArmyRespawnTime = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Army")
-	int32 ArmyIndividualHP = 0;
+	int32 ArmyIndividualMaxHP = 0;
 
 	UPROPERTY(EditDefaultsOnly, Category="Army")
 	int32 ArmyIndividualAttack = 0;

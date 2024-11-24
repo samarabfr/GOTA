@@ -14,23 +14,29 @@ class UCombatValues : public UObject
 
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnChangedSig, UCombatValues*, CombatValues);
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeathSig);
 
 public:
 	FOnChangedSig OnChanged;
+	FOnDeathSig OnDeath;
 
 private:
-	UPROPERTY(BlueprintGetter=GetIndividualAttack, BlueprintSetter=SetIndividualAttack, Replicated,
+	UPROPERTY(VisibleInstanceOnly, BlueprintGetter=GetIndividualAttack, BlueprintSetter=SetIndividualAttack, Replicated,
 		Category="Combat Values")
 	int32 IndividualAttack = 0;
 
-	UPROPERTY(BlueprintGetter=GetIndividualHP, BlueprintSetter=SetIndividualHP, Replicated, Category="Combat Values")
-	int32 IndividualHP = 0;
+	UPROPERTY(VisibleInstanceOnly,BlueprintGetter=GetIndividualMaxHP, BlueprintSetter=SetIndividualMaxHP, Replicated, Category="Combat Values")
+	int32 IndividualMaxHP = 0;
 
-	UPROPERTY(BlueprintGetter=GetIndividualCount, BlueprintSetter=SetIndividualCount, Replicated,
+	UPROPERTY(VisibleInstanceOnly,BlueprintGetter=GetIndividualCount, BlueprintSetter=SetIndividualCount, Replicated,
 		Category="Combat Values")
 	int32 IndividualCount = 0;
 
-	UPROPERTY(BlueprintGetter=GetAttackSpeed, BlueprintSetter=SetAttackSpeed, Replicated, Category="Combat Values")
+	UPROPERTY(VisibleInstanceOnly,BlueprintGetter=GetCurrentTotalHP, BlueprintSetter=SetCurrentTotalHP, Replicated, Category="Combat Values")
+	int32 CurrentTotalHP = 0;
+
+	UPROPERTY(VisibleInstanceOnly,BlueprintGetter=GetAttackSpeed, BlueprintSetter=SetAttackSpeed, Replicated, Category="Combat Values")
 	float AttackSpeed = 0.0f;
 
 public:
@@ -38,10 +44,13 @@ public:
 	int32 GetIndividualAttack();
 
 	UFUNCTION(BlueprintGetter)
-	int32 GetIndividualHP();
+	int32 GetIndividualMaxHP();
 
 	UFUNCTION(BlueprintGetter)
 	int32 GetIndividualCount();
+
+	UFUNCTION(BlueprintGetter)
+	int32 GetCurrentTotalHP();
 
 	UFUNCTION(BlueprintGetter)
 	float GetAttackSpeed();
@@ -50,10 +59,13 @@ public:
 	void SetIndividualAttack(int32 NewAttack);
 
 	UFUNCTION(BlueprintSetter)
-	void SetIndividualHP(int32 NewIndividualHP);
+	void SetIndividualMaxHP(int32 NewIndividualMaxHP);
 
 	UFUNCTION(BlueprintSetter)
-	void SetIndividualCount(int32 NewIndividuals);
+	void SetIndividualCount(int32 NewIndividualCount);
+
+	UFUNCTION(BlueprintSetter)
+	void SetCurrentTotalHP(int32 NewCurrentTotalHP);
 
 	UFUNCTION(BlueprintSetter)
 	void SetAttackSpeed(float NewAttackSpeed);
@@ -61,7 +73,7 @@ public:
 	UFUNCTION(BlueprintSetter)
 	void SetAll(int32 NewAttack, int32 NewIndividualHP, int32 NewIndividuals, float NewAttackSpeed);
 
-	int32 GetHP() const;
-
+	int32 GetMaxHP() const;
 	int32 GetAttack() const;
+	
 };

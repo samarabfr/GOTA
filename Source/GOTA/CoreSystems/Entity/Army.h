@@ -131,10 +131,15 @@ private:
 public:
 	UCombatValues* GetCombatValues() const;
 
+	TArray<AArmy*> GetNeighboringEnemies() const;
 	bool HasEnemyOnNeighboringTile() const;
-	bool HasCombatOnNeighboringTile() const;
 	bool TryFindPathToNearestEnemy();
 	bool TryFindPathToNearestEnemyBuilding();
 	bool HasEnemyInGarrisonModeRange() const;
-	void Fight();
+	void StartAttacking();
+	void AttackEnemy();
+	void TakeDamage(int32 Damage);
+	
+	UFUNCTION()
+	void HandleDeath();
 };

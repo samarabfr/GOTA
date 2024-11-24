@@ -77,9 +77,10 @@ void AArmy::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	RecruitRate = 100 / BuildingSettings->SecondsPerRecruitCycle;
 	MovementRate = 100 / BuildingSettings->ArmySecondsPerMove;
 	CombatValues->SetIndividualAttack(BuildingSettings->ArmyIndividualAttack);
-	CombatValues->SetIndividualHP(BuildingSettings->ArmyIndividualHP);
+	CombatValues->SetIndividualMaxHP(BuildingSettings->ArmyIndividualMaxHP);
 	CombatValues->SetIndividualCount(BuildingSettings->ArmyIndividualCount);
 	CombatValues->SetAttackSpeed(100 / BuildingSettings->ArmySecondsPerAttack);
+	CombatValues->OnDeath.AddDynamic(this, &AArmy::HandleDeath);
 	Affiliation = Building->Settlement->Affiliation;
 	if (Affiliation == EAffiliation::Enemy)
 		MeshComponent->SetStaticMesh(Settings->ColonyArmyMesh);
@@ -96,6 +97,8 @@ void AArmy::S_Tick(const float DeltaSeconds)
 			MoveToNextTileOnPath();
 		else if (GetStatus() == EArmyStatus::RecruitingFromTile)
 			TakePopFromTile();
+		else if (GetStatus() == EArmyStatus::Attacking)
+			AttackEnemy();
 		SetStatus(EArmyStatus::Idling);
 		Progress = 0.0f;
 		StateTree->SendStateTreeEvent(Settings->StateTreeCompletedTaskEventTag, FConstStructView(), FName(GetName()));
@@ -113,7 +116,7 @@ void AArmy::C_Tick(const float DeltaSeconds)
 	{
 		Progress += RecruitRate * DeltaSeconds;
 	}
-	else if (GetStatus() == EArmyStatus::RecruitingFromTile)
+	else if (GetStatus() == EArmyStatus::Attacking)
 	{
 		Progress += CombatValues->GetAttackSpeed() * DeltaSeconds;
 	}
@@ -260,32 +263,7 @@ UCombatValues* AArmy::GetCombatValues() const
 
 bool AArmy::HasEnemyOnNeighboringTile() const
 {
-	if (!CurrentTile) return false;
-	for (ATile* Neighbor : CurrentTile->Neighbors)
-	{
-		if (Neighbor &&
-			Neighbor->GetArmy() &&
-			Neighbor->GetArmy()->GetAffiliation() != GetAffiliation())
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-bool AArmy::HasCombatOnNeighboringTile() const
-{
-	if (!CurrentTile) return false;
-	for (ATile* Neighbor : CurrentTile->Neighbors)
-	{
-		if (Neighbor &&
-			Neighbor->GetArmy() &&
-			Neighbor->GetArmy()->GetAffiliation() != GetAffiliation())
-		{
-			return true;
-		}
-	}
-	return false;
+	return GetNeighboringEnemies().Num() > 0;
 }
 
 bool AArmy::TryFindPathToNearestEnemy()
@@ -325,7 +303,46 @@ bool AArmy::HasEnemyInGarrisonModeRange() const
 	return EnemyOnTile != nullptr;
 }
 
-void AArmy::Fight()
+void AArmy::StartAttacking()
 {
-	SetStatus(EArmyStatus::Fighting);
+	Progress = 0.f;
+	SetStatus(EArmyStatus::Attacking);
+}
+
+TArray<AArmy*> AArmy::GetNeighboringEnemies() const
+{
+	TArray<AArmy*> NeighboringEnemies;
+	if (!CurrentTile) return NeighboringEnemies;
+	for (const ATile* Neighbor : CurrentTile->Neighbors)
+	{
+		if (Neighbor &&
+			Neighbor->GetArmy() &&
+			Neighbor->GetArmy()->GetAffiliation() != GetAffiliation())
+		{
+			NeighboringEnemies.Add(Neighbor->GetArmy());
+		}
+	}
+	return NeighboringEnemies;
+}
+
+void AArmy::AttackEnemy()
+{
+	// choose enemy randomly
+	TArray<AArmy*> AttackableEnemies = GetNeighboringEnemies();
+	if(AttackableEnemies.Num() <= 0) return;
+	const int32 RandomIndex = FMath::RandRange(0,AttackableEnemies.Num()-1);
+	AArmy* ChosenEnemy = AttackableEnemies[RandomIndex];
+	// inflict damage
+	ChosenEnemy->TakeDamage(CombatValues->GetAttack());
+}
+
+void AArmy::TakeDamage(int32 Damage)
+{
+	CombatValues->SetCurrentTotalHP(CombatValues->GetCurrentTotalHP() - Damage);
+}
+
+void AArmy::HandleDeath()
+{
+	CurrentTile->RemoveArmy();
+	Destroy();
 }
