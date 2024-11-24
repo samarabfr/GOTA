@@ -15,3 +15,11 @@ UStaticMesh* FTileAssetSpawn::GetMeshForSpawnState(const ESpawnState ForSpawnSta
 		return nullptr;
 	}
 }
+
+void FTileAssetSpawn::ApplyAssetRotation()
+{
+	if (TileAsset)
+	{
+		SpawnPoint.Rotation += TileAsset->GetRotationAfterMode();
+	}
+}

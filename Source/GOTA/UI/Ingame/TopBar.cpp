@@ -1,8 +1,9 @@
 ﻿#include "TopBar.h"
 
-#include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
 #include "GOTA/CoreSystems/GameplayFramework/DaytimeManager.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 
@@ -45,7 +46,7 @@ void UTopBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 void UTopBar::RefreshClock()
 {
 	if (!GameState || !GameState->DaytimeManager) return;
-	const float SunHeight = GameState->DaytimeManager->GetSunHeight();
+	const float SunHeight = GameState->DaytimeManager->GetDaytimeNormalized();
 
 	float NewRotation = 0.0f;
 	if (SunHeight < 0)

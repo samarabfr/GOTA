@@ -6,7 +6,6 @@ public class GOTA : ModuleRules
 {
 	public GOTA(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[]
@@ -28,6 +27,8 @@ public class GOTA : ModuleRules
 			"StateTreeEditorModule",
 			"GameplayStateTreeModule",
 			"AIModule"
+			"NetCore",
+			"RHI"
 		});
 
 		// Uncomment if you are using Slate UI

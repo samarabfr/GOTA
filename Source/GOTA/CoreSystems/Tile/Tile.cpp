@@ -3,6 +3,7 @@
 
 #include "Tile.h"
 
+#include "Algo/RandomShuffle.h"
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
@@ -64,7 +65,7 @@ void ATile::BeginPlay()
 	Super::BeginPlay();
 	GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->LoadingManager->IncrementReplicationCount();
-	if(!HasAuthority())
+	if (!HasAuthority())
 	{
 		SpawnOceanLineMeshes();
 	}
@@ -417,7 +418,7 @@ void ATile::SpawnOceanLineMeshes()
 		Location.Z = 1.0f;
 		T.SetLocation(Location);
 		T.SetRotation(FRotator(0, i * 60 + 180, 0).Quaternion());
-		
+
 		if (Terrain.RiverConnections[i])
 		{
 			GameState->GetStaticMeshBatcher()->AddStaticMeshInstance(Settings->OceanLinesAtRiverDeltaMesh, T);
@@ -545,10 +546,22 @@ void ATile::ValidateSpawnLayout()
 		SL = SpawnLayoutDataAsset->SpawnLayout;
 	else
 		SL = FSpawnLayout();
+
+	// Apply Spawn Chances and shuffle all arrays. The shuffling causes every Tile with the same SpawnLayout
+	// to have a different order in which they spawn the individual trees
+
 	ApplySpawnChances(SL.Trees);
+	Algo::RandomShuffle(SL.Trees);
+
 	ApplySpawnChances(SL.Forage);
+	Algo::RandomShuffle(SL.Forage);
+
 	ApplySpawnChances(SL.Props);
+	Algo::RandomShuffle(SL.Props);
+
 	ApplySpawnChances(SL.Buildings);
+	Algo::RandomShuffle(SL.Buildings);
+
 	SetSpawnLayout(SL);
 	EcoValues->SetMaxValues(SpawnLayout.Trees.Num(), Terrain.Biome);
 }
@@ -571,7 +584,7 @@ USpawnLayoutDataAsset* ATile::FindSpawnLayoutDataAsset()
 	TArray<USpawnLayoutDataAsset*> PossibleLayouts;
 	for (USpawnLayoutDataAsset* DA_SpawnLayout : TileLayout->SpawnLayouts)
 	{
-		if (DA_SpawnLayout->IsValidFor(GameplayTags))
+		if (DA_SpawnLayout && DA_SpawnLayout->IsValidFor(GameplayTags))
 		{
 			if (DA_SpawnLayout->GuaranteedIfPossible) return DA_SpawnLayout;
 			PossibleLayouts.Add(DA_SpawnLayout);

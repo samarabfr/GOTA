@@ -46,7 +46,7 @@ void ADistanceUtils::Tick(float DeltaSeconds)
 	// We are on a New Tile
 	CurrentCoords = NewCoords;
 	// UpdateDistanceToTiles();
-	UpdateDistanceToCombats();
+	//UpdateDistanceToCombats();
 }
 
 void ADistanceUtils::UpdateDistanceToTiles()
@@ -93,5 +93,5 @@ void ADistanceUtils::UpdateDistanceToCombats()
 	{
 		ClosestCombat = nullptr;
 	}
-	GetWorld()->GetFirstPlayerController<APC_Ingame>()->WatchCombat(ClosestCombat);
+	//GetWorld()->GetFirstPlayerController<APC_Ingame>()->WatchCombat(ClosestCombat);
 }

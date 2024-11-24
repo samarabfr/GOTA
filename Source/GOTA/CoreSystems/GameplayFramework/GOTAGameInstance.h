@@ -11,4 +11,8 @@ class GOTA_API UGOTAGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
 	
+	// ------------------- LifeCycle -------------------
+
+	virtual void Init() override;
+	
 };
