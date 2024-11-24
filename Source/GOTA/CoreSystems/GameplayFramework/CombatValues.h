@@ -20,10 +20,7 @@ public:
 
 private:
 	UPROPERTY(BlueprintGetter=GetAttack, BlueprintSetter=SetAttack, Replicated, Category="Combat Values")
-	int32 Attack = 0;
-
-	UPROPERTY(BlueprintGetter=GetDefense, BlueprintSetter=SetDefense, Replicated, Category="Combat Values")
-	int32 Defense = 0;
+	int32 IndividualAttack = 0;
 
 	UPROPERTY(BlueprintGetter=GetIndividualHP, BlueprintSetter=SetIndividualHP, Replicated, Category="Combat Values")
 	int32 IndividualHP = 0;
@@ -31,24 +28,24 @@ private:
 	UPROPERTY(BlueprintGetter=GetIndividuals, BlueprintSetter=SetIndividuals, Replicated, Category="Combat Values")
 	int32 Individuals = 0;
 
+	UPROPERTY(BlueprintGetter=GetAttackSpeed, BlueprintSetter=SetAttackSpeed, Replicated, Category="Combat Values")
+	float AttackSpeed = 0.0f;
+
 public:
 	UFUNCTION(BlueprintGetter)
 	int32 GetAttack();
-
-	UFUNCTION(BlueprintGetter)
-	int32 GetDefense();
 
 	UFUNCTION(BlueprintGetter)
 	int32 GetIndividualHP();
 
 	UFUNCTION(BlueprintGetter)
 	int32 GetIndividuals();
+	
+	UFUNCTION(BlueprintGetter)
+	float GetAttackSpeed();
 
 	UFUNCTION(BlueprintSetter)
 	void SetAttack(int32 NewAttack);
-
-	UFUNCTION(BlueprintSetter)
-	void SetDefense(int32 NewDefense);
 
 	UFUNCTION(BlueprintSetter)
 	void SetIndividualHP(int32 NewIndividualHP);
@@ -57,7 +54,12 @@ public:
 	void SetIndividuals(int32 NewIndividuals);
 
 	UFUNCTION(BlueprintSetter)
-	void SetAll(int32 NewAttack, int32 NewDefense, int32 NewIndividualHP, int32 NewIndividuals);
+	void SetAttackSpeed(float NewAttackSpeed);
+
+	UFUNCTION(BlueprintSetter)
+	void SetAll(int32 NewAttack, int32 NewIndividualHP, int32 NewIndividuals, float NewAttackSpeed);
 
 	int32 GetHP() const;
+	
+	int32 GetAttack() const;
 };

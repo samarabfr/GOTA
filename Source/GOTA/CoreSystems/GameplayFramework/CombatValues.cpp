@@ -5,7 +5,7 @@ void UCombatValues::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 {
 	UObject::GetLifetimeReplicatedProps(OutLifetimeProps);
 
-	DOREPLIFETIME(UCombatValues, Attack);
+	DOREPLIFETIME(UCombatValues, IndividualAttack);
 	DOREPLIFETIME(UCombatValues, Defense);
 	DOREPLIFETIME(UCombatValues, IndividualHP);
 	DOREPLIFETIME(UCombatValues, Individuals);
@@ -18,12 +18,7 @@ bool UCombatValues::IsSupportedForNetworking() const
 
 int32 UCombatValues::GetAttack()
 {
-	return Attack;
-}
-
-int32 UCombatValues::GetDefense()
-{
-	return Defense;
+	return IndividualAttack;
 }
 
 int32 UCombatValues::GetIndividualHP()
@@ -36,15 +31,14 @@ int32 UCombatValues::GetIndividuals()
 	return Individuals;
 }
 
-void UCombatValues::SetAttack(int32 NewAttack)
+float UCombatValues::GetAttackSpeed()
 {
-	Attack = NewAttack;
-	OnChanged.Broadcast(this);
+	return AttackSpeed;
 }
 
-void UCombatValues::SetDefense(int32 NewDefense)
+void UCombatValues::SetAttack(int32 NewAttack)
 {
-	Defense = NewDefense;
+	IndividualAttack = NewAttack;
 	OnChanged.Broadcast(this);
 }
 
@@ -60,16 +54,27 @@ void UCombatValues::SetIndividuals(int32 NewIndividuals)
 	OnChanged.Broadcast(this);
 }
 
-void UCombatValues::SetAll(int32 NewAttack, int32 NewDefense, int32 NewIndividualHP, int32 NewIndividuals)
+void UCombatValues::SetAttackSpeed(float NewAttackSpeed)
 {
-	Attack = NewAttack;
-	Defense = NewDefense;
+	AttackSpeed = NewAttackSpeed;
+	OnChanged.Broadcast(this);
+}
+
+void UCombatValues::SetAll(int32 NewAttack, int32 NewIndividualHP, int32 NewIndividuals, float NewAttackSpeed)
+{
+	IndividualAttack = NewAttack;
 	IndividualHP = NewIndividualHP;
 	Individuals = NewIndividuals;
+	AttackSpeed = NewAttackSpeed;
 	OnChanged.Broadcast(this);
 }
 
 int32 UCombatValues::GetHP() const
 {
 	return Individuals * IndividualHP;
+}
+
+int32 UCombatValues::GetAttack() const
+{
+	return Individuals * IndividualAttack;
 }
