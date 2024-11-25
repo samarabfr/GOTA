@@ -216,7 +216,7 @@ bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 	Building = NewObject<UBuilding>();
 	Building->ServerInit(BuildingDataAsset, this, Builder);
 	AddReplicatedSubObject(Building);
-	AddReplicatedSubObject(Building->Population);
+	AddReplicatedSubObject(Building->GetPopulation());
 
 	UpdateClaimWallsWithNeighbors();
 
@@ -239,7 +239,7 @@ void ATile::Unbuild()
 	GameplayTags.RemoveTags(Building->Settings->GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
 	RemoveReplicatedSubObject(Building);
-	RemoveReplicatedSubObject(Building->Population);
+	RemoveReplicatedSubObject(Building->GetPopulation());
 	Building = nullptr;
 	BuildingChanged();
 	ValidateSpawnLayout();
@@ -335,14 +335,14 @@ void ATile::GOTATick()
 
 void ATile::SetupPopSizeChanging()
 {
-	Building->Population->OnSizeChanged.AddDynamic(this, &ATile::PopSizeChanged);
+	Building->GetPopulation()->OnSizeChanged.AddDynamic(this, &ATile::PopSizeChanged);
 	// notify the neighbors of this population size
-	PopSizeChanged(Building->Population->GetSize());
+	PopSizeChanged(Building->GetPopulation()->GetSize());
 	// notify this population of all neighbor population sizes
 	for (ATile* Neighbor : Neighbors)
 	{
 		if (Neighbor && Neighbor->Building)
-			Building->Population->NeighborChangedPopSize(Neighbor->Building->Population->GetSize());
+			Building->GetPopulation()->NeighborChangedPopSize(Neighbor->Building->GetPopulation()->GetSize());
 	}
 }
 
@@ -351,7 +351,7 @@ void ATile::PopSizeChanged(const int16 Change)
 	ForceNetUpdate();
 	for (int i = 0; i < 6; ++i)
 	{
-		if (Neighbors[i] && Neighbors[i]->Building) Neighbors[i]->Building->Population->NeighborChangedPopSize(Change);
+		if (Neighbors[i] && Neighbors[i]->Building) Neighbors[i]->Building->GetPopulation()->NeighborChangedPopSize(Change);
 	}
 }
 

@@ -28,7 +28,7 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Population, Params);
-	DOREPLIFETIME_WITH_PARAMS(UBuilding, IncomeProgress, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, DirectProductionProgress, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Civilian, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, IsUnderConstruction, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, ResourceProgress, Params);
@@ -39,10 +39,12 @@ bool UBuilding::IsSupportedForNetworking() const
 	return true;
 }
 
+// ---------------------------------------- Lifecycle ----------------------------------------
+
 UBuilding::UBuilding()
 {
 	Population = CreateDefaultSubobject<UPopulation>(TEXT("Population"));
-	Population->OnSizeChanged.AddDynamic(this, &UBuilding::ProductionChanged);
+	Population->OnSizeChanged.AddDynamic(this, &UBuilding::PopulationChanged);
 }
 
 void UBuilding::ServerTick(const float DeltaSeconds)
@@ -50,17 +52,17 @@ void UBuilding::ServerTick(const float DeltaSeconds)
 	Population->S_Tick(DeltaSeconds);
 	if (Civilian)
 		Civilian->ServerTick(DeltaSeconds);
-	if (Settings->bIncomeEnabled)
+	if (Settings->bDirectProductionEnabled)
 	{
-		if (IncomeProgress < Settings->IncomeTime)
+		if (DirectProductionProgress < Settings->DirectProductionTime)
 		{
-			IncomeProgress = FMath::Min(IncomeProgress + DeltaSeconds, Settings->IncomeTime);
+			DirectProductionProgress += DeltaSeconds;
 		}
 		else
 		{
-			AddIncomeToSettlement();
-			IncomeProgress = 0.0f;
-			MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, IncomeProgress, this)
+			S_ApplyDirectProduction();
+			DirectProductionProgress = 0.0f;
+			MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, DirectProductionProgress, this)
 		}
 	}
 }
@@ -71,7 +73,7 @@ void UBuilding::ClientTick(const float DeltaSeconds)
 	if (Civilian)
 		Civilian->ClientTick(DeltaSeconds);
 
-	IncomeProgress = FMath::Min(IncomeProgress + DeltaSeconds, Settings->IncomeTime);
+	DirectProductionProgress += DeltaSeconds;
 }
 
 void UBuilding::ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
@@ -95,28 +97,88 @@ void UBuilding::BeginDestroy()
 		Settlement->OnBuildingRemoved(this, Tile);
 }
 
-// --------------------- base income ---------------------
+// --------------------------------------- Population ---------------------------------------
 
-float UBuilding::GetCurrentIncomePerSecond() const
+void UBuilding::PopulationChanged(int16 Change)
 {
-	return Settings->IncomeAmount * Population->GetSize() / Settings->IncomeTime;
+	RefreshEfficiency();
 }
 
-void UBuilding::AddIncomeToSettlement()
+// --------------------------------------- Efficiency ---------------------------------------
+
+void UBuilding::SetEfficiency(const float NewEfficiency)
+{
+	const float Change = NewEfficiency - Efficiency;
+	if (FMath::IsNearlyZero(Change)) return;
+
+	Efficiency = NewEfficiency;
+	OnEfficiencyChanged.Broadcast(Change);
+
+	// when Efficiency changes, the predicted Production also changes
+	OnPredictedProductionChanged.Broadcast(Settings->GetDefaultPredictedProduction() * Change,
+	                                       Settings->ProductionType);
+	OnPredictedConsumptionChanged.Broadcast(Settings->GetDefaultPredictedConsumption() * Change,
+	                                        Settings->ConsumptionType);
+}
+
+void UBuilding::RefreshEfficiency()
+{
+	SetEfficiency(Population->GetSize() / static_cast<float>(Settings->Housing));
+}
+
+// ------------------------------------- Predicted Production ---------------------------------------
+
+EProductionType UBuilding::GetProductionType() const
+{
+	if (Settings)
+		return Settings->ProductionType;
+	return EProductionType::None;
+}
+
+float UBuilding::GetPredictedProduction() const
+{
+	if (GetProductionType() != EProductionType::None)
+		return Settings->GetDefaultPredictedProduction() * Efficiency;
+	return 0.0f;
+}
+
+EConsumptionType UBuilding::GetConsumptionType() const
+{
+	if (Settings)
+		return Settings->ConsumptionType;
+	return EConsumptionType::None;
+}
+
+float UBuilding::GetPredictedConsumption() const
+{
+	if (GetConsumptionType() != EConsumptionType::None)
+		return Settings->GetDefaultPredictedConsumption() * Efficiency;
+	return 0.0f;
+}
+
+// --------------------------------------- Direct Production ---------------------------------------
+
+void UBuilding::S_ApplyDirectProduction()
 {
 	FGameResources NewResources;
-	if (Settings->IncomeType == EProductionType::Food)
-		NewResources.Food = Settings->IncomeAmount;
-	if (Settings->IncomeType == EProductionType::Wood)
-		NewResources.Wood = Settings->IncomeAmount;
-	if (Settings->IncomeType == EProductionType::Stone)
-		NewResources.Stone = Settings->IncomeAmount;
-	Settlement->S_AddResources(NewResources);
-}
+	switch (Settings->ProductionType)
+	{
+	case EProductionType::Food:
+		NewResources.Food = Settings->DirectProductionAmount;
+		break;
 
-void UBuilding::ProductionChanged(int16 Change)
-{
-	OnIncomeChanged.Broadcast(Settings->IncomeTime * Change, Settings->IncomeType);
+	case EProductionType::Wood:
+		NewResources.Wood = Settings->DirectProductionAmount;
+		break;
+
+	case EProductionType::Stone:
+		NewResources.Stone = Settings->DirectProductionAmount;
+		break;
+		
+	default:
+		break;
+	}
+	Settlement->S_AddResources(NewResources);
 }
 
 // ---------------- Civilian Entity ----------------

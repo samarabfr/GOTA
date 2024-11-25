@@ -64,8 +64,8 @@ void ACivilian::ServerInit(UBuilding* InBuilding, ATile* SpawnTile)
 	SetNetLocation(NewLocation);
 
 	const UBuildingSettings* BuildingSettings = Building->Settings;
-	WorkAmount = BuildingSettings->WorkAmountPerCycle;
-	MovementRate = 100 / BuildingSettings->SecondsPerMove;
+	WorkAmount = BuildingSettings->CivilianProductionAmount;
+	MovementRate = 100 / BuildingSettings->CivilianMoveTime;
 
 	SetupPopSizeChanging();
 }
@@ -130,7 +130,7 @@ void ACivilian::SetStatus(const ECivilianStatus NewStatus)
 
 void ACivilian::SetupPopSizeChanging()
 {
-	Building->Population->OnSizeChanged.AddDynamic(this, &ACivilian::OnPopSizeChanged);
+	Building->GetPopulation()->OnSizeChanged.AddDynamic(this, &ACivilian::OnPopSizeChanged);
 	CalculateWorkRate();
 }
 
@@ -141,10 +141,10 @@ void ACivilian::OnPopSizeChanged(int16 Change)
 
 void ACivilian::CalculateWorkRate()
 {
-	const float Pop = Building->Population->GetSize();
+	const float Pop = Building->GetPopulation()->GetSize();
 	const UBuildingSettings* BuildingSettings = Building->Settings;
 	float Factor = Pop / BuildingSettings->Housing;
-	WorkRate = (Factor * 100) / BuildingSettings->SecondsPerWorkCycle;
+	WorkRate = (Factor * 100) / BuildingSettings->CivilianProductionTime;
 }
 
 void ACivilian::Work()

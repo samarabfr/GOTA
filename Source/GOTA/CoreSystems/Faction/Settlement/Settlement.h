@@ -88,15 +88,27 @@ public:
 	void OnBuildingRemoved(UBuilding* Building, ATile* Tile);
 
 	// --------------------------- Resources ---------------------------
-private:
-	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
-	FGameResources Resources;
-	
-	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
-	FGameResources PredictedIncome;
-
 public:
 	FGameResources GetResources() const { return Resources; }
 	void S_AddResources(FGameResources Amount);
 	void S_RemoveResources(FGameResources Amount);
+
+private:
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
+	FGameResources Resources;
+
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
+	FGameResources PredictedProduction;
+
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
+	FGameResources PredictedConsumption;
+
+	void RegisterBuildingForResourcePrediction(UBuilding* Building);
+	void UnregisterBuildingForResourcePrediction(UBuilding* Building);
+
+	UFUNCTION()
+	void UpdatePredictedProduction(const float Change, const EProductionType Type);
+
+	UFUNCTION()
+	void UpdatePredictedConsumption(const float Change, const EConsumptionType Type);
 };

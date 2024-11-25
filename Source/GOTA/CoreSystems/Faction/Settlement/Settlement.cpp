@@ -41,7 +41,7 @@ ASettlement::ASettlement()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	PrimaryActorTick.TickInterval = 0.5;
-	
+
 	Population = CreateDefaultSubobject<USettlementPopulation>(TEXT("Population"));
 }
 
@@ -57,11 +57,11 @@ void ASettlement::S_Init(ATile* SpawnTile,
 {
 	PopulationSettings = InPopulationSettings;
 	Settings = InSettlementSettings;
-	
+
 	S_AddResources(Settings->GetStartingResources());
-	
+
 	const TArray<UBuildingSettings*>& StartingBuildings = Settings->GetStartingBuildings();
-	
+
 	SpawnTile->TryBuild(StartingBuildings[0], this);
 	SpawnTile->GetBuilding()->FinishConstruction();
 	for (int32 i = 1; i < StartingBuildings.Num(); ++i)
@@ -73,7 +73,7 @@ void ASettlement::S_Init(ATile* SpawnTile,
 	}
 	for (ATile* Tile : ClaimedTiles)
 	{
-		Tile->GetBuilding()->Population->S_ChangeSize(100);
+		Tile->GetBuilding()->GetPopulation()->S_ChangeSize(100);
 	}
 }
 
@@ -138,14 +138,16 @@ bool ASettlement::IsBorderingUnclaimedTile(const ATile* Tile) const
 
 void ASettlement::OnBuildingAdded(UBuilding* Building, ATile* Tile)
 {
-	GetPopulation()->RegisterPop(Building->Population);
+	GetPopulation()->RegisterPop(Building->GetPopulation());
+	RegisterBuildingForResourcePrediction(Building);
 	ClaimedTiles.Add(Tile);
 	RefreshBorderingUnclaimedTiles();
 }
 
 void ASettlement::OnBuildingRemoved(UBuilding* Building, ATile* Tile)
 {
-	GetPopulation()->UnregisterPop(Building->Population);
+	GetPopulation()->UnregisterPop(Building->GetPopulation());
+	UnregisterBuildingForResourcePrediction(Building);
 	ClaimedTiles.Remove(Tile);
 	RefreshBorderingUnclaimedTiles();
 }
@@ -165,4 +167,54 @@ void ASettlement::S_RemoveResources(const FGameResources Amount)
 	Resources -= Amount;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
 	ForceNetUpdate();
+}
+
+void ASettlement::RegisterBuildingForResourcePrediction(UBuilding* Building)
+{
+	const EProductionType ProductionType = Building->GetProductionType();
+	if (ProductionType == EProductionType::Food
+		|| ProductionType == EProductionType::Wood
+		|| ProductionType == EProductionType::Stone)
+	{
+		PredictedProduction.AddProduction(Building->GetPredictedProduction(), ProductionType);
+		Building->OnPredictedProductionChanged.AddDynamic(this, &ASettlement::UpdatePredictedProduction);
+	}
+	const EConsumptionType ConsumptionType = Building->GetConsumptionType();
+	if (ConsumptionType == EConsumptionType::Food
+		|| ConsumptionType == EConsumptionType::Wood
+		|| ConsumptionType == EConsumptionType::Stone)
+	{
+		PredictedConsumption.AddConsumption(Building->GetPredictedConsumption(), ConsumptionType);
+		Building->OnPredictedConsumptionChanged.AddDynamic(this, &ASettlement::UpdatePredictedConsumption);
+	}
+}
+
+void ASettlement::UnregisterBuildingForResourcePrediction(UBuilding* Building)
+{
+	const EProductionType ProductionType = Building->GetProductionType();
+	if (ProductionType == EProductionType::Food
+		|| ProductionType == EProductionType::Wood
+		|| ProductionType == EProductionType::Stone)
+	{
+		PredictedProduction.RemoveProduction(Building->GetPredictedProduction(), ProductionType);
+		Building->OnPredictedProductionChanged.RemoveDynamic(this, &ASettlement::UpdatePredictedProduction);
+	}
+	const EConsumptionType ConsumptionType = Building->GetConsumptionType();
+	if (ConsumptionType == EConsumptionType::Food
+		|| ConsumptionType == EConsumptionType::Wood
+		|| ConsumptionType == EConsumptionType::Stone)
+	{
+		PredictedConsumption.RemoveConsumption(Building->GetPredictedConsumption(), ConsumptionType);
+		Building->OnPredictedConsumptionChanged.RemoveDynamic(this, &ASettlement::UpdatePredictedConsumption);
+	}
+}
+
+void ASettlement::UpdatePredictedProduction(const float Change, const EProductionType Type)
+{
+	PredictedProduction.AddProduction(Change, Type);
+}
+
+void ASettlement::UpdatePredictedConsumption(const float Change, const EConsumptionType Type)
+{
+	PredictedConsumption.AddConsumption(Change, Type);
 }

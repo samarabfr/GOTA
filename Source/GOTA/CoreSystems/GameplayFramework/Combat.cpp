@@ -242,7 +242,7 @@ void ACombat::SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft
 		if (CombatTile.Tile->GetBuilding()
 			&& CombatTile.Tile->GetClaimant()
 			&& CombatTile.Tile->GetClaimant()->GetAffiliation() == Receiver
-			&& CombatTile.Tile->GetBuilding()->Population->GetSize() > 0)
+			&& CombatTile.Tile->GetBuilding()->GetPopulation()->GetSize() > 0)
 		{
 			/*
 			BuildingPopCombatTiles.Add(&CombatTile);
@@ -380,7 +380,7 @@ void ACombat::TriggerCombat()
 		}
 		if (Tile->GetBuilding())
 		{
-			Tile->GetBuilding()->Population->S_DecreaseSize(CombatTile.BuildingPopKills);
+			Tile->GetBuilding()->GetPopulation()->S_DecreaseSize(CombatTile.BuildingPopKills);
 			if (CombatTile.BuildingDowngrade > 0) Tile->Unbuild(); // TODO: Downgrade instead
 		}
 	}
