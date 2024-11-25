@@ -32,7 +32,7 @@ public:
 	void ServerTick(float DeltaSeconds);
 	void ClientTick(const float DeltaSeconds);
 
-private:
+protected:
 	virtual void BeginDestroy() override;
 
 	// ---------------------------------------- Utility ----------------------------------------
@@ -61,17 +61,10 @@ private:
 	// When a Building Pop is not influenced by any modifiers and has exactly the pop as the default
 	// max pop it will be at 100% (1.0f) efficiency. If there is less pop the efficiency will be lower.
 	// When efficiency is lower, the building will work slower and vice versa
-
+private:
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEfficiencyChangedSig, float, EfficiencyChange);
 
-public:
-	FOnEfficiencyChangedSig OnEfficiencyChanged;
-
-	// Building Efficiency at 1.0f will work at the default speed
-	float GetEfficiency() const { return Efficiency; }
-
-private:
 	UPROPERTY(VisibleInstanceOnly)
 	float Efficiency;
 
@@ -79,10 +72,17 @@ private:
 
 	void RefreshEfficiency();
 
+public:
+	FOnEfficiencyChangedSig OnEfficiencyChanged;
+
+	// Building Efficiency at 1.0f will work at the default speed
+	float GetEfficiency() const { return Efficiency; }
+
+
 	// ------------------------------------- Predicted Production ---------------------------------------
 	// How much will this building produce? Including direct production, civilian and any modifiers.
 	// The main use for this is for the AI and player to know how much resource production their settlement has.
-
+private:
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPredictedProductionChangedSig,
 	                                             float, PredictedProductionChange,
@@ -112,14 +112,14 @@ public:
 	// --------------------------------------- Direct Production ---------------------------------------
 	// Direct Production will be produced every [DirectProductionTime]/[Efficiency] seconds.
 	// The Amount is always the same.
-public:
-	float GetDirectProductionProgress() const { return DirectProductionProgress; }
-
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float DirectProductionProgress = 0.0f;
 
 	void S_ApplyDirectProduction();
+	
+public:
+	float GetDirectProductionProgress() const { return DirectProductionProgress; }
 
 	// ---------------- Civilian Entity ----------------
 private:

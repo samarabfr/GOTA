@@ -187,6 +187,9 @@ void ASettlement::RegisterBuildingForResourcePrediction(UBuilding* Building)
 		PredictedConsumption.AddConsumption(Building->GetPredictedConsumption(), ConsumptionType);
 		Building->OnPredictedConsumptionChanged.AddDynamic(this, &ASettlement::UpdatePredictedConsumption);
 	}
+	PredictedConsumption.AddConsumption(
+		Building->GetPopulation()->GetSize() * Settings->GetPopEatingPerSecond(), EConsumptionType::Food);
+	Building->GetPopulation()->OnSizeChanged.AddDynamic(this, &ASettlement::UpdatePredictionFromPopulation);
 }
 
 void ASettlement::UnregisterBuildingForResourcePrediction(UBuilding* Building)
@@ -207,6 +210,9 @@ void ASettlement::UnregisterBuildingForResourcePrediction(UBuilding* Building)
 		PredictedConsumption.RemoveConsumption(Building->GetPredictedConsumption(), ConsumptionType);
 		Building->OnPredictedConsumptionChanged.RemoveDynamic(this, &ASettlement::UpdatePredictedConsumption);
 	}
+	PredictedConsumption.RemoveConsumption(
+	Building->GetPopulation()->GetSize() * Settings->GetPopEatingPerSecond(), EConsumptionType::Food);
+	Building->GetPopulation()->OnSizeChanged.RemoveDynamic(this, &ASettlement::UpdatePredictionFromPopulation);
 }
 
 void ASettlement::UpdatePredictedProduction(const float Change, const EProductionType Type)
@@ -217,4 +223,9 @@ void ASettlement::UpdatePredictedProduction(const float Change, const EProductio
 void ASettlement::UpdatePredictedConsumption(const float Change, const EConsumptionType Type)
 {
 	PredictedConsumption.AddConsumption(Change, Type);
+}
+
+void ASettlement::UpdatePredictionFromPopulation(int16 Change)
+{
+	PredictedConsumption.AddConsumption(Change * Settings->GetPopEatingPerSecond(), EConsumptionType::Food);
 }

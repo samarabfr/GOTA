@@ -45,13 +45,20 @@ public:
 
 	// ------------------- Changeable Settings -------------------
 private:
-	UPROPERTY(EditAnywhere, Replicated)
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPopEatingPerSecondChangedSig, float, Change);
+
+	UPROPERTY(EditDefaultsOnly, ReplicatedUsing=OnRep_PopEatingPerSecond)
 	float PopEatingPerSecond;
+
+	UFUNCTION()
+	void OnRep_PopEatingPerSecond(const float OldValue);
 
 	UPROPERTY(EditAnywhere, Replicated)
 	float StarvingThreshold;
 
 public:
+	FOnPopEatingPerSecondChangedSig OnPopEatingPerSecondChanged;
 	float GetPopEatingPerSecond() const { return PopEatingPerSecond; }
 	void S_SetPopEatingPerSecond(float NewValue);
 

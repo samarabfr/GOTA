@@ -9,10 +9,10 @@
 void USettlementSettings::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	UObject::GetLifetimeReplicatedProps(OutLifetimeProps);
-	
+
 	FDoRepLifetimeParams Params;
 	Params.bIsPushBased = true;
-	
+
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(USettlementSettings, PopEatingPerSecond, Params)
@@ -28,9 +28,16 @@ bool USettlementSettings::IsSupportedForNetworking() const
 
 // ------------------- Changeable Settings -------------------
 
+void USettlementSettings::OnRep_PopEatingPerSecond(const float OldValue)
+{
+	OnPopEatingPerSecondChanged.Broadcast(PopEatingPerSecond - OldValue);
+}
+
 void USettlementSettings::S_SetPopEatingPerSecond(const float NewValue)
 {
+	const float Change = NewValue - PopEatingPerSecond;
 	PopEatingPerSecond = NewValue;
+	OnPopEatingPerSecondChanged.Broadcast(Change);
 	MARK_PROPERTY_DIRTY_FROM_NAME(USettlementSettings, PopEatingPerSecond, this)
 }
 

@@ -67,18 +67,16 @@ public:
 	UPopulationSettings* GetPopulationSettings() { return PopulationSettings; }
 
 	// --------------------------- Claims ---------------------------
-
-	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	TArray<ATile*> ClaimedTiles;
-
-public:
-	UPROPERTY()
-	TArray<ATile*> BorderingUnclaimedTiles;
-
 protected:
 	void RefreshBorderingUnclaimedTiles();
 
 public:
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
+	TArray<ATile*> ClaimedTiles;
+
+	UPROPERTY()
+	TArray<ATile*> BorderingUnclaimedTiles;
+
 	bool IsBorderingUnclaimedTile(const ATile* Tile) const;
 
 	// --------------------------- Building ---------------------------
@@ -88,11 +86,6 @@ public:
 	void OnBuildingRemoved(UBuilding* Building, ATile* Tile);
 
 	// --------------------------- Resources ---------------------------
-public:
-	FGameResources GetResources() const { return Resources; }
-	void S_AddResources(FGameResources Amount);
-	void S_RemoveResources(FGameResources Amount);
-
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
 	FGameResources Resources;
@@ -111,4 +104,22 @@ private:
 
 	UFUNCTION()
 	void UpdatePredictedConsumption(const float Change, const EConsumptionType Type);
+
+	UFUNCTION()
+	void UpdatePredictionFromPopulation(int16 Change);
+
+public:
+	FGameResources GetResources() const { return Resources; }
+
+	// Returns predicted production - predicted consumption
+	FGameResources GetEffectivePredictedProduction() const { return PredictedProduction - PredictedConsumption; }
+
+	// Returns raw predicted production
+	FGameResources GetPredictedProduction() const { return PredictedProduction; }
+
+	// Returns raw predicted consumption
+	FGameResources GetPredictedConsumption() const { return PredictedConsumption; }
+
+	void S_AddResources(FGameResources Amount);
+	void S_RemoveResources(FGameResources Amount);
 };
