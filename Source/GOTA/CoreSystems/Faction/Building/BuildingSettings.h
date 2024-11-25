@@ -88,5 +88,8 @@ public:
 	int32 ArmyIndividualCount = 0;
 
 	UPROPERTY(EditDefaultsOnly, Category="Army")
-	float ArmySecondsPerAttack = 0;
+	float ArmySecondsPerAttack = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	float ArmySecondsPerRavage = 0.0f;
 };

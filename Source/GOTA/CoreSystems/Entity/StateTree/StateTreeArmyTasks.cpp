@@ -91,3 +91,18 @@ EStateTreeRunStatus FSTT_FindPathToNearestRecruitable::EnterState(FStateTreeExec
 	const bool bHasPath = InstanceData.ArmyRef.Get()->TryFindPathToNearestRecruitable();
 	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
 }
+
+EStateTreeRunStatus FSTT_RavageEnemyBuilding::EnterState(FStateTreeExecutionContext& Context,
+	const FStateTreeTransitionResult& Transition) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	if (!InstanceData.ArmyRef)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
+		return EStateTreeRunStatus::Failed;
+	}
+
+	InstanceData.ArmyRef.Get()->StartRavagingEnemyBuilding();
+
+	return EStateTreeRunStatus::Running;
+}

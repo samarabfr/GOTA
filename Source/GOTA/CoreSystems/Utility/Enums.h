@@ -91,7 +91,8 @@ enum class EArmyStatus : uint8
 	Idling UMETA(DisplayName = "Idle"),
 	MovingToNextTile UMETA(DisplayName = "Moving"),
 	RecruitingFromTile UMETA(DisplayName = "Recruiting"),
-	Attacking UMETA(DisplayName = "Fighting")
+	Attacking UMETA(DisplayName = "Fighting"),
+	Ravaging UMETA(DisplayName = "Ravaging")
 };
 
 UENUM()

@@ -121,10 +121,29 @@ struct GOTA_API FSTC_HasEnemyOnNeighboringTile : public FStateTreeConditionCommo
 };
 
 USTRUCT()
-struct GOTA_API FSTC_HasCombatOnNeighboringTileInstanceData
+struct GOTA_API FSTC_IsOnEnemyBuildingInstanceData
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, Category=Context)
 	TObjectPtr<AArmy> ArmyRef = nullptr;
+};
+
+/**
+ * Condition checking if current tile is valid for recruiting
+ */
+USTRUCT(DisplayName = "Is on enemy building")
+struct GOTA_API FSTC_IsOnEnemyBuilding : public FStateTreeConditionCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FSTC_IsOnEnemyBuildingInstanceData;
+
+	FSTC_IsOnEnemyBuilding() = default;
+
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
+
+	UPROPERTY(EditAnywhere, Category = "Parameter")
+	bool bInvert = false;
 };

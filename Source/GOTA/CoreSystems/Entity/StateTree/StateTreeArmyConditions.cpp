@@ -57,3 +57,16 @@ bool FSTC_HasEnemyOnNeighboringTile::TestCondition(FStateTreeExecutionContext& C
 	const bool bResult = InstanceData.ArmyRef.Get()->HasEnemyOnNeighboringTile();
 	return bResult ^ bInvert;
 }
+
+bool FSTC_IsOnEnemyBuilding::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	if (!InstanceData.ArmyRef)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
+		return false;
+	}
+
+	const bool bResult = InstanceData.ArmyRef.Get()->IsOnEnemyBuilding();
+	return bResult ^ bInvert;
+}

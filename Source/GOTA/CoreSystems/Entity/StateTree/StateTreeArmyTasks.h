@@ -90,3 +90,15 @@ struct GOTA_API FSTT_FindPathToNearestRecruitable : public FStateTreeTaskCommonB
 										   const FStateTreeTransitionResult& Transition) const override;
 };
 
+USTRUCT(DisplayName="Ravage enemy building")
+struct GOTA_API FSTT_RavageEnemyBuilding : public FStateTreeTaskCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FArmyInstanceData;
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context,
+										   const FStateTreeTransitionResult& Transition) const override;
+};
+

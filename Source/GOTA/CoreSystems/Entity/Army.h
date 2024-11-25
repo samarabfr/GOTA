@@ -137,9 +137,22 @@ public:
 	bool TryFindPathToNearestEnemyBuilding();
 	bool HasEnemyInGarrisonModeRange() const;
 	void StartAttacking();
-	void AttackEnemy();
 	void TakeDamage(int32 Damage);
+	
+private:
+	void AttackEnemy();
 	
 	UFUNCTION()
 	void HandleDeath();
+
+	// -----------------Ravaging------------------------
+public:
+	bool IsOnEnemyBuilding() const;
+	void StartRavagingEnemyBuilding();
+private:
+	
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	float RavageSpeed; // in percent per second
+	
+	void RavageEnemyBuilding();
 };

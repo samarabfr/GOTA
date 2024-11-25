@@ -34,6 +34,7 @@ void AArmy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME_WITH_PARAMS(AArmy, CurrentTile, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, NetLocation, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, CombatValues, Params);
+	DOREPLIFETIME_WITH_PARAMS(AArmy, RavageSpeed, Params);
 }
 
 // ----------------------- LifeCycle -----------------------
@@ -76,6 +77,7 @@ void AArmy::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	const UBuildingSettings* BuildingSettings = Building->Settings;
 	RecruitRate = 100 / BuildingSettings->SecondsPerRecruitCycle;
 	MovementRate = 100 / BuildingSettings->ArmySecondsPerMove;
+	RavageSpeed = 100 / BuildingSettings->ArmySecondsPerRavage;
 	CombatValues->SetIndividualAttack(BuildingSettings->ArmyIndividualAttack);
 	CombatValues->SetIndividualMaxHP(BuildingSettings->ArmyIndividualMaxHP);
 	CombatValues->SetIndividualCount(BuildingSettings->ArmyIndividualCount);
@@ -99,6 +101,8 @@ void AArmy::S_Tick(const float DeltaSeconds)
 			TakePopFromTile();
 		else if (GetStatus() == EArmyStatus::Attacking)
 			AttackEnemy();
+		else if (GetStatus() == EArmyStatus::Ravaging)
+			RavageEnemyBuilding();
 		SetStatus(EArmyStatus::Idling);
 		Progress = 0.0f;
 		StateTree->SendStateTreeEvent(Settings->StateTreeCompletedTaskEventTag, FConstStructView(), FName(GetName()));
@@ -119,6 +123,10 @@ void AArmy::C_Tick(const float DeltaSeconds)
 	else if (GetStatus() == EArmyStatus::Attacking)
 	{
 		Progress += CombatValues->GetAttackSpeed() * DeltaSeconds;
+	}
+	else if (GetStatus() == EArmyStatus::Ravaging)
+	{
+		Progress += RavageSpeed * DeltaSeconds;
 	}
 }
 
@@ -325,24 +333,54 @@ TArray<AArmy*> AArmy::GetNeighboringEnemies() const
 	return NeighboringEnemies;
 }
 
+void AArmy::TakeDamage(int32 Damage)
+{
+	CombatValues->SetCurrentTotalHP(CombatValues->GetCurrentTotalHP() - Damage);
+}
+
 void AArmy::AttackEnemy()
 {
 	// choose enemy randomly
 	TArray<AArmy*> AttackableEnemies = GetNeighboringEnemies();
-	if(AttackableEnemies.Num() <= 0) return;
-	const int32 RandomIndex = FMath::RandRange(0,AttackableEnemies.Num()-1);
+	if (AttackableEnemies.Num() <= 0) return;
+	const int32 RandomIndex = FMath::RandRange(0, AttackableEnemies.Num() - 1);
 	AArmy* ChosenEnemy = AttackableEnemies[RandomIndex];
 	// inflict damage
 	ChosenEnemy->TakeDamage(CombatValues->GetAttack());
-}
-
-void AArmy::TakeDamage(int32 Damage)
-{
-	CombatValues->SetCurrentTotalHP(CombatValues->GetCurrentTotalHP() - Damage);
 }
 
 void AArmy::HandleDeath()
 {
 	CurrentTile->RemoveArmy();
 	Destroy();
+}
+
+// -----------------Ravaging------------------------
+
+bool AArmy::IsOnEnemyBuilding() const
+{
+	return CurrentTile &&
+		CurrentTile->GetBuilding() &&
+		CurrentTile->GetClaimant() &&
+		CurrentTile->GetClaimant()->Affiliation != Affiliation;
+}
+
+void AArmy::StartRavagingEnemyBuilding()
+{
+	Progress = 0.f;
+	SetStatus(EArmyStatus::Ravaging);
+}
+
+void AArmy::RavageEnemyBuilding()
+{
+	if (IsOnEnemyBuilding() &&
+		CurrentTile->GetBuilding()->Population &&
+		CurrentTile->GetBuilding()->Population->GetSize() > 0)
+	{
+		CurrentTile->GetBuilding()->Population->S_DecreaseSize(1);
+	}
+	else
+	{
+		CurrentTile->Unbuild();
+	}
 }
