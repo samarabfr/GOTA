@@ -2,71 +2,79 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GameplayTagContainer.h"
 #include "GameResources.h"
+#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "SettlementSettings.generated.h"
 
-class AArmy;
 class UBuildingSettings;
 
-UCLASS(Blueprintable)
-class GOTA_API USettlementSettings : public UPrimaryDataAsset
+UCLASS()
+class GOTA_API USettlementSettings : public UObject
 {
 	GENERATED_BODY()
 
+	// ------------------- Replication Setup -------------------
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	virtual bool IsSupportedForNetworking() const override;
+
+	// ------------------- Init only Settings -------------------
+private:
+	UPROPERTY(EditDefaultsOnly)
+	EAffiliation Affiliation;
+
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTagContainer GameplayTags;
+
+	UPROPERTY(EditDefaultsOnly)
+	TArray<UBuildingSettings*> StartingBuildings;
+
+	UPROPERTY(EditDefaultsOnly)
+	FGameResources StartingResources;
+
 public:
-	UPROPERTY(EditDefaultsOnly, Category="Colonist Settlement")
-	TSubclassOf<AArmy> C_ArmyClass;
+	EAffiliation GetAffiliation() const { return Affiliation; }
 
-	UPROPERTY(EditDefaultsOnly, Category="Colonist Settlement")
-	FGameplayTagContainer C_GameplayTags;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Colonist Settlement")
-	TArray<UBuildingSettings*> C_PossibleBuildings;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Colonist Settlement")
-	TArray<UBuildingSettings*> C_StartingBuildings;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Colonist Settlement")
-	FGameResources C_StartingResources;
+	FGameplayTagContainer GetGameplayTags() const { return GameplayTags; }
 
-	
-	UPROPERTY(EditDefaultsOnly, Category="Native Settlement")
-	TSubclassOf<AArmy> N_ArmyClass;
+	TArray<UBuildingSettings*> GetStartingBuildings() const { return StartingBuildings; }
 
-	UPROPERTY(EditDefaultsOnly, Category="Native Settlement")
-	FGameplayTagContainer N_GameplayTags;
+	FGameResources GetStartingResources() const { return StartingResources; }
 
-	UPROPERTY(EditDefaultsOnly, Category="Native Settlement")
-	TArray<UBuildingSettings*> N_StartingBuildings;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Native Settlement")
-	FGameResources N_StartingResources;
+	// ------------------- Changeable Settings -------------------
+private:
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPopEatingPerSecondChangedSig, float, Change);
 
-	
-	UPROPERTY(EditDefaultsOnly, Category="Eating and Starving")
+	UPROPERTY(EditDefaultsOnly, ReplicatedUsing=OnRep_PopEatingPerSecond)
 	float PopEatingPerSecond;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Eating and Starving")
+
+	UFUNCTION()
+	void OnRep_PopEatingPerSecond(const float OldValue);
+
+	UPROPERTY(EditAnywhere, Replicated)
 	float StarvingThreshold;
 
-		
-	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
-	float FoodImportance = 1;
+public:
+	FOnPopEatingPerSecondChangedSig OnPopEatingPerSecondChanged;
+	float GetPopEatingPerSecond() const { return PopEatingPerSecond; }
+	void S_SetPopEatingPerSecond(float NewValue);
 
-	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
-	float FoodImportanceDescent = 0.1;
+	float GetStarvingThreshold() const { return StarvingThreshold; }
+	void S_SetStarvingThreshold(float NewValue);
+};
 
-	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
-	float WoodImportance = 1;
+// ------------------- Defaults Data Asset -------------------
 
-	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
-	float WoodImportanceDescent = 0.1;
+UCLASS()
+class GOTA_API USettlementSettingsDefaults : public UPrimaryDataAsset
+{
+	GENERATED_BODY()
+	USettlementSettingsDefaults();
 
-	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
-	float StoneImportance = 1;
-
-	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
-	float StoneImportanceDescent = 0.1;
+public:
+	UPROPERTY(EditDefaultsOnly)
+	USettlementSettings* SettlementSettings;
 };

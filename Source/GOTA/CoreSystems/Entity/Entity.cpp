@@ -69,7 +69,7 @@ bool AEntity::ShouldCombatTrigger() const
 	// Combat between this unit and enemy building
 	if (CurrentTile->GetBuilding()
 		&& CurrentTile->GetClaimant()
-		&& CurrentTile->GetClaimant()->Affiliation != Affiliation)
+		&& CurrentTile->GetClaimant()->GetAffiliation() != Affiliation)
 	{
 		return true;
 	}

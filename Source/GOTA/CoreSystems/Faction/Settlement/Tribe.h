@@ -7,7 +7,5 @@
 UCLASS()
 class ATribe : public ASettlement
 {
-	GENERATED_BODY()
-	ATribe();
-	
+	GENERATED_BODY()	
 };

@@ -20,7 +20,7 @@ void ULoadingScreen::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	const AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	if (!GameState) return;
 
-	ALoadingManager* LoadingManager = GameState->LoadingManager;
+	ALoadingManager* LoadingManager = GameState->GetLoadingManager();
 	if (!LoadingManager) return;
 
 	for (ALoadingStatusActor* LoadingStatus : LoadingManager->LoadingStatuses)

@@ -1,19 +1,30 @@
 ﻿#include "Colony.h"
 
+#include "ColonyBrainSettings.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
+#include "GOTA/CoreSystems/GameplayFramework/GameSettings.h"
+#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 
-AColony::AColony()
-{
-	Affiliation = EAffiliation::Enemy;
-}
 
 void AColony::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	FigureOutBuilding();
+	if (ColonyBrainSettings)
+	{
+		FigureOutBuilding();
+	}
+	else
+	{
+		InitColonyBrainSettings();
+	}
+}
+
+void AColony::InitColonyBrainSettings()
+{
+	ColonyBrainSettings = GetWorld()->GetGameState<AGS_Ingame>()->GetGameSettings()->GetColonyBrainSettings();
 }
 
 void AColony::FigureOutBuilding()
@@ -43,8 +54,8 @@ ATile* AColony::FindBuildableTile() const
 
 UBuildingSettings* AColony::SelectNewBuilding() const
 {
-	return Settings->C_PossibleBuildings[FMath::RandRange(
-		0, Settings->C_PossibleBuildings.Num() - 1)];
+	TArray<UBuildingSettings*> PossibleBuildings = ColonyBrainSettings->GetPossibleBuildings();
+	return PossibleBuildings[FMath::RandRange(0, PossibleBuildings.Num() - 1)];
 	// TODO: Proper logic for figuring out building
 	//CalculateImportances();
 	//CalculateScores();
@@ -60,16 +71,16 @@ float AColony::CalculateScore(const UBuildingSettings* Data, FNewBuildingImporta
 	// Calculate GainScore
 	float GainsScore = 0;
 	// income
-	const float MaxIncome = Data->Housing * Data->IncomeTime;
-	if (Data->IncomeType == EProductionType::Food)
+	const float MaxIncome = Data->Housing * Data->DirectProductionTime;
+	if (Data->ProductionType == EProductionType::Food)
 	{
 		GainsScore = ImportanceRatings.Food * MaxIncome;
 	}
-	if (Data->IncomeType == EProductionType::Wood)
+	if (Data->ProductionType == EProductionType::Wood)
 	{
 		GainsScore = ImportanceRatings.Wood * MaxIncome;
 	}
-	if (Data->IncomeType == EProductionType::Stone)
+	if (Data->ProductionType == EProductionType::Stone)
 	{
 		GainsScore = ImportanceRatings.Food * MaxIncome;
 	}
@@ -80,7 +91,6 @@ float AColony::CalculateScore(const UBuildingSettings* Data, FNewBuildingImporta
 
 FNewBuildingImportanceRatings AColony::CalculateImportanceRatings() const
 {
-	
 	FNewBuildingImportanceRatings ImportanceRatings;
 	/*
 	// The less income, the more important

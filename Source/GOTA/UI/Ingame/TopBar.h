@@ -35,7 +35,16 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Colony_Stone;
-
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* TXT_ColonyFoodIncome;
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* TXT_ColonyWoodIncome;
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* TXT_ColonyStoneIncome;
+	
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Tribe_Pop;
 
@@ -47,7 +56,16 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Tribe_Stone;
-
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* TXT_TribeFoodIncome;
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* TXT_TribeWoodIncome;
+	
+	UPROPERTY(meta = (BindWidget))
+	UTextBlock* TXT_TribeStoneIncome;
+	
 	UPROPERTY(EditDefaultsOnly)
 	float MaxDayRotation;
 	
@@ -64,4 +82,6 @@ private:
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
 
 	void RefreshClock();
+
+	void UpdateIncomeNumber(UTextBlock* TextBlock, float IncomeAmount);
 };

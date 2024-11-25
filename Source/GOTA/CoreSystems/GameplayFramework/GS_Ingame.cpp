@@ -5,6 +5,7 @@
 
 #include "CombatSystem.h"
 #include "GameSettings.h"
+#include "LoadingManager.h"
 #include "StartParameter.h"
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
@@ -19,11 +20,11 @@ void AGS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	FDoRepLifetimeParams Params;
 	Params.bIsPushBased = true;
-	
+
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(AGS_Ingame, Guardians, Params)
-	
+
 	DOREPLIFETIME_WITH_PARAMS(AGS_Ingame, TileMap, Params)
 	DOREPLIFETIME_WITH_PARAMS(AGS_Ingame, GameSettings, Params)
 	DOREPLIFETIME_WITH_PARAMS(AGS_Ingame, Colony, Params)
@@ -112,6 +113,18 @@ void AGS_Ingame::SpawnGameSettingsActor()
 	SpawnParams.Name = FName("GameSettings");
 	GameSettings = GetWorld()->SpawnActor<AGameSettings>(SpawnParams);
 	MARK_PROPERTY_DIRTY_FROM_NAME(AGS_Ingame, GameSettings, this)
+}
+
+// ------------------- LoadingManager -------------------
+
+void AGS_Ingame::SetLoadingManager(ALoadingManager* NewLoadingManager)
+{
+	LoadingManager = NewLoadingManager;
+}
+
+void AGS_Ingame::IncrementReplicationCount()
+{
+	LoadingManager->IncrementReplicationCount();
 }
 
 // ------------------- StaticMeshBatcher -------------------
