@@ -62,4 +62,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Importance Rating")
 	float StoneImportanceDescent = 0.1;
+	
+
+	UPROPERTY(EditDefaultsOnly, Category="Colony brain")
+	float SendArmiesIntervalTime = 60.0f;
 };

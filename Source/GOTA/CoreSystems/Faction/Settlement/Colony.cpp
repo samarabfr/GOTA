@@ -1,5 +1,6 @@
 ﻿#include "Colony.h"
 
+#include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
@@ -7,13 +8,45 @@
 AColony::AColony()
 {
 	Affiliation = EAffiliation::Enemy;
+	SendArmiesIntervalTimeLeft = Settings->SendArmiesIntervalTime;
+}
+
+void AColony::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+}
+
+void AColony::S_Tick(const float DeltaSeconds)
+{
+	C_Tick(DeltaSeconds);
+	FigureOutBuilding();
+	if(SendArmiesIntervalTimeLeft <= 0.0f)
+	{
+		SendArmies();
+		SendArmiesIntervalTimeLeft  = Settings->SendArmiesIntervalTime;
+	}
+	else
+	{
+		SendArmiesIntervalTimeLeft -= DeltaSeconds;
+	}
+}
+
+void AColony::C_Tick(const float DeltaSeconds)
+{
+}
+
+void AColony::BeginDestroy()
+{
+	Super::BeginDestroy();
 }
 
 void AColony::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	FigureOutBuilding();
+	if(HasAuthority())
+		S_Tick(DeltaSeconds);
+	else
+		C_Tick(DeltaSeconds);
 }
 
 void AColony::FigureOutBuilding()
@@ -43,8 +76,7 @@ ATile* AColony::FindBuildableTile() const
 
 UBuildingSettings* AColony::SelectNewBuilding() const
 {
-	return Settings->C_PossibleBuildings[FMath::RandRange(
-		0, Settings->C_PossibleBuildings.Num() - 1)];
+	return Settings->C_PossibleBuildings[FMath::RandRange(0, Settings->C_PossibleBuildings.Num() - 1)];
 	// TODO: Proper logic for figuring out building
 	//CalculateImportances();
 	//CalculateScores();
@@ -80,7 +112,6 @@ float AColony::CalculateScore(const UBuildingSettings* Data, FNewBuildingImporta
 
 FNewBuildingImportanceRatings AColony::CalculateImportanceRatings() const
 {
-	
 	FNewBuildingImportanceRatings ImportanceRatings;
 	/*
 	// The less income, the more important
@@ -131,4 +162,25 @@ void AColony::CalculateScores(FNewBuildingImportanceRatings ImportanceRatings)
 	}
 	SetCurrentBuildingProject(Highest);
 	*/
+}
+
+void AColony::SendArmies()
+{
+	for (AArmy* Army : GetAllColonyArmies())
+	{
+		Army->SetMode(EArmyMode::AttackMode);
+	}
+}
+
+TArray<AArmy*> AColony::GetAllColonyArmies()
+{
+	TArray<AArmy*> Result;
+	for (ATile* Tile : ClaimedTiles)
+	{
+		if(Tile && Tile->GetBuilding() && Tile->GetBuilding()->GetArmy())
+		{
+			Result.Add(Tile->GetBuilding()->GetArmy());
+		}
+	}
+	return Result;
 }

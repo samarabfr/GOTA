@@ -147,7 +147,7 @@ EArmyMode AArmy::GetMode() const
 	return Mode;
 }
 
-void AArmy::SetArmyMode(EArmyMode NewMode)
+void AArmy::SetMode(EArmyMode NewMode)
 {
 	if (Mode == NewMode) return;
 	Mode = NewMode;

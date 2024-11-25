@@ -60,7 +60,7 @@ private:
 public:
 	EAffiliation GetAffiliation() const;
 	EArmyMode GetMode() const;
-	void SetArmyMode(EArmyMode NewMode);
+	void SetMode(EArmyMode NewMode);
 
 	// ----------------- Status ------------------------
 private:

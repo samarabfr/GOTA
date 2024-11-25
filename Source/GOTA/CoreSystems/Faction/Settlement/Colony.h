@@ -9,7 +9,17 @@ UCLASS()
 class AColony : public ASettlement
 {
 	GENERATED_BODY()
+	// ----------------------- LifeCycle -----------------------
+protected:
 	AColony();
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+public:
+	void S_Tick(const float DeltaSeconds);
+	void C_Tick(const float DeltaSeconds);
+
+private:
+	virtual void BeginDestroy() override;
 
 	virtual void Tick(float DeltaSeconds) override;
 
@@ -28,4 +38,12 @@ private:
 	FNewBuildingImportanceRatings CalculateImportanceRatings() const;
 
 	void CalculateScores(FNewBuildingImportanceRatings ImportanceRatings);
+
+	// --------------------Army----------------------
+private:	
+	UPROPERTY(VisibleInstanceOnly)
+	float SendArmiesIntervalTimeLeft = 0.0f;
+
+	void SendArmies();
+	TArray<AArmy*> GetAllColonyArmies();
 };

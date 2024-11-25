@@ -28,7 +28,7 @@ private:
 	virtual void BeginPlay() override;
 
 public:
-	void S_Init(ATile* SpawnTile, UPopulationSettings* InPopulationSettings);
+	virtual void S_Init(ATile* SpawnTile, UPopulationSettings* InPopulationSettings);
 
 	void EnableTick();
 
