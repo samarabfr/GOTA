@@ -8,37 +8,26 @@
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 
-AColony::AColony()
-{
-	SendArmiesIntervalTimeLeft = Settings->SendArmiesIntervalTime;
-}
-
-void AColony::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
-{
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-}
-
 void AColony::S_Tick(const float DeltaSeconds)
 {
 	C_Tick(DeltaSeconds);
 	if (ColonyBrainSettings)
 	{
 		FigureOutBuilding();
+		if(SendArmiesIntervalTimeLeft <= 0.0f)
+		{
+			SendArmies();
+			SendArmiesIntervalTimeLeft  = ColonyBrainSettings->GetSendArmiesIntervalTime();
+		}
+		else
+		{
+			SendArmiesIntervalTimeLeft -= DeltaSeconds;
+		}
 	}
 	else
 	{
 		InitColonyBrainSettings();
-	}
-	FigureOutBuilding();
-	if(SendArmiesIntervalTimeLeft <= 0.0f)
-	{
-		SendArmies();
-		SendArmiesIntervalTimeLeft  = Settings->SendArmiesIntervalTime;
-	}
-	else
-	{
-		SendArmiesIntervalTimeLeft -= DeltaSeconds;
-	}
+	}	
 }
 
 void AColony::C_Tick(const float DeltaSeconds)
@@ -62,6 +51,7 @@ void AColony::Tick(float DeltaSeconds)
 void AColony::InitColonyBrainSettings()
 {
 	ColonyBrainSettings = GetWorld()->GetGameState<AGS_Ingame>()->GetGameSettings()->GetColonyBrainSettings();
+	SendArmiesIntervalTimeLeft = ColonyBrainSettings->GetSendArmiesIntervalTime();
 }
 
 void AColony::FigureOutBuilding()

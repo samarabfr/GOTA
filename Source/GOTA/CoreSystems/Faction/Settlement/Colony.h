@@ -5,6 +5,7 @@
 #include "Colony.generated.h"
 
 
+class AArmy;
 class UColonyBrainSettings;
 class UBuildingSettings;
 
@@ -13,10 +14,6 @@ class AColony : public ASettlement
 {
 	GENERATED_BODY()
 	// ----------------------- LifeCycle -----------------------
-protected:
-	AColony();
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
 public:
 	void S_Tick(const float DeltaSeconds);
 	void C_Tick(const float DeltaSeconds);

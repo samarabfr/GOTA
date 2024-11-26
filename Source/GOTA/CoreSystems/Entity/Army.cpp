@@ -333,7 +333,7 @@ TArray<AArmy*> AArmy::GetNeighboringEnemies() const
 	return NeighboringEnemies;
 }
 
-void AArmy::TakeDamage(int32 Damage)
+void AArmy::ArmyTakeDamage(int32 Damage)
 {
 	CombatValues->SetCurrentTotalHP(CombatValues->GetCurrentTotalHP() - Damage);
 }
@@ -346,7 +346,7 @@ void AArmy::AttackEnemy()
 	const int32 RandomIndex = FMath::RandRange(0, AttackableEnemies.Num() - 1);
 	AArmy* ChosenEnemy = AttackableEnemies[RandomIndex];
 	// inflict damage
-	ChosenEnemy->TakeDamage(CombatValues->GetAttack());
+	ChosenEnemy->ArmyTakeDamage(CombatValues->GetAttack());
 }
 
 void AArmy::HandleDeath()

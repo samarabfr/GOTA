@@ -137,7 +137,7 @@ public:
 	bool TryFindPathToNearestEnemyBuilding();
 	bool HasEnemyInGarrisonModeRange() const;
 	void StartAttacking();
-	void TakeDamage(int32 Damage);
+	void ArmyTakeDamage(int32 Damage);
 	
 private:
 	void AttackEnemy();

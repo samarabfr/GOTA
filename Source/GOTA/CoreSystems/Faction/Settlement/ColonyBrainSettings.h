@@ -36,6 +36,9 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float StoneImportanceDescent = 0.1;
 
+	UPROPERTY(EditDefaultsOnly)
+	float SendArmiesIntervalTime = 60.0f;
+
 public:
 	TArray<UBuildingSettings*> GetPossibleBuildings() const { return PossibleBuildings; }
 	
@@ -47,6 +50,8 @@ public:
 	
 	float GetStoneImportance() const { return StoneImportance; }
 	float GetStoneImportanceDescent() const { return StoneImportanceDescent; }
+	
+	float GetSendArmiesIntervalTime() const { return StoneImportance; }
 };
 
 // ------------------- Defaults Data Asset -------------------
