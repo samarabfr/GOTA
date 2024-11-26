@@ -398,7 +398,7 @@ TArray<ATile*> ATileMap::GetPathToNearestAffiliatedBuilding(ATile* Start, EAffil
 		// check if Current Tile is a valid Target
 		if (Current->GetBuilding()
 			&& Current->GetClaimant()
-			&& Current->GetClaimant()->Affiliation == TargetAffiliation
+			&& Current->GetClaimant()->GetAffiliation() == TargetAffiliation
 			&& Current->AcceptsArmy())
 		{
 			// found target Tile
@@ -461,9 +461,6 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 				case EEcoValue::Tree:
 					NeighborValue = NeighborTile->EcoValues->GetTrees();
 					break;
-				case EEcoValue::Wildlife:
-					NeighborValue = NeighborTile->EcoValues->GetWildlife();
-					break;
 				case EEcoValue::Forage:
 					NeighborValue = NeighborTile->EcoValues->GetForage();
 					break;
@@ -499,9 +496,6 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 					case EEcoValue::Tree:
 						BorderTileEcoValue = Border[i]->EcoValues->GetTrees();
 						break;
-					case EEcoValue::Wildlife:
-						BorderTileEcoValue = Border[i]->EcoValues->GetWildlife();
-						break;
 					case EEcoValue::Forage:
 						BorderTileEcoValue = Border[i]->EcoValues->GetForage();
 						break;
@@ -522,9 +516,6 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 				case EEcoValue::Tree:
 					Border[i]->EcoValues->SubtractTrees(TileValueReducedCount[i]);
 					break;
-				case EEcoValue::Wildlife:
-					Border[i]->EcoValues->SubtractWildlife(TileValueReducedCount[i]);
-					break;
 				case EEcoValue::Forage:
 					Border[i]->EcoValues->SubtractForage(TileValueReducedCount[i]);
 					break;
@@ -542,9 +533,6 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 			case EEcoValue::Tree:
 				Value = BorderTile->EcoValues->GetTrees();
 				break;
-			case EEcoValue::Wildlife:
-				Value = BorderTile->EcoValues->GetWildlife();
-				break;
 			case EEcoValue::Forage:
 				Value = BorderTile->EcoValues->GetForage();
 				break;
@@ -555,9 +543,6 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 				{
 				case EEcoValue::Tree:
 					BorderTile->EcoValues->SubtractTrees(Value - Threshold);
-					break;
-				case EEcoValue::Wildlife:
-					BorderTile->EcoValues->SubtractWildlife(Value - Threshold);
 					break;
 				case EEcoValue::Forage:
 					BorderTile->EcoValues->SubtractForage(Value - Threshold);
@@ -588,9 +573,6 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 					case EEcoValue::Tree:
 						NeighborValue = NeighborTile->EcoValues->GetTrees();
 						break;
-					case EEcoValue::Wildlife:
-						NeighborValue = NeighborTile->EcoValues->GetWildlife();
-						break;
 					case EEcoValue::Forage:
 						NeighborValue = NeighborTile->EcoValues->GetForage();
 						break;
@@ -608,13 +590,12 @@ int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, in
 	return AmountReduced;
 }
 
-void ATileMap::CountAllMaxEcoValues(int32& TotalMaxTrees, int32& TotalMaxWildlife, int32& TotalMaxForage)
+void ATileMap::CountAllMaxEcoValues(int32& TotalMaxTrees, int32& TotalMaxForage)
 {
 	for (ATile* Tile : Tiles)
 	{
 		if (!Tile) continue;
 		TotalMaxTrees += Tile->EcoValues->GetMaxTrees();
-		TotalMaxWildlife += Tile->EcoValues->GetMaxWildlife();
 		TotalMaxForage += Tile->EcoValues->GetMaxForage();
 	}
 }

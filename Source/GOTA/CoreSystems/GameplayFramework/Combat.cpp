@@ -1,6 +1,7 @@
 ﻿#include "Combat.h"
 
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 
@@ -244,8 +245,8 @@ void ACombat::SpreadDamageToBuildingPop(EAffiliation Receiver, int32& DamageLeft
 	{
 		if (CombatTile.Tile->GetBuilding()
 			&& CombatTile.Tile->GetClaimant()
-			&& CombatTile.Tile->GetClaimant()->Affiliation == Receiver
-			&& CombatTile.Tile->GetBuilding()->Population->GetSize() > 0)
+			&& CombatTile.Tile->GetClaimant()->GetAffiliation() == Receiver
+			&& CombatTile.Tile->GetBuilding()->GetPopulation()->GetSize() > 0)
 		{
 			/*
 			BuildingPopCombatTiles.Add(&CombatTile);
@@ -353,7 +354,7 @@ void ACombat::CountKills()
 		EnemyPopKills += CombatTile.EnemyEntityKills;
 		if (CombatTile.Tile->GetBuilding() && CombatTile.Tile->GetClaimant())
 		{
-			if (CombatTile.Tile->GetClaimant()->Affiliation == EAffiliation::Ally)
+			if (CombatTile.Tile->GetClaimant()->GetAffiliation() == EAffiliation::Ally)
 			{
 				AlliedBuildingKills += CombatTile.BuildingDowngrade;
 				AlliedPopKills += CombatTile.BuildingPopKills;
@@ -384,7 +385,7 @@ void ACombat::TriggerCombat()
 		}
 		if (Tile->GetBuilding())
 		{
-			Tile->GetBuilding()->Population->S_DecreaseSize(CombatTile.BuildingPopKills);
+			Tile->GetBuilding()->GetPopulation()->S_DecreaseSize(CombatTile.BuildingPopKills);
 			if (CombatTile.BuildingDowngrade > 0) Tile->Unbuild(); // TODO: Downgrade instead
 		}
 	}

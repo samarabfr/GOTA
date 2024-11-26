@@ -149,10 +149,7 @@ public:
 	
 	UFUNCTION()
 	void TreesChanged(const int32 Change);
-
-	UFUNCTION()
-	void WildlifeChanged(const int32 Change);
-
+	
 	UFUNCTION()
 	void ForageChanged(const int32 Change);
 

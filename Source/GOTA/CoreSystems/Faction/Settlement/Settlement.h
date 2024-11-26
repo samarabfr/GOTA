@@ -2,12 +2,16 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
+#include "GameResources.h"
 #include "SettlementSettings.h"
-#include "SettlementPopulation.h"
+#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "GameFramework/Actor.h"
 #include "Settlement.generated.h"
 
+class USettlementPopulation;
+class UPopulationSettings;
+class USettlementSettings;
 class ACivilian;
 class UBuilding;
 class ATile;
@@ -17,95 +21,105 @@ class ASettlement : public AActor
 {
 	GENERATED_BODY()
 
-protected:
+	// --------------------------- Replication Setup ---------------------------
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	// ------------------- LifeCycle -------------------
-
+	// --------------------------- LifeCycle ---------------------------
+protected:
 	ASettlement();
 
-private:
 	virtual void BeginPlay() override;
 
 public:
-	virtual void S_Init(ATile* SpawnTile, UPopulationSettings* InPopulationSettings);
+	void S_Init(ATile* SpawnTile,
+	            USettlementSettings* InSettlementSettings,
+	            UPopulationSettings* InPopulationSettings);
 
 	void EnableTick();
 
 protected:
 	virtual void Tick(float DeltaSeconds) override;
 
-public:
-	UPROPERTY()
+	// --------------------------- Utility ---------------------------
+private:
+	UPROPERTY(Replicated)
 	USettlementSettings* Settings;
 
+public:
+	USettlementSettings* GetSettings() const { return Settings; }
+
+	EAffiliation GetAffiliation() const { return Settings->GetAffiliation(); }
+
+	FGameplayTagContainer GetGameplayTags() const { return Settings->GetGameplayTags(); }
+
+	// --------------------------- Population ---------------------------
 private:
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
+	USettlementPopulation* Population;
+
 	UPROPERTY()
 	UPopulationSettings* PopulationSettings;
 
 public:
+	USettlementPopulation* GetPopulation() { return Population; }
+
 	UPopulationSettings* GetPopulationSettings() { return PopulationSettings; }
-	
-	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
-	EAffiliation Affiliation;
 
-	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	FGameplayTagContainer GameplayTags;
-
-	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	USettlementPopulation* Population;
-
-	// -------------------Claims-------------------------
-
-	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	TArray<ATile*> ClaimedTiles;
-
-public:
-	UPROPERTY()
-	TArray<ATile*> BorderingUnclaimedTiles;
-
+	// --------------------------- Claims ---------------------------
 protected:
 	void RefreshBorderingUnclaimedTiles();
 
 public:
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
+	TArray<ATile*> ClaimedTiles;
+
+	UPROPERTY()
+	TArray<ATile*> BorderingUnclaimedTiles;
+
 	bool IsBorderingUnclaimedTile(const ATile* Tile) const;
 
-	// -------------------Building-------------------------
+	// --------------------------- Building ---------------------------
 public:
 	void OnBuildingAdded(UBuilding* Building, ATile* Tile);
 
 	void OnBuildingRemoved(UBuilding* Building, ATile* Tile);
 
-	// -------------------Resources-------------------------
+	// --------------------------- Resources ---------------------------
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
 	FGameResources Resources;
+
 	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	FGameResources LastMinuteIncome;
+	FGameResources PredictedProduction;
+
 	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	FGameResources LastMinuteConsumption;
+	FGameResources PredictedConsumption;
 
-	struct FIncomeEvent
-	{
-		FGameResources Amount;
-		float Timestamp;
+	void RegisterBuildingForResourcePrediction(UBuilding* Building);
+	void UnregisterBuildingForResourcePrediction(UBuilding* Building);
 
-		FIncomeEvent(): Amount(), Timestamp()
-		{
-		};
+	UFUNCTION()
+	void UpdatePredictedProduction(const float Change, const EProductionType Type);
 
-		FIncomeEvent(const FGameResources InAmount, const float InTimestamp)
-			: Amount(InAmount), Timestamp(InTimestamp)
-		{
-		}
-	};
+	UFUNCTION()
+	void UpdatePredictedConsumption(const float Change, const EConsumptionType Type);
 
-	TQueue<FIncomeEvent> IncomeEvents;
-	TQueue<FIncomeEvent> ConsumptionEvents;
-	void UpdateLastMinuteResources();
+	UFUNCTION()
+	void UpdatePredictionFromPopulation(int16 Change);
 
 public:
 	FGameResources GetResources() const { return Resources; }
-	void S_AddResources(FGameResources Amount, bool CountTowardsLastMinuteIncome = false);
-	void S_RemoveResources(FGameResources Amount, bool CountTowardsLastMinuteConsumption = false);
+
+	// Returns predicted production - predicted consumption
+	FGameResources GetEffectivePredictedProduction() const { return PredictedProduction - PredictedConsumption; }
+
+	// Returns raw predicted production
+	FGameResources GetPredictedProduction() const { return PredictedProduction; }
+
+	// Returns raw predicted consumption
+	FGameResources GetPredictedConsumption() const { return PredictedConsumption; }
+
+	void S_AddResources(FGameResources Amount);
+	void S_RemoveResources(FGameResources Amount);
 };

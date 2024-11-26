@@ -83,7 +83,7 @@ void AArmy::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	CombatValues->SetIndividualCount(BuildingSettings->ArmyIndividualCount);
 	CombatValues->SetAttackSpeed(100 / BuildingSettings->ArmySecondsPerAttack);
 	CombatValues->OnDeath.AddDynamic(this, &AArmy::HandleDeath);
-	Affiliation = Building->Settlement->Affiliation;
+	Affiliation = Building->Settlement->GetAffiliation();
 	if (Affiliation == EAffiliation::Enemy)
 		MeshComponent->SetStaticMesh(Settings->ColonyArmyMesh);
 	else
@@ -175,17 +175,17 @@ void AArmy::SetStatus(EArmyStatus NewStatus)
 
 void AArmy::TakePopFromTile()
 {
-	if (CurrentTile->GetBuilding()->Population->GetSize() <= 0)
+	if (CurrentTile->GetBuilding()->GetPopulation()->GetSize() <= 0)
 		return;
 	CombatValues->SetIndividualCount(CombatValues->GetIndividualCount() + 1);
-	CurrentTile->GetBuilding()->Population->S_DecreaseSize(1);
+	CurrentTile->GetBuilding()->GetPopulation()->S_DecreaseSize(1);
 }
 
 bool AArmy::IsTileValidForRecruiting(const ATile* Tile) const
 {
 	return Tile
 		&& Tile->GetBuilding()
-		&& Tile->GetBuilding()->Population->GetSize() == Tile->GetBuilding()->Population->GetMaxSize()
+		&& Tile->GetBuilding()->GetPopulation()->GetSize() == Tile->GetBuilding()->GetPopulation()->GetMaxSize()
 		&& Tile->GetClaimant()
 		&& Tile->GetClaimant() == Building->Settlement;
 }
@@ -294,7 +294,7 @@ bool AArmy::TryFindPathToNearestEnemyBuilding()
 	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Army, [this](const ATile* Tile)
 	{
 		return Tile && Tile->GetBuilding() && Tile->GetClaimant()
-			&& Tile->GetClaimant()->Affiliation != GetAffiliation();
+			&& Tile->GetClaimant()->GetAffiliation() != GetAffiliation();
 	});
 	return !Path.IsEmpty();
 }
@@ -362,7 +362,7 @@ bool AArmy::IsOnEnemyBuilding() const
 	return CurrentTile &&
 		CurrentTile->GetBuilding() &&
 		CurrentTile->GetClaimant() &&
-		CurrentTile->GetClaimant()->Affiliation != Affiliation;
+		CurrentTile->GetClaimant()->GetAffiliation()  != Affiliation;
 }
 
 void AArmy::StartRavagingEnemyBuilding()
@@ -374,10 +374,10 @@ void AArmy::StartRavagingEnemyBuilding()
 void AArmy::RavageEnemyBuilding()
 {
 	if (IsOnEnemyBuilding() &&
-		CurrentTile->GetBuilding()->Population &&
-		CurrentTile->GetBuilding()->Population->GetSize() > 0)
+		CurrentTile->GetBuilding()->GetPopulation() &&
+		CurrentTile->GetBuilding()->GetPopulation()->GetSize() > 0)
 	{
-		CurrentTile->GetBuilding()->Population->S_DecreaseSize(1);
+		CurrentTile->GetBuilding()->GetPopulation()->S_DecreaseSize(1);
 	}
 	else
 	{

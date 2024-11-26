@@ -2,14 +2,17 @@
 
 #include "Settlement.h"
 
+#include "SettlementPopulation.h"
+#include "SettlementSettings.h"
 #include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/PopulationSettings.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
-#include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
+
+// --------------------------- Replication Setup ---------------------------
 
 void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -19,14 +22,14 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 	Params.Condition = COND_InitialOnly;
 	Params.RepNotifyCondition = REPNOTIFY_Always;
-	DOREPLIFETIME_WITH_PARAMS(ASettlement, Affiliation, Params);
+	DOREPLIFETIME_WITH_PARAMS(ASettlement, Settings, Params);
 
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(ASettlement, Resources, Params);
 }
 
-// ------------------- LifeCycle -------------------
+// --------------------------- LifeCycle ---------------------------
 
 ASettlement::ASettlement()
 {
@@ -39,36 +42,26 @@ ASettlement::ASettlement()
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	PrimaryActorTick.TickInterval = 0.5;
 
-	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
-
 	Population = CreateDefaultSubobject<USettlementPopulation>(TEXT("Population"));
-
-	// Load Settlement Settings DataAsset
-	static ConstructorHelpers::FObjectFinder<USettlementSettings> SettingsFinder(
-		TEXT("/Game/CoreSystems/Faction/DA_SettlementSettings"));
-	if (SettingsFinder.Succeeded())
-		Settings = SettingsFinder.Object;
 }
 
 void ASettlement::BeginPlay()
 {
 	Super::BeginPlay();
-	GetWorld()->GetGameState<AGS_Ingame>()->LoadingManager->IncrementReplicationCount();
+	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
 }
 
-void ASettlement::S_Init(ATile* SpawnTile, UPopulationSettings* InPopulationSettings)
+void ASettlement::S_Init(ATile* SpawnTile,
+                         USettlementSettings* InSettlementSettings,
+                         UPopulationSettings* InPopulationSettings)
 {
 	PopulationSettings = InPopulationSettings;
-	const FGameResources& StartingResources = Affiliation == EAffiliation::Enemy
-		                                          ? Settings->C_StartingResources
-		                                          : Settings->N_StartingResources;
-	const TArray<UBuildingSettings*>& StartingBuildings = Affiliation == EAffiliation::Enemy
-		                                                      ? Settings->C_StartingBuildings
-		                                                      : Settings->N_StartingBuildings;
-	GameplayTags = Affiliation == EAffiliation::Enemy
-		               ? Settings->C_GameplayTags
-		               : Settings->N_GameplayTags;
-	S_AddResources(StartingResources);
+	Settings = InSettlementSettings;
+
+	S_AddResources(Settings->GetStartingResources());
+
+	const TArray<UBuildingSettings*>& StartingBuildings = Settings->GetStartingBuildings();
+
 	SpawnTile->TryBuild(StartingBuildings[0], this);
 	SpawnTile->GetBuilding()->FinishConstruction();
 	for (int32 i = 1; i < StartingBuildings.Num(); ++i)
@@ -80,7 +73,7 @@ void ASettlement::S_Init(ATile* SpawnTile, UPopulationSettings* InPopulationSett
 	}
 	for (ATile* Tile : ClaimedTiles)
 	{
-		Tile->GetBuilding()->Population->S_ChangeSize(100);
+		Tile->GetBuilding()->GetPopulation()->S_ChangeSize(100);
 	}
 }
 
@@ -93,29 +86,33 @@ void ASettlement::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	UpdateLastMinuteResources();
-	Resources.Food -= Population->GetSize() * Settings->PopEatingPerSecond * DeltaSeconds;
+	Resources.Food -= GetPopulation()->GetSize() * Settings->GetPopEatingPerSecond() * DeltaSeconds;
 
-	if(Resources.Food < 0)
+	if (Resources.Food < 0)
 		PopulationSettings->IsStarving = true;
 	else
 		PopulationSettings->IsStarving = false;
-		
+
 	if (HasAuthority())
 	{
-		if (Resources.Food < Settings->StarvingThreshold)
+		const float Threshold = Settings->GetStarvingThreshold();
+		if (Resources.Food < Threshold)
 		{
-			int32 Count = Resources.Food / Settings->StarvingThreshold;
-			Resources.Food += Count * Settings->StarvingThreshold * -1;
+			int32 Count = Resources.Food / Threshold;
+			Resources.Food += Count * Threshold * -1;
 			for (int32 i = 0; i < Count; ++i)
 			{
-				Population->StarveRandomPop();
+				GetPopulation()->StarveRandomPop();
 			}
 		}
 	}
 }
 
-// -------------------Claims-------------------------
+// --------------------------- Utility ---------------------------
+
+// --------------------------- Population ---------------------------
+
+// --------------------------- Claims ---------------------------
 
 void ASettlement::RefreshBorderingUnclaimedTiles()
 {
@@ -137,77 +134,98 @@ bool ASettlement::IsBorderingUnclaimedTile(const ATile* Tile) const
 	return BorderingUnclaimedTiles.Contains(Tile);
 }
 
-// -------------------Building-------------------------
+// --------------------------- Building ---------------------------
 
 void ASettlement::OnBuildingAdded(UBuilding* Building, ATile* Tile)
 {
-	Population->RegisterPop(Building->Population);
+	GetPopulation()->RegisterPop(Building->GetPopulation());
+	RegisterBuildingForResourcePrediction(Building);
 	ClaimedTiles.Add(Tile);
 	RefreshBorderingUnclaimedTiles();
 }
 
 void ASettlement::OnBuildingRemoved(UBuilding* Building, ATile* Tile)
 {
-	Population->UnregisterPop(Building->Population);
+	GetPopulation()->UnregisterPop(Building->GetPopulation());
+	UnregisterBuildingForResourcePrediction(Building);
 	ClaimedTiles.Remove(Tile);
 	RefreshBorderingUnclaimedTiles();
 }
 
-// -------------------Resources-------------------------
+// --------------------------- Resources ---------------------------
 
-void ASettlement::UpdateLastMinuteResources()
-{
-	const float CurrentCutOff = GetWorld()->GetTimeSeconds() - 20.0f;
 
-	// Remove old entries from Income queue
-	while (const FIncomeEvent* Tail = IncomeEvents.Peek())
-	{
-		if (Tail->Timestamp < CurrentCutOff)
-		{
-			LastMinuteIncome -= Tail->Amount;
-			IncomeEvents.Pop();
-		}
-		else
-		{
-			break;
-		}
-	}
-
-	// Remove old entries from Consumption queue
-	while (const FIncomeEvent* Tail = ConsumptionEvents.Peek())
-	{
-		if (Tail->Timestamp < CurrentCutOff)
-		{
-			LastMinuteConsumption -= Tail->Amount;
-			ConsumptionEvents.Pop();
-		}
-		else
-		{
-			break;
-		}
-	}
-}
-
-void ASettlement::S_AddResources(const FGameResources Amount, const bool CountTowardsLastMinuteIncome)
+void ASettlement::S_AddResources(const FGameResources Amount)
 {
 	Resources += Amount;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
 	ForceNetUpdate();
-	if (CountTowardsLastMinuteIncome)
-	{
-		LastMinuteIncome += Amount;
-		IncomeEvents.Enqueue(FIncomeEvent(Amount, GetWorld()->GetTimeSeconds()));
-	}
 }
 
-void ASettlement::S_RemoveResources(const FGameResources Amount, const bool CountTowardsLastMinuteConsumption)
+void ASettlement::S_RemoveResources(const FGameResources Amount)
 {
 	Resources -= Amount;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
 	ForceNetUpdate();
-	if (CountTowardsLastMinuteConsumption)
+}
+
+void ASettlement::RegisterBuildingForResourcePrediction(UBuilding* Building)
+{
+	const EProductionType ProductionType = Building->GetProductionType();
+	if (ProductionType == EProductionType::Food
+		|| ProductionType == EProductionType::Wood
+		|| ProductionType == EProductionType::Stone)
 	{
-		LastMinuteConsumption += Amount;
-		ConsumptionEvents.Enqueue(FIncomeEvent(Amount, GetWorld()->GetTimeSeconds()));
+		PredictedProduction.AddProduction(Building->GetPredictedProduction(), ProductionType);
+		Building->OnPredictedProductionChanged.AddDynamic(this, &ASettlement::UpdatePredictedProduction);
 	}
+	const EConsumptionType ConsumptionType = Building->GetConsumptionType();
+	if (ConsumptionType == EConsumptionType::Food
+		|| ConsumptionType == EConsumptionType::Wood
+		|| ConsumptionType == EConsumptionType::Stone)
+	{
+		PredictedConsumption.AddConsumption(Building->GetPredictedConsumption(), ConsumptionType);
+		Building->OnPredictedConsumptionChanged.AddDynamic(this, &ASettlement::UpdatePredictedConsumption);
+	}
+	PredictedConsumption.AddConsumption(
+		Building->GetPopulation()->GetSize() * Settings->GetPopEatingPerSecond(), EConsumptionType::Food);
+	Building->GetPopulation()->OnSizeChanged.AddDynamic(this, &ASettlement::UpdatePredictionFromPopulation);
+}
+
+void ASettlement::UnregisterBuildingForResourcePrediction(UBuilding* Building)
+{
+	const EProductionType ProductionType = Building->GetProductionType();
+	if (ProductionType == EProductionType::Food
+		|| ProductionType == EProductionType::Wood
+		|| ProductionType == EProductionType::Stone)
+	{
+		PredictedProduction.RemoveProduction(Building->GetPredictedProduction(), ProductionType);
+		Building->OnPredictedProductionChanged.RemoveDynamic(this, &ASettlement::UpdatePredictedProduction);
+	}
+	const EConsumptionType ConsumptionType = Building->GetConsumptionType();
+	if (ConsumptionType == EConsumptionType::Food
+		|| ConsumptionType == EConsumptionType::Wood
+		|| ConsumptionType == EConsumptionType::Stone)
+	{
+		PredictedConsumption.RemoveConsumption(Building->GetPredictedConsumption(), ConsumptionType);
+		Building->OnPredictedConsumptionChanged.RemoveDynamic(this, &ASettlement::UpdatePredictedConsumption);
+	}
+	PredictedConsumption.RemoveConsumption(
+	Building->GetPopulation()->GetSize() * Settings->GetPopEatingPerSecond(), EConsumptionType::Food);
+	Building->GetPopulation()->OnSizeChanged.RemoveDynamic(this, &ASettlement::UpdatePredictionFromPopulation);
+}
+
+void ASettlement::UpdatePredictedProduction(const float Change, const EProductionType Type)
+{
+	PredictedProduction.AddProduction(Change, Type);
+}
+
+void ASettlement::UpdatePredictedConsumption(const float Change, const EConsumptionType Type)
+{
+	PredictedConsumption.AddConsumption(Change, Type);
+}
+
+void ASettlement::UpdatePredictionFromPopulation(int16 Change)
+{
+	PredictedConsumption.AddConsumption(Change * Settings->GetPopEatingPerSecond(), EConsumptionType::Food);
 }

@@ -14,6 +14,7 @@
 #include "GOTA/CoreSystems/Faction/Building/BuildingPlacer.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
+#include "GOTA/CoreSystems/Faction/Settlement/SettlementPopulation.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
@@ -119,8 +120,8 @@ void AGM_Ingame::CheckGameEndingConditions()
 	if (!GOTAGameState->GetTribe()) return;
 
 	// based on SettlementPop
-	int32 ColonialPop = GOTAGameState->GetColony()->Population->GetSize();
-	int32 NativePop = GOTAGameState->GetTribe()->Population->GetSize();
+	int32 ColonialPop = GOTAGameState->GetColony()->GetPopulation()->GetSize();
+	int32 NativePop = GOTAGameState->GetTribe()->GetPopulation()->GetSize();
 	int32 TotalPop = ColonialPop + NativePop;
 
 	if (ColonialPop == 0)
@@ -136,11 +137,9 @@ void AGM_Ingame::CheckGameEndingConditions()
 
 	//based on Ecovalues
 	float TreeRatio = static_cast<float>(GOTAGameState->IslandMaxTrees) / GOTAGameState->TotalTrees->Current;
-	float WildlifeRatio = static_cast<float>(GOTAGameState->IslandMaxWildlife) / GOTAGameState->TotalWildlife->Current;
 	float ForageRatio = static_cast<float>(GOTAGameState->IslandMaxForage) / GOTAGameState->TotalForage->Current;
 	int32 EcoUnderRatioCount = 0;
 	if (TreeRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
-	if (WildlifeRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
 	if (ForageRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
 	if (EcoUnderRatioCount >= 2)
 		EndGame(EGameEnding::Defeat, FString("Defeat! :("));
@@ -164,14 +163,18 @@ void AGM_Ingame::CreateWorld()
 
 void AGM_Ingame::CreateSettlements()
 {
+	AGameSettings* GameSettings = GOTAGameState->GetGameSettings();
+
 	AColony* Colony = GetWorld()->SpawnActor<AColony>();
 	Colony->S_Init(GOTAGameState->GetTileMap()->ColonistsStarts[0],
-		GOTAGameState->GetGameSettings()->GetColonyPopulationSettings());
+	               GameSettings->GetColonySettings(),
+	               GameSettings->GetColonyPopulationSettings());
 	GOTAGameState->SetColony(Colony);
 
 	ATribe* Tribe = GetWorld()->SpawnActor<ATribe>();
 	Tribe->S_Init(GOTAGameState->GetTileMap()->NativesStarts[0],
-		GOTAGameState->GetGameSettings()->GetTribePopulationSettings());
+	              GameSettings->GetTribeSettings(),
+	              GameSettings->GetTribePopulationSettings());
 	GOTAGameState->SetTribe(Tribe);
 }
 

@@ -5,6 +5,7 @@
 
 #include "CombatSystem.h"
 #include "GameSettings.h"
+#include "LoadingManager.h"
 #include "StartParameter.h"
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
@@ -19,11 +20,11 @@ void AGS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	FDoRepLifetimeParams Params;
 	Params.bIsPushBased = true;
-	
+
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(AGS_Ingame, Guardians, Params)
-	
+
 	DOREPLIFETIME_WITH_PARAMS(AGS_Ingame, TileMap, Params)
 	DOREPLIFETIME_WITH_PARAMS(AGS_Ingame, GameSettings, Params)
 	DOREPLIFETIME_WITH_PARAMS(AGS_Ingame, Colony, Params)
@@ -32,9 +33,7 @@ void AGS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 
 	DOREPLIFETIME(AGS_Ingame, TotalTrees);
 	DOREPLIFETIME(AGS_Ingame, TotalForage);
-	DOREPLIFETIME(AGS_Ingame, TotalWildlife);
 	DOREPLIFETIME(AGS_Ingame, IslandMaxTrees);
-	DOREPLIFETIME(AGS_Ingame, IslandMaxWildlife);
 	DOREPLIFETIME(AGS_Ingame, IslandMaxForage);
 
 	DOREPLIFETIME(AGS_Ingame, CombatSystem);
@@ -45,7 +44,6 @@ void AGS_Ingame::AddReplicatedSubobjects()
 {
 	AddReplicatedSubObject(TotalTrees);
 	AddReplicatedSubObject(TotalForage);
-	AddReplicatedSubObject(TotalWildlife);
 	AddReplicatedSubObject(CombatSystem);
 	AddReplicatedSubObject(StartParameter);
 }
@@ -65,7 +63,6 @@ AGS_Ingame::AGS_Ingame()
 
 	TotalTrees = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Trees"));
 	TotalForage = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Forage"));
-	TotalWildlife = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Wildlife"));
 	CombatSystem = CreateDefaultSubobject<UCombatSystem>(TEXT("Combat System"));
 	StartParameter = CreateDefaultSubobject<UStartParameter>(TEXT("Start Parameter"));
 
@@ -112,6 +109,18 @@ void AGS_Ingame::SpawnGameSettingsActor()
 	SpawnParams.Name = FName("GameSettings");
 	GameSettings = GetWorld()->SpawnActor<AGameSettings>(SpawnParams);
 	MARK_PROPERTY_DIRTY_FROM_NAME(AGS_Ingame, GameSettings, this)
+}
+
+// ------------------- LoadingManager -------------------
+
+void AGS_Ingame::SetLoadingManager(ALoadingManager* NewLoadingManager)
+{
+	LoadingManager = NewLoadingManager;
+}
+
+void AGS_Ingame::IncrementReplicationCount()
+{
+	LoadingManager->IncrementReplicationCount();
 }
 
 // ------------------- StaticMeshBatcher -------------------
@@ -171,7 +180,7 @@ void AGS_Ingame::RegisterTileForTotalsUpdates(ATile* Tile)
 
 void AGS_Ingame::CountIslandMaxEcoValues()
 {
-	GetTileMap()->CountAllMaxEcoValues(IslandMaxTrees, IslandMaxWildlife, IslandMaxForage);
+	GetTileMap()->CountAllMaxEcoValues(IslandMaxTrees, IslandMaxForage);
 }
 
 // ------------------- Game Ending -------------------
