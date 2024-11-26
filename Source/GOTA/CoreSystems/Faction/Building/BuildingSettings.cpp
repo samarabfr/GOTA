@@ -2,13 +2,12 @@
 
 float UBuildingSettings::GetDefaultPredictedProduction() const
 {
-	if (FMath::IsNearlyZero(CivilianProductionTime)) return 0.0f;
 	float PredictedProduction = 0.0f;
-	if (bDirectProductionEnabled)
+	if (bDirectProductionEnabled&& !FMath::IsNearlyZero(DirectProductionTime))
 	{
 		PredictedProduction += DirectProductionAmount / DirectProductionTime;
 	}
-	if (bCivilianEnabled)
+	if (bCivilianEnabled && !FMath::IsNearlyZero(CivilianProductionTime))
 	{
 		PredictedProduction += CivilianPredictedIncomeFactor * (CivilianProductionAmount / CivilianProductionTime);
 	}
@@ -17,13 +16,12 @@ float UBuildingSettings::GetDefaultPredictedProduction() const
 
 float UBuildingSettings::GetDefaultPredictedConsumption() const
 {
-	if (FMath::IsNearlyZero(CivilianProductionTime)) return 0.0f;
 	float PredictedConsumption = 0.0f;
-	if (bDirectProductionEnabled)
+	if (bDirectProductionEnabled && !FMath::IsNearlyZero(DirectProductionTime))
 	{
 		PredictedConsumption += DirectConsumptionAmount / DirectProductionTime;
 	}
-	if (bCivilianEnabled)
+	if (bCivilianEnabled && !FMath::IsNearlyZero(CivilianProductionTime))
 	{
 		PredictedConsumption += CivilianPredictedIncomeFactor * (CivilianConsumptionAmount / CivilianProductionTime);
 	}
