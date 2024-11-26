@@ -33,9 +33,7 @@ void AGS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 
 	DOREPLIFETIME(AGS_Ingame, TotalTrees);
 	DOREPLIFETIME(AGS_Ingame, TotalForage);
-	DOREPLIFETIME(AGS_Ingame, TotalWildlife);
 	DOREPLIFETIME(AGS_Ingame, IslandMaxTrees);
-	DOREPLIFETIME(AGS_Ingame, IslandMaxWildlife);
 	DOREPLIFETIME(AGS_Ingame, IslandMaxForage);
 
 	DOREPLIFETIME(AGS_Ingame, CombatSystem);
@@ -46,7 +44,6 @@ void AGS_Ingame::AddReplicatedSubobjects()
 {
 	AddReplicatedSubObject(TotalTrees);
 	AddReplicatedSubObject(TotalForage);
-	AddReplicatedSubObject(TotalWildlife);
 	AddReplicatedSubObject(CombatSystem);
 	AddReplicatedSubObject(StartParameter);
 }
@@ -66,7 +63,6 @@ AGS_Ingame::AGS_Ingame()
 
 	TotalTrees = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Trees"));
 	TotalForage = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Forage"));
-	TotalWildlife = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Wildlife"));
 	CombatSystem = CreateDefaultSubobject<UCombatSystem>(TEXT("Combat System"));
 	StartParameter = CreateDefaultSubobject<UStartParameter>(TEXT("Start Parameter"));
 
@@ -184,7 +180,7 @@ void AGS_Ingame::RegisterTileForTotalsUpdates(ATile* Tile)
 
 void AGS_Ingame::CountIslandMaxEcoValues()
 {
-	GetTileMap()->CountAllMaxEcoValues(IslandMaxTrees, IslandMaxWildlife, IslandMaxForage);
+	GetTileMap()->CountAllMaxEcoValues(IslandMaxTrees, IslandMaxForage);
 }
 
 // ------------------- Game Ending -------------------

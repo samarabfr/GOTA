@@ -358,7 +358,6 @@ void ATile::PopSizeChanged(const int16 Change)
 void ATile::SetupEcoValuesChanging()
 {
 	EcoValues->OnTreesChanged.AddDynamic(this, &ATile::TreesChanged);
-	EcoValues->OnWildlifeChanged.AddDynamic(this, &ATile::WildlifeChanged);
 	EcoValues->OnForageChanged.AddDynamic(this, &ATile::ForageChanged);
 }
 
@@ -368,15 +367,6 @@ void ATile::TreesChanged(const int32 Change)
 	for (int i = 0; i < 6; ++i)
 	{
 		if (Neighbors[i]) Neighbors[i]->EcoValues->NeighborChangedTrees(Change);
-	}
-}
-
-void ATile::WildlifeChanged(const int32 Change)
-{
-	ForceNetUpdate();
-	for (int i = 0; i < 6; ++i)
-	{
-		if (Neighbors[i]) Neighbors[i]->EcoValues->NeighborChangedWildlife(Change);
 	}
 }
 
