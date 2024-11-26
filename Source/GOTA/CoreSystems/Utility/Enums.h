@@ -68,7 +68,6 @@ UENUM()
 enum class EEcoValue : uint8
 {
 	Tree UMETA(DisplayName = "Tree"),
-	Wildlife UMETA(DisplayName = "Wildlife"),
 	Forage UMETA(DisplayName = "Forage")
 };
 

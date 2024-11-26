@@ -21,17 +21,11 @@ public:
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
 	float MaxForagePerMaxTree;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	float MaxWildlifePerForage;
-
 	// -----------------GrowthThresholds-----------------------
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
 	float TreeGrowthThreshold;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	float WildlifeGrowthThreshold;
-
+	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
 	float ForageGrowthThreshold;
 	
@@ -39,10 +33,7 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
 	TMap<EBiome, float> BaseTreeGrowthPerBiome;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	TMap<EBiome, float> BaseWildlifeGrowthPerBiome;
-
+	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
 	TMap<EBiome, float> BaseForageGrowthPerBiome;
 	
@@ -53,12 +44,6 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
 	float TreeGrowthPerNeighborTree;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	float WildlifeGrowthPerOwnWildlife;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
-	float WildlifeGrowthPerNeighborWildlife;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="Tile")
 	float ForageGrowthPerOwnForage;

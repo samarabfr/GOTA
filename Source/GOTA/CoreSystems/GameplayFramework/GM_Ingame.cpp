@@ -137,11 +137,9 @@ void AGM_Ingame::CheckGameEndingConditions()
 
 	//based on Ecovalues
 	float TreeRatio = static_cast<float>(GOTAGameState->IslandMaxTrees) / GOTAGameState->TotalTrees->Current;
-	float WildlifeRatio = static_cast<float>(GOTAGameState->IslandMaxWildlife) / GOTAGameState->TotalWildlife->Current;
 	float ForageRatio = static_cast<float>(GOTAGameState->IslandMaxForage) / GOTAGameState->TotalForage->Current;
 	int32 EcoUnderRatioCount = 0;
 	if (TreeRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
-	if (WildlifeRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
 	if (ForageRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
 	if (EcoUnderRatioCount >= 2)
 		EndGame(EGameEnding::Defeat, FString("Defeat! :("));

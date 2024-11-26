@@ -25,19 +25,7 @@ protected:
 
 	UPROPERTY(meta = (BindWidget))
 	UProgressBar* Tree_Progress;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* Wildlife_Current;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* Wildlife_Max;
-
-	UPROPERTY(meta = (BindWidget))
-	UTextBlock* Wildlife_Growth;
-
-	UPROPERTY(meta = (BindWidget))
-	UProgressBar* Wildlife_Progress;
-
+	
 	UPROPERTY(meta = (BindWidget))
 	UTextBlock* Forage_Current;
 

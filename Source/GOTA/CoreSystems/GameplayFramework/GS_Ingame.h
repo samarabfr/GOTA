@@ -147,13 +147,7 @@ public:
 	UGOTAAttribute* TotalForage;
 
 	UPROPERTY(Replicated)
-	UGOTAAttribute* TotalWildlife;
-
-	UPROPERTY(Replicated)
 	int32 IslandMaxTrees;
-
-	UPROPERTY(Replicated)
-	int32 IslandMaxWildlife;
 
 	UPROPERTY(Replicated)
 	int32 IslandMaxForage;
