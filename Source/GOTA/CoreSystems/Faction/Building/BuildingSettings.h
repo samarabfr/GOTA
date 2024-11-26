@@ -98,7 +98,7 @@ public:
 	float SecondsPerRecruitCycle = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Army")
-	float ArmySecondsPerMove = 0.0f;
+	float ArmyMoveTime = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Army")
 	float ArmyRespawnTime = 0.0f;
@@ -113,9 +113,9 @@ public:
 	int32 ArmyIndividualCount = 0;
 
 	UPROPERTY(EditDefaultsOnly, Category="Army")
-	float ArmySecondsPerAttack = 0.0f;
+	float ArmyAttackTime = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Army")
-	float ArmySecondsPerRavage = 0.0f;
+	float ArmyRavageTime = 0.0f;
 
 };

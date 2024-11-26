@@ -76,12 +76,12 @@ void AArmy::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 
 	const UBuildingSettings* BuildingSettings = Building->Settings;
 	RecruitRate = 100 / BuildingSettings->SecondsPerRecruitCycle;
-	MovementRate = 100 / BuildingSettings->ArmySecondsPerMove;
-	RavageSpeed = 100 / BuildingSettings->ArmySecondsPerRavage;
+	MovementRate = 100 / BuildingSettings->ArmyMoveTime;
+	RavageSpeed = 100 / BuildingSettings->ArmyRavageTime;
 	CombatValues->SetIndividualAttack(BuildingSettings->ArmyIndividualAttack);
 	CombatValues->SetIndividualMaxHP(BuildingSettings->ArmyIndividualMaxHP);
 	CombatValues->SetIndividualCount(BuildingSettings->ArmyIndividualCount);
-	CombatValues->SetAttackSpeed(100 / BuildingSettings->ArmySecondsPerAttack);
+	CombatValues->SetAttackSpeed(100 / BuildingSettings->ArmyAttackTime);
 	CombatValues->OnDeath.AddDynamic(this, &AArmy::HandleDeath);
 	Affiliation = Building->Settlement->GetAffiliation();
 	if (Affiliation == EAffiliation::Enemy)
