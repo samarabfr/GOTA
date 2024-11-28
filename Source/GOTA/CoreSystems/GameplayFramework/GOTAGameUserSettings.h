@@ -64,4 +64,14 @@ public:
 	int32 GetFPSLimit() const { return FPSLimit; }
 	void SetFPSLimit(const int32 NewFPSLimit) { FPSLimit = NewFPSLimit; }
 
+	// -------------------------------------- Sharpen --------------------------------------
+private:
+	UPROPERTY(Config)
+	int32 Sharpen;
+
+	void ApplySharpenSettings();
+	
+public:
+	int32 GetSharpen() const { return Sharpen; }
+	void SetSharpen(const int32 NewSharpen) { Sharpen = NewSharpen; }
 };

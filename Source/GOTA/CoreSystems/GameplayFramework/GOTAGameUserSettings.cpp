@@ -19,6 +19,7 @@ void UGOTAGameUserSettings::ApplySettings(bool bCheckForCommandLineOverrides)
 	ApplyShadowSettings();
 	ApplyAntiAliasingSettings();
 	ApplyFPSSettings();
+	ApplySharpenSettings();
 }
 
 // -------------------------------------- Shadows --------------------------------------
@@ -86,3 +87,13 @@ void UGOTAGameUserSettings::ApplyFPSSettings()
 	}
 }
 
+// -------------------------------------- Sharpen --------------------------------------
+
+void UGOTAGameUserSettings::ApplySharpenSettings()
+{
+	IConsoleVariable* CVar_Sharpen = IConsoleManager::Get().FindConsoleVariable(TEXT("r.Tonemapper.Sharpen"));
+	if (CVar_Sharpen)
+	{
+		CVar_Sharpen->Set(Sharpen);
+	}
+}
