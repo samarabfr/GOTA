@@ -8,28 +8,35 @@ UGOTAGameUserSettings::UGOTAGameUserSettings()
 	AntiAliasingType = 4;
 	bUsingFPSLimit = false;
 	FPSLimit = 60;
+	Sharpen = 1;
 }
-
 
 // ------------------- Utility -------------------
 
 void UGOTAGameUserSettings::ApplySettings(bool bCheckForCommandLineOverrides)
 {
 	Super::ApplySettings(bCheckForCommandLineOverrides);
-	
-	IConsoleVariable* CVar_LimitFPS = IConsoleManager::Get().FindConsoleVariable(TEXT("t.MaxFPS"));
-	if (CVar_LimitFPS)
-	{
-		if (bUsingFPSLimit)
-		{
-			CVar_LimitFPS->Set(FPSLimit);
-		}
-		else
-		{
-			CVar_LimitFPS->Set(0.0f);
-		}
-	}
+	ApplyShadowSettings();
+	ApplyAntiAliasingSettings();
+	ApplyFPSSettings();
+}
 
+// -------------------------------------- Shadows --------------------------------------
+
+void UGOTAGameUserSettings::ApplyShadowSettings()
+{
+	IConsoleVariable* CVar_ShadowDistanceScale = IConsoleManager::Get().
+		FindConsoleVariable(TEXT("r.Shadow.DistanceScale"));
+	if (CVar_ShadowDistanceScale)
+	{
+		CVar_ShadowDistanceScale->Set(ShadowDistanceFactor);
+	}
+}
+
+// -------------------------------------- Anti Aliasing --------------------------------------
+
+void UGOTAGameUserSettings::ApplyAntiAliasingSettings()
+{
 	IConsoleVariable* CVar_TAAHistoryScreenPercentage =
 		IConsoleManager::Get().FindConsoleVariable(TEXT("r.TemporalAA.HistoryScreenpercentage"));
 	if (CVar_TAAHistoryScreenPercentage)
@@ -52,37 +59,30 @@ void UGOTAGameUserSettings::ApplySettings(bool bCheckForCommandLineOverrides)
 			break;
 		}
 	}
-	
+
 	IConsoleVariable* CVar_AntiAliasingType = IConsoleManager::Get().
 		FindConsoleVariable(TEXT("r.AntiAliasingMethod"));
 	if (CVar_AntiAliasingType)
 	{
 		CVar_AntiAliasingType->Set(AntiAliasingType);
 	}
+}
 
-	IConsoleVariable* CVar_ShadowDistanceScale = IConsoleManager::Get().
-	FindConsoleVariable(TEXT("r.Shadow.DistanceScale"));
-	if (CVar_ShadowDistanceScale)
+// -------------------------------------- FPS --------------------------------------
+
+void UGOTAGameUserSettings::ApplyFPSSettings()
+{
+	IConsoleVariable* CVar_LimitFPS = IConsoleManager::Get().FindConsoleVariable(TEXT("t.MaxFPS"));
+	if (CVar_LimitFPS)
 	{
-		CVar_ShadowDistanceScale->Set(ShadowDistanceFactor);
+		if (bUsingFPSLimit)
+		{
+			CVar_LimitFPS->Set(FPSLimit);
+		}
+		else
+		{
+			CVar_LimitFPS->Set(0.0f);
+		}
 	}
 }
 
-
-// ------------------- Overall Scalability -------------------
-
-int32 UGOTAGameUserSettings::GOTAGetOverallScalabilityLevel() const
-{
-	int32 Target = GetShadowQuality();
-	if (Target == GetAntiAliasingQuality())
-	{
-		return Target;
-	}
-	return -1;
-}
-
-void UGOTAGameUserSettings::GOTASetOverallScalabilityLevel(int32 NewScalability)
-{
-	SetShadowQuality(NewScalability);
-	SetAntiAliasingQuality(NewScalability);
-}
