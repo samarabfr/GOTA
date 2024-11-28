@@ -17,8 +17,7 @@ void UGOTAGameUserSettings::ApplySettings(bool bCheckForCommandLineOverrides)
 {
 	Super::ApplySettings(bCheckForCommandLineOverrides);
 	
-	IConsoleVariable* CVar_LimitFPS = IConsoleManager::Get().
-			FindConsoleVariable(TEXT("t.MaxFPS"));
+	IConsoleVariable* CVar_LimitFPS = IConsoleManager::Get().FindConsoleVariable(TEXT("t.MaxFPS"));
 	if (CVar_LimitFPS)
 	{
 		if (bUsingFPSLimit)
@@ -28,6 +27,29 @@ void UGOTAGameUserSettings::ApplySettings(bool bCheckForCommandLineOverrides)
 		else
 		{
 			CVar_LimitFPS->Set(0.0f);
+		}
+	}
+
+	IConsoleVariable* CVar_TAAHistoryScreenPercentage =
+		IConsoleManager::Get().FindConsoleVariable(TEXT("r.TemporalAA.HistoryScreenpercentage"));
+	if (CVar_TAAHistoryScreenPercentage)
+	{
+		switch (GetAntiAliasingQuality())
+		{
+		case 3: // High
+			CVar_TAAHistoryScreenPercentage->Set(200.0f);
+			break;
+
+		case 2: //Medium
+			CVar_TAAHistoryScreenPercentage->Set(150.0f);
+			break;
+
+		case 1: // Low
+			CVar_TAAHistoryScreenPercentage->Set(100.0f);
+			break;
+
+		default:
+			break;
 		}
 	}
 	
