@@ -6,7 +6,10 @@
 #include "Algo/RandomShuffle.h"
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingCivilian.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingDirectProduction.h"
+#include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
@@ -66,8 +69,7 @@ ATile::ATile()
 void ATile::BeginPlay()
 {
 	Super::BeginPlay();
-	GameState = GetWorld()->GetGameState<AGS_Ingame>();
-	GameState->LoadingManager->IncrementReplicationCount();
+	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
 	if (!HasAuthority())
 	{
 		SpawnOceanLineMeshes();
@@ -213,14 +215,29 @@ bool ATile::CanBuild()
 bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
 	if (!CanBuild() || !Builder) return false;
-	Building = NewObject<UBuilding>();
+	//check if multiple production things are on
+	int32 EnabledCount = 0;
+	EnabledCount += BuildingDataAsset->bDirectProductionEnabled;
+	EnabledCount += BuildingDataAsset->bCivilianEnabled;
+	if(EnabledCount > 1)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Multiple building types enabled in BuildingDataAsset. Only one allowed!"))
+		return false;		
+	}
+	// Choose fitting class
+	if(BuildingDataAsset->bDirectProductionEnabled)
+		Building = NewObject<UBuildingDirectProduction>();
+	else if(BuildingDataAsset->bCivilianEnabled)
+		Building = NewObject<UBuildingCivilian>();
+	else
+		Building = NewObject<UBuilding>();
 	Building->ServerInit(BuildingDataAsset, this, Builder);
 	AddReplicatedSubObject(Building);
-	AddReplicatedSubObject(Building->Population);
+	AddReplicatedSubObject(Building->GetPopulation());
 
 	UpdateClaimWallsWithNeighbors();
 
-	GameplayTags.AppendTags(Builder->GameplayTags);
+	GameplayTags.AppendTags(Builder->GetGameplayTags());
 	GameplayTags.AppendTags(BuildingDataAsset->GameplayTags);
 	GameplayTags.AddTag(Settings->BuildingUnderConstructionTag);
 
@@ -239,7 +256,7 @@ void ATile::Unbuild()
 	GameplayTags.RemoveTags(Building->Settings->GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
 	RemoveReplicatedSubObject(Building);
-	RemoveReplicatedSubObject(Building->Population);
+	RemoveReplicatedSubObject(Building->GetPopulation());
 	Building = nullptr;
 	BuildingChanged();
 	ValidateSpawnLayout();
@@ -335,14 +352,14 @@ void ATile::GOTATick()
 
 void ATile::SetupPopSizeChanging()
 {
-	Building->Population->OnSizeChanged.AddDynamic(this, &ATile::PopSizeChanged);
+	Building->GetPopulation()->OnSizeChanged.AddDynamic(this, &ATile::PopSizeChanged);
 	// notify the neighbors of this population size
-	PopSizeChanged(Building->Population->GetSize());
+	PopSizeChanged(Building->GetPopulation()->GetSize());
 	// notify this population of all neighbor population sizes
 	for (ATile* Neighbor : Neighbors)
 	{
 		if (Neighbor && Neighbor->Building)
-			Building->Population->NeighborChangedPopSize(Neighbor->Building->Population->GetSize());
+			Building->GetPopulation()->NeighborChangedPopSize(Neighbor->Building->GetPopulation()->GetSize());
 	}
 }
 
@@ -351,14 +368,13 @@ void ATile::PopSizeChanged(const int16 Change)
 	ForceNetUpdate();
 	for (int i = 0; i < 6; ++i)
 	{
-		if (Neighbors[i] && Neighbors[i]->Building) Neighbors[i]->Building->Population->NeighborChangedPopSize(Change);
+		if (Neighbors[i] && Neighbors[i]->Building) Neighbors[i]->Building->GetPopulation()->NeighborChangedPopSize(Change);
 	}
 }
 
 void ATile::SetupEcoValuesChanging()
 {
 	EcoValues->OnTreesChanged.AddDynamic(this, &ATile::TreesChanged);
-	EcoValues->OnWildlifeChanged.AddDynamic(this, &ATile::WildlifeChanged);
 	EcoValues->OnForageChanged.AddDynamic(this, &ATile::ForageChanged);
 }
 
@@ -368,15 +384,6 @@ void ATile::TreesChanged(const int32 Change)
 	for (int i = 0; i < 6; ++i)
 	{
 		if (Neighbors[i]) Neighbors[i]->EcoValues->NeighborChangedTrees(Change);
-	}
-}
-
-void ATile::WildlifeChanged(const int32 Change)
-{
-	ForceNetUpdate();
-	for (int i = 0; i < 6; ++i)
-	{
-		if (Neighbors[i]) Neighbors[i]->EcoValues->NeighborChangedWildlife(Change);
 	}
 }
 

@@ -11,14 +11,11 @@ void UEcoValues::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(UEcoValues, Trees, Params);
 	DOREPLIFETIME_WITH_PARAMS(UEcoValues, Forage, Params);
-	DOREPLIFETIME_WITH_PARAMS(UEcoValues, Wildlife, Params);
 
 	DOREPLIFETIME_WITH_PARAMS(UEcoValues, MaxTrees, Params);
-	DOREPLIFETIME_WITH_PARAMS(UEcoValues, MaxWildlife, Params);
 	DOREPLIFETIME_WITH_PARAMS(UEcoValues, MaxForage, Params);
 
 	DOREPLIFETIME_WITH_PARAMS(UEcoValues, TreeGrowthProgress, Params);
-	DOREPLIFETIME_WITH_PARAMS(UEcoValues, WildlifeGrowthProgress, Params);
 	DOREPLIFETIME_WITH_PARAMS(UEcoValues, ForageGrowthProgress, Params);
 }
 
@@ -48,10 +45,6 @@ void UEcoValues::Init(EBiome Biome)
 	{
 		TreeGrowth += *DA_EcoSystem->BaseTreeGrowthPerBiome.Find(Biome);
 	}
-	if (DA_EcoSystem->BaseWildlifeGrowthPerBiome.Contains(Biome))
-	{
-		WildlifeGrowth += *DA_EcoSystem->BaseWildlifeGrowthPerBiome.Find(Biome);
-	}
 	if (DA_EcoSystem->BaseForageGrowthPerBiome.Contains(Biome))
 	{
 		ForageGrowth += *DA_EcoSystem->BaseForageGrowthPerBiome.Find(Biome);
@@ -69,13 +62,6 @@ void UEcoValues::ServerTick(double DeltaSeconds)
 		TreeGrowthProgress -= Count * DA_EcoSystem->TreeGrowthThreshold;
 		MARK_PROPERTY_DIRTY_FROM_NAME(UEcoValues, TreeGrowthProgress, this)
 	}
-	if (WildlifeGrowthProgress >= DA_EcoSystem->WildlifeGrowthThreshold)
-	{
-		int32 Count = WildlifeGrowthProgress / DA_EcoSystem->WildlifeGrowthThreshold;
-		AddWildlife(Count);
-		WildlifeGrowthProgress -= Count * DA_EcoSystem->WildlifeGrowthThreshold;
-		MARK_PROPERTY_DIRTY_FROM_NAME(UEcoValues, WildlifeGrowthProgress, this)
-	}
 	if (ForageGrowthProgress >= DA_EcoSystem->ForageGrowthThreshold)
 	{
 		int32 Count = ForageGrowthProgress / DA_EcoSystem->ForageGrowthThreshold;
@@ -91,12 +77,7 @@ void UEcoValues::ClientTick(double DeltaSeconds)
 		TreeGrowthProgress = 0;
 	else
 		TreeGrowthProgress += TreeGrowth * DeltaSeconds;
-
-	if (Wildlife == MaxWildlife)
-		WildlifeGrowthProgress = 0;
-	else
-		WildlifeGrowthProgress += WildlifeGrowth * DeltaSeconds;
-
+	
 	if (Forage == MaxForage)
 		ForageGrowthProgress = 0;
 	else
@@ -118,26 +99,17 @@ void UEcoValues::SetMaxValues(int32 NewMaxTrees, EBiome Biome)
 	}
 	MaxForage += MaxTrees * DA_EcoSystem->MaxForagePerMaxTree;
 	MARK_PROPERTY_DIRTY_FROM_NAME(UEcoValues, MaxForage, this)
-	// Set Max Wildlife
-	MaxWildlife = MaxForage * DA_EcoSystem->MaxWildlifePerForage;
-	MARK_PROPERTY_DIRTY_FROM_NAME(UEcoValues, MaxWildlife, this)
 }
 
 void UEcoValues::MaxALlValues()
 {
 	SetTrees(MaxTrees);
-	SetWildlife(MaxWildlife);
 	SetForage(MaxForage);
 }
 
 void UEcoValues::NeighborChangedTrees(int32 Amount)
 {
 	TreeGrowth += Amount * DA_EcoSystem->TreeGrowthPerNeighborTree;
-}
-
-void UEcoValues::NeighborChangedWildlife(int32 Amount)
-{
-	WildlifeGrowth += Amount * DA_EcoSystem->WildlifeGrowthPerNeighborWildlife;
 }
 
 void UEcoValues::NeighborChangedForage(int32 Amount)
@@ -152,12 +124,6 @@ void UEcoValues::OnTreeChanges(int32 Change)
 	TreeGrowth += Change * DA_EcoSystem->TreeGrowthPerOwnTree;
 	ForageGrowth += Change * DA_EcoSystem->ForageGrowthPerOwnTree;
 	OnTreesChanged.Broadcast(Change);
-}
-
-void UEcoValues::OnWildlifeChanges(int32 Change)
-{
-	WildlifeGrowth += Change * DA_EcoSystem->WildlifeGrowthPerOwnWildlife;
-	OnWildlifeChanged.Broadcast(Change);
 }
 
 void UEcoValues::OnForageChanges(int32 Change)
@@ -176,14 +142,6 @@ void UEcoValues::SetTrees(int32 NewTrees)
 		SubtractTrees(Trees - NewTrees);
 }
 
-void UEcoValues::SetWildlife(int32 NewWildlife)
-{
-	if (NewWildlife > Wildlife)
-		AddWildlife(NewWildlife - Wildlife);
-	else
-		SubtractWildlife(Wildlife - NewWildlife);
-}
-
 void UEcoValues::SetForage(int32 NewForage)
 {
 	if (NewForage > Forage)
@@ -197,11 +155,6 @@ void UEcoValues::SetForage(int32 NewForage)
 void UEcoValues::OnRep_Trees(int32 OldValue)
 {
 	OnTreeChanges(Trees - OldValue);
-}
-
-void UEcoValues::OnRep_Wildlife(int32 OldValue)
-{
-	OnWildlifeChanges(Wildlife - OldValue);
 }
 
 void UEcoValues::OnRep_Forage(int32 OldValue)
@@ -219,16 +172,6 @@ void UEcoValues::AddTrees(int32 Amount)
 	if (Trees == OldValue) return;
 	OnTreeChanges(Trees - OldValue);
 	MARK_PROPERTY_DIRTY_FROM_NAME(UEcoValues, Trees, this)
-}
-
-void UEcoValues::AddWildlife(int32 Amount)
-{
-	int32 OldValue = Wildlife;
-	Wildlife += Amount;
-	if (Wildlife > MaxWildlife) Wildlife = MaxWildlife;
-	if (Wildlife == OldValue) return;
-	OnWildlifeChanges(Wildlife - OldValue);
-	MARK_PROPERTY_DIRTY_FROM_NAME(UEcoValues, Wildlife, this)
 }
 
 void UEcoValues::AddForage(int32 Amount)
@@ -251,16 +194,6 @@ void UEcoValues::SubtractTrees(int32 Amount)
 	if (Trees == OldValue) return;
 	OnTreeChanges(Trees - OldValue);
 	MARK_PROPERTY_DIRTY_FROM_NAME(UEcoValues, Trees, this)
-}
-
-void UEcoValues::SubtractWildlife(int32 Amount)
-{
-	int32 OldValue = Wildlife;
-	Wildlife -= Amount;
-	if (Wildlife < 0) Wildlife = 0;
-	if (Wildlife == OldValue) return;
-	OnWildlifeChanges(Wildlife - OldValue);
-	MARK_PROPERTY_DIRTY_FROM_NAME(UEcoValues, Wildlife, this)
 }
 
 void UEcoValues::SubtractForage(int32 Amount)

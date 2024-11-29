@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-UENUM(BlueprintType)
+UENUM()
 enum class EAffiliation : uint8
 {
 	Ally UMETA(DisplayName = "Ally"),
@@ -14,7 +14,7 @@ inline EAffiliation operator!(EAffiliation Affiliation)
 	return EAffiliation::Ally;
 }
 
-UENUM(BlueprintType)
+UENUM()
 enum class EFaction : uint8
 {
 	None UMETA(DisplayName = "None"),
@@ -24,18 +24,29 @@ enum class EFaction : uint8
 	Enum_Length UMETA(Hidden)
 };
 
-UENUM(BlueprintType)
+UENUM()
 enum class EProductionType : uint8
 {
 	None UMETA(DisplayName = "None"),
 	Food UMETA(DisplayName = "Food"),
 	Wood UMETA(DisplayName = "Wood"),
 	Stone UMETA(DisplayName = "Stone"),
-	XPForGuardians UMETA(DisplayName = "XP For Guardians"),
+	Construction UMETA(DisplayName = "Construction"),
+	Healing UMETA(DisplayName = "Healing"),
 	Enum_Length UMETA(Hidden)
 };
 
-UENUM(BlueprintType)
+UENUM()
+enum class EConsumptionType : uint8
+{
+	None UMETA(DisplayName = "None"),
+	Food UMETA(DisplayName = "Food"),
+	Wood UMETA(DisplayName = "Wood"),
+	Stone UMETA(DisplayName = "Stone"),
+	Enum_Length UMETA(Hidden)
+};
+
+UENUM()
 enum class EMood : uint8
 {
 	Content UMETA(DisplayName = "Content"),
@@ -44,7 +55,7 @@ enum class EMood : uint8
 	Enum_Length UMETA(Hidden)
 };
 
-UENUM(BlueprintType)
+UENUM()
 enum class EBiome : uint8
 {
 	Gras UMETA(DisplayName = "Gras"),
@@ -53,22 +64,21 @@ enum class EBiome : uint8
 	Volcano UMETA(DisplayName = "Volcano")
 };
 
-UENUM(BlueprintType)
+UENUM()
 enum class EEcoValue : uint8
 {
 	Tree UMETA(DisplayName = "Tree"),
-	Wildlife UMETA(DisplayName = "Wildlife"),
 	Forage UMETA(DisplayName = "Forage")
 };
 
-UENUM(BlueprintType)
+UENUM()
 enum class EGameEnding : uint8
 {
 	Victory UMETA(DisplayName = "Victory"),
 	Defeat UMETA(DisplayName = "Defeat")
 };
 
-UENUM(BlueprintType)
+UENUM()
 enum class EGameStatus : uint8
 {
 	Lobby UMETA(DisplayName = "Lobby"),

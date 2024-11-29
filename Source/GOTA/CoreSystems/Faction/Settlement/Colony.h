@@ -5,14 +5,21 @@
 #include "Colony.generated.h"
 
 
+class UColonyBrainSettings;
+class UBuildingSettings;
+
 UCLASS()
 class AColony : public ASettlement
 {
 	GENERATED_BODY()
-	AColony();
 
 	virtual void Tick(float DeltaSeconds) override;
 
+	UPROPERTY()
+	UColonyBrainSettings* ColonyBrainSettings;
+
+	void InitColonyBrainSettings();
+	
 	// --------------------Building----------------------
 private:
 	void FigureOutBuilding();

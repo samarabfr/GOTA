@@ -58,6 +58,10 @@ void UOptions::FillComboBoxOptions()
 	CB_AntiAliasingQuality->AddOption(TEXT("High"));
 	CB_AntiAliasingQuality->AddOption(TEXT("Medium"));
 	CB_AntiAliasingQuality->AddOption(TEXT("Low"));
+
+	CB_Sharpen->AddOption(TEXT("High"));
+	CB_Sharpen->AddOption(TEXT("Low"));
+	CB_Sharpen->AddOption(TEXT("Off"));
 }
 
 void UOptions::RefreshEverything()
@@ -75,6 +79,8 @@ void UOptions::RefreshEverything()
 
 	RefreshAntiAliasingType();
 	RefreshAntiAliasingQuality();
+
+	RefreshSharpen();
 }
 
 void UOptions::RegisterDelegates()
@@ -93,6 +99,8 @@ void UOptions::RegisterDelegates()
 
 	CB_AntiAliasingType->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyAntiAliasingType);
 	CB_AntiAliasingQuality->OnSelectionChanged.AddDynamic(this, &UOptions::ApplyAntiAliasingQuality);
+	
+	CB_Sharpen->OnSelectionChanged.AddDynamic(this, &UOptions::ApplySharpen);
 }
 
 // ------------------- Screen -------------------
@@ -415,7 +423,8 @@ void UOptions::RefreshAntiAliasingQuality()
 
 	case 1: // Low
 		CB_AntiAliasingQuality->SetSelectedIndex(2);
-
+		return;
+		
 	default:
 		if (CB_AntiAliasingQuality->GetOptionCount() == 3)
 			CB_AntiAliasingQuality->AddOption("Custom");
@@ -437,6 +446,53 @@ void UOptions::ApplyAntiAliasingQuality(FString SelectedItem, ESelectInfo::Type 
 
 	case 2: // Low
 		UserSettings->SetAntiAliasingQuality(1);
+		break;
+
+	default:
+		return;
+	}
+	UserSettings->ApplySettings(true);
+}
+
+// -------------------------------------- Sharpen --------------------------------------
+
+void UOptions::RefreshSharpen()
+{
+	switch (UserSettings->GetSharpen())
+	{
+	case 2: // High
+		CB_Sharpen->SetSelectedIndex(0);
+		return;
+
+	case 1: // Low
+		CB_Sharpen->SetSelectedIndex(1);
+		return;
+
+	case 0: // Off
+		CB_Sharpen->SetSelectedIndex(2);
+		return;
+
+	default:
+		if (CB_Sharpen->GetOptionCount() == 3)
+			CB_Sharpen->AddOption("Custom");
+		CB_Sharpen->SetSelectedIndex(3);
+	}
+}
+
+void UOptions::ApplySharpen(FString SelectedItem, ESelectInfo::Type SelectionType)
+{
+	switch (CB_Sharpen->GetSelectedIndex())
+	{
+	case 0: // High
+		UserSettings->SetSharpen(2);
+		break;
+
+	case 1: // Low
+		UserSettings->SetSharpen(1);
+		break;
+
+	case 2: // Off
+		UserSettings->SetSharpen(0);
 		break;
 
 	default:

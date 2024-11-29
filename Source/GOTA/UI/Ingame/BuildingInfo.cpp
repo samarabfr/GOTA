@@ -34,7 +34,7 @@ void UBuildingInfo::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 void UBuildingInfo::RefreshPopulation()
 {
-	UPopulation* Pop = CurrentBuilding->Population;
+	UPopulation* Pop = CurrentBuilding->GetPopulation();
 	Population_Current->SetText(FText::AsNumber(Pop->GetSize()));
 	Population_Max->SetText(FText::AsNumber(Pop->GetMaxSize()));
 	Population_Growth->SetText(FText::Format(FText::FromString(TEXT("+{0}")), Pop->GetGrowth() * 100));
@@ -46,7 +46,7 @@ void UBuildingInfo::RefreshPopulation()
 
 void UBuildingInfo::RefreshConstruction()
 {
-	FGameResources Progress = CurrentBuilding->GetResourceProgress();
+	FGameResources Progress = CurrentBuilding->GetConstructionProgress();
 	FGameResources Cost = CurrentBuilding->Settings->Cost;
 	Wood_Current->SetText(FText::AsNumber(Progress.Wood));
 	Wood_Target->SetText(FText::AsNumber(Cost.Wood));

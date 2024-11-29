@@ -28,10 +28,8 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Population, Params);
-	DOREPLIFETIME_WITH_PARAMS(UBuilding, IncomeProgress, Params);
-	DOREPLIFETIME_WITH_PARAMS(UBuilding, Civilian, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, IsUnderConstruction, Params);
-	DOREPLIFETIME_WITH_PARAMS(UBuilding, ResourceProgress, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, ConstructionProgress, Params);
 }
 
 bool UBuilding::IsSupportedForNetworking() const
@@ -39,39 +37,22 @@ bool UBuilding::IsSupportedForNetworking() const
 	return true;
 }
 
+// ---------------------------------------- Lifecycle ----------------------------------------
+
 UBuilding::UBuilding()
 {
 	Population = CreateDefaultSubobject<UPopulation>(TEXT("Population"));
-	Population->OnSizeChanged.AddDynamic(this, &UBuilding::ProductionChanged);
+	Population->OnSizeChanged.AddDynamic(this, &UBuilding::PopulationChanged);
 }
 
 void UBuilding::ServerTick(const float DeltaSeconds)
 {
 	Population->S_Tick(DeltaSeconds);
-	if (Civilian)
-		Civilian->ServerTick(DeltaSeconds);
-	if (Settings->bIncomeEnabled)
-	{
-		if (IncomeProgress < Settings->IncomeTime)
-		{
-			IncomeProgress = FMath::Min(IncomeProgress + DeltaSeconds, Settings->IncomeTime);
-		}
-		else
-		{
-			AddIncomeToSettlement();
-			IncomeProgress = 0.0f;
-			MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, IncomeProgress, this)
-		}
-	}
 }
 
 void UBuilding::ClientTick(const float DeltaSeconds)
 {
 	Population->C_Tick(DeltaSeconds);
-	if (Civilian)
-		Civilian->ClientTick(DeltaSeconds);
-
-	IncomeProgress = FMath::Min(IncomeProgress + DeltaSeconds, Settings->IncomeTime);
 }
 
 void UBuilding::ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
@@ -95,50 +76,77 @@ void UBuilding::BeginDestroy()
 		Settlement->OnBuildingRemoved(this, Tile);
 }
 
-// --------------------- base income ---------------------
+// --------------------------------------- Population ---------------------------------------
 
-float UBuilding::GetCurrentIncomePerSecond() const
+void UBuilding::PopulationChanged(int16 Change)
 {
-	return Settings->IncomeAmount * Population->GetSize() / Settings->IncomeTime;
+	RefreshEfficiency();
 }
 
-void UBuilding::AddIncomeToSettlement()
+// --------------------------------------- Efficiency ---------------------------------------
+
+void UBuilding::SetEfficiency(const float NewEfficiency)
 {
-	FGameResources NewResources;
-	if (Settings->IncomeType == EProductionType::Food)
-		NewResources.Food = Settings->IncomeAmount;
-	if (Settings->IncomeType == EProductionType::Wood)
-		NewResources.Wood = Settings->IncomeAmount;
-	if (Settings->IncomeType == EProductionType::Stone)
-		NewResources.Stone = Settings->IncomeAmount;
-	Settlement->S_AddResources(NewResources, true);
+	const float Change = NewEfficiency - Efficiency;
+	if (FMath::IsNearlyZero(Change)) return;
+
+	Efficiency = NewEfficiency;
+	OnEfficiencyChanged.Broadcast(Change);
+
+	// when Efficiency changes, the predicted Production also changes
+	OnPredictedProductionChanged.Broadcast(Settings->GetDefaultPredictedProduction() * Change,
+	                                       Settings->ProductionType);
+	OnPredictedConsumptionChanged.Broadcast(Settings->GetDefaultPredictedConsumption() * Change,
+	                                        Settings->ConsumptionType);
 }
 
-void UBuilding::ProductionChanged(int16 Change)
+void UBuilding::RefreshEfficiency()
 {
-	OnIncomeChanged.Broadcast(Settings->IncomeTime * Change, Settings->IncomeType);
+	SetEfficiency(Population->GetSize() / static_cast<float>(Settings->Housing));
 }
 
-// ---------------- Civilian Entity ----------------
+// ------------------------------------- Predicted Production ---------------------------------------
 
-void UBuilding::SetCivilian(ACivilian* NewCivilian)
+EProductionType UBuilding::GetProductionType() const
 {
-	Civilian = NewCivilian;
-	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, Civilian, this)
+	if (Settings)
+		return Settings->ProductionType;
+	return EProductionType::None;
+}
+
+float UBuilding::GetPredictedProduction() const
+{
+	if (GetProductionType() != EProductionType::None)
+		return Settings->GetDefaultPredictedProduction() * Efficiency;
+	return 0.0f;
+}
+
+EConsumptionType UBuilding::GetConsumptionType() const
+{
+	if (Settings)
+		return Settings->ConsumptionType;
+	return EConsumptionType::None;
+}
+
+float UBuilding::GetPredictedConsumption() const
+{
+	if (GetConsumptionType() != EConsumptionType::None)
+		return Settings->GetDefaultPredictedConsumption() * Efficiency;
+	return 0.0f;
 }
 
 // --------------------- Construction phase ---------------------
 
-FGameResources UBuilding::GetResourceProgress() const
+FGameResources UBuilding::GetConstructionProgress() const
 {
-	return ResourceProgress;
+	return ConstructionProgress;
 }
 
-void UBuilding::SetResourceProgress(const FGameResources NewResourcesProgress)
+void UBuilding::SetConstructionProgress(const FGameResources NewConstructionProgress)
 {
-	ResourceProgress = NewResourcesProgress;
-	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, ResourceProgress, this)
-	if (ResourceProgress >= Settings->Cost)
+	ConstructionProgress = NewConstructionProgress;
+	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, ConstructionProgress, this)
+	if (ConstructionProgress >= Settings->Cost)
 		FinishConstruction();
 }
 
@@ -148,10 +156,4 @@ void UBuilding::FinishConstruction()
 	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, IsUnderConstruction, this)
 	Tile->OnBuildingFinishedConstruction();
 	Population->S_ChangeMaxSize(Settings->Housing);
-	if (Settings->CivilianClass)
-	{
-		ACivilian* NewCivilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);
-		NewCivilian->ServerInit(this, Tile);
-		SetCivilian(NewCivilian);
-	}
 }

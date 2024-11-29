@@ -3,6 +3,7 @@
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
+#include "GOTA/CoreSystems/Faction/Settlement/SettlementPopulation.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
 #include "GOTA/CoreSystems/GameplayFramework/DaytimeManager.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
@@ -20,9 +21,14 @@ void UTopBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 	RefreshClock();
 
+	ResourceUpdateTimeCounter += InDeltaTime;
+	if (ResourceUpdateTimeCounter < SecondsBeforeResourceUpdate)
+		return;
+	ResourceUpdateTimeCounter = 0.0f;
+
 	if (!GameState) return;
-	int16 Colonists = GameState->GetColony()->Population->GetSize();
-	int16 Natives = GameState->GetTribe()->Population->GetSize();
+	int16 Colonists = GameState->GetColony()->GetPopulation()->GetSize();
+	int16 Natives = GameState->GetTribe()->GetPopulation()->GetSize();
 	if (Colonists + Natives != 0)
 	{
 		float NativeProportion = Natives / static_cast<float>(Colonists + Natives);
@@ -36,11 +42,21 @@ void UTopBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	Colony_Wood->SetText(FText::AsNumber(static_cast<int32>(ColonyRes.Wood)));
 	Colony_Stone->SetText(FText::AsNumber(static_cast<int32>(ColonyRes.Stone)));
 
+	FGameResources ColonyResIncome = GameState->GetColony()->GetEffectivePredictedProduction();
+	UpdateIncomeNumber(TXT_ColonyFoodIncome, ColonyResIncome.Food);
+	UpdateIncomeNumber(TXT_ColonyWoodIncome, ColonyResIncome.Wood);
+	UpdateIncomeNumber(TXT_ColonyStoneIncome, ColonyResIncome.Stone);
+
 	FGameResources TribeRes = GameState->GetTribe()->GetResources();
 	Tribe_Pop->SetText(FText::AsNumber(Natives));
 	Tribe_Food->SetText(FText::AsNumber(static_cast<int32>(TribeRes.Food)));
 	Tribe_Wood->SetText(FText::AsNumber(static_cast<int32>(TribeRes.Wood)));
 	Tribe_Stone->SetText(FText::AsNumber(static_cast<int32>(TribeRes.Stone)));
+
+	FGameResources TribeResIncome = GameState->GetTribe()->GetEffectivePredictedProduction();
+	UpdateIncomeNumber(TXT_TribeFoodIncome, TribeResIncome.Food);
+	UpdateIncomeNumber(TXT_TribeWoodIncome, TribeResIncome.Wood);
+	UpdateIncomeNumber(TXT_TribeStoneIncome, TribeResIncome.Stone);
 }
 
 void UTopBar::RefreshClock()
@@ -67,4 +83,26 @@ void UTopBar::RefreshClock()
 	}
 
 	Daytime_Disk->SetRenderTransformAngle(NewRotation);
+}
+
+void UTopBar::UpdateIncomeNumber(UTextBlock* TextBlock, const float IncomeAmount)
+{
+	const int32 IncomePerMinuteFloored = static_cast<int32>(IncomeAmount * 60);
+	if (IncomePerMinuteFloored == 0)
+	{
+		TextBlock->SetVisibility(ESlateVisibility::Hidden);
+		return;
+	}
+	if (IncomePerMinuteFloored > 0)
+	{
+		TextBlock->SetColorAndOpacity(FSlateColor(FLinearColor::Green));
+	}
+	else
+	{
+		TextBlock->SetColorAndOpacity(FSlateColor(FLinearColor::Red));
+	}
+	FNumberFormattingOptions FormattingOptions;
+	FormattingOptions.AlwaysSign = true;
+	TextBlock->SetText(FText::AsNumber(IncomePerMinuteFloored, &FormattingOptions));
+	TextBlock->SetVisibility(ESlateVisibility::Visible);
 }
