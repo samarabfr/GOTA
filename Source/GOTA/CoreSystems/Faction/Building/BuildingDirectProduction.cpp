@@ -1,5 +1,4 @@
-﻿#include "C:\UnrealProjects\GOTAFunzt\Intermediate\Build\Win64\x64\GOTAEditor\Development\UnrealEd\SharedPCH.UnrealEd.Project.NoValFmtStr.ValApi.Cpp20.InclOrderUnreal5_3.h"
-#include "BuildingDirectProduction.h"
+﻿#include "BuildingDirectProduction.h"
 
 #include "BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
