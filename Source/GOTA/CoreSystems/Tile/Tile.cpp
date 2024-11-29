@@ -220,7 +220,10 @@ bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 	EnabledCount += BuildingDataAsset->bDirectProductionEnabled;
 	EnabledCount += BuildingDataAsset->bCivilianEnabled;
 	if(EnabledCount > 1)
-		UE_LOG(LogTemp, Warning, TEXT("More than one building types enabled: %d"), EnabledCount);
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Multiple building types enabled in BuildingDataAsset. Only one allowed!"))
+		return false;		
+	}
 	// Choose fitting class
 	if(BuildingDataAsset->bDirectProductionEnabled)
 		Building = NewObject<UBuildingDirectProduction>();
