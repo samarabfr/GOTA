@@ -6,7 +6,9 @@
 #include "Algo/RandomShuffle.h"
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingCivilian.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingDirectProduction.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
@@ -213,7 +215,22 @@ bool ATile::CanBuild()
 bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
 	if (!CanBuild() || !Builder) return false;
-	Building = NewObject<UBuilding>();
+	//check if multiple production things are on
+	int32 EnabledCount = 0;
+	EnabledCount += BuildingDataAsset->bDirectProductionEnabled;
+	EnabledCount += BuildingDataAsset->bCivilianEnabled;
+	if(EnabledCount > 1)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Multiple building types enabled in BuildingDataAsset. Only one allowed!"))
+		return false;		
+	}
+	// Choose fitting class
+	if(BuildingDataAsset->bDirectProductionEnabled)
+		Building = NewObject<UBuildingDirectProduction>();
+	else if(BuildingDataAsset->bCivilianEnabled)
+		Building = NewObject<UBuildingCivilian>();
+	else
+		Building = NewObject<UBuilding>();
 	Building->ServerInit(BuildingDataAsset, this, Builder);
 	AddReplicatedSubObject(Building);
 	AddReplicatedSubObject(Building->GetPopulation());

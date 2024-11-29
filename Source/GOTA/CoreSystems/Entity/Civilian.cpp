@@ -94,7 +94,7 @@ void ACivilian::ClientTick(const float DeltaSeconds)
 	}
 	else if (GetStatus() == ECivilianStatus::Working)
 	{
-		Progress += WorkRate * DeltaSeconds;
+		Progress += WorkRate * DeltaSeconds / Building->GetEfficiency();
 	}
 }
 
