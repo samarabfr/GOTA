@@ -18,6 +18,7 @@ class GOTA_API UBuilding : public UObject
 	GENERATED_BODY()
 	// ------------------------------------ Replication Setup --------------------------------------
 
+protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
 
@@ -29,8 +30,8 @@ public:
 	void ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement);
 	void ClientInit();
 
-	void ServerTick(float DeltaSeconds);
-	void ClientTick(const float DeltaSeconds);
+	virtual void ServerTick(float DeltaSeconds);
+	virtual void ClientTick(const float DeltaSeconds);
 
 protected:
 	virtual void BeginDestroy() override;
@@ -110,16 +111,7 @@ public:
 	float GetPredictedConsumption() const;
 
 	// --------------------------------------- Direct Production ---------------------------------------
-	// Direct Production will be produced every [DirectProductionTime]/[Efficiency] seconds.
-	// The Amount is always the same.
-private:
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	float DirectProductionProgress = 0.0f;
-
-	void S_ApplyDirectProduction();
 	
-public:
-	float GetDirectProductionProgress() const { return DirectProductionProgress; }
 
 	// ---------------- Civilian Entity ----------------
 private:

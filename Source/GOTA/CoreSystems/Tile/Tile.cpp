@@ -7,6 +7,7 @@
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingDirectProduction.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
@@ -213,7 +214,10 @@ bool ATile::CanBuild()
 bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
 	if (!CanBuild() || !Builder) return false;
-	Building = NewObject<UBuilding>();
+	if(BuildingDataAsset->bDirectProductionEnabled)
+		Building = NewObject<UBuildingDirectProduction>();
+	else
+		Building = NewObject<UBuilding>();
 	Building->ServerInit(BuildingDataAsset, this, Builder);
 	AddReplicatedSubObject(Building);
 	AddReplicatedSubObject(Building->GetPopulation());

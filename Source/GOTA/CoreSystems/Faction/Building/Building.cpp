@@ -28,7 +28,6 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Population, Params);
-	DOREPLIFETIME_WITH_PARAMS(UBuilding, DirectProductionProgress, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Civilian, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, IsUnderConstruction, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, ResourceProgress, Params);
@@ -52,19 +51,6 @@ void UBuilding::ServerTick(const float DeltaSeconds)
 	Population->S_Tick(DeltaSeconds);
 	if (Civilian)
 		Civilian->ServerTick(DeltaSeconds);
-	if (Settings->bDirectProductionEnabled)
-	{
-		if (DirectProductionProgress < Settings->DirectProductionTime)
-		{
-			DirectProductionProgress += DeltaSeconds;
-		}
-		else
-		{
-			S_ApplyDirectProduction();
-			DirectProductionProgress = 0.0f;
-			MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, DirectProductionProgress, this)
-		}
-	}
 }
 
 void UBuilding::ClientTick(const float DeltaSeconds)
@@ -72,8 +58,6 @@ void UBuilding::ClientTick(const float DeltaSeconds)
 	Population->C_Tick(DeltaSeconds);
 	if (Civilian)
 		Civilian->ClientTick(DeltaSeconds);
-
-	DirectProductionProgress += DeltaSeconds;
 }
 
 void UBuilding::ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
@@ -154,31 +138,6 @@ float UBuilding::GetPredictedConsumption() const
 	if (GetConsumptionType() != EConsumptionType::None)
 		return Settings->GetDefaultPredictedConsumption() * Efficiency;
 	return 0.0f;
-}
-
-// --------------------------------------- Direct Production ---------------------------------------
-
-void UBuilding::S_ApplyDirectProduction()
-{
-	FGameResources NewResources;
-	switch (Settings->ProductionType)
-	{
-	case EProductionType::Food:
-		NewResources.Food = Settings->DirectProductionAmount;
-		break;
-
-	case EProductionType::Wood:
-		NewResources.Wood = Settings->DirectProductionAmount;
-		break;
-
-	case EProductionType::Stone:
-		NewResources.Stone = Settings->DirectProductionAmount;
-		break;
-		
-	default:
-		break;
-	}
-	Settlement->S_AddResources(NewResources);
 }
 
 // ---------------- Civilian Entity ----------------
