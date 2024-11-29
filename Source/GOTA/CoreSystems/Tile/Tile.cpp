@@ -215,6 +215,13 @@ bool ATile::CanBuild()
 bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
 	if (!CanBuild() || !Builder) return false;
+	//check if multiple production things are on
+	int32 EnabledCount = 0;
+	EnabledCount += BuildingDataAsset->bDirectProductionEnabled;
+	EnabledCount += BuildingDataAsset->bCivilianEnabled;
+	if(EnabledCount > 1)
+		UE_LOG(LogTemp, Warning, TEXT("More than one building types enabled: %d"), EnabledCount);
+	// Choose fitting class
 	if(BuildingDataAsset->bDirectProductionEnabled)
 		Building = NewObject<UBuildingDirectProduction>();
 	else if(BuildingDataAsset->bCivilianEnabled)
