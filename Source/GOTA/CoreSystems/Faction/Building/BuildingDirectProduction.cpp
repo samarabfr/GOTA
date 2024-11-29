@@ -32,7 +32,7 @@ bool UBuildingDirectProduction::IsSupportedForNetworking() const
 void UBuildingDirectProduction::ServerTick(float DeltaSeconds)
 {
 	UBuilding::ServerTick(DeltaSeconds);
-	if (DirectProductionProgress < Settings->DirectProductionTime)
+	if (DirectProductionProgress < Settings->DirectProductionTime / GetEfficiency())
 	{
 		DirectProductionProgress += DeltaSeconds;
 	}
