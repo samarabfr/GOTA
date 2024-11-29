@@ -33,14 +33,14 @@ void UBuildingCivilian::ServerTick(float DeltaSeconds)
 {
 	UBuilding::ServerTick(DeltaSeconds);
 	if (Civilian)
-		Civilian->ServerTick(DeltaSeconds);
+		Civilian->S_Tick(DeltaSeconds);
 }
 
 void UBuildingCivilian::ClientTick(const float DeltaSeconds)
 {
 	Super::ClientTick(DeltaSeconds);
 	if (Civilian)
-		Civilian->ClientTick(DeltaSeconds);
+		Civilian->C_Tick(DeltaSeconds);
 }
 
 void UBuildingCivilian::BeginDestroy()
@@ -60,6 +60,6 @@ void UBuildingCivilian::FinishConstruction()
 {
 	Super::FinishConstruction();
 	ACivilian* NewCivilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);
-	NewCivilian->ServerInit(this, Tile);
+	NewCivilian->S_Init(this, Tile);
 	SetCivilian(NewCivilian);
 }
