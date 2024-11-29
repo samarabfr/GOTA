@@ -6,7 +6,6 @@
 #include "BuildingSettings.h"
 #include "Population.h"
 #include "GOTA/CoreSystems/Entity/Army.h"
-#include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
@@ -27,10 +26,8 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Population, Params);
-	DOREPLIFETIME_WITH_PARAMS(UBuilding, DirectProductionProgress, Params);
-	DOREPLIFETIME_WITH_PARAMS(UBuilding, Civilian, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, bIsUnderConstruction, Params);
-	DOREPLIFETIME_WITH_PARAMS(UBuilding, ResourceProgress, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, ConstructionProgress, Params);
 }
 
 bool UBuilding::IsSupportedForNetworking() const
@@ -49,23 +46,8 @@ UBuilding::UBuilding()
 void UBuilding::ServerTick(const float DeltaSeconds)
 {
 	Population->S_Tick(DeltaSeconds);
-	if (Civilian)
-		Civilian->S_Tick(DeltaSeconds);
 	if (Army)
 		Army->S_Tick(DeltaSeconds);
-	if (Settings->bDirectProductionEnabled)
-	{
-		if (DirectProductionProgress < Settings->DirectProductionTime)
-		{
-			DirectProductionProgress += DeltaSeconds;
-		}
-		else
-		{
-			S_ApplyDirectProduction();
-			DirectProductionProgress = 0.0f;
-			MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, DirectProductionProgress, this)
-		}
-	}
 	// Army
 	if (Settings->bArmyEnabled && !bIsUnderConstruction && !Army)
 	{
@@ -86,10 +68,6 @@ void UBuilding::ServerTick(const float DeltaSeconds)
 void UBuilding::ClientTick(const float DeltaSeconds)
 {
 	Population->C_Tick(DeltaSeconds);
-	if (Civilian)
-		Civilian->C_Tick(DeltaSeconds);
-
-	DirectProductionProgress += DeltaSeconds;
 }
 
 void UBuilding::ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
@@ -173,31 +151,6 @@ float UBuilding::GetPredictedConsumption() const
 	return 0.0f;
 }
 
-// --------------------------------------- Direct Production ---------------------------------------
-
-void UBuilding::S_ApplyDirectProduction()
-{
-	FGameResources NewResources;
-	switch (Settings->ProductionType)
-	{
-	case EProductionType::Food:
-		NewResources.Food = Settings->DirectProductionAmount;
-		break;
-
-	case EProductionType::Wood:
-		NewResources.Wood = Settings->DirectProductionAmount;
-		break;
-
-	case EProductionType::Stone:
-		NewResources.Stone = Settings->DirectProductionAmount;
-		break;
-		
-	default:
-		break;
-	}
-	Settlement->S_AddResources(NewResources);
-}
-
 // ---------------- Army ----------------
 
 void UBuilding::SetArmy(AArmy* NewArmy)
@@ -206,26 +159,18 @@ void UBuilding::SetArmy(AArmy* NewArmy)
 	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, Army, this)
 }
 
-// ---------------- Civilian ----------------
-
-void UBuilding::SetCivilian(ACivilian* NewCivilian)
-{
-	Civilian = NewCivilian;
-	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, Civilian, this)
-}
-
 // --------------------- Construction phase ---------------------
 
-FGameResources UBuilding::GetResourceProgress() const
+FGameResources UBuilding::GetConstructionProgress() const
 {
-	return ResourceProgress;
+	return ConstructionProgress;
 }
 
-void UBuilding::SetResourceProgress(const FGameResources NewResourcesProgress)
+void UBuilding::SetConstructionProgress(const FGameResources NewConstructionProgress)
 {
-	ResourceProgress = NewResourcesProgress;
-	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, ResourceProgress, this)
-	if (ResourceProgress >= Settings->Cost)
+	ConstructionProgress = NewConstructionProgress;
+	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, ConstructionProgress, this)
+	if (ConstructionProgress >= Settings->Cost)
 		FinishConstruction();
 }
 
@@ -235,10 +180,4 @@ void UBuilding::FinishConstruction()
 	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, bIsUnderConstruction, this)
 	Tile->OnBuildingFinishedConstruction();
 	Population->S_ChangeMaxSize(Settings->Housing);
-	if (Settings->bCivilianEnabled)
-	{
-		ACivilian* NewCivilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);
-		NewCivilian->S_Init(this, Tile);
-		SetCivilian(NewCivilian);
-	}
 }

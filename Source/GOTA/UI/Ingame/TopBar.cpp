@@ -21,6 +21,11 @@ void UTopBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 
 	RefreshClock();
 
+	ResourceUpdateTimeCounter += InDeltaTime;
+	if (ResourceUpdateTimeCounter < SecondsBeforeResourceUpdate)
+		return;
+	ResourceUpdateTimeCounter = 0.0f;
+
 	if (!GameState) return;
 	int16 Colonists = GameState->GetColony()->GetPopulation()->GetSize();
 	int16 Natives = GameState->GetTribe()->GetPopulation()->GetSize();
@@ -82,7 +87,7 @@ void UTopBar::RefreshClock()
 
 void UTopBar::UpdateIncomeNumber(UTextBlock* TextBlock, const float IncomeAmount)
 {
-	const int32 IncomePerMinuteFloored = static_cast<int32>(IncomeAmount*60);
+	const int32 IncomePerMinuteFloored = static_cast<int32>(IncomeAmount * 60);
 	if (IncomePerMinuteFloored == 0)
 	{
 		TextBlock->SetVisibility(ESlateVisibility::Hidden);

@@ -19,6 +19,7 @@ class GOTA_API UBuilding : public UObject
 	GENERATED_BODY()
 	// ------------------------------------ Replication Setup --------------------------------------
 
+protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual bool IsSupportedForNetworking() const override;
 
@@ -30,8 +31,8 @@ public:
 	void ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement);
 	void ClientInit();
 
-	void ServerTick(float DeltaSeconds);
-	void ClientTick(const float DeltaSeconds);
+	virtual void ServerTick(float DeltaSeconds);
+	virtual void ClientTick(const float DeltaSeconds);
 
 protected:
 	virtual void BeginDestroy() override;
@@ -109,19 +110,7 @@ public:
 
 	// returns the predicted Consumption of GetConsumptionType() in Units per Second
 	float GetPredictedConsumption() const;
-
-	// --------------------------------------- Direct Production ---------------------------------------
-	// Direct Production will be produced every [DirectProductionTime]/[Efficiency] seconds.
-	// The Amount is always the same.
-private:
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	float DirectProductionProgress = 0.0f;
-
-	void S_ApplyDirectProduction();
 	
-public:
-	float GetDirectProductionProgress() const { return DirectProductionProgress; }
-
 	// ---------------- Army ----------------
 private:
 
@@ -135,18 +124,7 @@ private:
 
 public:
 	AArmy* GetArmy() const { return Army; }
-
-	//--------------------- Civilian ----------------
-
-private:
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	ACivilian* Civilian;
-
-	void SetCivilian(ACivilian* NewCivilian);
-
-public:
-	ACivilian* GetCivilian() const { return Civilian; }
-
+	
 	// --------------------- Construction phase ---------------------
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
@@ -157,11 +135,11 @@ public:
 
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
-	FGameResources ResourceProgress;
+	FGameResources ConstructionProgress;
 
 public:
-	FGameResources GetResourceProgress() const;
-	void SetResourceProgress(const FGameResources NewResourcesProgress);
+	FGameResources GetConstructionProgress() const;
+	void SetConstructionProgress(const FGameResources NewConstructionProgress);
 
-	void FinishConstruction();
+	virtual void FinishConstruction();
 };
