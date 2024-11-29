@@ -110,21 +110,7 @@ public:
 
 	// returns the predicted Consumption of GetConsumptionType() in Units per Second
 	float GetPredictedConsumption() const;
-	
-	// ---------------- Army ----------------
-private:
 
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	AArmy* Army;
-
-	UPROPERTY(VisibleInstanceOnly)
-	float ArmyRespawnTimer = 0.0F;
-
-	void SetArmy(AArmy* NewArmy);
-
-public:
-	AArmy* GetArmy() const { return Army; }
-	
 	// --------------------- Construction phase ---------------------
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
@@ -142,4 +128,8 @@ public:
 	void SetConstructionProgress(const FGameResources NewConstructionProgress);
 
 	virtual void FinishConstruction();
+
+	// --------------------- Army ---------------------
+public:
+	virtual AArmy* GetArmy() const { return nullptr; }
 };

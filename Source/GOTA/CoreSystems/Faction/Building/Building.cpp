@@ -5,7 +5,6 @@
 
 #include "BuildingSettings.h"
 #include "Population.h"
-#include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
@@ -46,23 +45,6 @@ UBuilding::UBuilding()
 void UBuilding::ServerTick(const float DeltaSeconds)
 {
 	Population->S_Tick(DeltaSeconds);
-	if (Army)
-		Army->S_Tick(DeltaSeconds);
-	// Army
-	if (Settings->bArmyEnabled && !bIsUnderConstruction && !Army)
-	{
-		if (ArmyRespawnTimer < Settings->ArmyRespawnTime)
-		{
-			ArmyRespawnTimer += DeltaSeconds;
-		}
-		else if (Tile->AcceptsArmy())
-		{
-			ArmyRespawnTimer = 0.0f;
-			AArmy* NewArmy = Tile->GetWorld()->SpawnActor<AArmy>();
-			NewArmy->S_Init(this, Tile);
-			SetArmy(NewArmy);
-		}
-	}
 }
 
 void UBuilding::ClientTick(const float DeltaSeconds)
@@ -149,14 +131,6 @@ float UBuilding::GetPredictedConsumption() const
 	if (GetConsumptionType() != EConsumptionType::None)
 		return Settings->GetDefaultPredictedConsumption() * Efficiency;
 	return 0.0f;
-}
-
-// ---------------- Army ----------------
-
-void UBuilding::SetArmy(AArmy* NewArmy)
-{
-	Army = NewArmy;
-	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, Army, this)
 }
 
 // --------------------- Construction phase ---------------------

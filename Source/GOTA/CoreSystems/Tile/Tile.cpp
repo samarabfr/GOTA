@@ -6,6 +6,7 @@
 #include "Algo/RandomShuffle.h"
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingArmy.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingCivilian.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingDirectProduction.h"
@@ -182,6 +183,7 @@ bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 	int32 EnabledCount = 0;
 	EnabledCount += BuildingDataAsset->bDirectProductionEnabled;
 	EnabledCount += BuildingDataAsset->bCivilianEnabled;
+	EnabledCount += BuildingDataAsset->bArmyEnabled;
 	if(EnabledCount > 1)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Multiple building types enabled in BuildingDataAsset. Only one allowed!"))
@@ -192,6 +194,8 @@ bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 		Building = NewObject<UBuildingDirectProduction>();
 	else if(BuildingDataAsset->bCivilianEnabled)
 		Building = NewObject<UBuildingCivilian>();
+	else if(BuildingDataAsset->bArmyEnabled)
+		Building = NewObject<UBuildingArmy>();
 	else
 		Building = NewObject<UBuilding>();
 	Building->ServerInit(BuildingDataAsset, this, Builder);
