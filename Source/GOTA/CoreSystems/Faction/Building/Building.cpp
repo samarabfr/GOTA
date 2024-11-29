@@ -28,7 +28,6 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Population, Params);
-	DOREPLIFETIME_WITH_PARAMS(UBuilding, Civilian, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, IsUnderConstruction, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, ResourceProgress, Params);
 }
@@ -49,15 +48,11 @@ UBuilding::UBuilding()
 void UBuilding::ServerTick(const float DeltaSeconds)
 {
 	Population->S_Tick(DeltaSeconds);
-	if (Civilian)
-		Civilian->ServerTick(DeltaSeconds);
 }
 
 void UBuilding::ClientTick(const float DeltaSeconds)
 {
 	Population->C_Tick(DeltaSeconds);
-	if (Civilian)
-		Civilian->ClientTick(DeltaSeconds);
 }
 
 void UBuilding::ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
@@ -140,14 +135,6 @@ float UBuilding::GetPredictedConsumption() const
 	return 0.0f;
 }
 
-// ---------------- Civilian Entity ----------------
-
-void UBuilding::SetCivilian(ACivilian* NewCivilian)
-{
-	Civilian = NewCivilian;
-	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, Civilian, this)
-}
-
 // --------------------- Construction phase ---------------------
 
 FGameResources UBuilding::GetResourceProgress() const
@@ -169,10 +156,4 @@ void UBuilding::FinishConstruction()
 	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, IsUnderConstruction, this)
 	Tile->OnBuildingFinishedConstruction();
 	Population->S_ChangeMaxSize(Settings->Housing);
-	if (Settings->CivilianClass)
-	{
-		ACivilian* NewCivilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);
-		NewCivilian->ServerInit(this, Tile);
-		SetCivilian(NewCivilian);
-	}
 }

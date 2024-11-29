@@ -1,10 +1,10 @@
 ﻿#pragma once
 #include "Building.h"
 
-#include "BuildingDirectProduction.generated.h"
+#include "BuildingCivilian.generated.h"
 
 UCLASS(Blueprintable)
-class GOTA_API UBuildingDirectProduction : public UBuilding
+class GOTA_API UBuildingCivilian : public UBuilding
 {
 	GENERATED_BODY()
 	// ------------------------------------ Replication Setup --------------------------------------
@@ -19,15 +19,16 @@ public:
 protected:
 	virtual void BeginDestroy() override;
 
-	// ---------------------------------------- Direct production ----------------------------------------
-	// Direct Production will be produced every [DirectProductionTime]/[Efficiency] seconds.
-	// The Amount is always the same.
+	
+	// ---------------- Civilian Entity ----------------
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
-	float DirectProductionProgress = 0.0f;
+	ACivilian* Civilian;
 
-	void S_ApplyDirectProduction();
-	
+	void SetCivilian(ACivilian* NewCivilian);
+
+	virtual void FinishConstruction() override;
+
 public:
-	float GetDirectProductionProgress() const { return DirectProductionProgress; }
+	ACivilian* GetCivilian() const { return Civilian; }
 };

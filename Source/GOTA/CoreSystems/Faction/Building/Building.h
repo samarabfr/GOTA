@@ -108,20 +108,7 @@ public:
 	EConsumptionType GetConsumptionType() const;
 
 	// returns the predicted Consumption of GetConsumptionType() in Units per Second
-	float GetPredictedConsumption() const;
-
-	// --------------------------------------- Direct Production ---------------------------------------
-	
-
-	// ---------------- Civilian Entity ----------------
-private:
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	ACivilian* Civilian;
-
-	void SetCivilian(ACivilian* NewCivilian);
-
-public:
-	ACivilian* GetCivilian() const { return Civilian; }
+	float GetPredictedConsumption() const;	
 
 	// --------------------- Construction phase ---------------------
 private:
@@ -139,5 +126,5 @@ public:
 	FGameResources GetResourceProgress() const;
 	void SetResourceProgress(const FGameResources NewResourcesProgress);
 
-	void FinishConstruction();
+	virtual void FinishConstruction();
 };

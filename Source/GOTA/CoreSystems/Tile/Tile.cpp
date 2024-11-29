@@ -6,6 +6,7 @@
 #include "Algo/RandomShuffle.h"
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingCivilian.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingDirectProduction.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
@@ -216,6 +217,8 @@ bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 	if (!CanBuild() || !Builder) return false;
 	if(BuildingDataAsset->bDirectProductionEnabled)
 		Building = NewObject<UBuildingDirectProduction>();
+	else if(BuildingDataAsset->bCivilianEnabled)
+		Building = NewObject<UBuildingCivilian>();
 	else
 		Building = NewObject<UBuilding>();
 	Building->ServerInit(BuildingDataAsset, this, Builder);
