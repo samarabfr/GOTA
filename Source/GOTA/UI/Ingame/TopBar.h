@@ -84,4 +84,7 @@ private:
 	void RefreshClock();
 
 	void UpdateIncomeNumber(UTextBlock* TextBlock, float IncomeAmount);
+
+	float ResourceUpdateTimeCounter = 0.0f;
+	float SecondsBeforeResourceUpdate = 1.0f;
 };

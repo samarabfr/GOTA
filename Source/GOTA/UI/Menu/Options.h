@@ -120,4 +120,14 @@ private:
 	void RefreshAntiAliasingQuality();
 	UFUNCTION()
 	void ApplyAntiAliasingQuality(FString SelectedItem, ESelectInfo::Type SelectionType);
+
+	// -------------------------------------- Sharpen --------------------------------------
+protected:
+	UPROPERTY(meta = (BindWidget))
+	UComboBoxString* CB_Sharpen;
+
+private:
+	void RefreshSharpen();
+	UFUNCTION()
+	void ApplySharpen(FString SelectedItem, ESelectInfo::Type SelectionType);
 };
