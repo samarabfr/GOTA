@@ -29,7 +29,7 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Population, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, IsUnderConstruction, Params);
-	DOREPLIFETIME_WITH_PARAMS(UBuilding, ResourceProgress, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, ConstructionProgress, Params);
 }
 
 bool UBuilding::IsSupportedForNetworking() const
@@ -137,16 +137,16 @@ float UBuilding::GetPredictedConsumption() const
 
 // --------------------- Construction phase ---------------------
 
-FGameResources UBuilding::GetResourceProgress() const
+FGameResources UBuilding::GetConstructionProgress() const
 {
-	return ResourceProgress;
+	return ConstructionProgress;
 }
 
-void UBuilding::SetResourceProgress(const FGameResources NewResourcesProgress)
+void UBuilding::SetConstructionProgress(const FGameResources NewConstructionProgress)
 {
-	ResourceProgress = NewResourcesProgress;
-	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, ResourceProgress, this)
-	if (ResourceProgress >= Settings->Cost)
+	ConstructionProgress = NewConstructionProgress;
+	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, ConstructionProgress, this)
+	if (ConstructionProgress >= Settings->Cost)
 		FinishConstruction();
 }
 

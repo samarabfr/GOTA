@@ -120,11 +120,11 @@ public:
 
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
-	FGameResources ResourceProgress;
+	FGameResources ConstructionProgress;
 
 public:
-	FGameResources GetResourceProgress() const;
-	void SetResourceProgress(const FGameResources NewResourcesProgress);
+	FGameResources GetConstructionProgress() const;
+	void SetConstructionProgress(const FGameResources NewConstructionProgress);
 
 	virtual void FinishConstruction();
 };

@@ -43,7 +43,7 @@ void ABuilder::ValidateStatus()
 void ABuilder::Work()
 {
 	int32 WorkAmountLeft = WorkAmount;
-	const FGameResources ResourcesProgress = CurrentTile->GetBuilding()->GetResourceProgress();
+	const FGameResources ResourcesProgress = CurrentTile->GetBuilding()->GetConstructionProgress();
 	FGameResources ResourcesProgressToAdd = FGameResources();
 	// Food
 	const int32 FoodNeeded = CurrentTile->GetBuilding()->Settings->Cost.Food - ResourcesProgress.Food;
@@ -72,7 +72,7 @@ void ABuilder::Work()
 		ResourcesProgressToAdd.Stone = DoneWork;
 		WorkAmountLeft -= DoneWork;
 	}
-	CurrentTile->GetBuilding()->SetResourceProgress(ResourcesProgress + ResourcesProgressToAdd);
+	CurrentTile->GetBuilding()->SetConstructionProgress(ResourcesProgress + ResourcesProgressToAdd);
 	Building->Settlement->S_RemoveResources(ResourcesProgressToAdd);
 }
 

@@ -46,7 +46,7 @@ void UBuildingInfo::RefreshPopulation()
 
 void UBuildingInfo::RefreshConstruction()
 {
-	FGameResources Progress = CurrentBuilding->GetResourceProgress();
+	FGameResources Progress = CurrentBuilding->GetConstructionProgress();
 	FGameResources Cost = CurrentBuilding->Settings->Cost;
 	Wood_Current->SetText(FText::AsNumber(Progress.Wood));
 	Wood_Target->SetText(FText::AsNumber(Cost.Wood));
