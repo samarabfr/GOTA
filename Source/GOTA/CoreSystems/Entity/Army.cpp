@@ -367,9 +367,8 @@ void AArmy::S_StartRavagingEnemyBuilding()
 
 void AArmy::S_RavageEnemyBuilding()
 {
-	if (IsOnEnemyBuilding() &&
-		!CurrentTile->GetBuilding()->IsProtected() &&
-		CurrentTile->GetBuilding()->GetPopulation()->GetSize() > 0)
+	if(CurrentTile->GetBuilding()->IsProtected()) return;
+	if (IsOnEnemyBuilding() && CurrentTile->GetBuilding()->GetPopulation()->GetSize() > 0)
 	{
 		CurrentTile->GetBuilding()->GetPopulation()->S_DecreaseSize(1);
 	}

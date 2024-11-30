@@ -113,7 +113,9 @@ AArmy* ATile::GetArmy() const
 
 bool ATile::AcceptsArmy() const
 {
-	if (Terrain.Biome == EBiome::Volcano)
+	if (Terrain.Biome == EBiome::Volcano ||
+		GetBuilding() &&
+		GetBuilding()->GetSettings()->bDefenseEnabled)
 		return false;
 	return !Army;
 }
@@ -196,19 +198,19 @@ bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 	EnabledCount += BuildingDataAsset->bDirectProductionEnabled;
 	EnabledCount += BuildingDataAsset->bCivilianEnabled;
 	EnabledCount += BuildingDataAsset->bArmyEnabled;
-	if(EnabledCount > 1)
+	if (EnabledCount > 1)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Multiple building types enabled in BuildingDataAsset. Only one allowed!"))
-		return false;		
+		return false;
 	}
 	// Choose fitting class
-	if(BuildingDataAsset->bDirectProductionEnabled)
+	if (BuildingDataAsset->bDirectProductionEnabled)
 		Building = NewObject<UBuildingDirectProduction>();
-	else if(BuildingDataAsset->bCivilianEnabled)
+	else if (BuildingDataAsset->bCivilianEnabled)
 		Building = NewObject<UBuildingCivilian>();
-	else if(BuildingDataAsset->bArmyEnabled)
+	else if (BuildingDataAsset->bArmyEnabled)
 		Building = NewObject<UBuildingArmy>();
-	else if(BuildingDataAsset->bArmyEnabled)
+	else if (BuildingDataAsset->bDefenseEnabled)
 		Building = NewObject<UBuildingDefense>();
 	else
 		Building = NewObject<UBuilding>();
@@ -349,7 +351,9 @@ void ATile::PopSizeChanged(const int16 Change)
 	ForceNetUpdate();
 	for (int i = 0; i < 6; ++i)
 	{
-		if (Neighbors[i] && Neighbors[i]->Building) Neighbors[i]->Building->GetPopulation()->NeighborChangedPopSize(Change);
+		if (Neighbors[i] && Neighbors[i]->Building)
+			Neighbors[i]->Building->GetPopulation()->
+			              NeighborChangedPopSize(Change);
 	}
 }
 

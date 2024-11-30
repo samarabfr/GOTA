@@ -189,10 +189,10 @@ ATile* ATileMap::GetRandomTile()
 }
 
 ATile* ATileMap::FindNearestTileInRange(ATile* Origin, int32 Range,
-	const std::function<bool(const ATile*)>& Condition) const
+                                        const std::function<bool(const ATile*)>& Condition) const
 {
-	if(!Origin || Range < 0) return nullptr;
-	if(Range == 0) return Condition(Origin) ? Origin : nullptr;
+	if (!Origin || Range < 0) return nullptr;
+	if (Range == 0) return Condition(Origin) ? Origin : nullptr;
 
 	TArray<ATile*> Frontier;
 	Frontier.Add(Origin);
@@ -287,7 +287,7 @@ TArray<ATile*> ATileMap::FindPathToNearestTile(ATile* Origin, const EEntityType 
 }
 
 TArray<ATile*> ATileMap::FindPathToNearestTileInRange(ATile* Origin, EEntityType EntityType, int32 Range,
-	const std::function<bool(const ATile*)>& Condition) const
+                                                      const std::function<bool(const ATile*)>& Condition) const
 {
 	if (!Origin) return TArray<ATile*>();
 	TArray<ATile*> Frontier;
