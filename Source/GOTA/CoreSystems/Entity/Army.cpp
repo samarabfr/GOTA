@@ -283,12 +283,36 @@ bool AArmy::TryFindPathToNearestEnemy()
 	return !Path.IsEmpty();
 }
 
-bool AArmy::TryFindPathToNearestEnemyBuilding()
+bool AArmy::TryFindPathToNearestEnemyUnprotectedNormalBuilding()
 {
 	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Army, [this](const ATile* Tile)
 	{
-		return Tile && Tile->GetBuilding() && Tile->GetClaimant()
-			&& Tile->GetClaimant()->GetAffiliation() != GetAffiliation();
+		return Tile &&
+			Tile->GetClaimant() &&
+			Tile->GetClaimant()->GetAffiliation() != GetAffiliation() &&
+			Tile->GetBuilding() &&
+			!Tile->GetBuilding()->IsProtected();
+	});
+	return !Path.IsEmpty();
+}
+
+bool AArmy::TryFindPathToNearestEnemyDefenseBuilding()
+{
+	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Army, [this](const ATile* Tile)
+	{
+		if (!Tile) return false;
+		for (ATile* Neighbor : Tile->GetNeighbors())
+		{
+			if (Neighbor &&
+				Neighbor->GetClaimant() &&
+				Neighbor->GetClaimant()->GetAffiliation() != GetAffiliation() &&
+				Neighbor->GetBuilding() &&
+				Neighbor->GetBuilding()->GetSettings()->bDefenseEnabled)
+			{
+				return true;
+			}
+		}
+		return false;
 	});
 	return !Path.IsEmpty();
 }
@@ -359,6 +383,13 @@ bool AArmy::IsOnEnemyBuilding() const
 		CurrentTile->GetClaimant()->GetAffiliation() != Affiliation;
 }
 
+bool AArmy::IsBuildingProtected() const
+{
+	return CurrentTile &&
+		CurrentTile->GetBuilding() &&
+		CurrentTile->GetBuilding()->IsProtected();
+}
+
 void AArmy::S_StartRavagingEnemyBuilding()
 {
 	Progress = 0.f;
@@ -367,8 +398,8 @@ void AArmy::S_StartRavagingEnemyBuilding()
 
 void AArmy::S_RavageEnemyBuilding()
 {
-	if(CurrentTile->GetBuilding()->IsProtected()) return;
-	if (IsOnEnemyBuilding() && CurrentTile->GetBuilding()->GetPopulation()->GetSize() > 0)
+	if (!IsOnEnemyBuilding() || IsBuildingProtected()) return;
+	if (CurrentTile->GetBuilding()->GetPopulation()->GetSize() > 0)
 	{
 		CurrentTile->GetBuilding()->GetPopulation()->S_DecreaseSize(1);
 	}

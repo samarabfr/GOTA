@@ -128,7 +128,8 @@ public:
 	TArray<AArmy*> GetNeighboringEnemies() const;
 	bool HasEnemyOnNeighboringTile() const;
 	bool TryFindPathToNearestEnemy();
-	bool TryFindPathToNearestEnemyBuilding();
+	bool TryFindPathToNearestEnemyUnprotectedNormalBuilding();
+	bool TryFindPathToNearestEnemyDefenseBuilding();
 	bool HasEnemyInGarrisonModeRange() const;
 	void S_StartAttacking();
 	void S_ArmyTakeDamage(int32 Damage);
@@ -149,6 +150,7 @@ private:
 	
 public:
 	bool IsOnEnemyBuilding() const;
+	bool IsBuildingProtected() const;
 	void S_StartRavagingEnemyBuilding();
 
 };

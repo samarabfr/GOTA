@@ -64,7 +64,7 @@ EStateTreeRunStatus FSTT_FindPathToNearestEnemy::EnterState(FStateTreeExecutionC
 	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
 }
 
-EStateTreeRunStatus FSTT_FindPathToNearestEnemyBuilding::EnterState(FStateTreeExecutionContext& Context,
+EStateTreeRunStatus FSTT_FindPathToNearestEnemyUnprotectedNormalBuilding::EnterState(FStateTreeExecutionContext& Context,
 													 const FStateTreeTransitionResult& Transition) const
 {
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
@@ -74,12 +74,26 @@ EStateTreeRunStatus FSTT_FindPathToNearestEnemyBuilding::EnterState(FStateTreeEx
 		return EStateTreeRunStatus::Failed;
 	}
 
-	const bool bHasPath = InstanceData.ArmyRef.Get()->TryFindPathToNearestEnemyBuilding();
+	const bool bHasPath = InstanceData.ArmyRef.Get()->TryFindPathToNearestEnemyUnprotectedNormalBuilding();
+	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
+}
+
+EStateTreeRunStatus FSTT_FindPathToNearestEnemyDefenseBuilding::EnterState(FStateTreeExecutionContext& Context,
+	const FStateTreeTransitionResult& Transition) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	if (!InstanceData.ArmyRef)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
+		return EStateTreeRunStatus::Failed;
+	}
+
+	const bool bHasPath = InstanceData.ArmyRef.Get()->TryFindPathToNearestEnemyDefenseBuilding();
 	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
 }
 
 EStateTreeRunStatus FSTT_FindPathToNearestRecruitable::EnterState(FStateTreeExecutionContext& Context,
-																  const FStateTreeTransitionResult& Transition) const
+                                                                  const FStateTreeTransitionResult& Transition) const
 {
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
 	if (!InstanceData.ArmyRef)

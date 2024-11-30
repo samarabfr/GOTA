@@ -51,6 +51,7 @@ void UBuildingDefense::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASet
 void UBuildingDefense::S_Tick(float DeltaSeconds)
 {
 	Super::S_Tick(DeltaSeconds);
+	C_Tick(DeltaSeconds);
 	if(!bIsAttacking && HasEnemyOnNeighboringTile())
 	{
 		bIsAttacking = true;

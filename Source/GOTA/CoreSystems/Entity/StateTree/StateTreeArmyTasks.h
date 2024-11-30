@@ -66,8 +66,20 @@ struct GOTA_API FSTT_FindPathToNearestEnemy : public FStateTreeTaskCommonBase
 										   const FStateTreeTransitionResult& Transition) const override;
 };
 
-USTRUCT(DisplayName="Find path to nearest enemy building")
-struct GOTA_API FSTT_FindPathToNearestEnemyBuilding : public FStateTreeTaskCommonBase
+USTRUCT(DisplayName="Find path to nearest enemy unprotected normal building")
+struct GOTA_API FSTT_FindPathToNearestEnemyUnprotectedNormalBuilding : public FStateTreeTaskCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FArmyInstanceData;
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context,
+										   const FStateTreeTransitionResult& Transition) const override;
+};
+
+USTRUCT(DisplayName="Find path to nearest enemy defense building")
+struct GOTA_API FSTT_FindPathToNearestEnemyDefenseBuilding : public FStateTreeTaskCommonBase
 {
 	GENERATED_BODY()
 
