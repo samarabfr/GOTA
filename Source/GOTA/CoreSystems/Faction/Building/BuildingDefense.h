@@ -50,5 +50,5 @@ public:
 	TArray<AArmy*> GetNeighboringEnemies() const;
 	bool HasEnemyOnNeighboringTile() const;
 	void S_StartAttacking();
-	void S_BuildingDefenseTakeDamage(int32 Damage);
+	virtual void S_BuildingDefenseTakeDamage(int32 Damage) override;
 };

@@ -133,11 +133,17 @@ public:
 
 	virtual void FinishConstruction();
 
+	// --------------------- Protection ---------------------
+	
+public:
+	bool IsProtected() const;
+
 	// --------------------- Army ---------------------
 public:
 	virtual AArmy* GetArmy() const { return nullptr; }
 
-	// --------------------- Protection ---------------------
+	// --------------------- Defense building ---------------------
+	
 public:
-	bool IsProtected() const;
+	virtual void S_BuildingDefenseTakeDamage(int32 Damage) {}
 };

@@ -265,7 +265,7 @@ void AArmy::S_MoveToNextTileOnPath()
 // ----------------- Combat ------------------------
 bool AArmy::HasEnemyOnNeighboringTile() const
 {
-	return GetNeighboringEnemies().Num() > 0;
+	return GetNeighboringEnemyArmies().Num() > 0 || GetNeighboringEnemyDefenseBuildings().Num() > 0;
 }
 
 bool AArmy::TryFindPathToNearestEnemy()
@@ -335,20 +335,38 @@ void AArmy::S_StartAttacking()
 	SetStatus(EArmyStatus::Attacking);
 }
 
-TArray<AArmy*> AArmy::GetNeighboringEnemies() const
+TArray<AArmy*> AArmy::GetNeighboringEnemyArmies() const
 {
-	TArray<AArmy*> NeighboringEnemies;
-	if (!CurrentTile) return NeighboringEnemies;
+	TArray<AArmy*> NeighboringArmies;
+	if (!CurrentTile) return NeighboringArmies;
 	for (const ATile* Neighbor : CurrentTile->Neighbors)
 	{
 		if (Neighbor &&
 			Neighbor->GetArmy() &&
 			Neighbor->GetArmy()->GetAffiliation() != GetAffiliation())
 		{
-			NeighboringEnemies.Add(Neighbor->GetArmy());
+			NeighboringArmies.Add(Neighbor->GetArmy());
 		}
 	}
-	return NeighboringEnemies;
+	return NeighboringArmies;
+}
+
+TArray<UBuilding*> AArmy::GetNeighboringEnemyDefenseBuildings() const
+{
+	TArray<UBuilding*> NeighboringDefenseBuildings;
+	if (!CurrentTile) return NeighboringDefenseBuildings;
+	for (const ATile* Neighbor : CurrentTile->Neighbors)
+	{
+		if (Neighbor &&
+			Neighbor->GetClaimant() &&
+			Neighbor->GetClaimant()->GetAffiliation() != GetAffiliation() &&
+			Neighbor->GetBuilding() &&
+			Neighbor->GetBuilding()->GetSettings()->bDefenseEnabled)
+		{
+			NeighboringDefenseBuildings.Add(Neighbor->GetBuilding());
+		}
+	}
+	return NeighboringDefenseBuildings;
 }
 
 void AArmy::S_ArmyTakeDamage(int32 Damage)
@@ -359,12 +377,20 @@ void AArmy::S_ArmyTakeDamage(int32 Damage)
 void AArmy::S_AttackEnemy()
 {
 	// choose enemy randomly
-	TArray<AArmy*> AttackableEnemies = GetNeighboringEnemies();
-	if (AttackableEnemies.Num() <= 0) return;
-	const int32 RandomIndex = FMath::RandRange(0, AttackableEnemies.Num() - 1);
-	AArmy* ChosenEnemy = AttackableEnemies[RandomIndex];
-	// inflict damage
-	ChosenEnemy->S_ArmyTakeDamage(CombatValues->GetAttack());
+	TArray<AArmy*> AttackableArmies = GetNeighboringEnemyArmies();
+	if (AttackableArmies.Num() > 0){
+		const int32 RandomIndex = FMath::RandRange(0, AttackableArmies.Num() - 1);
+		AArmy* ChosenEnemy = AttackableArmies[RandomIndex];
+		// inflict damage
+		ChosenEnemy->S_ArmyTakeDamage(CombatValues->GetAttack());
+	}
+	TArray<UBuilding*> AttackableDefenseBuildings = GetNeighboringEnemyDefenseBuildings();
+	if (AttackableDefenseBuildings.Num() > 0){
+		const int32 RandomIndex = FMath::RandRange(0, AttackableDefenseBuildings.Num() - 1);
+		UBuilding* ChosenEnemy = AttackableDefenseBuildings[RandomIndex];
+		// inflict damage
+		ChosenEnemy->S_BuildingDefenseTakeDamage(CombatValues->GetAttack());
+	}
 }
 
 void AArmy::S_HandleDeath()

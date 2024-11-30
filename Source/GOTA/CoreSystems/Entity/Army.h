@@ -125,7 +125,8 @@ private:
 
 public:
 	UCombatValues* GetCombatValues() const { return CombatValues; }
-	TArray<AArmy*> GetNeighboringEnemies() const;
+	TArray<AArmy*> GetNeighboringEnemyArmies() const;
+	TArray<UBuilding*> GetNeighboringEnemyDefenseBuildings() const;
 	bool HasEnemyOnNeighboringTile() const;
 	bool TryFindPathToNearestEnemy();
 	bool TryFindPathToNearestEnemyUnprotectedNormalBuilding();
