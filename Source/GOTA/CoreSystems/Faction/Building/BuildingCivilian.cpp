@@ -59,7 +59,7 @@ void UBuildingCivilian::SetCivilian(ACivilian* NewCivilian)
 void UBuildingCivilian::FinishConstruction()
 {
 	Super::FinishConstruction();
-	ACivilian* NewCivilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);
-	NewCivilian->S_Init(this, Tile);
+	ACivilian* NewCivilian = GetTile()->GetWorld()->SpawnActor<ACivilian>(GetSettings()->CivilianClass);
+	NewCivilian->S_Init(this, GetTile());
 	SetCivilian(NewCivilian);
 }

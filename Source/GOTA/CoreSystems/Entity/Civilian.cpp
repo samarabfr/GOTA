@@ -63,7 +63,7 @@ void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	SpawnTile->AddCivilian(this, NewLocation);
 	SetNetLocation(NewLocation);
 
-	const UBuildingSettings* BuildingSettings = Building->Settings;
+	const UBuildingSettings* BuildingSettings = Building->GetSettings();
 	WorkAmount = BuildingSettings->CivilianProductionAmount;
 	MovementRate = 100 / BuildingSettings->CivilianMoveTime;
 
@@ -142,7 +142,7 @@ void ACivilian::OnPopSizeChanged(int16 Change)
 void ACivilian::CalculateWorkRate()
 {
 	const float Pop = Building->GetPopulation()->GetSize();
-	const UBuildingSettings* BuildingSettings = Building->Settings;
+	const UBuildingSettings* BuildingSettings = Building->GetSettings();
 	float Factor = Pop / BuildingSettings->Housing;
 	WorkRate = (Factor * 100) / BuildingSettings->CivilianProductionTime;
 }

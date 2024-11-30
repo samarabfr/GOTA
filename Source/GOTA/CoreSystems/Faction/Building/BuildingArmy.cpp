@@ -37,15 +37,15 @@ void UBuildingArmy::S_Tick(float DeltaSeconds)
 	// Army
 	if (!GetIsUnderConstruction() && !Army)
 	{
-		if (ArmyRespawnTimer < Settings->ArmyRespawnTime)
+		if (ArmyRespawnTimer < GetSettings()->ArmyRespawnTime)
 		{
 			ArmyRespawnTimer += DeltaSeconds;
 		}
-		else if (Tile->AcceptsArmy())
+		else if (GetTile()->AcceptsArmy())
 		{
 			ArmyRespawnTimer = 0.0f;
-			AArmy* NewArmy = Tile->GetWorld()->SpawnActor<AArmy>();
-			NewArmy->S_Init(this, Tile);
+			AArmy* NewArmy = GetTile()->GetWorld()->SpawnActor<AArmy>();
+			NewArmy->S_Init(this, GetTile());
 			SetArmy(NewArmy);
 		}
 	}
