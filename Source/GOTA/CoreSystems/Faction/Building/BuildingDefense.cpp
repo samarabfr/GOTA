@@ -1,5 +1,6 @@
 ﻿#include "BuildingDefense.h"
 
+#include "BuildingSettings.h"
 #include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
@@ -32,6 +33,17 @@ bool UBuildingDefense::IsSupportedForNetworking() const
 UBuildingDefense::UBuildingDefense()
 {
 	CombatValues = CreateDefaultSubobject<UCombatValues>("Combat Values");
+}
+
+void UBuildingDefense::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
+{
+	Super::S_Init(InSettings, InTile, InSettlement);
+	CombatValues->SetIndividualAttack(GetSettings()->DefenseIndividualAttack);
+	CombatValues->SetIndividualMaxHP(GetSettings()->DefenseIndividualMaxHP);
+	CombatValues->SetIndividualCount(GetSettings()->DefenseIndividualCount);
+	CombatValues->SetAttackSpeed(100 / GetSettings()->DefenseAttackTime);
+	CombatValues->OnDeath.AddDynamic(this, &UBuildingDefense::S_HandleDeath);
+	GetPopulation()->OnSizeChanged.AddDynamic(this, &UBuildingDefense::S_HandlePopSizeChanged);
 }
 
 // ---------------------------------------- Lifecycle ----------------------------------------
@@ -117,4 +129,10 @@ void UBuildingDefense::S_AttackEnemy()
 void UBuildingDefense::S_HandleDeath()
 {
 	GetTile()->Unbuild();
+}
+
+void UBuildingDefense::S_HandlePopSizeChanged(int16 ChangedBy)
+{
+	if(!CombatValues) return;
+	CombatValues->SetIndividualCount(GetPopulation()->GetSize());
 }

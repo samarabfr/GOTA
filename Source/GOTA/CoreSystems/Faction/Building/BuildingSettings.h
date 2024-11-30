@@ -125,4 +125,16 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Defense")
 	int32 RavageProtectionRange = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	int32 DefenseIndividualMaxHP = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	int32 DefenseIndividualAttack = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	int32 DefenseIndividualCount = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	float DefenseAttackTime = 0.0f;
 };

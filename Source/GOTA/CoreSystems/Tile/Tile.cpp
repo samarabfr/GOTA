@@ -168,7 +168,7 @@ void ATile::OnRep_Building()
 {
 	if (Building)
 	{
-		Building->ClientInit();
+		Building->C_Init();
 	}
 	BuildingChanged();
 }
@@ -212,7 +212,7 @@ bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 		Building = NewObject<UBuildingDefense>();
 	else
 		Building = NewObject<UBuilding>();
-	Building->ServerInit(BuildingDataAsset, this, Builder);
+	Building->S_Init(BuildingDataAsset, this, Builder);
 	AddReplicatedSubObject(Building);
 	AddReplicatedSubObject(Building->GetPopulation());
 

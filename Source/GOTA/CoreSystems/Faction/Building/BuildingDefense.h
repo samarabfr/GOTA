@@ -18,6 +18,8 @@ class GOTA_API UBuildingDefense : public UBuilding
 private:
 	UBuildingDefense();
 public:
+	virtual void S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement) override;
+	
 	virtual void S_Tick(float DeltaSeconds) override;
 	virtual void C_Tick(const float DeltaSeconds) override;
 
@@ -39,6 +41,9 @@ private:
 
 	UFUNCTION()
 	void S_HandleDeath();
+
+	UFUNCTION()
+	void S_HandlePopSizeChanged(int16 ChangedBy);
 
 public:
 	UCombatValues* GetCombatValues() const { return CombatValues; }

@@ -28,8 +28,8 @@ protected:
 	UBuilding();
 
 public:
-	void ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement);
-	void ClientInit();
+	virtual void S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement);
+	void C_Init();
 
 	virtual void S_Tick(float DeltaSeconds);
 	virtual void C_Tick(const float DeltaSeconds);

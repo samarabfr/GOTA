@@ -52,7 +52,7 @@ void UBuilding::C_Tick(const float DeltaSeconds)
 	Population->C_Tick(DeltaSeconds);
 }
 
-void UBuilding::ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
+void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
 {
 	Population->S_Init(InSettlement->GetPopulationSettings());
 	Settings = InSettings;
@@ -62,7 +62,7 @@ void UBuilding::ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettle
 	bIsUnderConstruction = true;
 }
 
-void UBuilding::ClientInit()
+void UBuilding::C_Init()
 {
 	Settlement->OnBuildingAdded(this, Tile);
 }
