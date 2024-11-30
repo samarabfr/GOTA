@@ -32,9 +32,9 @@ public:
 private:
 	virtual void BeginDestroy() override;
 
-	// -----------------------  -----------------------
+	// ----------------------- Utility -----------------------
 
-protected:
+private:
 	UPROPERTY(Replicated)
 	UBuilding* Building;
 
@@ -47,7 +47,6 @@ protected:
 	UPROPERTY()
 	UStaticMeshComponent* MeshComponent;
 
-private:
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Affiliation)
 	EAffiliation Affiliation;
 
@@ -82,11 +81,10 @@ public:
 	EArmyStatus GetStatus() const { return Status; }
 
 	// ----------------- Recruiting ------------------------
-
-protected:
+private:
 	UPROPERTY(VisibleInstanceOnly)
 	float RecruitRate; // in percent per second
-
+	
 	void S_TakePopFromTile();
 	bool IsTileValidForRecruiting(const ATile* Tile) const;
 
@@ -96,14 +94,12 @@ public:
 	bool TryFindPathToNearestRecruitable();
 
 	// ----------------- Moving ------------------------
-
-protected:
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	ATile* CurrentTile;
-
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_NetLocation)
 	FVector NetLocation;
+
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	ATile* CurrentTile;
 
 	UFUNCTION()
 	void OnRep_NetLocation();
@@ -111,13 +107,12 @@ private:
 	void SetNetLocation(const FVector& NewNetLocation);
 	void S_MoveToNextTileOnPath();
 
-protected:
 	// How fast the progress increases when moving, in percent per second
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float MovementRate; // in percent per second
 
 	UPROPERTY(VisibleInstanceOnly)
-	TArray<ATile*> Path;
+	TArray<ATile*> Path;	
 
 public:
 	bool IsPathValid();
@@ -145,13 +140,15 @@ private:
 	void S_HandleDeath();
 
 	// -----------------Ravaging------------------------
-public:
-	bool IsOnEnemyBuilding() const;
-	void S_StartRavagingEnemyBuilding();
 
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float RavageSpeed; // in percent per second
 
 	void S_RavageEnemyBuilding();
+	
+public:
+	bool IsOnEnemyBuilding() const;
+	void S_StartRavagingEnemyBuilding();
+
 };
