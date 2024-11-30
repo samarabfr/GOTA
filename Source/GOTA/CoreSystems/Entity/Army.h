@@ -138,6 +138,7 @@ public:
 private:
 	void S_AttackEnemy();
 
+public:
 	UFUNCTION()
 	void S_HandleDeath();
 
