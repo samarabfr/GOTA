@@ -68,7 +68,7 @@ void UCombatValues::SetCurrentTotalHP(int32 NewCurrentTotalHP)
 {
 	CurrentTotalHP = NewCurrentTotalHP;
 	OnChanged.Broadcast(this);
-	if(CurrentTotalHP < 0)
+	if(CurrentTotalHP <= 0)
 		OnDeath.Broadcast();
 }
 
