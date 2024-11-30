@@ -360,7 +360,7 @@ TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End)
 		}
 		for (ATile* Next : Current->Neighbors)
 		{
-			if (Next && Next->AcceptsArmy() && !CameFrom.Contains(Next))
+			if (Next && !CameFrom.Contains(Next))
 			{
 				Frontier.Add(Next);
 				CameFrom.Add(Next, Current);

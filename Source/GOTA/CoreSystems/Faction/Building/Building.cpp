@@ -164,10 +164,13 @@ bool UBuilding::IsProtected() const
 	{
 		if (ClaimedTile &&
 			ClaimedTile->GetBuilding() &&
-			ClaimedTile->GetBuilding()->Settings->bDefenseEnabled &&
-			ClaimedTile->GetBuilding()->Settings->RavageProtectionRange >= Tile->GetTileDistanceTo(ClaimedTile))
+			ClaimedTile->GetBuilding()->Settings->bDefenseEnabled)
 		{
-			return true;
+			const int32 TileDistance = Tile->GetTileDistanceTo(ClaimedTile);
+			if (TileDistance > 0 && ClaimedTile->GetBuilding()->Settings->RavageProtectionRange >= TileDistance)
+			{
+				return true;
+			}
 		}
 	}
 	return false;
