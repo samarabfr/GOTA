@@ -22,4 +22,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	int32 GarrisonModeInterceptingRange = 4;
+
+	UPROPERTY(EditDefaultsOnly)
+	int32 GuardModeInterceptingRange = 3;
 };

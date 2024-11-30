@@ -120,3 +120,31 @@ EStateTreeRunStatus FSTT_RavageEnemyBuilding::EnterState(FStateTreeExecutionCont
 
 	return EStateTreeRunStatus::Running;
 }
+
+EStateTreeRunStatus FSTT_FindPathToGuardTile::EnterState(FStateTreeExecutionContext& Context,
+	const FStateTreeTransitionResult& Transition) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	if (!InstanceData.ArmyRef)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
+		return EStateTreeRunStatus::Failed;
+	}
+
+	const bool bHasPath = InstanceData.ArmyRef.Get()->TryFindPathToGuardTile();
+	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
+}
+
+EStateTreeRunStatus FSTT_FindPathToNearestEnemyToGuardTile::EnterState(FStateTreeExecutionContext& Context,
+	const FStateTreeTransitionResult& Transition) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	if (!InstanceData.ArmyRef)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
+		return EStateTreeRunStatus::Failed;
+	}
+
+	const bool bHasPath = InstanceData.ArmyRef.Get()->TryFindPathToNearestEnemyToGuardTile();
+	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
+}

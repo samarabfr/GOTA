@@ -395,6 +395,7 @@ void AArmy::S_AttackEnemy()
 
 void AArmy::S_HandleDeath()
 {
+	if(!CurrentTile) return;
 	CurrentTile->RemoveArmy();
 	Destroy();
 }
@@ -433,4 +434,40 @@ void AArmy::S_RavageEnemyBuilding()
 	{
 		CurrentTile->Unbuild();
 	}
+}
+
+bool AArmy::TryFindPathToGuardTile()
+{
+	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Army, [this](const ATile* Tile)
+	{
+		return Tile && Tile == GuardTile;
+	});
+	return !Path.IsEmpty();
+}
+
+bool AArmy::TryFindPathToNearestEnemyToGuardTile()
+{
+	Path = GameState->GetTileMap()->FindPathToNearestTile(GuardTile, EEntityType::Army, [this](const ATile* Tile)
+	{
+		if (!Tile) return false;
+		for (ATile* Neighbor : Tile->Neighbors)
+		{
+			if (Neighbor && Neighbor->GetArmy() && Neighbor->GetArmy()->GetAffiliation() != GetAffiliation())
+				return true;
+		}
+		return false;
+	});
+	return !Path.IsEmpty();
+}
+
+bool AArmy::HasEnemyInGuardTileRange()
+{
+	ATile* EnemyOnTile = GameState->GetTileMap()->FindNearestTileInRange(
+		GuardTile, Settings->GuardModeInterceptingRange,
+		[this](const ATile* Tile)
+		{
+			return Tile && Tile->GetArmy() && Tile->GetArmy()
+												  ->GetAffiliation() != GetAffiliation();
+		});
+	return EnemyOnTile != nullptr;
 }

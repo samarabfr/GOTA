@@ -175,3 +175,87 @@ struct GOTA_API FSTC_IsBuildingProtected : public FStateTreeConditionCommonBase
 	UPROPERTY(EditAnywhere, Category = "Parameter")
 	bool bInvert = false;
 };
+
+USTRUCT()
+struct GOTA_API FSTC_IsOnGuardTileInstanceData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category=Context)
+	TObjectPtr<AArmy> ArmyRef = nullptr;
+};
+
+/**
+ * Condition checking if army is on the guard tile
+ */
+USTRUCT(DisplayName = "Is on guard tile")
+struct GOTA_API FSTC_IsOnGuardTile : public FStateTreeConditionCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FSTC_IsOnGuardTileInstanceData;
+
+	FSTC_IsOnGuardTile() = default;
+
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
+
+	UPROPERTY(EditAnywhere, Category = "Parameter")
+	bool bInvert = false;
+};
+
+USTRUCT()
+struct GOTA_API FSTC_HasEnemyInGuardTileRangeInstanceData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category=Context)
+	TObjectPtr<AArmy> ArmyRef = nullptr;
+};
+
+/**
+ * Condition checking if enemy is in guard tile range
+ */
+USTRUCT(DisplayName = "Has enemy in guard tile range")
+struct GOTA_API FSTC_HasEnemyInGuardTileRange : public FStateTreeConditionCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FSTC_HasEnemyInGuardTileRangeInstanceData;
+
+	FSTC_HasEnemyInGuardTileRange() = default;
+
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
+
+	UPROPERTY(EditAnywhere, Category = "Parameter")
+	bool bInvert = false;
+};
+
+USTRUCT()
+struct GOTA_API FSTC_HasGuardTileInstanceData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category=Context)
+	TObjectPtr<AArmy> ArmyRef = nullptr;
+};
+
+/**
+ * Condition checking if enemy is in guard tile range
+ */
+USTRUCT(DisplayName = "Has guard tile")
+struct GOTA_API FSTC_HasGuardTile : public FStateTreeConditionCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FSTC_HasGuardTileInstanceData;
+
+	FSTC_HasGuardTile() = default;
+
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
+
+	UPROPERTY(EditAnywhere, Category = "Parameter")
+	bool bInvert = false;
+};

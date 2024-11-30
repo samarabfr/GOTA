@@ -84,7 +84,7 @@ public:
 private:
 	UPROPERTY(VisibleInstanceOnly)
 	float RecruitRate; // in percent per second
-	
+
 	void S_TakePopFromTile();
 	bool IsTileValidForRecruiting(const ATile* Tile) const;
 
@@ -112,7 +112,7 @@ private:
 	float MovementRate; // in percent per second
 
 	UPROPERTY(VisibleInstanceOnly)
-	TArray<ATile*> Path;	
+	TArray<ATile*> Path;
 
 public:
 	bool IsPathValid();
@@ -149,10 +149,24 @@ private:
 	float RavageSpeed; // in percent per second
 
 	void S_RavageEnemyBuilding();
-	
+
 public:
 	bool IsOnEnemyBuilding() const;
 	bool IsBuildingProtected() const;
 	void S_StartRavagingEnemyBuilding();
 
+
+	// -----------------Guarding------------------------
+
+private:
+	UPROPERTY(EditInstanceOnly, Replicated)
+	ATile* GuardTile;
+
+public:
+	ATile* GetGuardTile() const { return GuardTile; }
+	void SetGuardTile(ATile* NewGuardTile) { GuardTile = NewGuardTile; }
+	bool IsOnGuardTile() const { return GuardTile == CurrentTile; }
+	bool TryFindPathToGuardTile();
+	bool TryFindPathToNearestEnemyToGuardTile();
+	bool HasEnemyInGuardTileRange();
 };
