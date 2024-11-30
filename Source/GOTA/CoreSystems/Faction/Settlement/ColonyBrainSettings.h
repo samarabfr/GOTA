@@ -51,7 +51,7 @@ public:
 	float GetStoneImportance() const { return StoneImportance; }
 	float GetStoneImportanceDescent() const { return StoneImportanceDescent; }
 	
-	float GetSendArmiesIntervalTime() const { return StoneImportance; }
+	float GetSendArmiesIntervalTime() const { return SendArmiesIntervalTime; }
 };
 
 // ------------------- Defaults Data Asset -------------------
