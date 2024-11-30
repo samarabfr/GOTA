@@ -34,8 +34,7 @@ public:
 	virtual void S_Tick(float DeltaSeconds);
 	virtual void C_Tick(const float DeltaSeconds);
 
-protected:
-	virtual void BeginDestroy() override;
+	virtual void Destroy();
 
 	// ---------------------------------------- Utility ----------------------------------------
 private:

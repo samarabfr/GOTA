@@ -240,6 +240,7 @@ void ATile::Unbuild()
 	OnGameplayTagsChanged.Broadcast();
 	RemoveReplicatedSubObject(Building);
 	RemoveReplicatedSubObject(Building->GetPopulation());
+	Building->Destroy();
 	Building = nullptr;
 	BuildingChanged();
 	ValidateSpawnLayout();

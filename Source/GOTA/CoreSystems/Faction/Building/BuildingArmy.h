@@ -17,8 +17,7 @@ public:
 	virtual void S_Tick(float DeltaSeconds) override;
 	virtual void C_Tick(const float DeltaSeconds) override;
 
-protected:
-	virtual void BeginDestroy() override;
+	virtual void Destroy() override;
 
 	// ---------------- Army ----------------
 private:

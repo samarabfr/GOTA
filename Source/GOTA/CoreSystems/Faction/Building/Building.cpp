@@ -52,6 +52,12 @@ void UBuilding::C_Tick(const float DeltaSeconds)
 	Population->C_Tick(DeltaSeconds);
 }
 
+void UBuilding::Destroy()
+{
+	if (Settlement && Tile)
+		Settlement->OnBuildingRemoved(this, Tile);
+}
+
 void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
 {
 	Population->S_Init(InSettlement->GetPopulationSettings());
@@ -65,13 +71,6 @@ void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement
 void UBuilding::C_Init()
 {
 	Settlement->OnBuildingAdded(this, Tile);
-}
-
-void UBuilding::BeginDestroy()
-{
-	UObject::BeginDestroy();
-	if (Settlement && Tile)
-		Settlement->OnBuildingRemoved(this, Tile);
 }
 
 // --------------------------------------- Population ---------------------------------------
