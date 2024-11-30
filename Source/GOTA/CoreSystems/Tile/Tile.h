@@ -49,8 +49,28 @@ class GOTA_API ATile : public AActor
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
-	void ServerInit();
+	void S_Init();
 
+	// ------------------------Tilemap---------------------------
+private:
+	UPROPERTY()
+	AGS_Ingame* GameState;
+
+public:
+	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly)
+	FHexCoords HexCoords;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
+	TArray<ATile*> Neighbors;
+
+	TArray<ATile*> GetNeighbors() const {return Neighbors; }
+
+	TArray<ATile*> GetPathTo(ATile* Target);
+	int32 GetTileDistanceTo(ATile* Target);
+	
+	// ------------------------Gameplay Tags---------------------------
+	
+public:
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_GameplayTags, Category="Tile")
 	FGameplayTagContainer GameplayTags;
 
@@ -59,16 +79,6 @@ public:
 
 	UPROPERTY()
 	FOnChangedSignature OnGameplayTagsChanged;
-
-	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly)
-	FHexCoords HexCoords;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
-	TArray<ATile*> Neighbors;
-
-private:
-	UPROPERTY()
-	AGS_Ingame* GameState;
 
 	// ------------------------Entity---------------------------
 public:

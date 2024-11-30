@@ -74,7 +74,7 @@ void AArmy::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	SpawnTile->SetArmy(this, NewLocation);
 	SetNetLocation(NewLocation);
 
-	const UBuildingSettings* BuildingSettings = Building->Settings;
+	const UBuildingSettings* BuildingSettings = Building->GetSettings();
 	RecruitRate = 100 / BuildingSettings->SecondsPerRecruitCycle;
 	MovementRate = 100 / BuildingSettings->ArmyMoveTime;
 	RavageSpeed = 100 / BuildingSettings->ArmyRavageTime;
@@ -82,8 +82,8 @@ void AArmy::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	CombatValues->SetIndividualMaxHP(BuildingSettings->ArmyIndividualMaxHP);
 	CombatValues->SetIndividualCount(BuildingSettings->ArmyIndividualCount);
 	CombatValues->SetAttackSpeed(100 / BuildingSettings->ArmyAttackTime);
-	CombatValues->OnDeath.AddDynamic(this, &AArmy::HandleDeath);
-	Affiliation = Building->Settlement->GetAffiliation();
+	CombatValues->OnDeath.AddDynamic(this, &AArmy::S_HandleDeath);
+	Affiliation = Building->GetSettlement()->GetAffiliation();
 	if (Affiliation == EAffiliation::Enemy)
 		MeshComponent->SetStaticMesh(Settings->ColonyArmyMesh);
 	else
@@ -96,13 +96,13 @@ void AArmy::S_Tick(const float DeltaSeconds)
 	if (Progress >= 100)
 	{
 		if (GetStatus() == EArmyStatus::MovingToNextTile)
-			MoveToNextTileOnPath();
+			S_MoveToNextTileOnPath();
 		else if (GetStatus() == EArmyStatus::RecruitingFromTile)
-			TakePopFromTile();
+			S_TakePopFromTile();
 		else if (GetStatus() == EArmyStatus::Attacking)
-			AttackEnemy();
+			S_AttackEnemy();
 		else if (GetStatus() == EArmyStatus::Ravaging)
-			RavageEnemyBuilding();
+			S_RavageEnemyBuilding();
 		SetStatus(EArmyStatus::Idling);
 		Progress = 0.0f;
 		StateTree->SendStateTreeEvent(Settings->StateTreeCompletedTaskEventTag, FConstStructView(), FName(GetName()));
@@ -173,7 +173,7 @@ void AArmy::SetStatus(EArmyStatus NewStatus)
 
 // ----------------------- Recruiting -----------------------
 
-void AArmy::TakePopFromTile()
+void AArmy::S_TakePopFromTile()
 {
 	if (CurrentTile->GetBuilding()->GetPopulation()->GetSize() <= 0)
 		return;
@@ -187,10 +187,10 @@ bool AArmy::IsTileValidForRecruiting(const ATile* Tile) const
 		&& Tile->GetBuilding()
 		&& Tile->GetBuilding()->GetPopulation()->GetSize() == Tile->GetBuilding()->GetPopulation()->GetMaxSize()
 		&& Tile->GetClaimant()
-		&& Tile->GetClaimant() == Building->Settlement;
+		&& Tile->GetClaimant() == Building->GetSettlement();
 }
 
-void AArmy::StartRecruitFromTile()
+void AArmy::S_StartRecruitFromTile()
 {
 	Progress = 0.f;
 	SetStatus(EArmyStatus::RecruitingFromTile);
@@ -205,7 +205,7 @@ bool AArmy::TryFindPathToNearestRecruitable()
 {
 	bool HasValidTiles = false;
 	if (!Building) return false;
-	for (ATile* Tile : Building->Settlement->ClaimedTiles)
+	for (ATile* Tile : Building->GetSettlement()->ClaimedTiles)
 	{
 		if (IsTileValidForRecruiting(Tile))
 		{
@@ -240,13 +240,13 @@ bool AArmy::IsPathValid()
 	return !Path.IsEmpty() && Path[Path.Num() - 1]->AcceptsArmy();
 }
 
-void AArmy::StartMoveToNextTileOnPath()
+void AArmy::S_StartMoveToNextTileOnPath()
 {
 	Progress = 0.f;
 	SetStatus(EArmyStatus::MovingToNextTile);
 }
 
-void AArmy::MoveToNextTileOnPath()
+void AArmy::S_MoveToNextTileOnPath()
 {
 	ATile* NewCurrent = nullptr;
 	if (IsPathValid())
@@ -263,12 +263,6 @@ void AArmy::MoveToNextTileOnPath()
 }
 
 // ----------------- Combat ------------------------
-
-UCombatValues* AArmy::GetCombatValues() const
-{
-	return CombatValues;
-}
-
 bool AArmy::HasEnemyOnNeighboringTile() const
 {
 	return GetNeighboringEnemies().Num() > 0;
@@ -311,7 +305,7 @@ bool AArmy::HasEnemyInGarrisonModeRange() const
 	return EnemyOnTile != nullptr;
 }
 
-void AArmy::StartAttacking()
+void AArmy::S_StartAttacking()
 {
 	Progress = 0.f;
 	SetStatus(EArmyStatus::Attacking);
@@ -333,12 +327,12 @@ TArray<AArmy*> AArmy::GetNeighboringEnemies() const
 	return NeighboringEnemies;
 }
 
-void AArmy::ArmyTakeDamage(int32 Damage)
+void AArmy::S_ArmyTakeDamage(int32 Damage)
 {
 	CombatValues->SetCurrentTotalHP(CombatValues->GetCurrentTotalHP() - Damage);
 }
 
-void AArmy::AttackEnemy()
+void AArmy::S_AttackEnemy()
 {
 	// choose enemy randomly
 	TArray<AArmy*> AttackableEnemies = GetNeighboringEnemies();
@@ -346,10 +340,10 @@ void AArmy::AttackEnemy()
 	const int32 RandomIndex = FMath::RandRange(0, AttackableEnemies.Num() - 1);
 	AArmy* ChosenEnemy = AttackableEnemies[RandomIndex];
 	// inflict damage
-	ChosenEnemy->ArmyTakeDamage(CombatValues->GetAttack());
+	ChosenEnemy->S_ArmyTakeDamage(CombatValues->GetAttack());
 }
 
-void AArmy::HandleDeath()
+void AArmy::S_HandleDeath()
 {
 	CurrentTile->RemoveArmy();
 	Destroy();
@@ -362,19 +356,19 @@ bool AArmy::IsOnEnemyBuilding() const
 	return CurrentTile &&
 		CurrentTile->GetBuilding() &&
 		CurrentTile->GetClaimant() &&
-		CurrentTile->GetClaimant()->GetAffiliation()  != Affiliation;
+		CurrentTile->GetClaimant()->GetAffiliation() != Affiliation;
 }
 
-void AArmy::StartRavagingEnemyBuilding()
+void AArmy::S_StartRavagingEnemyBuilding()
 {
 	Progress = 0.f;
 	SetStatus(EArmyStatus::Ravaging);
 }
 
-void AArmy::RavageEnemyBuilding()
+void AArmy::S_RavageEnemyBuilding()
 {
 	if (IsOnEnemyBuilding() &&
-		CurrentTile->GetBuilding()->GetPopulation() &&
+		!CurrentTile->GetBuilding()->IsProtected() &&
 		CurrentTile->GetBuilding()->GetPopulation()->GetSize() > 0)
 	{
 		CurrentTile->GetBuilding()->GetPopulation()->S_DecreaseSize(1);

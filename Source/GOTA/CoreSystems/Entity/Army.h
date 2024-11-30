@@ -87,11 +87,11 @@ protected:
 	UPROPERTY(VisibleInstanceOnly)
 	float RecruitRate; // in percent per second
 
-	void TakePopFromTile();
+	void S_TakePopFromTile();
 	bool IsTileValidForRecruiting(const ATile* Tile) const;
 
 public:
-	void StartRecruitFromTile();
+	void S_StartRecruitFromTile();
 	bool IsCurrentTileValidForRecruiting() const;
 	bool TryFindPathToNearestRecruitable();
 
@@ -109,7 +109,7 @@ private:
 	void OnRep_NetLocation();
 
 	void SetNetLocation(const FVector& NewNetLocation);
-	void MoveToNextTileOnPath();
+	void S_MoveToNextTileOnPath();
 
 protected:
 	// How fast the progress increases when moving, in percent per second
@@ -121,7 +121,7 @@ protected:
 
 public:
 	bool IsPathValid();
-	void StartMoveToNextTileOnPath();
+	void S_StartMoveToNextTileOnPath();
 
 	// -----------------Combat------------------------
 private:
@@ -129,30 +129,29 @@ private:
 	UCombatValues* CombatValues;
 
 public:
-	UCombatValues* GetCombatValues() const;
-
+	UCombatValues* GetCombatValues() const { return CombatValues; }
 	TArray<AArmy*> GetNeighboringEnemies() const;
 	bool HasEnemyOnNeighboringTile() const;
 	bool TryFindPathToNearestEnemy();
 	bool TryFindPathToNearestEnemyBuilding();
 	bool HasEnemyInGarrisonModeRange() const;
-	void StartAttacking();
-	void ArmyTakeDamage(int32 Damage);
-	
+	void S_StartAttacking();
+	void S_ArmyTakeDamage(int32 Damage);
+
 private:
-	void AttackEnemy();
-	
+	void S_AttackEnemy();
+
 	UFUNCTION()
-	void HandleDeath();
+	void S_HandleDeath();
 
 	// -----------------Ravaging------------------------
 public:
 	bool IsOnEnemyBuilding() const;
-	void StartRavagingEnemyBuilding();
+	void S_StartRavagingEnemyBuilding();
+
 private:
-	
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float RavageSpeed; // in percent per second
-	
-	void RavageEnemyBuilding();
+
+	void S_RavageEnemyBuilding();
 };

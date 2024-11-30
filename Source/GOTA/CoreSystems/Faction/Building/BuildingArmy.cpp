@@ -29,9 +29,9 @@ bool UBuildingArmy::IsSupportedForNetworking() const
 
 // ---------------------------------------- Lifecycle ----------------------------------------
 
-void UBuildingArmy::ServerTick(float DeltaSeconds)
+void UBuildingArmy::S_Tick(float DeltaSeconds)
 {
-	UBuilding::ServerTick(DeltaSeconds);
+	UBuilding::S_Tick(DeltaSeconds);
 	if (Army)
 		Army->S_Tick(DeltaSeconds);
 	// Army
@@ -51,9 +51,9 @@ void UBuildingArmy::ServerTick(float DeltaSeconds)
 	}
 }
 
-void UBuildingArmy::ClientTick(const float DeltaSeconds)
+void UBuildingArmy::C_Tick(const float DeltaSeconds)
 {
-	Super::ClientTick(DeltaSeconds);
+	Super::C_Tick(DeltaSeconds);
 }
 
 void UBuildingArmy::BeginDestroy()

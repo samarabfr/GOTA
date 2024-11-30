@@ -31,22 +31,28 @@ public:
 	void ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement);
 	void ClientInit();
 
-	virtual void ServerTick(float DeltaSeconds);
-	virtual void ClientTick(const float DeltaSeconds);
+	virtual void S_Tick(float DeltaSeconds);
+	virtual void C_Tick(const float DeltaSeconds);
 
 protected:
 	virtual void BeginDestroy() override;
 
 	// ---------------------------------------- Utility ----------------------------------------
-public:
+private:
+	UPROPERTY(Replicated)
+	ASettlement* Settlement;
+	
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UBuildingSettings* Settings;
 
 	UPROPERTY(Replicated)
 	ATile* Tile;
 
-	UPROPERTY(Replicated)
-	ASettlement* Settlement;
+public:
+	ASettlement* GetSettlement() const {return Settlement; }
+	UBuildingSettings* GetSettings() const{return Settings; }
+	ATile* GetTile() const{return Tile; }
+	
 
 	// --------------------------------------- Population ---------------------------------------
 public:
@@ -115,15 +121,13 @@ public:
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	bool bIsUnderConstruction = true;
-
-public:
-	bool GetIsUnderConstruction() const { return bIsUnderConstruction; }
-
-private:
+	
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	FGameResources ConstructionProgress;
 
 public:
+	bool GetIsUnderConstruction() const { return bIsUnderConstruction; }
+	
 	FGameResources GetConstructionProgress() const;
 	void SetConstructionProgress(const FGameResources NewConstructionProgress);
 
@@ -132,4 +136,8 @@ public:
 	// --------------------- Army ---------------------
 public:
 	virtual AArmy* GetArmy() const { return nullptr; }
+
+	// --------------------- Protection ---------------------
+public:
+	bool IsProtected() const;
 };

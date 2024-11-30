@@ -14,8 +14,8 @@ class GOTA_API UBuildingCivilian : public UBuilding
 
 	// ---------------------------------------- Lifecycle ----------------------------------------
 public:
-	virtual void ServerTick(float DeltaSeconds) override;
-	virtual void ClientTick(const float DeltaSeconds) override;
+	virtual void S_Tick(float DeltaSeconds) override;
+	virtual void C_Tick(const float DeltaSeconds) override;
 protected:
 	virtual void BeginDestroy() override;
 

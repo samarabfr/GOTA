@@ -42,12 +42,12 @@ UBuilding::UBuilding()
 	Population->OnSizeChanged.AddDynamic(this, &UBuilding::PopulationChanged);
 }
 
-void UBuilding::ServerTick(const float DeltaSeconds)
+void UBuilding::S_Tick(const float DeltaSeconds)
 {
 	Population->S_Tick(DeltaSeconds);
 }
 
-void UBuilding::ClientTick(const float DeltaSeconds)
+void UBuilding::C_Tick(const float DeltaSeconds)
 {
 	Population->C_Tick(DeltaSeconds);
 }
@@ -154,4 +154,21 @@ void UBuilding::FinishConstruction()
 	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, bIsUnderConstruction, this)
 	Tile->OnBuildingFinishedConstruction();
 	Population->S_ChangeMaxSize(Settings->Housing);
+}
+
+// --------------------- Protection ---------------------
+
+bool UBuilding::IsProtected() const
+{
+	for (ATile* ClaimedTile : Settlement->ClaimedTiles)
+	{
+		if (ClaimedTile &&
+			ClaimedTile->GetBuilding() &&
+			ClaimedTile->GetBuilding()->Settings->bDefenseEnabled &&
+			ClaimedTile->GetBuilding()->Settings->RavageProtectionRange >= Tile->GetTileDistanceTo(ClaimedTile))
+		{
+			return true;
+		}
+	}
+	return false;
 }

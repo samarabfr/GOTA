@@ -28,9 +28,9 @@ bool UBuildingDirectProduction::IsSupportedForNetworking() const
 
 // ---------------------------------------- Lifecycle ----------------------------------------
 
-void UBuildingDirectProduction::ServerTick(float DeltaSeconds)
+void UBuildingDirectProduction::S_Tick(float DeltaSeconds)
 {
-	UBuilding::ServerTick(DeltaSeconds);
+	UBuilding::S_Tick(DeltaSeconds);
 	if (DirectProductionProgress < Settings->DirectProductionTime / GetEfficiency())
 	{
 		DirectProductionProgress += DeltaSeconds;
@@ -43,9 +43,9 @@ void UBuildingDirectProduction::ServerTick(float DeltaSeconds)
 	}
 }
 
-void UBuildingDirectProduction::ClientTick(const float DeltaSeconds)
+void UBuildingDirectProduction::C_Tick(const float DeltaSeconds)
 {
-	Super::ClientTick(DeltaSeconds);
+	Super::C_Tick(DeltaSeconds);
 	DirectProductionProgress += DeltaSeconds;
 }
 

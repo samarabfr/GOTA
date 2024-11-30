@@ -37,7 +37,7 @@ void ATileMap::Init()
 		Tile->Neighbors[3] = GetTileFast(FHexCoords(HexCoords.Q - 0, HexCoords.R + 1));
 		Tile->Neighbors[4] = GetTileFast(FHexCoords(HexCoords.Q - 1, HexCoords.R + 1));
 		Tile->Neighbors[5] = GetTileFast(FHexCoords(HexCoords.Q - 1, HexCoords.R + 0));
-		Tile->ServerInit();
+		Tile->S_Init();
 	}
 }
 

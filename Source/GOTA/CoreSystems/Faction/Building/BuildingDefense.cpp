@@ -1,0 +1,120 @@
+﻿#include "BuildingDefense.h"
+
+#include "GOTA/CoreSystems/Entity/Army.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
+#include "GOTA/CoreSystems/Tile/Tile.h"
+#include "Net/UnrealNetwork.h"
+#include "Net/Core/PushModel/PushModel.h"
+
+// ------------------------------------ Replication Setup --------------------------------------
+
+void UBuildingDefense::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	FDoRepLifetimeParams Params;
+	Params.bIsPushBased = true;
+
+	Params.Condition = COND_InitialOnly;
+	Params.RepNotifyCondition = REPNOTIFY_Always;
+
+	Params.Condition = COND_None;
+	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
+	DOREPLIFETIME_WITH_PARAMS(UBuildingDefense, CombatValues, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuildingDefense, AttackProgress, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuildingDefense, bIsAttacking, Params);
+}
+
+bool UBuildingDefense::IsSupportedForNetworking() const
+{
+	return true;
+}
+
+UBuildingDefense::UBuildingDefense()
+{
+	CombatValues = CreateDefaultSubobject<UCombatValues>("Combat Values");
+}
+
+// ---------------------------------------- Lifecycle ----------------------------------------
+
+void UBuildingDefense::S_Tick(float DeltaSeconds)
+{
+	Super::S_Tick(DeltaSeconds);
+	if(!bIsAttacking && HasEnemyOnNeighboringTile())
+	{
+		bIsAttacking = true;
+		AttackProgress = 0.0f;
+	}
+	else if(bIsAttacking && !HasEnemyOnNeighboringTile())
+	{
+		bIsAttacking = true;
+		AttackProgress = 0.0f;
+	}
+	if (bIsAttacking && AttackProgress >= 100)
+	{
+		AttackProgress = 0.0f;
+		S_AttackEnemy();
+		MARK_PROPERTY_DIRTY_FROM_NAME(UBuildingDefense, AttackProgress, this)
+	}
+}
+
+void UBuildingDefense::C_Tick(const float DeltaSeconds)
+{
+	Super::C_Tick(DeltaSeconds);
+	if (bIsAttacking)
+	{
+		AttackProgress += CombatValues->GetAttackSpeed() * DeltaSeconds;
+	}
+}
+
+void UBuildingDefense::BeginDestroy()
+{
+	Super::BeginDestroy();
+}
+
+TArray<AArmy*> UBuildingDefense::GetNeighboringEnemies() const
+{
+	TArray<AArmy*> NeighboringEnemies;
+	if (!GetTile()) return NeighboringEnemies;
+	for (const ATile* Neighbor : GetTile()->Neighbors)
+	{
+		if (Neighbor &&
+			Neighbor->GetArmy() &&
+			Neighbor->GetArmy()->GetAffiliation() != GetSettlement()->GetAffiliation())
+		{
+			NeighboringEnemies.Add(Neighbor->GetArmy());
+		}
+	}
+	return NeighboringEnemies;
+}
+
+bool UBuildingDefense::HasEnemyOnNeighboringTile() const
+{
+	return GetNeighboringEnemies().Num() > 0;
+}
+
+void UBuildingDefense::S_StartAttacking()
+{
+	AttackProgress = 0.f;
+	bIsAttacking = true;
+}
+
+void UBuildingDefense::S_BuildingDefenseTakeDamage(int32 Damage)
+{
+	CombatValues->SetCurrentTotalHP(CombatValues->GetCurrentTotalHP() - Damage);
+}
+
+void UBuildingDefense::S_AttackEnemy()
+{
+	// choose enemy randomly
+	TArray<AArmy*> AttackableEnemies = GetNeighboringEnemies();
+	if (AttackableEnemies.Num() <= 0) return;
+	const int32 RandomIndex = FMath::RandRange(0, AttackableEnemies.Num() - 1);
+	AArmy* ChosenEnemy = AttackableEnemies[RandomIndex];
+	// inflict damage
+	ChosenEnemy->S_ArmyTakeDamage(CombatValues->GetAttack());
+}
+
+void UBuildingDefense::S_HandleDeath()
+{
+	GetTile()->Unbuild();
+}

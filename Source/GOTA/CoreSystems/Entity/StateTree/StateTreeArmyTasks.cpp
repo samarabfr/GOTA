@@ -16,7 +16,7 @@ EStateTreeRunStatus FSTT_AttackEnemy::EnterState(FStateTreeExecutionContext& Con
 		return EStateTreeRunStatus::Failed;
 	}
 
-	InstanceData.ArmyRef.Get()->StartAttacking();
+	InstanceData.ArmyRef.Get()->S_StartAttacking();
 
 	return EStateTreeRunStatus::Running;
 }
@@ -31,7 +31,7 @@ EStateTreeRunStatus FSTT_MoveToNextTile::EnterState(FStateTreeExecutionContext& 
 		return EStateTreeRunStatus::Failed;
 	}
 
-	InstanceData.ArmyRef.Get()->StartMoveToNextTileOnPath();
+	InstanceData.ArmyRef.Get()->S_StartMoveToNextTileOnPath();
 	return EStateTreeRunStatus::Running;
 }
 
@@ -45,7 +45,7 @@ EStateTreeRunStatus FSTT_RecruitFromTile::EnterState(FStateTreeExecutionContext&
 		return EStateTreeRunStatus::Failed;
 	}
 
-	InstanceData.ArmyRef.Get()->StartRecruitFromTile();
+	InstanceData.ArmyRef.Get()->S_StartRecruitFromTile();
 
 	return EStateTreeRunStatus::Running;
 }
@@ -102,7 +102,7 @@ EStateTreeRunStatus FSTT_RavageEnemyBuilding::EnterState(FStateTreeExecutionCont
 		return EStateTreeRunStatus::Failed;
 	}
 
-	InstanceData.ArmyRef.Get()->StartRavagingEnemyBuilding();
+	InstanceData.ArmyRef.Get()->S_StartRavagingEnemyBuilding();
 
 	return EStateTreeRunStatus::Running;
 }

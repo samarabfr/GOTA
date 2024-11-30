@@ -118,4 +118,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Army")
 	float ArmyRavageTime = 0.0f;
 
+	//--------------------------Defense-------------------
+
+	UPROPERTY(EditDefaultsOnly, Category="Defense")
+	bool bDefenseEnabled = false;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Defense")
+	int32 RavageProtectionRange = 0;
 };

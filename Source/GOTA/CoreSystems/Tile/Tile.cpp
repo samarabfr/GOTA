@@ -3,11 +3,13 @@
 
 #include "Tile.h"
 
+#include "TileMap.h"
 #include "Algo/RandomShuffle.h"
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingArmy.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingCivilian.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingDefense.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingDirectProduction.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
@@ -73,11 +75,21 @@ void ATile::BeginPlay()
 	}
 }
 
-void ATile::ServerInit()
+void ATile::S_Init()
 {
 	AddReplicatedSubObject(EcoValues);
 	Civilians.SetNumZeroed(Settings->CivilianSlots.Num());
 	SpawnOceanLineMeshes();
+}
+
+TArray<ATile*> ATile::GetPathTo(ATile* Target)
+{
+	return ATileMap::GetPath(this, Target);
+}
+
+int32 ATile::GetTileDistanceTo(ATile* Target)
+{
+	return GetPathTo(Target).Num();
 }
 
 void ATile::OnRep_GameplayTags()
@@ -196,6 +208,8 @@ bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 		Building = NewObject<UBuildingCivilian>();
 	else if(BuildingDataAsset->bArmyEnabled)
 		Building = NewObject<UBuildingArmy>();
+	else if(BuildingDataAsset->bArmyEnabled)
+		Building = NewObject<UBuildingDefense>();
 	else
 		Building = NewObject<UBuilding>();
 	Building->ServerInit(BuildingDataAsset, this, Builder);
@@ -220,7 +234,7 @@ bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 void ATile::Unbuild()
 {
 	if (!Building) return;
-	GameplayTags.RemoveTags(Building->Settings->GameplayTags);
+	GameplayTags.RemoveTags(Building->GetSettings()->GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
 	RemoveReplicatedSubObject(Building);
 	RemoveReplicatedSubObject(Building->GetPopulation());
@@ -240,7 +254,7 @@ ASettlement* ATile::GetClaimant() const
 {
 	if (Building)
 	{
-		return Building->Settlement;
+		return Building->GetSettlement();
 	}
 	return nullptr;
 }
@@ -307,12 +321,12 @@ void ATile::GOTATick()
 	if (HasAuthority())
 	{
 		EcoValues->ServerTick(DeltaSeconds);
-		if (Building) Building->ServerTick(DeltaSeconds);
+		if (Building) Building->S_Tick(DeltaSeconds);
 	}
 	else
 	{
 		EcoValues->ClientTick(DeltaSeconds);
-		if (Building) Building->ClientTick(DeltaSeconds);
+		if (Building) Building->C_Tick(DeltaSeconds);
 	}
 	LastTick = GetWorld()->GetTimeSeconds();
 }
