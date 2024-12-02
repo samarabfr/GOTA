@@ -3,7 +3,6 @@
 
 #include "GS_Ingame.h"
 
-#include "CombatSystem.h"
 #include "GameSettings.h"
 #include "LoadingManager.h"
 #include "StartParameter.h"
@@ -35,8 +34,7 @@ void AGS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	DOREPLIFETIME(AGS_Ingame, TotalForage);
 	DOREPLIFETIME(AGS_Ingame, IslandMaxTrees);
 	DOREPLIFETIME(AGS_Ingame, IslandMaxForage);
-
-	DOREPLIFETIME(AGS_Ingame, CombatSystem);
+	
 	DOREPLIFETIME(AGS_Ingame, StartParameter);
 }
 
@@ -44,7 +42,6 @@ void AGS_Ingame::AddReplicatedSubobjects()
 {
 	AddReplicatedSubObject(TotalTrees);
 	AddReplicatedSubObject(TotalForage);
-	AddReplicatedSubObject(CombatSystem);
 	AddReplicatedSubObject(StartParameter);
 }
 
@@ -63,7 +60,6 @@ AGS_Ingame::AGS_Ingame()
 
 	TotalTrees = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Trees"));
 	TotalForage = CreateDefaultSubobject<UGOTAAttribute>(TEXT("Total Forage"));
-	CombatSystem = CreateDefaultSubobject<UCombatSystem>(TEXT("Combat System"));
 	StartParameter = CreateDefaultSubobject<UStartParameter>(TEXT("Start Parameter"));
 
 	// 4 because max players, but this should be a constant somewhere

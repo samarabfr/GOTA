@@ -44,13 +44,13 @@ void AWoodcutter::Work()
 	CurrentTile->EcoValues->SubtractTrees(1);
 	FGameResources WorkResources = FGameResources();
 	WorkResources.Wood = WorkAmount;
-	Building->Settlement->S_AddResources(WorkResources);
+	Building->GetSettlement()->S_AddResources(WorkResources);
 }
 
 bool AWoodcutter::TryFindPath()
 {
 	bool HasBorderingTileWithTrees = false;
-	for (ATile* Tile : Building->Settlement->BorderingUnclaimedTiles)
+	for (ATile* Tile : Building->GetSettlement()->BorderingUnclaimedTiles)
 	{
 		if (Tile->EcoValues->GetTrees() > 0)
 		{
@@ -62,7 +62,7 @@ bool AWoodcutter::TryFindPath()
 	{
 		Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
 		{
-			return Tile->EcoValues->GetTrees() > 0 && Building->Settlement->IsBorderingUnclaimedTile(Tile);
+			return Tile->EcoValues->GetTrees() > 0 && Building->GetSettlement()->IsBorderingUnclaimedTile(Tile);
 		});
 	}
 	else

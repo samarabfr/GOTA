@@ -54,7 +54,7 @@ ACivilian::ACivilian()
 	MeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
 }
 
-void ACivilian::ServerInit(UBuilding* InBuilding, ATile* SpawnTile)
+void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 {
 	GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	Building = InBuilding;
@@ -63,17 +63,17 @@ void ACivilian::ServerInit(UBuilding* InBuilding, ATile* SpawnTile)
 	SpawnTile->AddCivilian(this, NewLocation);
 	SetNetLocation(NewLocation);
 
-	const UBuildingSettings* BuildingSettings = Building->Settings;
+	const UBuildingSettings* BuildingSettings = Building->GetSettings();
 	WorkAmount = BuildingSettings->CivilianProductionAmount;
 	MovementRate = 100 / BuildingSettings->CivilianMoveTime;
 
 	SetupPopSizeChanging();
 }
 
-void ACivilian::ServerTick(const float DeltaSeconds)
+void ACivilian::S_Tick(const float DeltaSeconds)
 {
 	ValidateStatus();
-	ClientTick(DeltaSeconds);
+	C_Tick(DeltaSeconds);
 	if (Progress >= 100)
 	{
 		if (GetStatus() == ECivilianStatus::Moving)
@@ -86,7 +86,7 @@ void ACivilian::ServerTick(const float DeltaSeconds)
 	}
 }
 
-void ACivilian::ClientTick(const float DeltaSeconds)
+void ACivilian::C_Tick(const float DeltaSeconds)
 {
 	if (GetStatus() == ECivilianStatus::Moving)
 	{
@@ -142,7 +142,7 @@ void ACivilian::OnPopSizeChanged(int16 Change)
 void ACivilian::CalculateWorkRate()
 {
 	const float Pop = Building->GetPopulation()->GetSize();
-	const UBuildingSettings* BuildingSettings = Building->Settings;
+	const UBuildingSettings* BuildingSettings = Building->GetSettings();
 	float Factor = Pop / BuildingSettings->Housing;
 	WorkRate = (Factor * 100) / BuildingSettings->CivilianProductionTime;
 }
@@ -162,8 +162,6 @@ void ACivilian::SetNetLocation(const FVector& NewNetLocation)
 	NetLocation = NewNetLocation;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, NetLocation, this)
 }
-
-// ----------------- Moving ------------------------
 
 void ACivilian::Move()
 {

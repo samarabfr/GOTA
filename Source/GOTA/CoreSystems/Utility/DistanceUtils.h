@@ -25,7 +25,6 @@ class GOTA_API ADistanceUtils : public AActor
 protected:
 	UFUNCTION(BlueprintCallable)
 	void UpdateDistanceToTiles();
-	void UpdateDistanceToCombats();
 	
 private:
 	FHexCoords CurrentCoords;

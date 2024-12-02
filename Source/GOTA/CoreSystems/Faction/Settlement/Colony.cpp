@@ -1,5 +1,6 @@
 ﻿#include "Colony.h"
 
+#include "GOTA/CoreSystems/Entity/Army.h"
 #include "ColonyBrainSettings.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
@@ -7,24 +8,50 @@
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 
-
-void AColony::Tick(float DeltaSeconds)
+void AColony::S_Tick(const float DeltaSeconds)
 {
-	Super::Tick(DeltaSeconds);
-
+	C_Tick(DeltaSeconds);
 	if (ColonyBrainSettings)
 	{
 		FigureOutBuilding();
+		if(SendArmiesIntervalTimeLeft <= 0.0f)
+		{
+			SendArmies();
+			SendArmiesIntervalTimeLeft  = ColonyBrainSettings->GetSendArmiesIntervalTime();
+		}
+		else
+		{
+			SendArmiesIntervalTimeLeft -= DeltaSeconds;
+		}
 	}
 	else
 	{
 		InitColonyBrainSettings();
-	}
+	}	
+}
+
+void AColony::C_Tick(const float DeltaSeconds)
+{
+}
+
+void AColony::BeginDestroy()
+{
+	Super::BeginDestroy();
+}
+
+void AColony::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	if(HasAuthority())
+		S_Tick(DeltaSeconds);
+	else
+		C_Tick(DeltaSeconds);
 }
 
 void AColony::InitColonyBrainSettings()
 {
 	ColonyBrainSettings = GetWorld()->GetGameState<AGS_Ingame>()->GetGameSettings()->GetColonyBrainSettings();
+	SendArmiesIntervalTimeLeft = ColonyBrainSettings->GetSendArmiesIntervalTime();
 }
 
 void AColony::FigureOutBuilding()
@@ -141,4 +168,25 @@ void AColony::CalculateScores(FNewBuildingImportanceRatings ImportanceRatings)
 	}
 	SetCurrentBuildingProject(Highest);
 	*/
+}
+
+void AColony::SendArmies()
+{
+	for (AArmy* Army : GetAllColonyArmies())
+	{
+		Army->SetMode(EArmyMode::AttackMode);
+	}
+}
+
+TArray<AArmy*> AColony::GetAllColonyArmies()
+{
+	TArray<AArmy*> Result;
+	for (ATile* Tile : ClaimedTiles)
+	{
+		if(Tile && Tile->GetBuilding() && Tile->GetBuilding()->GetArmy())
+		{
+			Result.Add(Tile->GetBuilding()->GetArmy());
+		}
+	}
+	return Result;
 }

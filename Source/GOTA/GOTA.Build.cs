@@ -23,6 +23,11 @@ public class GOTA : ModuleRules
 			"Slate",
 			"SlateCore",
 			"NetCore",
+			"StateTreeModule",
+			"StateTreeEditorModule",
+			"GameplayStateTreeModule",
+			"AIModule",
+			"NetCore",
 			"RHI"
 		});
 

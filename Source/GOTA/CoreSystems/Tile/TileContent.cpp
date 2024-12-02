@@ -300,6 +300,13 @@ void UTileContent::ValidateMainBuildingAsset()
 		return;
 	}
 
+	if(MainBuilding.TileAsset
+		&& !MainBuilding.TileAsset->IsValidFor(Tile->GameplayTags))
+	{
+		DespawnTileAsset(MainBuilding);
+		MainBuilding.TileAsset = nullptr;
+	}
+
 	// search for an MainBuildingAsset that is allowed to Spawn on this Tile
 	for (UTileAsset* PotentialAsset : Tile->Settings->MainBuildingTileAssets)
 	{

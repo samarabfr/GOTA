@@ -6,6 +6,7 @@
 
 #include "Building.generated.h"
 
+class AArmy;
 class ASettlement;
 class ATile;
 class UPopulation;
@@ -27,25 +28,30 @@ protected:
 	UBuilding();
 
 public:
-	void ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement);
-	void ClientInit();
+	virtual void S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement);
+	void C_Init();
 
-	virtual void ServerTick(float DeltaSeconds);
-	virtual void ClientTick(const float DeltaSeconds);
+	virtual void S_Tick(float DeltaSeconds);
+	virtual void C_Tick(const float DeltaSeconds);
 
-protected:
-	virtual void BeginDestroy() override;
+	virtual void Destroy();
 
 	// ---------------------------------------- Utility ----------------------------------------
-public:
+private:
+	UPROPERTY(Replicated)
+	ASettlement* Settlement;
+	
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UBuildingSettings* Settings;
 
 	UPROPERTY(Replicated)
 	ATile* Tile;
 
-	UPROPERTY(Replicated)
-	ASettlement* Settlement;
+public:
+	ASettlement* GetSettlement() const {return Settlement; }
+	UBuildingSettings* GetSettings() const{return Settings; }
+	ATile* GetTile() const{return Tile; }
+	
 
 	// --------------------------------------- Population ---------------------------------------
 public:
@@ -108,23 +114,35 @@ public:
 	EConsumptionType GetConsumptionType() const;
 
 	// returns the predicted Consumption of GetConsumptionType() in Units per Second
-	float GetPredictedConsumption() const;	
+	float GetPredictedConsumption() const;
 
 	// --------------------- Construction phase ---------------------
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
-	bool IsUnderConstruction = true;
-
-public:
-	bool GetIsUnderConstruction() const { return IsUnderConstruction; }
-
-private:
+	bool bIsUnderConstruction = true;
+	
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	FGameResources ConstructionProgress;
 
 public:
+	bool GetIsUnderConstruction() const { return bIsUnderConstruction; }
+	
 	FGameResources GetConstructionProgress() const;
 	void SetConstructionProgress(const FGameResources NewConstructionProgress);
 
 	virtual void FinishConstruction();
+
+	// --------------------- Protection ---------------------
+	
+public:
+	bool IsProtected() const;
+
+	// --------------------- Army ---------------------
+public:
+	virtual AArmy* GetArmy() const { return nullptr; }
+
+	// --------------------- Defense building ---------------------
+	
+public:
+	virtual void S_BuildingDefenseTakeDamage(int32 Damage) {}
 };

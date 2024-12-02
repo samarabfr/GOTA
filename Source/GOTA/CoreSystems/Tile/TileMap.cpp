@@ -37,7 +37,7 @@ void ATileMap::Init()
 		Tile->Neighbors[3] = GetTileFast(FHexCoords(HexCoords.Q - 0, HexCoords.R + 1));
 		Tile->Neighbors[4] = GetTileFast(FHexCoords(HexCoords.Q - 1, HexCoords.R + 1));
 		Tile->Neighbors[5] = GetTileFast(FHexCoords(HexCoords.Q - 1, HexCoords.R + 0));
-		Tile->ServerInit();
+		Tile->S_Init();
 	}
 }
 
@@ -188,6 +188,46 @@ ATile* ATileMap::GetRandomTile()
 	return nullptr;
 }
 
+ATile* ATileMap::FindNearestTileInRange(ATile* Origin, int32 Range,
+                                        const std::function<bool(const ATile*)>& Condition) const
+{
+	if (!Origin || Range < 0) return nullptr;
+	if (Range == 0) return Condition(Origin) ? Origin : nullptr;
+
+	TArray<ATile*> Frontier;
+	Frontier.Add(Origin);
+
+	TArray<int8> DistanceMap;
+	DistanceMap.SetNumZeroed(Tiles.Num());
+	DistanceMap[Origin->HexCoords.Q * Size.R + Origin->HexCoords.R] = 1;
+	TArray<ATile*> FoundTargets;
+	int8 Distance = 1;
+	while (!Frontier.IsEmpty() && FoundTargets.IsEmpty() && Distance - 1 <= Range)
+	{
+		TArray<ATile*> NewFrontier;
+		for (ATile* Current : Frontier)
+		{
+			if (Condition(Current))
+			{
+				FoundTargets.Add(Current);
+			}
+			for (ATile* Neighbor : Current->Neighbors)
+			{
+				if (Neighbor
+					&& DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] == 0)
+				{
+					NewFrontier.Add(Neighbor);
+					DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] = Distance;
+				}
+			}
+		}
+		++Distance;
+		Frontier = NewFrontier;
+	}
+	if (FoundTargets.IsEmpty()) return nullptr;
+	return FoundTargets[FMath::RandRange(0, FoundTargets.Num() - 1)];
+}
+
 TArray<ATile*> ATileMap::FindPathToNearestTile(ATile* Origin, const EEntityType EntityType,
                                                const std::function<bool(const ATile*)>& Condition = [](const ATile*)
                                                {
@@ -246,7 +286,62 @@ TArray<ATile*> ATileMap::FindPathToNearestTile(ATile* Origin, const EEntityType 
 	return Path;
 }
 
-TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End, EAffiliation Affiliation)
+TArray<ATile*> ATileMap::FindPathToNearestTileInRange(ATile* Origin, EEntityType EntityType, int32 Range,
+                                                      const std::function<bool(const ATile*)>& Condition) const
+{
+	if (!Origin) return TArray<ATile*>();
+	TArray<ATile*> Frontier;
+	Frontier.Add(Origin);
+
+	TArray<int8> DistanceMap;
+	DistanceMap.SetNumZeroed(Tiles.Num());
+	DistanceMap[Origin->HexCoords.Q * Size.R + Origin->HexCoords.R] = 1;
+	TArray<ATile*> FoundTargets;
+	int8 Distance = 2;
+	while (!Frontier.IsEmpty() && FoundTargets.IsEmpty() && Distance - 1 <= Range)
+	{
+		TArray<ATile*> NewFrontier;
+		for (ATile* Current : Frontier)
+		{
+			if (Condition(Current))
+			{
+				FoundTargets.Add(Current);
+			}
+			for (ATile* Neighbor : Current->Neighbors)
+			{
+				if (Neighbor
+					&& Neighbor->AcceptsEntity(EntityType)
+					&& DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] == 0)
+				{
+					NewFrontier.Add(Neighbor);
+					DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] = Distance;
+				}
+			}
+		}
+		++Distance;
+		Frontier = NewFrontier;
+	}
+	if (FoundTargets.IsEmpty()) return TArray<ATile*>();
+	ATile* Current = FoundTargets[FMath::RandRange(0, FoundTargets.Num() - 1)];
+	TArray<ATile*> Path;
+	while (Current != Origin)
+	{
+		Path.Add(Current);
+		int8 CurrentDistance = DistanceMap[Current->HexCoords.Q * Size.R + Current->HexCoords.R];
+		TArray<ATile*> PossibleNextCurrents;
+		for (ATile* Neighbor : Current->Neighbors)
+		{
+			if (!Neighbor) continue;
+			int8 NeighborDistance = DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R];
+			if (NeighborDistance != 0 && NeighborDistance < CurrentDistance)
+				PossibleNextCurrents.Add(Neighbor);
+		}
+		Current = PossibleNextCurrents[FMath::RandRange(0, PossibleNextCurrents.Num() - 1)];
+	}
+	return Path;
+}
+
+TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End)
 {
 	//https://www.redblobgames.com/pathfinding/a-star/introduction.html
 	TArray<ATile*> Frontier;
@@ -265,7 +360,7 @@ TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End, EAffiliation Affiliat
 		}
 		for (ATile* Next : Current->Neighbors)
 		{
-			if (Next && Next->IsWalkable(Affiliation) && !CameFrom.Contains(Next))
+			if (Next && !CameFrom.Contains(Next))
 			{
 				Frontier.Add(Next);
 				CameFrom.Add(Next, Current);
@@ -287,8 +382,7 @@ TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End, EAffiliation Affiliat
 	return Path;
 }
 
-TArray<ATile*> ATileMap::GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation TargetAffiliation,
-                                                            EAffiliation Walker)
+TArray<ATile*> ATileMap::GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation TargetAffiliation)
 {
 	//https://www.redblobgames.com/pathfinding/a-star/introduction.html
 	TArray<ATile*> Frontier;
@@ -305,7 +399,7 @@ TArray<ATile*> ATileMap::GetPathToNearestAffiliatedBuilding(ATile* Start, EAffil
 		if (Current->GetBuilding()
 			&& Current->GetClaimant()
 			&& Current->GetClaimant()->GetAffiliation() == TargetAffiliation
-			&& Current->IsWalkable(Walker))
+			&& Current->AcceptsArmy())
 		{
 			// found target Tile
 			Target = Current;
@@ -314,7 +408,7 @@ TArray<ATile*> ATileMap::GetPathToNearestAffiliatedBuilding(ATile* Start, EAffil
 		// Add all Neighbors of Current tile to the Frontier, with Current Tile as CameFrom
 		for (ATile* Next : Current->Neighbors)
 		{
-			if (Next && Next->IsWalkable(Walker) && !CameFrom.Contains(Next))
+			if (Next && Next->AcceptsArmy() && !CameFrom.Contains(Next))
 			{
 				Frontier.Add(Next);
 				CameFrom.Add(Next, Current);

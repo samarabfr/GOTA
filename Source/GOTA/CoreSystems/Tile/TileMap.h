@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -10,7 +10,6 @@
 #include "Tile.h"
 #include "GameFramework/Actor.h"
 #include "TileMap.generated.h"
-
 
 UCLASS()
 class GOTA_API ATileMap : public AActor
@@ -54,15 +53,6 @@ private:
 	bool TryAddTile(FHexCoords HexCoords, ATile* Tile);
 
 public:
-	UPROPERTY(BlueprintReadOnly)
-	TArray<ATile*> ColonistsStarts;
-
-	UPROPERTY(BlueprintReadOnly)
-	TArray<ATile*> NativesStarts;
-
-	UPROPERTY(EditDefaultsOnly)
-	UTerrainGeneratorDataAsset* TerrainGenData;
-
 	void InitializeBothArrays(FHexCoords SizeInit);
 
 	ATile* SpawnNewTile(FHexCoords Coords, float Height);
@@ -79,18 +69,39 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	ATile* GetRandomTile();
 
+	ATile* FindNearestTileInRange(ATile* Origin, int32 Range,
+	                              const std::function<bool(const ATile*)>& Condition) const;
+
 	TArray<ATile*> FindPathToNearestTile(ATile* Origin, EEntityType EntityType,
 	                                     const std::function<bool(const ATile*)>& Condition) const;
 
+	TArray<ATile*> FindPathToNearestTileInRange(ATile* Origin, EEntityType EntityType, int32 Range,
+	                                     const std::function<bool(const ATile*)>& Condition) const;
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
-	TArray<ATile*> GetPath(ATile* Start, ATile* End, EAffiliation Affiliation);
+	static TArray<ATile*> GetPath(ATile* Start, ATile* End);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	TArray<ATile*>
-	GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation TargetAffiliation, EAffiliation Walker);
+	GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation TargetAffiliation);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	int32 TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, int32 Amount, int32 Threshold, int32 MaxRange);
 
 	void CountAllMaxEcoValues(int32& TotalMaxTrees, int32& TotalMaxForage);
+
+	// -----------------  TerrainGen ------------------------
+private:
+	UPROPERTY(EditDefaultsOnly)
+	UTerrainGeneratorDataAsset* TerrainGenData;
+	
+	TWeakObjectPtr<ATile> ColonistsStart;
+	TWeakObjectPtr<ATile> NativesStart;
+	
+public:
+	UTerrainGeneratorDataAsset* GetTerrainGenData() const { return TerrainGenData; }
+	TWeakObjectPtr<ATile> GetColonistsStart() const { return ColonistsStart; }
+	void SetColonistsStart(TWeakObjectPtr<ATile> NewColonistsStart) { ColonistsStart = NewColonistsStart; }
+	TWeakObjectPtr<ATile> GetNativesStart() const { return NativesStart; }
+	void SetNativesStart(TWeakObjectPtr<ATile> NewNativesStart) { NativesStart = NewNativesStart; }
 };
