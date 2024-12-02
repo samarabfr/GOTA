@@ -11,7 +11,6 @@
 #include "GameFramework/Actor.h"
 #include "TileMap.generated.h"
 
-
 UCLASS()
 class GOTA_API ATileMap : public AActor
 {
@@ -54,15 +53,6 @@ private:
 	bool TryAddTile(FHexCoords HexCoords, ATile* Tile);
 
 public:
-	UPROPERTY(BlueprintReadOnly)
-	TArray<ATile*> ColonistsStarts;
-
-	UPROPERTY(BlueprintReadOnly)
-	TArray<ATile*> NativesStarts;
-
-	UPROPERTY(EditDefaultsOnly)
-	UTerrainGeneratorDataAsset* TerrainGenData;
-
 	void InitializeBothArrays(FHexCoords SizeInit);
 
 	ATile* SpawnNewTile(FHexCoords Coords, float Height);
@@ -99,4 +89,19 @@ public:
 	int32 TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, int32 Amount, int32 Threshold, int32 MaxRange);
 
 	void CountAllMaxEcoValues(int32& TotalMaxTrees, int32& TotalMaxForage);
+
+	// -----------------  TerrainGen ------------------------
+private:
+	UPROPERTY(EditDefaultsOnly)
+	UTerrainGeneratorDataAsset* TerrainGenData;
+	
+	TWeakObjectPtr<ATile> ColonistsStart;
+	TWeakObjectPtr<ATile> NativesStart;
+	
+public:
+	UTerrainGeneratorDataAsset* GetTerrainGenData() const { return TerrainGenData; }
+	TWeakObjectPtr<ATile> GetColonistsStart() const { return ColonistsStart; }
+	void SetColonistsStart(TWeakObjectPtr<ATile> NewColonistsStart) { ColonistsStart = NewColonistsStart; }
+	TWeakObjectPtr<ATile> GetNativesStart() const { return NativesStart; }
+	void SetNativesStart(TWeakObjectPtr<ATile> NewNativesStart) { NativesStart = NewNativesStart; }
 };

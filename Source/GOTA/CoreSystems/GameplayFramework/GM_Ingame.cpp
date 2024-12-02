@@ -18,6 +18,7 @@
 #include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
+#include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "GOTA/CoreSystems/Tile/WorldGenerator.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -154,9 +155,7 @@ void AGM_Ingame::CreateWorld()
 	UGOTAGameInstance* GameInstance = GetGameInstance<UGOTAGameInstance>();
 	UWorldGenerator* WorldGen = NewObject<UWorldGenerator>();
 	WorldGen->Init(GOTAGameState->GetTileMap(),
-	               GOTAGameState->StartParameter->GetIslandSize(),
-	               1,
-	               1);
+	               GOTAGameState->StartParameter->GetIslandSize());
 	WorldGen->GenerateWorld();
 	GOTAGameState->GetTileMap()->Init();
 }
@@ -166,13 +165,13 @@ void AGM_Ingame::CreateSettlements()
 	AGameSettings* GameSettings = GOTAGameState->GetGameSettings();
 
 	AColony* Colony = GetWorld()->SpawnActor<AColony>();
-	Colony->S_Init(GOTAGameState->GetTileMap()->ColonistsStarts[0],
+	Colony->S_Init(GOTAGameState->GetTileMap()->GetColonistsStart().Get(),
 	               GameSettings->GetColonySettings(),
 	               GameSettings->GetColonyPopulationSettings());
 	GOTAGameState->SetColony(Colony);
 
 	ATribe* Tribe = GetWorld()->SpawnActor<ATribe>();
-	Tribe->S_Init(GOTAGameState->GetTileMap()->NativesStarts[0],
+	Tribe->S_Init(GOTAGameState->GetTileMap()->GetNativesStart().Get(),
 	              GameSettings->GetTribeSettings(),
 	              GameSettings->GetTribePopulationSettings());
 	GOTAGameState->SetTribe(Tribe);
@@ -180,7 +179,7 @@ void AGM_Ingame::CreateSettlements()
 
 void AGM_Ingame::CreateGuardians()
 {
-	ATile* TribeStartingTile = GOTAGameState->GetTileMap()->NativesStarts[0];
+	ATile* TribeStartingTile = GOTAGameState->GetTileMap()->GetNativesStart().Get();
 	for (int32 i = 0; i < GOTAGameState->PlayerArray.Num(); ++i)
 	{
 		const APS_Ingame* PlayerStateIngame = Cast<APS_Ingame>(GOTAGameState->PlayerArray[i]);
