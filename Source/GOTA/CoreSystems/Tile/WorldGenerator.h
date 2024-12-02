@@ -7,9 +7,9 @@
 #include "NoiseParameter.h"
 #include "CoreMinimal.h"
 #include "GeneratedTileInfo.h"
-#include "TileMap.h"
 #include "WorldGenerator.generated.h"
 
+class ATileMap;
 /**
  * 
  */
@@ -19,7 +19,7 @@ class GOTA_API UWorldGenerator : public UObject
 	GENERATED_BODY()
 
 public:
-	void Init(ATileMap* TileMap_, int32 TileCount_, int32 ColonistsCount_, int32 NativesCount_);
+	void Init(ATileMap* TileMap_, int32 TileCount_);
 
 	void GenerateWorld();
 
@@ -33,8 +33,7 @@ private:
 
 	TArray<FGeneratedTileInfo> GTiles;
 
-	UPROPERTY()
-	UTerrainGeneratorDataAsset* TerrainGenData;
+	TWeakObjectPtr<UTerrainGeneratorDataAsset> TerrainGenData;
 
 	FGeneratedTileInfo* Middle;
 
@@ -51,13 +50,7 @@ private:
 
 	int8 MaxVolcanoDistance = 0;
 
-	int32 ColonistsCount = 0;
-
-	int32 NativesCount = 0;
-
-	TArray<FGeneratedTileInfo*> ColonistsStarts;
-
-	TArray<FGeneratedTileInfo*> NativesStarts;
+	//-------------------------------------
 
 	TArray<FGeneratedTileInfo*> Coast;
 
@@ -115,29 +108,21 @@ private:
 
 	void PlaceBeach(FGeneratedTileInfo* Tile, int32& BeachTileCounter, TArray<FGeneratedTileInfo*>& EligibleForBeach);
 
+	// -----------------Starting positions------------------
+private:
+	FGeneratedTileInfo* ColonistsStart;
+
+	FGeneratedTileInfo* NativesStart;
+
 	void GenerateStartingPositions();
+	void GenerateInitialStartingPositions();
+	void FloodFillColonistsDistances();
+	void GenerateFinalStartingPositions();
+	float CalculateStartingPositionScore(FGeneratedTileInfo* ScoredTile, FGeneratedTileInfo* OtherStartingPosition);
 
-	void GenerateColonistsStartingPositions();
-
-	void GenerateColonistsInitialStartingPositions();
-
-	void FloodFillEveryTileWithColonistsDistances(FGeneratedTileInfo* Colonist);
-
-	void GenerateColonistsFinalStartingPositions();
-
-	float CalculateColonistStartScoreForTile(FGeneratedTileInfo* ColonistStart, FGeneratedTileInfo* Tile);
-
-	void GenerateNativesStartingPositions();
-
-	void GenerateNativesInitialStartingPositions();
-
-	void GenerateNativesFinalStartingPositions();
-
-	float CalculateNativesStartScoreForTile(FGeneratedTileInfo* NewNativesStart, TArray<FGeneratedTileInfo*> NewNativesStarts);
-
+	// -----------------River connections------------------
+private:
 	void CalculateRiverConnections();
-
 	void AddRiverConnectionsToOcean();
-	
 	void CleanupRiverConnections();
 };

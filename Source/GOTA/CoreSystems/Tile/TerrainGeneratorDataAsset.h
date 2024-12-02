@@ -95,23 +95,12 @@ public:
 	int32 IterationsStarts = 1000;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
-	float ColonistStartsColonistFactor = 1;
+	float StartsDistancToOtherFactor = 1;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
-	int32 NativesMinColonistDistance = 7;
+	float StartsCoastFactor = 1;
 	
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
-	float NativesStartsColonistFactor = 1;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
-	float NativesStartsNativesFactor = 1;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
-	float NativesStartsCoastFactor = 1;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
-	float NativesStartsVolcanoFactor = 1;
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly, Category="SettlementGen")
-	float MaxForce = 500;
+	float StartsVolcanoFactor = 1;
+
 };
