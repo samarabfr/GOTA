@@ -32,7 +32,7 @@ private:
 	FHexCoords Size;
 
 	TArray<FGeneratedTileInfo> GTiles;
-	
+
 	TWeakObjectPtr<UTerrainGeneratorDataAsset> TerrainGenData;
 
 	FGeneratedTileInfo* Middle;
@@ -49,7 +49,7 @@ private:
 	int8 MaxRiverDistance = 0;
 
 	int8 MaxVolcanoDistance = 0;
-	
+
 	//-------------------------------------
 
 	TArray<FGeneratedTileInfo*> Coast;
@@ -113,15 +113,16 @@ private:
 	FGeneratedTileInfo* ColonistsStart;
 
 	FGeneratedTileInfo* NativesStart;
-	
+
 	void GenerateStartingPositions();
 	void GenerateInitialStartingPositions();
 	void FloodFillColonistsDistances();
 	void GenerateFinalStartingPositions();
+	float CalculateStartingPositionScore(FGeneratedTileInfo* ScoredTile, FGeneratedTileInfo* OtherStartingPosition);
 
 	// -----------------River connections------------------
 private:
 	void CalculateRiverConnections();
-	void AddRiverConnectionsToOcean();	
+	void AddRiverConnectionsToOcean();
 	void CleanupRiverConnections();
 };

@@ -728,9 +728,9 @@ void UWorldGenerator::GenerateStartingPositions()
 	GenerateInitialStartingPositions();
 	GenerateFinalStartingPositions();
 	// Apply to tiles
-	if(ColonistsStart)
-		ColonistsStart->IsNativeStart = true;
-	if(NativesStart)
+	if (ColonistsStart)
+		ColonistsStart->IsColonistStart = true;
+	if (NativesStart)
 		NativesStart->IsNativeStart = true;
 	FloodFillColonistsDistances();
 }
@@ -786,92 +786,48 @@ void UWorldGenerator::FloodFillColonistsDistances()
 
 void UWorldGenerator::GenerateFinalStartingPositions()
 {
-	FVector2D ColonistsStartVector = UHexCoordsFunctions::HexCoordsToVector2D(ColonistsStart->HexCoords);
-	FVector2D NativesStartVector = UHexCoordsFunctions::HexCoordsToVector2D(NativesStart->HexCoords);
-	const FVector2D VolcanoVector = UHexCoordsFunctions::HexCoordsToVector2D(Volcano->HexCoords);
-	TArray<FVector2D> CoastVectors;
-	for (FGeneratedTileInfo* CoastTile : Coast)
+	// Determine the positions through score calculations
+	for (int32 _ = 0; _ < TerrainGenData->IterationsStarts; ++_)
 	{
-		CoastVectors.Add(UHexCoordsFunctions::HexCoordsToVector2D(CoastTile->HexCoords));
+		// Colonists
+		float ColonistsStartScore = CalculateStartingPositionScore(ColonistsStart, NativesStart);
+		FGeneratedTileInfo* ColonistsTestTile = Coast[FMath::RandRange(0, Coast.Num() - 1)];
+		if (ColonistsTestTile != ColonistsStart)
+		{
+			float TestScore = CalculateStartingPositionScore(ColonistsTestTile, NativesStart);
+			if (TestScore > ColonistsStartScore)
+				ColonistsStart = ColonistsTestTile;
+		}
+		// Natives
+		float NativesStartScore = CalculateStartingPositionScore(NativesStart, ColonistsStart);
+		FGeneratedTileInfo* NativesTestTile = Coast[FMath::RandRange(0, Coast.Num() - 1)];
+		if (NativesTestTile != NativesStart)
+		{
+			float TestScore = CalculateStartingPositionScore(NativesTestTile, ColonistsStart);
+			if (TestScore > NativesStartScore)
+				NativesStart = NativesTestTile;
+		}
 	}
-	// Determine the positions through force calculations
-	for (int32 Iteration = 0; Iteration < TerrainGenData->IterationsStarts; ++Iteration)
-	{
-		FVector2D ColonistsForce = FVector2D::Zero();
-		FVector2D NativesForce = FVector2D::Zero();
-		// Colonists vs Natives
-		FVector2D Delta = NativesStartVector - ColonistsStartVector;
-		float Distance = Delta.Length() * 0.01f; // factor because of cm
-		if (Distance > 0)
-		{
-			float ForceMagnitude = TerrainGenData->NativesStartsNativesFactor / (Distance * Distance);
-			FVector2D ForceVector = ForceMagnitude * (Delta / Distance);
-			ColonistsForce += ForceVector;
-			NativesForce -= ForceVector;
-		}
-		// Coast vs Colonists + Coast vs Natives 
-		for (FVector2D CoastVector : CoastVectors)
-		{
-			// Colonists
-			Delta = CoastVector - ColonistsStartVector;
-			Distance = Delta.Length() * 0.01f; // factor because of cm
-			if (Distance > 0)
-			{
-				float ForceMagnitude = TerrainGenData->NativesStartsCoastFactor / (Distance * Distance);
-				FVector2D ForceVector = ForceMagnitude * (Delta / Distance);
-				ColonistsForce -= ForceVector;
-			}
-			// Natives
-			Delta = CoastVector - NativesStartVector;
-			Distance = Delta.Length() * 0.01f; // factor because of cm
-			if (Distance > 0)
-			{
-				float ForceMagnitude = TerrainGenData->NativesStartsCoastFactor / (Distance * Distance);
-				FVector2D ForceVector = ForceMagnitude * (Delta / Distance);
-				NativesForce -= ForceVector;
-			}
-		}
-		// Volcano vs Colonists + Volcano vs Natives 
-		if (Iteration > TerrainGenData->IterationsStarts / 2)
-		{
-			// Colonists
-			Delta = VolcanoVector - NativesStartVector;
-			Distance = Delta.Length() * 0.01f; // factor because of cm
-			if (Distance > 0)
-			{
-				float ForceMagnitude = TerrainGenData->NativesStartsVolcanoFactor / (Distance * Distance);
-				FVector2D ForceVector = ForceMagnitude * (Delta / Distance);
-				ColonistsForce -= ForceVector;
-			}
-			// Natives
-			Delta = VolcanoVector - NativesStartVector;
-			Distance = Delta.Length() * 0.01f; // factor because of cm
-			if (Distance > 0)
-			{
-				float ForceMagnitude = TerrainGenData->NativesStartsVolcanoFactor / (Distance * Distance);
-				FVector2D ForceVector = ForceMagnitude * (Delta / Distance);
-				NativesForce -= ForceVector;
-			}
-		}
-		// Apply max force
-		if (ColonistsForce.Length() > TerrainGenData->MaxForce)
-		{
-			ColonistsForce.Normalize();
-			ColonistsForce *= TerrainGenData->MaxForce;
-		}
-		if (NativesForce.Length() > TerrainGenData->MaxForce)
-		{
-			NativesForce.Normalize();
-			NativesForce *= TerrainGenData->MaxForce;
-		}
-		// apply forces
-		ColonistsStartVector += ColonistsForce;
-		NativesStartVector += NativesForce;
-	}
-	// Apply position to Tiles
-	ColonistsStart = GetTile(UHexCoordsFunctions::Vector2DToHexCoords(ColonistsStartVector));
-	NativesStart = GetTile(UHexCoordsFunctions::Vector2DToHexCoords(NativesStartVector));
 }
+
+float UWorldGenerator::CalculateStartingPositionScore(FGeneratedTileInfo* ScoredTile,
+                                                      FGeneratedTileInfo* OtherStartingPosition)
+{
+	if (!ScoredTile || !OtherStartingPosition) return 0;
+	// other starting position
+	const float DistanceToOther = UE::Geometry::Distance(
+		UHexCoordsFunctions::HexCoordsToVector2D(OtherStartingPosition->HexCoords),
+		UHexCoordsFunctions::HexCoordsToVector2D(ScoredTile->HexCoords));
+	const float DistanceToOtherScore = DistanceToOther * TerrainGenData->StartsDistancToOtherFactor;
+	// ocean distance
+	//const float OceanDistanceScore = ScoredTile->OceanDistance * TerrainGenData->StartsCoastFactor;
+	// volcano distance
+	const float VolcanoDistanceScore = ScoredTile->VolcanoDistance * TerrainGenData->StartsVolcanoFactor;
+	// result
+	return DistanceToOtherScore + VolcanoDistanceScore;
+}
+
+// -----------------River connections------------------
 
 void UWorldGenerator::CalculateRiverConnections()
 {
@@ -887,7 +843,6 @@ void UWorldGenerator::CalculateRiverConnections()
 	AddRiverConnectionsToOcean();
 }
 
-// -----------------River connections------------------
 
 void UWorldGenerator::AddRiverConnectionsToOcean()
 {
