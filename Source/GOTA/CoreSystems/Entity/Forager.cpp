@@ -44,13 +44,13 @@ void AForager::Work()
 	CurrentTile->EcoValues->SubtractForage(1);
 	FGameResources WorkResources = FGameResources();
 	WorkResources.Food = WorkAmount;
-	Building->Settlement->S_AddResources(WorkResources);
+	Building->GetSettlement()->S_AddResources(WorkResources);
 }
 
 bool AForager::TryFindPath()
 {
 	bool HasBorderingTileWithTrees = false;
-	for (ATile* Tile : Building->Settlement->BorderingUnclaimedTiles)
+	for (ATile* Tile : Building->GetSettlement()->BorderingUnclaimedTiles)
 	{
 		if (IsTileValidForWork(Tile))
 		{
@@ -62,7 +62,7 @@ bool AForager::TryFindPath()
 	{
 		Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
 		{
-			return IsTileValidForWork(Tile) && Building->Settlement->IsBorderingUnclaimedTile(Tile);
+			return IsTileValidForWork(Tile) && Building->GetSettlement()->IsBorderingUnclaimedTile(Tile);
 		});
 	}
 	else

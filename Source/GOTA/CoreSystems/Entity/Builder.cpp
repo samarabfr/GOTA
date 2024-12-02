@@ -46,40 +46,40 @@ void ABuilder::Work()
 	const FGameResources ResourcesProgress = CurrentTile->GetBuilding()->GetConstructionProgress();
 	FGameResources ResourcesProgressToAdd = FGameResources();
 	// Food
-	const int32 FoodNeeded = CurrentTile->GetBuilding()->Settings->Cost.Food - ResourcesProgress.Food;
+	const int32 FoodNeeded = CurrentTile->GetBuilding()->GetSettings()->Cost.Food - ResourcesProgress.Food;
 	if (FoodNeeded > 0 && WorkAmountLeft > 0)
 	{
 		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, FoodNeeded),
-		                                  Building->Settlement->GetResources().Food);
+		                                  Building->GetSettlement()->GetResources().Food);
 		ResourcesProgressToAdd.Food = DoneWork;
 		WorkAmountLeft -= DoneWork;
 	}
 	// Wood
-	const int32 WoodNeeded = CurrentTile->GetBuilding()->Settings->Cost.Wood - ResourcesProgress.Wood;
+	const int32 WoodNeeded = CurrentTile->GetBuilding()->GetSettings()->Cost.Wood - ResourcesProgress.Wood;
 	if (WoodNeeded > 0 && WorkAmountLeft > 0)
 	{
 		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, WoodNeeded),
-		                                  Building->Settlement->GetResources().Wood);
+		                                  Building->GetSettlement()->GetResources().Wood);
 		ResourcesProgressToAdd.Wood = DoneWork;
 		WorkAmountLeft -= DoneWork;
 	}
 	// Stone
-	const int32 StoneNeeded = CurrentTile->GetBuilding()->Settings->Cost.Stone - ResourcesProgress.Stone;
+	const int32 StoneNeeded = CurrentTile->GetBuilding()->GetSettings()->Cost.Stone - ResourcesProgress.Stone;
 	if (StoneNeeded > 0 && WorkAmountLeft > 0)
 	{
 		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, StoneNeeded),
-		                                  Building->Settlement->GetResources().Stone);
+		                                  Building->GetSettlement()->GetResources().Stone);
 		ResourcesProgressToAdd.Stone = DoneWork;
 		WorkAmountLeft -= DoneWork;
 	}
 	CurrentTile->GetBuilding()->SetConstructionProgress(ResourcesProgress + ResourcesProgressToAdd);
-	Building->Settlement->S_RemoveResources(ResourcesProgressToAdd);
+	Building->GetSettlement()->S_RemoveResources(ResourcesProgressToAdd);
 }
 
 bool ABuilder::TryFindPath()
 {
 	bool HasValidTiles = false;
-	for (ATile* Tile : Building->Settlement->ClaimedTiles)
+	for (ATile* Tile : Building->GetSettlement()->ClaimedTiles)
 	{
 		if (IsTileValidForWork(Tile))
 		{

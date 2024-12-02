@@ -29,18 +29,18 @@ bool UBuildingCivilian::IsSupportedForNetworking() const
 
 // ---------------------------------------- Lifecycle ----------------------------------------
 
-void UBuildingCivilian::ServerTick(float DeltaSeconds)
+void UBuildingCivilian::S_Tick(float DeltaSeconds)
 {
-	UBuilding::ServerTick(DeltaSeconds);
+	UBuilding::S_Tick(DeltaSeconds);
 	if (Civilian)
-		Civilian->ServerTick(DeltaSeconds);
+		Civilian->S_Tick(DeltaSeconds);
 }
 
-void UBuildingCivilian::ClientTick(const float DeltaSeconds)
+void UBuildingCivilian::C_Tick(const float DeltaSeconds)
 {
-	Super::ClientTick(DeltaSeconds);
+	Super::C_Tick(DeltaSeconds);
 	if (Civilian)
-		Civilian->ClientTick(DeltaSeconds);
+		Civilian->C_Tick(DeltaSeconds);
 }
 
 void UBuildingCivilian::BeginDestroy()
@@ -59,7 +59,7 @@ void UBuildingCivilian::SetCivilian(ACivilian* NewCivilian)
 void UBuildingCivilian::FinishConstruction()
 {
 	Super::FinishConstruction();
-	ACivilian* NewCivilian = Tile->GetWorld()->SpawnActor<ACivilian>(Settings->CivilianClass);
-	NewCivilian->ServerInit(this, Tile);
+	ACivilian* NewCivilian = GetTile()->GetWorld()->SpawnActor<ACivilian>(GetSettings()->CivilianClass);
+	NewCivilian->S_Init(this, GetTile());
 	SetCivilian(NewCivilian);
 }

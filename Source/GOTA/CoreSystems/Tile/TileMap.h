@@ -1,4 +1,4 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+ // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -79,15 +79,21 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	ATile* GetRandomTile();
 
+	ATile* FindNearestTileInRange(ATile* Origin, int32 Range,
+	                              const std::function<bool(const ATile*)>& Condition) const;
+
 	TArray<ATile*> FindPathToNearestTile(ATile* Origin, EEntityType EntityType,
 	                                     const std::function<bool(const ATile*)>& Condition) const;
 
+	TArray<ATile*> FindPathToNearestTileInRange(ATile* Origin, EEntityType EntityType, int32 Range,
+	                                     const std::function<bool(const ATile*)>& Condition) const;
+
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
-	TArray<ATile*> GetPath(ATile* Start, ATile* End, EAffiliation Affiliation);
+	static TArray<ATile*> GetPath(ATile* Start, ATile* End);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	TArray<ATile*>
-	GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation TargetAffiliation, EAffiliation Walker);
+	GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation TargetAffiliation);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	int32 TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, int32 Amount, int32 Threshold, int32 MaxRange);

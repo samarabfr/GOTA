@@ -69,4 +69,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Tile Entities")
 	TArray<FVector> CivilianSlots;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Tile Entities")
+	FVector ArmySlot;
 };

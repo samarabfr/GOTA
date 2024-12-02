@@ -73,7 +73,7 @@ class GOTA_API USettlementSettingsDefaults : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 	USettlementSettingsDefaults();
-
+	
 public:
 	UPROPERTY(EditDefaultsOnly)
 	USettlementSettings* SettlementSettings;

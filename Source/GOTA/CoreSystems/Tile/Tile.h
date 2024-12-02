@@ -17,6 +17,7 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Tile.generated.h"
 
+class AArmy;
 class ACivilian;
 class UBuildingSettings;
 class UBuilding;
@@ -48,8 +49,28 @@ class GOTA_API ATile : public AActor
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
-	void ServerInit();
+	void S_Init();
 
+	// ------------------------Tilemap---------------------------
+private:
+	UPROPERTY()
+	AGS_Ingame* GameState;
+
+public:
+	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly)
+	FHexCoords HexCoords;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
+	TArray<ATile*> Neighbors;
+
+	TArray<ATile*> GetNeighbors() const {return Neighbors; }
+
+	TArray<ATile*> GetPathTo(ATile* Target);
+	int32 GetTileDistanceTo(ATile* Target);
+	
+	// ------------------------Gameplay Tags---------------------------
+	
+public:
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_GameplayTags, Category="Tile")
 	FGameplayTagContainer GameplayTags;
 
@@ -59,46 +80,20 @@ public:
 	UPROPERTY()
 	FOnChangedSignature OnGameplayTagsChanged;
 
-	UPROPERTY(VisibleInstanceOnly, Replicated, BlueprintReadOnly)
-	FHexCoords HexCoords;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
-	TArray<ATile*> Neighbors;
-
-private:
-	UPROPERTY()
-	AGS_Ingame* GameState;
-
 	// ------------------------Entity---------------------------
+public:
+	bool AcceptsEntity(const EEntityType EntityType) const;
+	
+	// ------------------------Army---------------------------
 private:
-	UPROPERTY(VisibleInstanceOnly, BlueprintGetter=GetAlliedEntity, Replicated, Category="Tile")
-	AEntity* AlliedEntity;
-
-	UPROPERTY(VisibleInstanceOnly, BlueprintGetter=GetEnemyEntity, Replicated, Category="Tile")
-	AEntity* EnemyEntity;
-
-	AEntity* GetEntityByAffiliation(EAffiliation Affiliation) const;
+	UPROPERTY(VisibleInstanceOnly)
+	AArmy* Army;
 
 public:
-	UPROPERTY(BlueprintAssignable)
-	FOnEntityChangedSignature OnEntityChanged;
-
-	UFUNCTION(BlueprintGetter)
-	AEntity* GetAlliedEntity();
-
-	UFUNCTION(BlueprintGetter)
-	AEntity* GetEnemyEntity();
-
-	void SetAlliedEntity(AEntity* NewAlliedEntity);
-	void SetEnemyEntity(AEntity* NewEnemyEntity);
-
-	AEntity* GetEntity(EAffiliation Affiliation);
-	void SetEntity(AEntity* NewEntity, EAffiliation Affiliation);
-
-	UFUNCTION(BlueprintCallable, Category="Tile")
-	bool IsWalkable(EAffiliation Affiliation) const;
-
-	bool AcceptsEntity(EEntityType EntityType) const;
+	AArmy* GetArmy() const;
+	bool AcceptsArmy() const;
+	void SetArmy(AArmy* NewArmy, FVector& NewLocation);
+	void RemoveArmy();
 
 	// ------------------------Civilians---------------------------
 private:

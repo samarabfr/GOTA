@@ -28,10 +28,10 @@ bool UBuildingDirectProduction::IsSupportedForNetworking() const
 
 // ---------------------------------------- Lifecycle ----------------------------------------
 
-void UBuildingDirectProduction::ServerTick(float DeltaSeconds)
+void UBuildingDirectProduction::S_Tick(float DeltaSeconds)
 {
-	UBuilding::ServerTick(DeltaSeconds);
-	if (DirectProductionProgress < Settings->DirectProductionTime / GetEfficiency())
+	UBuilding::S_Tick(DeltaSeconds);
+	if (DirectProductionProgress < GetSettings()->DirectProductionTime / GetEfficiency())
 	{
 		DirectProductionProgress += DeltaSeconds;
 	}
@@ -43,9 +43,9 @@ void UBuildingDirectProduction::ServerTick(float DeltaSeconds)
 	}
 }
 
-void UBuildingDirectProduction::ClientTick(const float DeltaSeconds)
+void UBuildingDirectProduction::C_Tick(const float DeltaSeconds)
 {
-	Super::ClientTick(DeltaSeconds);
+	Super::C_Tick(DeltaSeconds);
 	DirectProductionProgress += DeltaSeconds;
 }
 
@@ -59,22 +59,22 @@ void UBuildingDirectProduction::BeginDestroy()
 void UBuildingDirectProduction::S_ApplyDirectProduction()
 {
 	FGameResources NewResources;
-	switch (Settings->ProductionType)
+	switch (GetSettings()->ProductionType)
 	{
 	case EProductionType::Food:
-		NewResources.Food = Settings->DirectProductionAmount;
+		NewResources.Food = GetSettings()->DirectProductionAmount;
 		break;
 
 	case EProductionType::Wood:
-		NewResources.Wood = Settings->DirectProductionAmount;
+		NewResources.Wood = GetSettings()->DirectProductionAmount;
 		break;
 
 	case EProductionType::Stone:
-		NewResources.Stone = Settings->DirectProductionAmount;
+		NewResources.Stone = GetSettings()->DirectProductionAmount;
 		break;
 		
 	default:
 		break;
 	}
-	Settlement->S_AddResources(NewResources);
+	GetSettlement()->S_AddResources(NewResources);
 }

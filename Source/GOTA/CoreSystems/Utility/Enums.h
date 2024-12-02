@@ -96,8 +96,27 @@ enum class ECivilianStatus : uint8
 };
 
 UENUM()
+enum class EArmyStatus : uint8
+{
+	Idling UMETA(DisplayName = "Idle"),
+	MovingToNextTile UMETA(DisplayName = "Moving"),
+	RecruitingFromTile UMETA(DisplayName = "Recruiting"),
+	Attacking UMETA(DisplayName = "Fighting"),
+	Ravaging UMETA(DisplayName = "Ravaging")
+};
+
+UENUM()
+enum class EArmyMode : uint8
+{
+	GarrisonMode UMETA(DisplayName = "Garrison mode"),
+	AttackMode UMETA(DisplayName = "Attack mode"),
+	GuardMode UMETA(DisplayName = "Guard mode"),
+	InterceptMode UMETA(DisplayName = "Intercept mode")
+};
+
+UENUM()
 enum class EEntityType : uint8
 {
 	Civilian UMETA(DisplayName = "Civilian"),
-	Military UMETA(DisplayName = "Military")
+	Army UMETA(DisplayName = "Military")
 };

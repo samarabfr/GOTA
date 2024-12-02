@@ -54,7 +54,7 @@ void AMigrant::Work()
 bool AMigrant::TryFindPath()
 {
 	bool HasValidTiles = false;
-	for (ATile* Tile : Building->Settlement->ClaimedTiles)
+	for (ATile* Tile : Building->GetSettlement()->ClaimedTiles)
 	{
 		if (IsTileValidForWork(Tile))
 		{
@@ -75,7 +75,7 @@ bool AMigrant::IsTileValidForWork(const ATile* Tile) const
 	return Tile->GetBuilding()
 		&& Tile->GetBuilding()->GetPopulation()->GetSize() < Tile->GetBuilding()->GetPopulation()->GetMaxSize()
 		&& Tile->GetClaimant()
-		&& Tile->GetClaimant() == Building->Settlement;
+		&& Tile->GetClaimant() == Building->GetSettlement();
 }
 
 void AMigrant::SetSize(const int32 NewSize)

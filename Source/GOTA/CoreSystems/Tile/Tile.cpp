@@ -3,16 +3,18 @@
 
 #include "Tile.h"
 
+#include "TileMap.h"
 #include "Algo/RandomShuffle.h"
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingArmy.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingCivilian.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingDefense.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingDirectProduction.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
-#include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "GOTA/CoreSystems/Utility/StaticMeshBatcher.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
@@ -40,9 +42,6 @@ void ATile::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME_WITH_PARAMS(ATile, EcoValues, Params);
 	DOREPLIFETIME_WITH_PARAMS(ATile, GameplayTags, Params);
 	DOREPLIFETIME_WITH_PARAMS(ATile, Building, Params);
-
-	DOREPLIFETIME(ATile, AlliedEntity);
-	DOREPLIFETIME(ATile, EnemyEntity);
 }
 
 ATile::ATile()
@@ -76,11 +75,21 @@ void ATile::BeginPlay()
 	}
 }
 
-void ATile::ServerInit()
+void ATile::S_Init()
 {
 	AddReplicatedSubObject(EcoValues);
 	Civilians.SetNumZeroed(Settings->CivilianSlots.Num());
 	SpawnOceanLineMeshes();
+}
+
+TArray<ATile*> ATile::GetPathTo(ATile* Target)
+{
+	return ATileMap::GetPath(this, Target);
+}
+
+int32 ATile::GetTileDistanceTo(ATile* Target)
+{
+	return GetPathTo(Target).Num();
 }
 
 void ATile::OnRep_GameplayTags()
@@ -88,63 +97,39 @@ void ATile::OnRep_GameplayTags()
 	OnGameplayTagsChanged.Broadcast();
 }
 
-AEntity* ATile::GetAlliedEntity()
-{
-	return AlliedEntity;
-}
-
-AEntity* ATile::GetEnemyEntity()
-{
-	return EnemyEntity;
-}
-
-void ATile::SetAlliedEntity(AEntity* NewAlliedEntity)
-{
-	AEntity* OldEntity = AlliedEntity;
-	AlliedEntity = NewAlliedEntity;
-	OnEntityChanged.Broadcast(this, OldEntity);
-}
-
-void ATile::SetEnemyEntity(AEntity* NewEnemyEntity)
-{
-	AEntity* OldEntity = EnemyEntity;
-	EnemyEntity = NewEnemyEntity;
-	OnEntityChanged.Broadcast(this, OldEntity);
-}
-
-AEntity* ATile::GetEntity(EAffiliation Affiliation)
-{
-	if (Affiliation == EAffiliation::Ally)
-		return GetAlliedEntity();
-	return GetEnemyEntity();
-}
-
-void ATile::SetEntity(AEntity* NewEntity, EAffiliation Affiliation)
-{
-	if (Affiliation == EAffiliation::Ally)
-		SetAlliedEntity(NewEntity);
-	else
-		SetEnemyEntity(NewEntity);
-}
-
-bool ATile::IsWalkable(EAffiliation Affiliation) const
-{
-	if (Affiliation == EAffiliation::Ally)
-	{
-		return !AlliedEntity;
-	}
-	if (Affiliation == EAffiliation::Enemy)
-	{
-		return !EnemyEntity;
-	}
-	return false;
-}
-
-bool ATile::AcceptsEntity(EEntityType EntityType) const
+bool ATile::AcceptsEntity(const EEntityType EntityType) const
 {
 	if (EntityType == EEntityType::Civilian)
 		return AcceptsCivilian();
-	return false; // TODO: implement acceptsMilitary
+	if (EntityType == EEntityType::Army)
+		return AcceptsArmy();
+	return false;
+}
+
+AArmy* ATile::GetArmy() const
+{
+	return Army;
+}
+
+bool ATile::AcceptsArmy() const
+{
+	if (Terrain.Biome == EBiome::Volcano ||
+		GetBuilding() &&
+		GetBuilding()->GetSettings()->bDefenseEnabled)
+		return false;
+	return !Army;
+}
+
+void ATile::SetArmy(AArmy* NewArmy, FVector& NewLocation)
+{
+	Army = NewArmy;
+	if (Army) NewLocation = Settings->ArmySlot + GetActorLocation();
+}
+
+void ATile::RemoveArmy()
+{
+	FVector _;
+	SetArmy(nullptr, _);
 }
 
 bool ATile::AcceptsCivilian() const
@@ -179,20 +164,13 @@ void ATile::RemoveCivilian(const ACivilian* Civilian)
 	}
 }
 
-AEntity* ATile::GetEntityByAffiliation(EAffiliation Affiliation) const
-{
-	if (Affiliation == EAffiliation::Ally) return AlliedEntity;
-	if (Affiliation == EAffiliation::Enemy) return EnemyEntity;
-	return nullptr;
-}
-
 // ----------------------- Building and Claiming ---------------------
 
 void ATile::OnRep_Building()
 {
 	if (Building)
 	{
-		Building->ClientInit();
+		Building->C_Init();
 	}
 	BuildingChanged();
 }
@@ -219,19 +197,24 @@ bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 	int32 EnabledCount = 0;
 	EnabledCount += BuildingDataAsset->bDirectProductionEnabled;
 	EnabledCount += BuildingDataAsset->bCivilianEnabled;
-	if(EnabledCount > 1)
+	EnabledCount += BuildingDataAsset->bArmyEnabled;
+	if (EnabledCount > 1)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Multiple building types enabled in BuildingDataAsset. Only one allowed!"))
-		return false;		
+		return false;
 	}
 	// Choose fitting class
-	if(BuildingDataAsset->bDirectProductionEnabled)
+	if (BuildingDataAsset->bDirectProductionEnabled)
 		Building = NewObject<UBuildingDirectProduction>();
-	else if(BuildingDataAsset->bCivilianEnabled)
+	else if (BuildingDataAsset->bCivilianEnabled)
 		Building = NewObject<UBuildingCivilian>();
+	else if (BuildingDataAsset->bArmyEnabled)
+		Building = NewObject<UBuildingArmy>();
+	else if (BuildingDataAsset->bDefenseEnabled)
+		Building = NewObject<UBuildingDefense>();
 	else
 		Building = NewObject<UBuilding>();
-	Building->ServerInit(BuildingDataAsset, this, Builder);
+	Building->S_Init(BuildingDataAsset, this, Builder);
 	AddReplicatedSubObject(Building);
 	AddReplicatedSubObject(Building->GetPopulation());
 
@@ -253,10 +236,11 @@ bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 void ATile::Unbuild()
 {
 	if (!Building) return;
-	GameplayTags.RemoveTags(Building->Settings->GameplayTags);
+	GameplayTags.RemoveTags(Building->GetSettings()->GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
 	RemoveReplicatedSubObject(Building);
 	RemoveReplicatedSubObject(Building->GetPopulation());
+	Building->Destroy();
 	Building = nullptr;
 	BuildingChanged();
 	ValidateSpawnLayout();
@@ -273,7 +257,7 @@ ASettlement* ATile::GetClaimant() const
 {
 	if (Building)
 	{
-		return Building->Settlement;
+		return Building->GetSettlement();
 	}
 	return nullptr;
 }
@@ -340,12 +324,12 @@ void ATile::GOTATick()
 	if (HasAuthority())
 	{
 		EcoValues->ServerTick(DeltaSeconds);
-		if (Building) Building->ServerTick(DeltaSeconds);
+		if (Building) Building->S_Tick(DeltaSeconds);
 	}
 	else
 	{
 		EcoValues->ClientTick(DeltaSeconds);
-		if (Building) Building->ClientTick(DeltaSeconds);
+		if (Building) Building->C_Tick(DeltaSeconds);
 	}
 	LastTick = GetWorld()->GetTimeSeconds();
 }
@@ -368,7 +352,9 @@ void ATile::PopSizeChanged(const int16 Change)
 	ForceNetUpdate();
 	for (int i = 0; i < 6; ++i)
 	{
-		if (Neighbors[i] && Neighbors[i]->Building) Neighbors[i]->Building->GetPopulation()->NeighborChangedPopSize(Change);
+		if (Neighbors[i] && Neighbors[i]->Building)
+			Neighbors[i]->Building->GetPopulation()->
+			              NeighborChangedPopSize(Change);
 	}
 }
 

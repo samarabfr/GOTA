@@ -6,6 +6,7 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "BuildingSettings.generated.h"
 
+class AArmy;
 class ACivilian;
 
 UCLASS()
@@ -87,4 +88,53 @@ public:
 
 	// returns the predicted Consumption per Second
 	float GetDefaultPredictedConsumption() const;
+
+	//--------------------------Army-------------------
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	bool bArmyEnabled = false;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	float SecondsPerRecruitCycle = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	float ArmyMoveTime = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	float ArmyRespawnTime = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	int32 ArmyIndividualMaxHP = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	int32 ArmyIndividualAttack = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	int32 ArmyIndividualCount = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	float ArmyAttackTime = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
+	float ArmyRavageTime = 0.0f;
+
+	//--------------------------Defense-------------------
+
+	UPROPERTY(EditDefaultsOnly, Category="Defense")
+	bool bDefenseEnabled = false;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Defense")
+	int32 RavageProtectionRange = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category="Defense")
+	int32 DefenseIndividualMaxHP = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category="Defense")
+	int32 DefenseIndividualAttack = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category="Defense")
+	int32 DefenseIndividualCount = 0;
+
+	UPROPERTY(EditDefaultsOnly, Category="Defense")
+	float DefenseAttackTime = 0.0f;
 };

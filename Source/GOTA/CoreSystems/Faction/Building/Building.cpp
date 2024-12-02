@@ -5,10 +5,7 @@
 
 #include "BuildingSettings.h"
 #include "Population.h"
-#include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
-#include "GOTA/CoreSystems/GameplayFramework/GameSettings.h"
-#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
@@ -28,7 +25,7 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Population, Params);
-	DOREPLIFETIME_WITH_PARAMS(UBuilding, IsUnderConstruction, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, bIsUnderConstruction, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, ConstructionProgress, Params);
 }
 
@@ -45,35 +42,35 @@ UBuilding::UBuilding()
 	Population->OnSizeChanged.AddDynamic(this, &UBuilding::PopulationChanged);
 }
 
-void UBuilding::ServerTick(const float DeltaSeconds)
+void UBuilding::S_Tick(const float DeltaSeconds)
 {
 	Population->S_Tick(DeltaSeconds);
 }
 
-void UBuilding::ClientTick(const float DeltaSeconds)
+void UBuilding::C_Tick(const float DeltaSeconds)
 {
 	Population->C_Tick(DeltaSeconds);
 }
 
-void UBuilding::ServerInit(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
+void UBuilding::Destroy()
+{
+	if (Settlement && Tile)
+		Settlement->OnBuildingRemoved(this, Tile);
+}
+
+void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
 {
 	Population->S_Init(InSettlement->GetPopulationSettings());
 	Settings = InSettings;
 	Tile = InTile;
 	Settlement = InSettlement;
 	Settlement->OnBuildingAdded(this, Tile);
+	bIsUnderConstruction = true;
 }
 
-void UBuilding::ClientInit()
+void UBuilding::C_Init()
 {
 	Settlement->OnBuildingAdded(this, Tile);
-}
-
-void UBuilding::BeginDestroy()
-{
-	UObject::BeginDestroy();
-	if (Settlement && Tile)
-		Settlement->OnBuildingRemoved(this, Tile);
 }
 
 // --------------------------------------- Population ---------------------------------------
@@ -152,8 +149,28 @@ void UBuilding::SetConstructionProgress(const FGameResources NewConstructionProg
 
 void UBuilding::FinishConstruction()
 {
-	IsUnderConstruction = false;
-	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, IsUnderConstruction, this)
+	bIsUnderConstruction = false;
+	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, bIsUnderConstruction, this)
 	Tile->OnBuildingFinishedConstruction();
 	Population->S_ChangeMaxSize(Settings->Housing);
+}
+
+// --------------------- Protection ---------------------
+
+bool UBuilding::IsProtected() const
+{
+	for (ATile* ClaimedTile : Settlement->ClaimedTiles)
+	{
+		if (ClaimedTile &&
+			ClaimedTile->GetBuilding() &&
+			ClaimedTile->GetBuilding()->Settings->bDefenseEnabled)
+		{
+			const int32 TileDistance = Tile->GetTileDistanceTo(ClaimedTile);
+			if (TileDistance > 0 && ClaimedTile->GetBuilding()->Settings->RavageProtectionRange >= TileDistance)
+			{
+				return true;
+			}
+		}
+	}
+	return false;
 }
