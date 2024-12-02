@@ -70,7 +70,7 @@ private:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	EArmyStatus Status = EArmyStatus::Idling;
 
-	UPROPERTY()
+	UPROPERTY(VisibleInstanceOnly)
 	UStateTreeComponentArmy* StateTree;
 
 protected:
@@ -82,7 +82,7 @@ public:
 
 	// ----------------- Recruiting ------------------------
 private:
-	UPROPERTY(VisibleInstanceOnly)
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float RecruitRate; // in percent per second
 
 	void S_TakePopFromTile();

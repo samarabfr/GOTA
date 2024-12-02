@@ -24,6 +24,7 @@ void AArmy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME_WITH_PARAMS(AArmy, Building, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, Settings, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, MovementRate, Params);
+	DOREPLIFETIME_WITH_PARAMS(AArmy, RecruitRate, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, Affiliation, Params);
 
 	Params.Condition = COND_None;
@@ -35,6 +36,8 @@ void AArmy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	DOREPLIFETIME_WITH_PARAMS(AArmy, NetLocation, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, CombatValues, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, RavageSpeed, Params);
+	DOREPLIFETIME_WITH_PARAMS(AArmy, GuardTile, Params);
+	DOREPLIFETIME_WITH_PARAMS(AArmy, InterceptArmy, Params);
 }
 
 // ----------------------- LifeCycle -----------------------
@@ -52,7 +55,6 @@ AArmy::AArmy()
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Static Mesh");
-	StateTree = CreateDefaultSubobject<UStateTreeComponentArmy>("StateTree");
 	CombatValues = CreateDefaultSubobject<UCombatValues>("Combat Values");
 	MeshComponent->SetupAttachment(RootComponent);
 	MeshComponent->SetRelativeScale3D(FVector(1, 1, 4));
@@ -62,6 +64,8 @@ AArmy::AArmy()
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	MeshComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	MeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
+	StateTree = CreateDefaultSubobject<UStateTreeComponentArmy>("StateTree");
+	StateTree->SetStartLogicAutomatically(false);
 }
 
 
@@ -88,6 +92,8 @@ void AArmy::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 		MeshComponent->SetStaticMesh(Settings->ColonyArmyMesh);
 	else
 		MeshComponent->SetStaticMesh(Settings->NativeArmyMesh);
+
+	StateTree->StartLogic();
 }
 
 void AArmy::S_Tick(const float DeltaSeconds)
