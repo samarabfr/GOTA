@@ -169,4 +169,15 @@ public:
 	bool TryFindPathToGuardTile();
 	bool TryFindPathToNearestEnemyToGuardTile();
 	bool HasEnemyInGuardTileRange();
+
+	// -----------------Intercepting------------------------
+
+private:
+	UPROPERTY(EditInstanceOnly, Replicated)
+	TWeakObjectPtr<AArmy> InterceptArmy;
+
+public:
+	TWeakObjectPtr<AArmy>  GetInterceptArmy() const { return InterceptArmy; }
+	void SetInterceptArmy(TWeakObjectPtr<AArmy>  NewInterceptArmy) { InterceptArmy = NewInterceptArmy; }
+	bool TryFindPathToInterceptArmy();
 };

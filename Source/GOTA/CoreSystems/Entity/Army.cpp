@@ -273,7 +273,7 @@ bool AArmy::TryFindPathToNearestEnemy()
 	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Army, [this](const ATile* Tile)
 	{
 		if (!Tile) return false;
-		for (ATile* Neighbor : Tile->Neighbors)
+		for (ATile* Neighbor : Tile->GetNeighbors())
 		{
 			if (Neighbor && Neighbor->GetArmy() && Neighbor->GetArmy()->GetAffiliation() != GetAffiliation())
 				return true;
@@ -339,7 +339,7 @@ TArray<AArmy*> AArmy::GetNeighboringEnemyArmies() const
 {
 	TArray<AArmy*> NeighboringArmies;
 	if (!CurrentTile) return NeighboringArmies;
-	for (const ATile* Neighbor : CurrentTile->Neighbors)
+	for (const ATile* Neighbor : CurrentTile->GetNeighbors())
 	{
 		if (Neighbor &&
 			Neighbor->GetArmy() &&
@@ -355,7 +355,7 @@ TArray<UBuilding*> AArmy::GetNeighboringEnemyDefenseBuildings() const
 {
 	TArray<UBuilding*> NeighboringDefenseBuildings;
 	if (!CurrentTile) return NeighboringDefenseBuildings;
-	for (const ATile* Neighbor : CurrentTile->Neighbors)
+	for (const ATile* Neighbor : CurrentTile->GetNeighbors())
 	{
 		if (Neighbor &&
 			Neighbor->GetClaimant() &&
@@ -378,14 +378,16 @@ void AArmy::S_AttackEnemy()
 {
 	// choose enemy randomly
 	TArray<AArmy*> AttackableArmies = GetNeighboringEnemyArmies();
-	if (AttackableArmies.Num() > 0){
+	if (AttackableArmies.Num() > 0)
+	{
 		const int32 RandomIndex = FMath::RandRange(0, AttackableArmies.Num() - 1);
 		AArmy* ChosenEnemy = AttackableArmies[RandomIndex];
 		// inflict damage
 		ChosenEnemy->S_ArmyTakeDamage(CombatValues->GetAttack());
 	}
 	TArray<UBuilding*> AttackableDefenseBuildings = GetNeighboringEnemyDefenseBuildings();
-	if (AttackableDefenseBuildings.Num() > 0){
+	if (AttackableDefenseBuildings.Num() > 0)
+	{
 		const int32 RandomIndex = FMath::RandRange(0, AttackableDefenseBuildings.Num() - 1);
 		UBuilding* ChosenEnemy = AttackableDefenseBuildings[RandomIndex];
 		// inflict damage
@@ -395,7 +397,7 @@ void AArmy::S_AttackEnemy()
 
 void AArmy::S_HandleDeath()
 {
-	if(!CurrentTile) return;
+	if (!CurrentTile) return;
 	CurrentTile->RemoveArmy();
 	Destroy();
 }
@@ -436,6 +438,8 @@ void AArmy::S_RavageEnemyBuilding()
 	}
 }
 
+// -----------------Guarding------------------------
+
 bool AArmy::TryFindPathToGuardTile()
 {
 	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Army, [this](const ATile* Tile)
@@ -450,9 +454,9 @@ bool AArmy::TryFindPathToNearestEnemyToGuardTile()
 	Path = GameState->GetTileMap()->FindPathToNearestTile(GuardTile, EEntityType::Army, [this](const ATile* Tile)
 	{
 		if (!Tile) return false;
-		for (ATile* Neighbor : Tile->Neighbors)
+		for (ATile* Neighbor : Tile->GetNeighbors())
 		{
-			if (Neighbor && Neighbor->GetArmy() && Neighbor->GetArmy()->GetAffiliation() != GetAffiliation())
+			if (Neighbor && Neighbor->GetArmy() && Neighbor->GetArmy()->GetAffiliation() != Affiliation)
 				return true;
 		}
 		return false;
@@ -466,8 +470,24 @@ bool AArmy::HasEnemyInGuardTileRange()
 		GuardTile, Settings->GuardModeInterceptingRange,
 		[this](const ATile* Tile)
 		{
-			return Tile && Tile->GetArmy() && Tile->GetArmy()
-												  ->GetAffiliation() != GetAffiliation();
+			return Tile && Tile->GetArmy() && Tile->GetArmy()->GetAffiliation() != Affiliation;
 		});
 	return EnemyOnTile != nullptr;
+}
+
+// -----------------Intercepting------------------------
+
+bool AArmy::TryFindPathToInterceptArmy()
+{
+	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Army, [this](const ATile* Tile)
+	{
+		if (!Tile) return false;
+		for (ATile* Neighbor : Tile->GetNeighbors())
+		{
+			if (Neighbor && Neighbor->GetArmy() && Neighbor->GetArmy() == InterceptArmy)
+				return true;
+		}
+		return false;
+	});
+	return !Path.IsEmpty();
 }

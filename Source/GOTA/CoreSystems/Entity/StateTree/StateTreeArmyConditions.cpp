@@ -122,3 +122,16 @@ bool FSTC_HasGuardTile::TestCondition(FStateTreeExecutionContext& Context) const
 	const bool bResult = InstanceData.ArmyRef.Get()->GetGuardTile() == nullptr;
 	return bResult ^ bInvert;
 }
+
+bool FSTC_HasInterceptArmy::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	if (!InstanceData.ArmyRef)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
+		return false;
+	}
+
+	const bool bResult = InstanceData.ArmyRef.Get()->GetInterceptArmy().IsValid();
+	return bResult ^ bInvert;
+}

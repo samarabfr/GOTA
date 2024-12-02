@@ -242,7 +242,7 @@ struct GOTA_API FSTC_HasGuardTileInstanceData
 };
 
 /**
- * Condition checking if enemy is in guard tile range
+ * Condition checking if army has a guard tile set
  */
 USTRUCT(DisplayName = "Has guard tile")
 struct GOTA_API FSTC_HasGuardTile : public FStateTreeConditionCommonBase
@@ -252,6 +252,34 @@ struct GOTA_API FSTC_HasGuardTile : public FStateTreeConditionCommonBase
 	using FInstanceDataType = FSTC_HasGuardTileInstanceData;
 
 	FSTC_HasGuardTile() = default;
+
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
+
+	UPROPERTY(EditAnywhere, Category = "Parameter")
+	bool bInvert = false;
+};
+
+USTRUCT()
+struct GOTA_API FSTC_HasInterceptArmyInstanceData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category=Context)
+	TObjectPtr<AArmy> ArmyRef = nullptr;
+};
+
+/**
+ * Condition checking if army has an intercept army set
+ */
+USTRUCT(DisplayName = "Has intercept army")
+struct GOTA_API FSTC_HasInterceptArmy : public FStateTreeConditionCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FSTC_HasInterceptArmyInstanceData;
+
+	FSTC_HasInterceptArmy() = default;
 
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;

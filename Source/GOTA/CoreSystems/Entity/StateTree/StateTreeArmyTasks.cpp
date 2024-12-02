@@ -148,3 +148,17 @@ EStateTreeRunStatus FSTT_FindPathToNearestEnemyToGuardTile::EnterState(FStateTre
 	const bool bHasPath = InstanceData.ArmyRef.Get()->TryFindPathToNearestEnemyToGuardTile();
 	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
 }
+
+EStateTreeRunStatus FSTT_FindPathToInterceptArmy::EnterState(FStateTreeExecutionContext& Context,
+	const FStateTreeTransitionResult& Transition) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	if (!InstanceData.ArmyRef)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
+		return EStateTreeRunStatus::Failed;
+	}
+
+	const bool bHasPath = InstanceData.ArmyRef.Get()->TryFindPathToInterceptArmy();
+	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
+}
