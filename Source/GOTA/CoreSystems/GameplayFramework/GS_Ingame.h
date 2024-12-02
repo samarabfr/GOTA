@@ -12,7 +12,6 @@ class AEntity;
 class AGuardian;
 class ATribe;
 class AColony;
-class UCombatSystem;
 class UStartParameter;
 class AStaticMeshBatcher;
 class ATileMap;
@@ -48,9 +47,6 @@ public:
 
 	UPROPERTY(Replicated)
 	UStartParameter* StartParameter;
-
-	UPROPERTY(Replicated)
-	UCombatSystem* CombatSystem;
 
 	// ------------------- TileMap -------------------
 private:

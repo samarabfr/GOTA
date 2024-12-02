@@ -3,9 +3,7 @@
 
 #include "DistanceUtils.h"
 
-#include "GOTA/CoreSystems/GameplayFramework/Combat.h"
-#include "GOTA/CoreSystems/GameplayFramework/CombatSystem.h"
-#include "GOTA/CoreSystems/GameplayFramework/PC_Ingame.h"
+
 #include "GOTA/CoreSystems/Tile/HexCoordsFunctions.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 
@@ -74,24 +72,4 @@ void ADistanceUtils::UpdateDistanceToTiles()
 		}
 	}
 	CurrentCoordsInRange = NextCoordsInRange;
-}
-
-void ADistanceUtils::UpdateDistanceToCombats()
-{
-	float ClosestDistance = MAX_flt;
-	ACombat* ClosestCombat = nullptr;
-	for (ACombat* Combat : GameState->CombatSystem->Combats)
-	{
-		float Distance = FVector::Distance(GetActorLocation(), Combat->GetActorLocation());
-		if (Distance < ClosestDistance)
-		{
-			ClosestDistance = Distance;
-			ClosestCombat = Combat;
-		}
-	}
-	if (ClosestDistance > Settings->MinDistanceToCombatInCM)
-	{
-		ClosestCombat = nullptr;
-	}
-	//GetWorld()->GetFirstPlayerController<APC_Ingame>()->WatchCombat(ClosestCombat);
 }
