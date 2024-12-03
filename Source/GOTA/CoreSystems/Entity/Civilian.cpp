@@ -4,6 +4,7 @@
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
+#include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 #include "StateTree/StateTreeCivilianComponent.h"
@@ -68,6 +69,7 @@ void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	const UBuildingSettings* BuildingSettings = Building->GetSettings();
 	WorkAmount = BuildingSettings->CivilianProductionAmount;
 	MovementRate = 100 / BuildingSettings->CivilianMoveTime;
+	WorkRate = 100 / BuildingSettings->CivilianProductionTime;
 	
 	StateTree->StartLogic();
 }
@@ -126,7 +128,7 @@ void ACivilian::SetStatus(const ECivilianStatus NewStatus)
 
 // ----------------- Working ------------------------
 
-bool ACivilian::IsTileValidForWork(ATile* Tile) const
+bool ACivilian::IsTileValidForWork(const ATile* Tile) const
 {
 	return false;
 }
@@ -144,6 +146,16 @@ void ACivilian::S_StartWorking()
 bool ACivilian::IsCurrentTileValidForWork() const
 {
 	return IsTileValidForWork(CurrentTile);
+}
+
+bool ACivilian::TryFindPathToNearestTileValidForWork()
+{
+	if (!Building) return false;
+	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
+	{
+		return IsTileValidForWork(Tile);
+	});
+	return !Path.IsEmpty();
 }
 
 // ----------------- Moving ------------------------

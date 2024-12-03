@@ -34,3 +34,17 @@ EStateTreeRunStatus FSTT_Work::EnterState(FStateTreeExecutionContext& Context,
 	InstanceData.CivilianRef.Get()->S_StartWorking();
 	return EStateTreeRunStatus::Running;
 }
+
+EStateTreeRunStatus FSTT_FindPathToNearestTileValidForWork::EnterState(FStateTreeExecutionContext& Context,
+	const FStateTreeTransitionResult& Transition) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	if (!InstanceData.CivilianRef)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Task failed: Civilian in context is null"))
+		return EStateTreeRunStatus::Failed;
+	}
+
+	const bool bHasPath = InstanceData.CivilianRef.Get()->TryFindPathToNearestTileValidForWork();
+	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
+}

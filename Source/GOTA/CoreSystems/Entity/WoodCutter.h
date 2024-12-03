@@ -10,5 +10,5 @@ class GOTA_API AWoodcutter : public ACivilian
 	AWoodcutter();
 	
 	virtual void S_Work() override;
-	virtual bool IsTileValidForWork(ATile* Tile) const override;
+	virtual bool IsTileValidForWork(const ATile* Tile) const override;
 };

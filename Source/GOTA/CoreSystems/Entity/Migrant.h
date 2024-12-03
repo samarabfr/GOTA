@@ -10,7 +10,7 @@ class GOTA_API AMigrant : public ACivilian
 	AMigrant();
 
 	virtual void S_Work() override;
-	virtual bool IsTileValidForWork(ATile* Tile) const override;
+	virtual bool IsTileValidForWork(const ATile* Tile) const override;
 
 	UPROPERTY(VisibleInstanceOnly)
 	int32 Size = 0;

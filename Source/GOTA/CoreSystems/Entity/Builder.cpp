@@ -48,9 +48,13 @@ void ABuilder::S_Work()
 	GetBuilding()->GetSettlement()->S_RemoveResources(ResourcesProgressToAdd);
 }
 
-bool ABuilder::IsTileValidForWork(ATile* Tile) const
+bool ABuilder::IsTileValidForWork(const ATile* Tile) const
 {
-	return Tile->GetBuilding() &&
-		Tile->GetBuilding()->GetIsUnderConstruction() &&
-		Tile->GetClaimant() == GetBuilding()->GetSettlement();
+	if(!Tile->GetBuilding())
+		return false;
+	if(Tile->GetClaimant() != GetBuilding()->GetSettlement())
+		return false;
+	if(!Tile->GetBuilding()->GetIsUnderConstruction())
+		return false;
+	return true;
 }

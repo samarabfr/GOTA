@@ -42,3 +42,15 @@ struct GOTA_API FSTT_Work : public FStateTreeTaskCommonBase
 										   const FStateTreeTransitionResult& Transition) const override;
 };
 
+USTRUCT(DisplayName="Find path to nearest tile valid for work")
+struct GOTA_API FSTT_FindPathToNearestTileValidForWork : public FStateTreeTaskCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FCivilianInstanceData;
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context,
+										   const FStateTreeTransitionResult& Transition) const override;
+};
+

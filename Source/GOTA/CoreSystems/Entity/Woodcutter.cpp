@@ -19,7 +19,7 @@ void AWoodcutter::S_Work()
 	GetBuilding()->GetSettlement()->S_AddResources(WorkResources);
 }
 
-bool AWoodcutter::IsTileValidForWork(ATile* Tile) const
+bool AWoodcutter::IsTileValidForWork(const ATile* Tile) const
 {
 	return Tile->EcoValues->GetTrees() > 0;
 }

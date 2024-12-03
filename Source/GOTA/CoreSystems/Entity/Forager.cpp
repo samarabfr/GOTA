@@ -19,7 +19,7 @@ void AForager::S_Work()
 	GetBuilding()->GetSettlement()->S_AddResources(WorkResources);
 }
 
-bool AForager::IsTileValidForWork(ATile* Tile) const
+bool AForager::IsTileValidForWork(const ATile* Tile) const
 {
 	return Tile->EcoValues->GetForage() > 0;
 }

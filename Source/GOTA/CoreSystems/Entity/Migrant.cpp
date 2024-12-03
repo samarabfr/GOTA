@@ -18,7 +18,7 @@ void AMigrant::S_Work()
 	--Size;
 }
 
-bool AMigrant::IsTileValidForWork(ATile* Tile) const
+bool AMigrant::IsTileValidForWork(const ATile* Tile) const
 {
 	return Tile->GetBuilding()
 		&& Tile->GetBuilding()->GetPopulation()->GetSize() < Tile->GetBuilding()->GetPopulation()->GetMaxSize()

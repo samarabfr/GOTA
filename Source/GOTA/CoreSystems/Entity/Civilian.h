@@ -85,12 +85,13 @@ private:
 
 protected:
 	virtual void S_Work();
-	virtual bool IsTileValidForWork(ATile* Tile) const;
+	virtual bool IsTileValidForWork(const ATile* Tile) const;
 	int32 GetWorkAmount() const { return WorkAmount; }
 
 public:
 	void S_StartWorking();
 	bool IsCurrentTileValidForWork() const;
+	bool TryFindPathToNearestTileValidForWork();
 
 	// ----------------- Moving ------------------------
 private:
