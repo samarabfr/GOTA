@@ -4,98 +4,53 @@
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
-#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
-#include "GOTA/CoreSystems/Tile/TileMap.h"
 
 ABuilder::ABuilder()
 {
-	if (Settings)
-		MeshComponent->SetStaticMesh(Settings->BuilderMesh);
+	if (GetSettings())
+		GetMeshComponent()->SetStaticMesh(GetSettings()->BuilderMesh);
 }
 
-void ABuilder::ValidateStatus()
+void ABuilder::S_Work()
 {
-	if (GetStatus() == ECivilianStatus::Idle)
-	{
-		if (IsTileValidForWork(CurrentTile))
-			SetStatus(ECivilianStatus::Working);
-		else if (TryFindPath())
-			SetStatus(ECivilianStatus::Moving);
-	}
-	else if (GetStatus() == ECivilianStatus::Moving)
-	{
-		if ((Path.IsEmpty() || !Path[Path.Num() - 1]->AcceptsCivilian()) && !TryFindPath())
-			SetStatus(ECivilianStatus::Idle);
-	}
-	else if (GetStatus() == ECivilianStatus::Working)
-	{
-		if (!IsTileValidForWork(CurrentTile))
-		{
-			if (TryFindPath())
-				SetStatus(ECivilianStatus::Moving);
-			else
-				SetStatus(ECivilianStatus::Idle);
-		}
-	}
-}
-
-void ABuilder::Work()
-{
-	int32 WorkAmountLeft = WorkAmount;
-	const FGameResources ResourcesProgress = CurrentTile->GetBuilding()->GetConstructionProgress();
+	int32 WorkAmountLeft = GetWorkAmount();
+	const FGameResources ResourcesProgress = GetCurrentTile()->GetBuilding()->GetConstructionProgress();
 	FGameResources ResourcesProgressToAdd = FGameResources();
 	// Food
-	const int32 FoodNeeded = CurrentTile->GetBuilding()->GetSettings()->Cost.Food - ResourcesProgress.Food;
+	const int32 FoodNeeded = GetCurrentTile()->GetBuilding()->GetSettings()->Cost.Food - ResourcesProgress.Food;
 	if (FoodNeeded > 0 && WorkAmountLeft > 0)
 	{
 		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, FoodNeeded),
-		                                  Building->GetSettlement()->GetResources().Food);
+		                                  GetBuilding()->GetSettlement()->GetResources().Food);
 		ResourcesProgressToAdd.Food = DoneWork;
 		WorkAmountLeft -= DoneWork;
 	}
 	// Wood
-	const int32 WoodNeeded = CurrentTile->GetBuilding()->GetSettings()->Cost.Wood - ResourcesProgress.Wood;
+	const int32 WoodNeeded = GetCurrentTile()->GetBuilding()->GetSettings()->Cost.Wood - ResourcesProgress.Wood;
 	if (WoodNeeded > 0 && WorkAmountLeft > 0)
 	{
 		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, WoodNeeded),
-		                                  Building->GetSettlement()->GetResources().Wood);
+		                                  GetBuilding()->GetSettlement()->GetResources().Wood);
 		ResourcesProgressToAdd.Wood = DoneWork;
 		WorkAmountLeft -= DoneWork;
 	}
 	// Stone
-	const int32 StoneNeeded = CurrentTile->GetBuilding()->GetSettings()->Cost.Stone - ResourcesProgress.Stone;
+	const int32 StoneNeeded = GetCurrentTile()->GetBuilding()->GetSettings()->Cost.Stone - ResourcesProgress.Stone;
 	if (StoneNeeded > 0 && WorkAmountLeft > 0)
 	{
 		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, StoneNeeded),
-		                                  Building->GetSettlement()->GetResources().Stone);
+		                                  GetBuilding()->GetSettlement()->GetResources().Stone);
 		ResourcesProgressToAdd.Stone = DoneWork;
 		WorkAmountLeft -= DoneWork;
 	}
-	CurrentTile->GetBuilding()->SetConstructionProgress(ResourcesProgress + ResourcesProgressToAdd);
-	Building->GetSettlement()->S_RemoveResources(ResourcesProgressToAdd);
+	GetCurrentTile()->GetBuilding()->SetConstructionProgress(ResourcesProgress + ResourcesProgressToAdd);
+	GetBuilding()->GetSettlement()->S_RemoveResources(ResourcesProgressToAdd);
 }
 
-bool ABuilder::TryFindPath()
+bool ABuilder::IsTileValidForWork(ATile* Tile) const
 {
-	bool HasValidTiles = false;
-	for (ATile* Tile : Building->GetSettlement()->ClaimedTiles)
-	{
-		if (IsTileValidForWork(Tile))
-		{
-			HasValidTiles = true;
-			break;
-		}
-	}
-	if (!HasValidTiles) return false;
-	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
-	{
-		return IsTileValidForWork(Tile);
-	});
-	return !Path.IsEmpty();
-}
-
-bool ABuilder::IsTileValidForWork(const ATile* Tile) const
-{
-	return Tile->GetBuilding() && Tile->GetBuilding()->GetIsUnderConstruction();
+	return Tile->GetBuilding() &&
+		Tile->GetBuilding()->GetIsUnderConstruction() &&
+		Tile->GetClaimant() == GetBuilding()->GetSettlement();
 }

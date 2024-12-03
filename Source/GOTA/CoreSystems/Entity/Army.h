@@ -113,7 +113,7 @@ private:
 
 	// How fast the progress increases when moving, in percent per second
 	UPROPERTY(VisibleInstanceOnly, Replicated)
-	float MovementRate; // in percent per second
+	float MovementRate;
 
 	UPROPERTY(VisibleInstanceOnly)
 	TArray<ATile*> Path;

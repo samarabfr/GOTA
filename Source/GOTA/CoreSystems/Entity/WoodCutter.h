@@ -9,7 +9,6 @@ class GOTA_API AWoodcutter : public ACivilian
 	GENERATED_BODY()
 	AWoodcutter();
 	
-	virtual void ValidateStatus() override;
-	virtual void Work() override;
-	bool TryFindPath();
+	virtual void S_Work() override;
+	virtual bool IsTileValidForWork(ATile* Tile) const override;
 };

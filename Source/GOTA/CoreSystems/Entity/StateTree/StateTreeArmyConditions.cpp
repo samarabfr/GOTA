@@ -19,7 +19,7 @@ bool FSTC_CurrentTileIsValidForRecruiting::TestCondition(FStateTreeExecutionCont
 	return bResult ^ bInvert;
 }
 
-bool FSTC_IsPathValid::TestCondition(FStateTreeExecutionContext& Context) const
+bool FSTC_IsPathValidArmy::TestCondition(FStateTreeExecutionContext& Context) const
 {
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
 	if (!InstanceData.ArmyRef)

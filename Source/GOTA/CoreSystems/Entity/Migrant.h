@@ -8,11 +8,9 @@ class GOTA_API AMigrant : public ACivilian
 {
 	GENERATED_BODY()
 	AMigrant();
-	
-	virtual void ValidateStatus() override;
-	virtual void Work() override;
-	bool TryFindPath();
-	bool IsTileValidForWork(const ATile* Tile) const;
+
+	virtual void S_Work() override;
+	virtual bool IsTileValidForWork(ATile* Tile) const override;
 
 	UPROPERTY(VisibleInstanceOnly)
 	int32 Size = 0;

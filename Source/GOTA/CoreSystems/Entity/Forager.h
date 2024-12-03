@@ -9,8 +9,6 @@ class GOTA_API AForager : public ACivilian
 	GENERATED_BODY()
 	AForager();
 	
-	virtual void ValidateStatus() override;
-	virtual void Work() override;
-	bool TryFindPath();
-	bool IsTileValidForWork(const ATile* Tile) const;
+	virtual void S_Work() override;
+	virtual bool IsTileValidForWork(ATile* Tile) const override;
 };

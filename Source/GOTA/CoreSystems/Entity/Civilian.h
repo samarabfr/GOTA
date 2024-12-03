@@ -3,6 +3,7 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Civilian.generated.h"
 
+class UStateTreeCivilianComponent;
 class AGS_Ingame;
 class ATile;
 class ASettlement;
@@ -28,19 +29,16 @@ public:
 
 private:
 	virtual void BeginDestroy() override;
-	
+
 public:
 	UFUNCTION()
 	void S_HandleDeath();
 
-	// -----------------------  -----------------------
+	// ----------------------- Utility -----------------------
 
-protected:
-	UPROPERTY(ReplicatedUsing=OnRep_Building)
+private:
+	UPROPERTY(Replicated)
 	UBuilding* Building;
-
-	UFUNCTION()
-	void OnRep_Building();
 
 	UPROPERTY(Replicated)
 	UCivilianSettings* Settings;
@@ -51,23 +49,32 @@ protected:
 	UPROPERTY()
 	UStaticMeshComponent* MeshComponent;
 
+protected:
+	UBuilding* GetBuilding() const { return Building; }
+	UCivilianSettings* GetSettings() const { return Settings; }
+	UStaticMeshComponent* GetMeshComponent() const { return MeshComponent; }
+
 	// ----------------------- Status -----------------------
 private:
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	ECivilianStatus Status;
-
-protected:
 	// Progress of current Action in percent
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float Progress;
 
-	virtual void ValidateStatus();
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	ECivilianStatus Status = ECivilianStatus::Idling;
 
+	UPROPERTY(VisibleInstanceOnly)
+	UStateTreeCivilianComponent* StateTree;
+
+protected:
 	ECivilianStatus GetStatus() const { return Status; }
+
+public:
+	float GetProgress() const { return Progress; }
 	void SetStatus(ECivilianStatus NewStatus);
 
 	// ----------------- Working ------------------------
-
+private:
 	// How fast the progress increases when working, in percent per second
 	UPROPERTY(VisibleInstanceOnly)
 	float WorkRate;
@@ -76,32 +83,29 @@ protected:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	int32 WorkAmount;
 
-private:
-	void SetupPopSizeChanging();
-
-	UFUNCTION()
-	void OnPopSizeChanged(int16 Change);
-
-	void CalculateWorkRate();
-
 protected:
-	virtual void Work();
+	virtual void S_Work();
+	virtual bool IsTileValidForWork(ATile* Tile) const;
+	int32 GetWorkAmount() const { return WorkAmount; }
+
+public:
+	void S_StartWorking();
+	bool IsCurrentTileValidForWork() const;
 
 	// ----------------- Moving ------------------------
-
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	ATile* CurrentTile;
-
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_NetLocation)
 	FVector NetLocation;
+
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	ATile* CurrentTile;
 
 	UFUNCTION()
 	void OnRep_NetLocation();
 
 	void SetNetLocation(const FVector& NewNetLocation);
+	void S_MoveToNextTileOnPath();
 
-protected:
 	// How fast the progress increases when moving, in percent per second
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float MovementRate;
@@ -109,6 +113,10 @@ protected:
 	UPROPERTY(VisibleInstanceOnly)
 	TArray<ATile*> Path;
 
-private:
-	void Move();
+protected:
+	ATile* GetCurrentTile() const { return CurrentTile; }
+
+public:
+	bool IsPathValid();
+	void S_StartMoveToNextTileOnPath();
 };

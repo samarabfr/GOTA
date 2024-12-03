@@ -175,7 +175,9 @@ void AArmy::SetStatus(EArmyStatus NewStatus)
 {
 	if (Status == NewStatus) return;
 	Status = NewStatus;
+	Progress = 0.0f;
 	MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, Status, this)
+	MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, Progress, this)
 }
 
 // ----------------------- Recruiting -----------------------
