@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "StateTreeComponentArmy.h"
+#include "StateTreeArmyComponent.h"
 
 #include "StateTree.h"
 
-UStateTreeComponentArmy::UStateTreeComponentArmy()
+UStateTreeArmyComponent::UStateTreeArmyComponent()
 {
 	ConstructorHelpers::FObjectFinder<UStateTree> StateTreeFinder(
 		TEXT("/Game/CoreSystems/Entity/ST_Army"));
