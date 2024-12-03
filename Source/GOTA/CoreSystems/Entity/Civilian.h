@@ -28,6 +28,10 @@ public:
 
 private:
 	virtual void BeginDestroy() override;
+	
+public:
+	UFUNCTION()
+	void S_HandleDeath();
 
 	// -----------------------  -----------------------
 

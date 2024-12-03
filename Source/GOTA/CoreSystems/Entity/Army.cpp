@@ -139,6 +139,7 @@ void AArmy::C_Tick(const float DeltaSeconds)
 void AArmy::BeginDestroy()
 {
 	Super::BeginDestroy();
+	S_HandleDeath();
 }
 
 // -----------------------  -----------------------

@@ -31,6 +31,10 @@ public:
 
 private:
 	virtual void BeginDestroy() override;
+	
+public:
+	UFUNCTION()
+	void S_HandleDeath();
 
 	// ----------------------- Utility -----------------------
 
@@ -137,10 +141,6 @@ public:
 
 private:
 	void S_AttackEnemy();
-
-public:
-	UFUNCTION()
-	void S_HandleDeath();
 
 	// -----------------Ravaging------------------------
 

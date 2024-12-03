@@ -43,9 +43,11 @@ void UBuildingCivilian::C_Tick(const float DeltaSeconds)
 		Civilian->C_Tick(DeltaSeconds);
 }
 
-void UBuildingCivilian::BeginDestroy()
+void UBuildingCivilian::Destroy()
 {
-	Super::BeginDestroy();
+	Super::Destroy();
+	if(Civilian)
+		Civilian->S_HandleDeath();
 }
 
 // ---------------- Civilian Entity ----------------

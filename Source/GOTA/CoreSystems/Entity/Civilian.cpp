@@ -101,6 +101,14 @@ void ACivilian::C_Tick(const float DeltaSeconds)
 void ACivilian::BeginDestroy()
 {
 	Super::BeginDestroy();
+	S_HandleDeath();
+}
+
+void ACivilian::S_HandleDeath()
+{
+	if (!CurrentTile) return;
+	CurrentTile->RemoveCivilian(this);
+	Destroy();
 }
 
 // -----------------------  -----------------------
