@@ -6,7 +6,7 @@
 #include "Army.generated.h"
 
 class UCombatValues;
-class UStateTreeComponentArmy;
+class UStateTreeArmyComponent;
 class UBuilding;
 class AGS_Ingame;
 class ATile;
@@ -75,7 +75,7 @@ private:
 	EArmyStatus Status = EArmyStatus::Idling;
 
 	UPROPERTY(VisibleInstanceOnly)
-	UStateTreeComponentArmy* StateTree;
+	UStateTreeArmyComponent* StateTree;
 
 protected:
 	void SetStatus(EArmyStatus NewStatus);

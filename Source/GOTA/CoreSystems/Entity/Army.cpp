@@ -11,7 +11,7 @@
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
-#include "StateTree/StateTreeComponentArmy.h"
+#include "StateTree/StateTreeArmyComponent.h"
 
 void AArmy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -64,7 +64,7 @@ AArmy::AArmy()
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	MeshComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	MeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
-	StateTree = CreateDefaultSubobject<UStateTreeComponentArmy>("StateTree");
+	StateTree = CreateDefaultSubobject<UStateTreeArmyComponent>("StateTree");
 	StateTree->SetStartLogicAutomatically(false);
 }
 
