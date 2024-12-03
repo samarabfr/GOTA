@@ -34,7 +34,7 @@ void UBuildingArmy::S_Tick(float DeltaSeconds)
 	UBuilding::S_Tick(DeltaSeconds);
 	if (Army)
 		Army->S_Tick(DeltaSeconds);
-	// Army
+	// respawn
 	if (!GetIsUnderConstruction() && !Army)
 	{
 		if (ArmyRespawnTimer < GetSettings()->ArmyRespawnTime)
