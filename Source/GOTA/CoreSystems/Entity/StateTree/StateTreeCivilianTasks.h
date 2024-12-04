@@ -28,6 +28,7 @@ struct GOTA_API FSTT_CivilianMoveToNextTile : public FStateTreeTaskCommonBase
 
 	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context,
 										   const FStateTreeTransitionResult& Transition) const override;
+	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
 };
 
 USTRUCT(DisplayName="Work")
@@ -40,6 +41,7 @@ struct GOTA_API FSTT_Work : public FStateTreeTaskCommonBase
 
 	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context,
 										   const FStateTreeTransitionResult& Transition) const override;
+	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
 };
 
 USTRUCT(DisplayName="Find path to nearest tile valid for work")
@@ -49,8 +51,19 @@ struct GOTA_API FSTT_FindPathToNearestTileValidForWork : public FStateTreeTaskCo
 
 	using FInstanceDataType = FCivilianInstanceData;
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	
+	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+};
 
-	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context,
-										   const FStateTreeTransitionResult& Transition) const override;
+USTRUCT(DisplayName="Find path to priority tile")
+struct GOTA_API FSTT_FindPathToPriorityTile : public FStateTreeTaskCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FCivilianInstanceData;
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	
+	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	
 };
 

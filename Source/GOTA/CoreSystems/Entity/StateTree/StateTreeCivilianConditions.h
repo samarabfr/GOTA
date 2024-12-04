@@ -38,6 +38,34 @@ struct GOTA_API FSTC_IsPathValidCivilian : public FStateTreeConditionCommonBase
 };
 
 USTRUCT()
+struct GOTA_API FSTC_IsPathEmptyCivilianInstanceData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category=Context)
+	TObjectPtr<ACivilian> CivilianRef = nullptr;
+};
+
+/**
+ * Condition checking if path is valid for civilian
+ */
+USTRUCT(DisplayName = "Is Path Empty for Civilian")
+struct GOTA_API FSTC_IsPathEmptyCivilian : public FStateTreeConditionCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FSTC_IsPathEmptyCivilianInstanceData;
+
+	FSTC_IsPathEmptyCivilian() = default;
+
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
+
+	UPROPERTY(EditAnywhere, Category = "Parameter")
+	bool bInvert = false;
+};
+
+USTRUCT()
 struct GOTA_API FSTC_IsCurrentTileValidForWorkInstanceData
 {
 	GENERATED_BODY()
@@ -57,6 +85,34 @@ struct GOTA_API FSTC_IsCurrentTileValidForWork : public FStateTreeConditionCommo
 	using FInstanceDataType = FSTC_IsCurrentTileValidForWorkInstanceData;
 
 	FSTC_IsCurrentTileValidForWork() = default;
+
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
+
+	UPROPERTY(EditAnywhere, Category = "Parameter")
+	bool bInvert = false;
+};
+
+USTRUCT()
+struct GOTA_API FSTC_HasPiorityTileValidForWorkInstanceData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category=Context)
+	TObjectPtr<ACivilian> CivilianRef = nullptr;
+};
+
+/**
+ * Condition checking if civilian has priority tile that is valid for work
+ */
+USTRUCT(DisplayName = "Has priority tile valid for work")
+struct GOTA_API FSTC_HasPiorityTileValidForWork : public FStateTreeConditionCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FSTC_HasPiorityTileValidForWorkInstanceData;
+
+	FSTC_HasPiorityTileValidForWork() = default;
 
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;

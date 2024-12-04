@@ -91,7 +91,7 @@ UENUM()
 enum class ECivilianStatus : uint8
 {
 	Idling UMETA(DisplayName = "Idling"),
-	MovingToNextTile UMETA(DisplayName = "Moving to next tile"),
+	Moving UMETA(DisplayName = "Moving to next tile"),
 	Working UMETA(DisplayName = "Working")
 };
 

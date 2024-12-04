@@ -25,7 +25,4 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMesh* MigrantMesh;
-
-	UPROPERTY(EditDefaultsOnly)
-	FGameplayTag StateTreeCompletedTaskEventTag;
 };

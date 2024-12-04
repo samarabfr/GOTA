@@ -25,7 +25,6 @@ void ACivilian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, Progress, Params);
-	DOREPLIFETIME_WITH_PARAMS(ACivilian, Status, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, CurrentTile, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, NetLocation, Params);
 }
@@ -69,37 +68,16 @@ void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	const UBuildingSettings* BuildingSettings = Building->GetSettings();
 	WorkAmount = BuildingSettings->CivilianProductionAmount;
 	MovementRate = 100 / BuildingSettings->CivilianMoveTime;
-	WorkRate = 100 / BuildingSettings->CivilianProductionTime;
-	
+
 	StateTree->StartLogic();
 }
 
 void ACivilian::S_Tick(const float DeltaSeconds)
 {
-	C_Tick(DeltaSeconds);
-	if (Progress >= 100)
-	{
-		if (GetStatus() == ECivilianStatus::MovingToNextTile)
-			S_MoveToNextTileOnPath();
-		else if (GetStatus() == ECivilianStatus::Working)
-			S_Work();
-		SetStatus(ECivilianStatus::Idling);
-		Progress = 0.0f;
-		StateTree->SendStateTreeEvent(Settings->StateTreeCompletedTaskEventTag, FConstStructView(), FName(GetName()));
-		MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Progress, this)
-	}
 }
 
 void ACivilian::C_Tick(const float DeltaSeconds)
 {
-	if (GetStatus() == ECivilianStatus::MovingToNextTile)
-	{
-		Progress += MovementRate * DeltaSeconds;
-	}
-	else if (GetStatus() == ECivilianStatus::Working)
-	{
-		Progress += WorkRate * DeltaSeconds / Building->GetEfficiency();
-	}
 }
 
 void ACivilian::BeginDestroy()
@@ -110,23 +88,18 @@ void ACivilian::BeginDestroy()
 
 void ACivilian::S_HandleDeath()
 {
-	if (!CurrentTile) return;
+	if (!CurrentTile.IsValid()) return;
 	CurrentTile->RemoveCivilian(this);
 	Destroy();
 }
 
-// ----------------------- Status -----------------------
+// ----------------- Working ------------------------
 
-void ACivilian::SetStatus(const ECivilianStatus NewStatus)
+void ACivilian::SetProgress(float NewProgress)
 {
-	if (Status == NewStatus) return;
-	Status = NewStatus;
-	Progress = 0.0f;
-	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Status, this)
+	Progress = NewProgress;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Progress, this)
 }
-
-// ----------------- Working ------------------------
 
 bool ACivilian::IsTileValidForWork(const ATile* Tile) const
 {
@@ -137,24 +110,39 @@ void ACivilian::S_Work()
 {
 }
 
-void ACivilian::S_StartWorking()
+float ACivilian::GetWorkRate() const
 {
-	Progress = 0.f;
-	SetStatus(ECivilianStatus::Working);
+	return 100.f / Building->GetSettings()->CivilianProductionTime * Building->GetEfficiency();
 }
 
 bool ACivilian::IsCurrentTileValidForWork() const
 {
-	return IsTileValidForWork(CurrentTile);
+	if (!CurrentTile.IsValid()) return false;
+	return IsTileValidForWork(GetCurrentTile());
+}
+
+bool ACivilian::IsPriorityTileValidForWork() const
+{
+	if (!PriorityTile.IsValid()) return false;
+	return IsTileValidForWork(GetPriorityTile());
 }
 
 bool ACivilian::TryFindPathToNearestTileValidForWork()
 {
-	if (!Building) return false;
-	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
-	{
-		return IsTileValidForWork(Tile);
-	});
+	if (!CurrentTile.IsValid()) return false;
+	if (IsTileValidForWork(GetCurrentTile())) return true;
+	Path = GameState->GetTileMap()->FindPathToNearestTile(GetCurrentTile(), EEntityType::Civilian,
+	                                                      [this](const ATile* Tile)
+	                                                      {
+		                                                      return IsTileValidForWork(Tile);
+	                                                      });
+	return !Path.IsEmpty();
+}
+
+bool ACivilian::TryFindPathToPriorityTile()
+{
+	if (!CurrentTile.IsValid() || !PriorityTile.IsValid()) return false;
+	Path = GameState->GetTileMap()->GetPath(GetCurrentTile(), GetPriorityTile(), EEntityType::Civilian);
 	return !Path.IsEmpty();
 }
 
@@ -191,10 +179,4 @@ void ACivilian::S_MoveToNextTileOnPath()
 bool ACivilian::IsPathValid()
 {
 	return !Path.IsEmpty() && Path[Path.Num() - 1]->AcceptsCivilian();
-}
-
-void ACivilian::S_StartMoveToNextTileOnPath()
-{
-	Progress = 0.f;
-	SetStatus(ECivilianStatus::MovingToNextTile);
 }

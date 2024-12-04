@@ -77,9 +77,9 @@ public:
 
 	TArray<ATile*> FindPathToNearestTileInRange(ATile* Origin, EEntityType EntityType, int32 Range,
 	                                     const std::function<bool(const ATile*)>& Condition) const;
-
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
+	
 	static TArray<ATile*> GetPath(ATile* Start, ATile* End);
+	static TArray<ATile*> GetPath(ATile* Start, ATile* End, EEntityType EntityType);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	TArray<ATile*>

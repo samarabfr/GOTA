@@ -8,43 +8,72 @@
 
 
 EStateTreeRunStatus FSTT_CivilianMoveToNextTile::EnterState(FStateTreeExecutionContext& Context,
-	const FStateTreeTransitionResult& Transition) const
+                                                            const FStateTreeTransitionResult& Transition) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.CivilianRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Task failed: Civilian in context is null"))
-		return EStateTreeRunStatus::Failed;
-	}
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return EStateTreeRunStatus::Failed;
 
-	InstanceData.CivilianRef.Get()->S_StartMoveToNextTileOnPath();
+	Civilian->SetProgress(0.f);
+	return EStateTreeRunStatus::Running;
+}
+
+EStateTreeRunStatus FSTT_CivilianMoveToNextTile::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
+{
+	// TODO:: sehr ineffizient, progress muss aber für die UI irgendwie abgefragt werden können
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return EStateTreeRunStatus::Failed;
+
+	Civilian->AddProgress(Civilian->GetMovementRate() * DeltaTime);
+	if (Civilian->GetProgress() >= 100.f)
+	{
+		Civilian->S_MoveToNextTileOnPath();
+		Civilian->SetProgress(0.f);
+	}
 	return EStateTreeRunStatus::Running;
 }
 
 EStateTreeRunStatus FSTT_Work::EnterState(FStateTreeExecutionContext& Context,
                                           const FStateTreeTransitionResult& Transition) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.CivilianRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Task failed: Civilian in context is null"))
-		return EStateTreeRunStatus::Failed;
-	}
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return EStateTreeRunStatus::Failed;
 
-	InstanceData.CivilianRef.Get()->S_StartWorking();
+	Civilian->SetProgress(0.f);
 	return EStateTreeRunStatus::Running;
 }
 
-EStateTreeRunStatus FSTT_FindPathToNearestTileValidForWork::EnterState(FStateTreeExecutionContext& Context,
-	const FStateTreeTransitionResult& Transition) const
+EStateTreeRunStatus FSTT_Work::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.CivilianRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Task failed: Civilian in context is null"))
-		return EStateTreeRunStatus::Failed;
-	}
+	// TODO:: sehr ineffizient, progress muss aber für die UI irgendwie abgefragt werden können
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return EStateTreeRunStatus::Failed;
 
-	const bool bHasPath = InstanceData.CivilianRef.Get()->TryFindPathToNearestTileValidForWork();
-	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
+	Civilian->AddProgress(Civilian->GetWorkRate() * DeltaTime);
+	if (Civilian->GetProgress() >= 100.f)
+	{
+		Civilian->S_Work();
+		Civilian->SetProgress(0.f);
+	}
+	return EStateTreeRunStatus::Running;
+}
+
+EStateTreeRunStatus FSTT_FindPathToNearestTileValidForWork::Tick(FStateTreeExecutionContext& Context,
+                                                                 const float DeltaTime) const
+{
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return EStateTreeRunStatus::Failed;
+
+	return Civilian->TryFindPathToNearestTileValidForWork()
+		       ? EStateTreeRunStatus::Succeeded
+		       : EStateTreeRunStatus::Running;
+}
+
+EStateTreeRunStatus FSTT_FindPathToPriorityTile::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
+{
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return EStateTreeRunStatus::Failed;
+
+	return Civilian->TryFindPathToPriorityTile()
+			   ? EStateTreeRunStatus::Succeeded
+			   : EStateTreeRunStatus::Running;
 }

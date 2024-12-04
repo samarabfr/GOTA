@@ -382,6 +382,47 @@ TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End)
 	return Path;
 }
 
+TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End, EEntityType EntityType)
+{
+	//https://www.redblobgames.com/pathfinding/a-star/introduction.html
+	TArray<ATile*> Frontier;
+	Frontier.Add(Start);
+	TMap<ATile*, ATile*> CameFrom;
+	CameFrom.Add(Start, nullptr);
+	// from flow field
+	while (!Frontier.IsEmpty())
+	{
+		ATile* Current = Frontier[0];
+		Frontier.Remove(Current);
+		if (Current == End)
+		{
+			// found target Tile
+			break;
+		}
+		for (ATile* Next : Current->Neighbors)
+		{
+			if (Next && Next->AcceptsEntity(EntityType) && !CameFrom.Contains(Next))
+			{
+				Frontier.Add(Next);
+				CameFrom.Add(Next, Current);
+			}
+		}
+	}
+	// reconstruct Path
+	if (!CameFrom.Contains(End))
+	{
+		return TArray<ATile*>();
+	}
+	ATile* Current = End;
+	TArray<ATile*> Path;
+	while (Current != Start)
+	{
+		Path.Add(Current);
+		Current = CameFrom[Current];
+	}
+	return Path;
+}
+
 TArray<ATile*> ATileMap::GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation TargetAffiliation)
 {
 	//https://www.redblobgames.com/pathfinding/a-star/introduction.html

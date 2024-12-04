@@ -18,6 +18,19 @@ bool FSTC_IsPathValidCivilian::TestCondition(FStateTreeExecutionContext& Context
 	return bResult ^ bInvert;
 }
 
+bool FSTC_IsPathEmptyCivilian::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	if (!InstanceData.CivilianRef)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Condition failed: Civilian in context is null"))
+		return false;
+	}
+
+	const bool bResult = InstanceData.CivilianRef.Get()->IsPathEmpty();
+	return bResult ^ bInvert;
+}
+
 bool FSTC_IsCurrentTileValidForWork::TestCondition(FStateTreeExecutionContext& Context) const
 {
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
@@ -28,5 +41,18 @@ bool FSTC_IsCurrentTileValidForWork::TestCondition(FStateTreeExecutionContext& C
 	}
 
 	const bool bResult = InstanceData.CivilianRef.Get()->IsCurrentTileValidForWork();
+	return bResult ^ bInvert;
+}
+
+bool FSTC_HasPiorityTileValidForWork::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
+	if (!InstanceData.CivilianRef)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Condition failed: Civilian in context is null"))
+		return false;
+	}
+
+	const bool bResult = InstanceData.CivilianRef.Get()->IsPriorityTileValidForWork();
 	return bResult ^ bInvert;
 }

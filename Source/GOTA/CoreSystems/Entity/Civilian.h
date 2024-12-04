@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "GOTA/CoreSystems/Tile/Tile.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Civilian.generated.h"
 
@@ -38,7 +39,7 @@ public:
 
 private:
 	UPROPERTY(Replicated)
-	UBuilding* Building;
+	TWeakObjectPtr<UBuilding> Building;
 
 	UPROPERTY(Replicated)
 	UCivilianSettings* Settings;
@@ -50,48 +51,45 @@ private:
 	UStaticMeshComponent* MeshComponent;
 
 protected:
-	UBuilding* GetBuilding() const { return Building; }
+	UBuilding* GetBuilding() const { return Building.Get(); }
 	UCivilianSettings* GetSettings() const { return Settings; }
 	UStaticMeshComponent* GetMeshComponent() const { return MeshComponent; }
 
-	// ----------------------- Status -----------------------
+	// ----------------- State tree ------------------------
 private:
+	UPROPERTY(VisibleInstanceOnly)
+	UStateTreeCivilianComponent* StateTree;
+
 	// Progress of current Action in percent
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float Progress;
 
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	ECivilianStatus Status = ECivilianStatus::Idling;
-
-	UPROPERTY(VisibleInstanceOnly)
-	UStateTreeCivilianComponent* StateTree;
-
-protected:
-	ECivilianStatus GetStatus() const { return Status; }
-
 public:
 	float GetProgress() const { return Progress; }
-	void SetStatus(ECivilianStatus NewStatus);
-
+	void SetProgress(float NewProgress);
+	void AddProgress(float AddedProgress) { SetProgress(Progress + AddedProgress); }
 	// ----------------- Working ------------------------
 private:
-	// How fast the progress increases when working, in percent per second
-	UPROPERTY(VisibleInstanceOnly)
-	float WorkRate;
-
 	// How much impact the Work has, for example when producing resources how many resources get produced
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	int32 WorkAmount;
 
+	UPROPERTY(EditAnywhere, Replicated)
+	TWeakObjectPtr<ATile> PriorityTile;
+
 protected:
-	virtual void S_Work();
 	virtual bool IsTileValidForWork(const ATile* Tile) const;
 	int32 GetWorkAmount() const { return WorkAmount; }
 
 public:
-	void S_StartWorking();
+	virtual void S_Work();
+	float GetWorkRate() const;
 	bool IsCurrentTileValidForWork() const;
+	bool IsPriorityTileValidForWork() const;
 	bool TryFindPathToNearestTileValidForWork();
+	ATile* GetPriorityTile() const { return PriorityTile.Get(); }
+	void SetPriorityTile(ATile* NewPriorityTile) { PriorityTile = NewPriorityTile; }
+	bool TryFindPathToPriorityTile();
 
 	// ----------------- Moving ------------------------
 private:
@@ -99,13 +97,12 @@ private:
 	FVector NetLocation;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated)
-	ATile* CurrentTile;
+	TWeakObjectPtr<ATile> CurrentTile;
 
 	UFUNCTION()
 	void OnRep_NetLocation();
 
 	void SetNetLocation(const FVector& NewNetLocation);
-	void S_MoveToNextTileOnPath();
 
 	// How fast the progress increases when moving, in percent per second
 	UPROPERTY(VisibleInstanceOnly, Replicated)
@@ -115,9 +112,11 @@ private:
 	TArray<ATile*> Path;
 
 protected:
-	ATile* GetCurrentTile() const { return CurrentTile; }
+	ATile* GetCurrentTile() const { return CurrentTile.Get(); }
 
 public:
+	void S_MoveToNextTileOnPath();
+	float GetMovementRate() const { return MovementRate; };
 	bool IsPathValid();
-	void S_StartMoveToNextTileOnPath();
+	bool IsPathEmpty() const { return Path.IsEmpty(); }
 };
