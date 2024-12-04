@@ -43,7 +43,7 @@ ACivilian::ACivilian()
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
-	NetUpdateFrequency = 1.0f;
+	NetUpdateFrequency = .1f;
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Static Mesh");
@@ -79,15 +79,20 @@ void ACivilian::S_Tick(const float DeltaSeconds)
 {
 	if (bProgresserActive)
 	{
-		ProgressRate = CalculateProgressRate();
-		MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, ProgressRate, this)
-		TickProgress(DeltaSeconds);
-		MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Progress, this)
+		const float NewProgressRate = CalculateProgressRate();
+		if(ProgressRate != NewProgressRate)
+		{
+			ProgressRate = NewProgressRate;
+			MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, ProgressRate, this)
+			ForceNetUpdate();
+		}
+		ProgressTick(DeltaSeconds);
 		if (Progress >= 100.f)
 		{
 			FinishProgress();
 			Progress = 0.f;
 			MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Progress, this)
+			ForceNetUpdate();
 		}
 	}
 }
@@ -96,7 +101,7 @@ void ACivilian::C_Tick(const float DeltaSeconds)
 {
 	if (bProgresserActive)
 	{
-		TickProgress(DeltaSeconds);
+		ProgressTick(DeltaSeconds);
 	}
 }
 
@@ -123,6 +128,9 @@ void ACivilian::S_StartProgresser(const std::function<float()>& ProgressRateCalc
 	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Progress, this)
 	CalculateProgressRate = ProgressRateCalculator;
 	FinishProgress = Finisher;
+	ProgressRate = CalculateProgressRate();
+	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, ProgressRate, this)
+	ForceNetUpdate();
 }
 
 void ACivilian::S_StopProgresser()
@@ -133,11 +141,17 @@ void ACivilian::S_StopProgresser()
 	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Progress, this)
 	CalculateProgressRate = nullptr;
 	FinishProgress = nullptr;
+	ProgressRate = 0.f;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, ProgressRate, this)
+	ForceNetUpdate();
 }
 
-void ACivilian::TickProgress(float DeltaSeconds)
+void ACivilian::ProgressTick(float DeltaSeconds)
 {
+	if(Progress == 100.f) return;
 	Progress += ProgressRate * DeltaSeconds;
+	if(Progress > 100.f)
+		Progress = 100.f;
 }
 
 // ----------------- Working ------------------------

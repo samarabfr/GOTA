@@ -78,7 +78,7 @@ public:
 	void S_StartProgresser(const std::function<float()>& ProgressRateCalculator,
 	                       const std::function<void()>& Finisher);
 	void S_StopProgresser();
-	void TickProgress(float DeltaSeconds);
+	void ProgressTick(float DeltaSeconds);
 
 	// ----------------- Working ------------------------
 private:
