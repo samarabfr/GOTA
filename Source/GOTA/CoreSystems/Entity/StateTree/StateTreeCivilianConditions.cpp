@@ -7,52 +7,36 @@
 
 bool FSTC_IsPathValidCivilian::TestCondition(FStateTreeExecutionContext& Context) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.CivilianRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Condition failed: Civilian in context is null"))
-		return false;
-	}
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return false;
 
-	const bool bResult = InstanceData.CivilianRef.Get()->IsPathValid();
+	const bool bResult = Civilian->IsPathValid();
 	return bResult ^ bInvert;
 }
 
 bool FSTC_IsPathEmptyCivilian::TestCondition(FStateTreeExecutionContext& Context) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.CivilianRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Condition failed: Civilian in context is null"))
-		return false;
-	}
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return false;
 
-	const bool bResult = InstanceData.CivilianRef.Get()->IsPathEmpty();
+	const bool bResult = Civilian->IsPathEmpty();
 	return bResult ^ bInvert;
 }
 
 bool FSTC_IsCurrentTileValidForWork::TestCondition(FStateTreeExecutionContext& Context) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.CivilianRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Condition failed: Civilian in context is null"))
-		return false;
-	}
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return false;
 
-	const bool bResult = InstanceData.CivilianRef.Get()->IsCurrentTileValidForWork();
+	const bool bResult = Civilian->IsCurrentTileValidForWork();
 	return bResult ^ bInvert;
 }
 
 bool FSTC_HasPiorityTileValidForWork::TestCondition(FStateTreeExecutionContext& Context) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.CivilianRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Condition failed: Civilian in context is null"))
-		return false;
-	}
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return false;
 
-	const bool bResult = InstanceData.CivilianRef.Get()->IsPriorityTileValidForWork();
+	const bool bResult = Civilian->IsPriorityTileValidForWork();
 	return bResult ^ bInvert;
 }

@@ -27,6 +27,9 @@ void ACivilian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, Progress, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, CurrentTile, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, NetLocation, Params);
+	DOREPLIFETIME_WITH_PARAMS(ACivilian, bProgresserActive, Params);
+	DOREPLIFETIME_WITH_PARAMS(ACivilian, ProgressRate, Params);
+	DOREPLIFETIME_WITH_PARAMS(ACivilian, PriorityTile, Params);
 }
 
 // ----------------------- LifeCycle -----------------------
@@ -74,10 +77,27 @@ void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 
 void ACivilian::S_Tick(const float DeltaSeconds)
 {
+	if (bProgresserActive)
+	{
+		ProgressRate = CalculateProgressRate();
+		MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, ProgressRate, this)
+		TickProgress(DeltaSeconds);
+		MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Progress, this)
+		if (Progress >= 100.f)
+		{
+			FinishProgress();
+			Progress = 0.f;
+			MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Progress, this)
+		}
+	}
 }
 
 void ACivilian::C_Tick(const float DeltaSeconds)
 {
+	if (bProgresserActive)
+	{
+		TickProgress(DeltaSeconds);
+	}
 }
 
 void ACivilian::BeginDestroy()
@@ -93,13 +113,34 @@ void ACivilian::S_HandleDeath()
 	Destroy();
 }
 
-// ----------------- Working ------------------------
-
-void ACivilian::SetProgress(float NewProgress)
+void ACivilian::S_StartProgresser(const std::function<float()>& ProgressRateCalculator,
+                                  const std::function<void()>& Finisher)
 {
-	Progress = NewProgress;
+	if (!ProgressRateCalculator || !Finisher) return;
+	bProgresserActive = true;
+	Progress = 0.f;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, bProgresserActive, this)
 	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Progress, this)
+	CalculateProgressRate = ProgressRateCalculator;
+	FinishProgress = Finisher;
 }
+
+void ACivilian::S_StopProgresser()
+{
+	bProgresserActive = false;
+	Progress = 0.f;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, bProgresserActive, this)
+	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Progress, this)
+	CalculateProgressRate = nullptr;
+	FinishProgress = nullptr;
+}
+
+void ACivilian::TickProgress(float DeltaSeconds)
+{
+	Progress += ProgressRate * DeltaSeconds;
+}
+
+// ----------------- Working ------------------------
 
 bool ACivilian::IsTileValidForWork(const ATile* Tile) const
 {

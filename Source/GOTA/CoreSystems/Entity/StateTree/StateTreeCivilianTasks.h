@@ -27,8 +27,9 @@ struct GOTA_API FSTT_CivilianMoveToNextTile : public FStateTreeTaskCommonBase
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 
 	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context,
-										   const FStateTreeTransitionResult& Transition) const override;
-	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	                                       const FStateTreeTransitionResult& Transition) const override;
+	virtual void ExitState(FStateTreeExecutionContext& Context,
+	                       const FStateTreeTransitionResult& Transition) const override;
 };
 
 USTRUCT(DisplayName="Work")
@@ -40,8 +41,9 @@ struct GOTA_API FSTT_Work : public FStateTreeTaskCommonBase
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 
 	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context,
-										   const FStateTreeTransitionResult& Transition) const override;
-	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	                                       const FStateTreeTransitionResult& Transition) const override;
+	virtual void ExitState(FStateTreeExecutionContext& Context,
+	                       const FStateTreeTransitionResult& Transition) const override;
 };
 
 USTRUCT(DisplayName="Find path to nearest tile valid for work")
@@ -51,7 +53,7 @@ struct GOTA_API FSTT_FindPathToNearestTileValidForWork : public FStateTreeTaskCo
 
 	using FInstanceDataType = FCivilianInstanceData;
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
-	
+
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
 };
 
@@ -62,8 +64,6 @@ struct GOTA_API FSTT_FindPathToPriorityTile : public FStateTreeTaskCommonBase
 
 	using FInstanceDataType = FCivilianInstanceData;
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
-	
-	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
-	
-};
 
+	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+};

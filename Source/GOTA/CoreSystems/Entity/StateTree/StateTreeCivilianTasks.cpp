@@ -13,23 +13,25 @@ EStateTreeRunStatus FSTT_CivilianMoveToNextTile::EnterState(FStateTreeExecutionC
 	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
 	if (!Civilian) return EStateTreeRunStatus::Failed;
 
-	Civilian->SetProgress(0.f);
+	TWeakObjectPtr<ACivilian> WeakCivilian = Civilian;
+	Civilian->S_StartProgresser([WeakCivilian]()
+	                            {
+		                            return WeakCivilian.IsValid() ? WeakCivilian->GetMovementRate() : 0.f;
+	                            },
+	                            [WeakCivilian]()
+	                            {
+		                            if (WeakCivilian.IsValid()) WeakCivilian->S_MoveToNextTileOnPath();
+	                            });
 	return EStateTreeRunStatus::Running;
 }
 
-EStateTreeRunStatus FSTT_CivilianMoveToNextTile::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
+void FSTT_CivilianMoveToNextTile::ExitState(FStateTreeExecutionContext& Context,
+                                            const FStateTreeTransitionResult& Transition) const
 {
-	// TODO:: sehr ineffizient, progress muss aber für die UI irgendwie abgefragt werden können
 	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
-	if (!Civilian) return EStateTreeRunStatus::Failed;
+	if (!Civilian) return;
 
-	Civilian->AddProgress(Civilian->GetMovementRate() * DeltaTime);
-	if (Civilian->GetProgress() >= 100.f)
-	{
-		Civilian->S_MoveToNextTileOnPath();
-		Civilian->SetProgress(0.f);
-	}
-	return EStateTreeRunStatus::Running;
+	Civilian->S_StopProgresser();
 }
 
 EStateTreeRunStatus FSTT_Work::EnterState(FStateTreeExecutionContext& Context,
@@ -38,23 +40,21 @@ EStateTreeRunStatus FSTT_Work::EnterState(FStateTreeExecutionContext& Context,
 	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
 	if (!Civilian) return EStateTreeRunStatus::Failed;
 
-	Civilian->SetProgress(0.f);
+	TWeakObjectPtr<ACivilian> WeakCivilian = Civilian;
+	Civilian->S_StartProgresser([WeakCivilian]()
+	                            {
+		                            return WeakCivilian.IsValid() ? WeakCivilian->GetWorkRate() : 0.f;
+	                            },
+	                            [WeakCivilian]() { if (WeakCivilian.IsValid()) WeakCivilian->S_Work(); });
 	return EStateTreeRunStatus::Running;
 }
 
-EStateTreeRunStatus FSTT_Work::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
+void FSTT_Work::ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const
 {
-	// TODO:: sehr ineffizient, progress muss aber für die UI irgendwie abgefragt werden können
 	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
-	if (!Civilian) return EStateTreeRunStatus::Failed;
+	if (!Civilian) return;
 
-	Civilian->AddProgress(Civilian->GetWorkRate() * DeltaTime);
-	if (Civilian->GetProgress() >= 100.f)
-	{
-		Civilian->S_Work();
-		Civilian->SetProgress(0.f);
-	}
-	return EStateTreeRunStatus::Running;
+	Civilian->S_StopProgresser();
 }
 
 EStateTreeRunStatus FSTT_FindPathToNearestTileValidForWork::Tick(FStateTreeExecutionContext& Context,
@@ -74,6 +74,6 @@ EStateTreeRunStatus FSTT_FindPathToPriorityTile::Tick(FStateTreeExecutionContext
 	if (!Civilian) return EStateTreeRunStatus::Failed;
 
 	return Civilian->TryFindPathToPriorityTile()
-			   ? EStateTreeRunStatus::Succeeded
-			   : EStateTreeRunStatus::Running;
+		       ? EStateTreeRunStatus::Succeeded
+		       : EStateTreeRunStatus::Running;
 }

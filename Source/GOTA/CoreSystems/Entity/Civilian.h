@@ -1,7 +1,8 @@
 ﻿#pragma once
 
+#include <functional>
+
 #include "GOTA/CoreSystems/Tile/Tile.h"
-#include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Civilian.generated.h"
 
 class UStateTreeCivilianComponent;
@@ -55,19 +56,30 @@ protected:
 	UCivilianSettings* GetSettings() const { return Settings; }
 	UStaticMeshComponent* GetMeshComponent() const { return MeshComponent; }
 
-	// ----------------- State tree ------------------------
 private:
 	UPROPERTY(VisibleInstanceOnly)
 	UStateTreeCivilianComponent* StateTree;
 
+	// ----------------- Progresser ------------------------
 	// Progress of current Action in percent
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float Progress;
 
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	bool bProgresserActive = false;
+
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	float ProgressRate = 0.f;
+
+	std::function<float()> CalculateProgressRate;
+	std::function<void()> FinishProgress;
+
 public:
-	float GetProgress() const { return Progress; }
-	void SetProgress(float NewProgress);
-	void AddProgress(float AddedProgress) { SetProgress(Progress + AddedProgress); }
+	void S_StartProgresser(const std::function<float()>& ProgressRateCalculator,
+	                       const std::function<void()>& Finisher);
+	void S_StopProgresser();
+	void TickProgress(float DeltaSeconds);
+
 	// ----------------- Working ------------------------
 private:
 	// How much impact the Work has, for example when producing resources how many resources get produced
