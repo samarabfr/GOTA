@@ -77,4 +77,14 @@ class GOTA_API USettlementSettingsDefaults : public UPrimaryDataAsset
 public:
 	UPROPERTY(EditDefaultsOnly)
 	USettlementSettings* SettlementSettings;
+
+	UPROPERTY()
+	AGameState* GS1;
+
+	UPROPERTY()
+	TObjectPtr<AGameState> GS2;
+
+	TObjectPtr<AGameState> GS3;
+	
+	TWeakPtr<AGameState> GS4;
 };
