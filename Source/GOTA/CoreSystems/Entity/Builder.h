@@ -11,4 +11,7 @@ class GOTA_API ABuilder : public ACivilian
 	
 	virtual void S_Work() override;
 	virtual bool IsTileValidForWork(const ATile* Tile) const override;
+	TArray<ATile*> FindBestWorkTiles();
+	virtual bool TryFindPathToBestWorkTile() override;
+	virtual bool IsCurrentTileAmongBestWorkTiles() override;
 };

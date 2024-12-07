@@ -46,30 +46,8 @@ struct GOTA_API FSTT_Work : public FStateTreeTaskCommonBase
 	                       const FStateTreeTransitionResult& Transition) const override;
 };
 
-USTRUCT(DisplayName="Find path to nearest tile valid for work")
-struct GOTA_API FSTT_FindPathToNearestTileValidForWork : public FStateTreeTaskCommonBase
-{
-	GENERATED_BODY()
-
-	using FInstanceDataType = FCivilianInstanceData;
-	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
-
-	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
-};
-
-USTRUCT(DisplayName="Find path to priority tile")
-struct GOTA_API FSTT_FindPathToPriorityTile : public FStateTreeTaskCommonBase
-{
-	GENERATED_BODY()
-
-	using FInstanceDataType = FCivilianInstanceData;
-	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
-
-	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
-};
-
-USTRUCT(DisplayName="Find path to nearest tile to settlement valid for work")
-struct GOTA_API FSTT_FindPathToNearestTileToSettlementValidForWork : public FStateTreeTaskCommonBase
+USTRUCT(DisplayName="Find path to best work tile")
+struct GOTA_API FSTT_FindPathToBestWorkTile : public FStateTreeTaskCommonBase
 {
 	GENERATED_BODY()
 

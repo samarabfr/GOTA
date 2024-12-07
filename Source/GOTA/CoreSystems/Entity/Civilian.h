@@ -57,6 +57,7 @@ private:
 protected:
 	UBuilding* GetBuilding() const { return Building.Get(); }
 	UCivilianSettings* GetSettings() const { return Settings; }
+	AGS_Ingame* GetGameState()const { return GameState; }
 	UStaticMeshComponent* GetMeshComponent() const { return MeshComponent; }
 	UStateTreeCivilianComponent* GetStateTree() const { return StateTree; }
 
@@ -93,17 +94,17 @@ private:
 protected:
 	virtual bool IsTileValidForWork(const ATile* Tile) const;
 	int32 GetWorkAmount() const { return WorkAmount; }
+	bool TryFindPathToClosestWorkTile();
+	bool TryFindPathToWorkTileClosestToSettlement();
+	bool TryFindPathToPriorityTile();
 
 public:
 	virtual void S_Work();
+	virtual bool TryFindPathToBestWorkTile();
+	virtual bool IsCurrentTileAmongBestWorkTiles();
 	float GetWorkRate() const;
-	bool IsCurrentTileValidForWork() const;
-	bool IsPriorityTileValidForWork() const;
-	bool TryFindPathToNearestTileValidForWork();
-	bool TryFindPathToNearestTileToSettlementValidForWork();
 	ATile* GetPriorityTile() const { return PriorityTile.Get(); }
 	void SetPriorityTile(ATile* NewPriorityTile) { PriorityTile = NewPriorityTile; }
-	bool TryFindPathToPriorityTile();
 
 	// ----------------- Moving ------------------------
 private:
@@ -127,6 +128,7 @@ private:
 
 protected:
 	ATile* GetCurrentTile() const { return CurrentTile.Get(); }
+	void SetPath(const TArray<ATile*>& NewPath) { Path = NewPath; }
 
 public:
 	void S_MoveToNextTileOnPath();

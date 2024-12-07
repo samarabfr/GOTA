@@ -4,7 +4,9 @@
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
+#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
+#include "GOTA/CoreSystems/Tile/TileMap.h"
 
 ABuilder::ABuilder()
 {
@@ -50,11 +52,67 @@ void ABuilder::S_Work()
 
 bool ABuilder::IsTileValidForWork(const ATile* Tile) const
 {
-	if(!Tile->GetBuilding())
+	if (!Tile->GetBuilding())
 		return false;
-	if(Tile->GetClaimant() != GetBuilding()->GetSettlement())
+	if (Tile->GetClaimant() != GetBuilding()->GetSettlement())
 		return false;
-	if(!Tile->GetBuilding()->GetIsUnderConstruction())
+	if (!Tile->GetBuilding()->GetIsUnderConstruction())
 		return false;
 	return true;
+}
+
+TArray<ATile*> ABuilder::FindBestWorkTiles()
+{
+	if (!GetBuilding() ||
+		!GetBuilding()->GetSettlement() ||
+		GetBuilding()->GetSettlement()->ClaimedTiles.Num() <= 0)
+		return TArray<ATile*>();
+	// get work tiles with builders and the lowest count of builders
+	TMap<ATile*, int32> WorkTilesWithBuilders;
+	int32 LowestCount = INT32_MAX;
+	for (ATile* ClaimedTile : GetBuilding()->GetSettlement()->ClaimedTiles)
+	{
+		if (!IsTileValidForWork(ClaimedTile) || !ClaimedTile->AcceptsCivilian()) continue;
+		int32 Count = 0;
+		for (ACivilian* Civilian : ClaimedTile->GetCivilians())
+		{
+			if (Civilian &&
+				Civilian != this &&
+				Civilian->IsA(GetBuilding()->GetSettings()->CivilianClass))
+				++Count;
+		}
+		if (Count <= LowestCount)
+		{
+			LowestCount = Count;
+			WorkTilesWithBuilders.Add(ClaimedTile, Count);
+		}
+	}
+	if (WorkTilesWithBuilders.IsEmpty()) return TArray<ATile*>();
+	// get only tiles with the lowest count
+	TArray<ATile*> BestTiles;
+	for (auto WorkTilesWithBuilder : WorkTilesWithBuilders)
+	{
+		if (WorkTilesWithBuilder.Value == LowestCount) BestTiles.Add(WorkTilesWithBuilder.Key);
+	}
+	return BestTiles;
+}
+
+bool ABuilder::TryFindPathToBestWorkTile()
+{
+	TArray<ATile*> BestTiles = FindBestWorkTiles();
+	if(BestTiles.IsEmpty()) return false;
+	// get path the closest
+	const TArray<ATile*> NewPath = GetGameState()->GetTileMap()->FindPathToNearestTile(
+		GetCurrentTile(), EEntityType::Civilian,
+		[this, BestTiles](const ATile* Tile)
+		{
+			return BestTiles.Contains(Tile);
+		});
+	SetPath(NewPath);
+	return !IsPathEmpty();
+}
+
+bool ABuilder::IsCurrentTileAmongBestWorkTiles()
+{
+	return FindBestWorkTiles().Contains(GetCurrentTile());
 }

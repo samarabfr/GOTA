@@ -63,13 +63,13 @@ public:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	TArray<ATile*> Neighbors;
 
-	TArray<ATile*> GetNeighbors() const {return Neighbors; }
+	TArray<ATile*> GetNeighbors() const { return Neighbors; }
 
 	TArray<ATile*> GetPathTo(ATile* Target);
 	int32 GetTileDistanceTo(ATile* Target);
-	
+
 	// ------------------------Gameplay Tags---------------------------
-	
+
 public:
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_GameplayTags, Category="Tile")
 	FGameplayTagContainer GameplayTags;
@@ -83,7 +83,7 @@ public:
 	// ------------------------Entity---------------------------
 public:
 	bool AcceptsEntity(const EEntityType EntityType) const;
-	
+
 	// ------------------------Army---------------------------
 private:
 	UPROPERTY(VisibleInstanceOnly)
@@ -101,6 +101,7 @@ private:
 	TArray<ACivilian*> Civilians;
 
 public:
+	TArray<ACivilian*> GetCivilians() const { return Civilians; }
 	bool AcceptsCivilian() const;
 	void AddCivilian(ACivilian* Civilian, FVector& NewLocation);
 	void RemoveCivilian(const ACivilian* Civilian);
@@ -112,7 +113,7 @@ private:
 
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Building, Category="Tile")
 	UBuilding* Building;
-	
+
 	UFUNCTION()
 	void OnRep_Building();
 
@@ -120,7 +121,7 @@ private:
 
 public:
 	UBuilding* GetBuilding() const { return Building; }
-	
+
 	FOnTileChangedSignature OnBuildingChanged;
 
 	bool CanBuild();
@@ -154,12 +155,12 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	UEcoValues* EcoValues;
-	
+
 	void SetupEcoValuesChanging();
-	
+
 	UFUNCTION()
 	void TreesChanged(const int32 Change);
-	
+
 	UFUNCTION()
 	void ForageChanged(const int32 Change);
 

@@ -66,7 +66,7 @@ struct GOTA_API FSTC_IsPathEmptyCivilian : public FStateTreeConditionCommonBase
 };
 
 USTRUCT()
-struct GOTA_API FSTC_IsCurrentTileValidForWorkInstanceData
+struct GOTA_API FSTC_IsCurrentTileBestWorkTileInstanceData
 {
 	GENERATED_BODY()
 
@@ -75,44 +75,16 @@ struct GOTA_API FSTC_IsCurrentTileValidForWorkInstanceData
 };
 
 /**
- * Condition checking if current tile is valid for work
+ * Condition checking if the current tile is the best work tile
  */
-USTRUCT(DisplayName = "Is current tile valid for work")
-struct GOTA_API FSTC_IsCurrentTileValidForWork : public FStateTreeConditionCommonBase
+USTRUCT(DisplayName = "Is current tile best work tile")
+struct GOTA_API FSTC_IsCurrentTileBestWorkTile : public FStateTreeConditionCommonBase
 {
 	GENERATED_BODY()
 
-	using FInstanceDataType = FSTC_IsCurrentTileValidForWorkInstanceData;
+	using FInstanceDataType = FSTC_IsCurrentTileBestWorkTileInstanceData;
 
-	FSTC_IsCurrentTileValidForWork() = default;
-
-	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
-	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
-
-	UPROPERTY(EditAnywhere, Category = "Parameter")
-	bool bInvert = false;
-};
-
-USTRUCT()
-struct GOTA_API FSTC_HasPiorityTileValidForWorkInstanceData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, Category=Context)
-	TObjectPtr<ACivilian> CivilianRef = nullptr;
-};
-
-/**
- * Condition checking if civilian has priority tile that is valid for work
- */
-USTRUCT(DisplayName = "Has priority tile valid for work")
-struct GOTA_API FSTC_HasPiorityTileValidForWork : public FStateTreeConditionCommonBase
-{
-	GENERATED_BODY()
-
-	using FInstanceDataType = FSTC_HasPiorityTileValidForWorkInstanceData;
-
-	FSTC_HasPiorityTileValidForWork() = default;
+	FSTC_IsCurrentTileBestWorkTile() = default;
 
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;

@@ -57,34 +57,13 @@ void FSTT_Work::ExitState(FStateTreeExecutionContext& Context, const FStateTreeT
 	Civilian->S_StopProgresser();
 }
 
-EStateTreeRunStatus FSTT_FindPathToNearestTileValidForWork::Tick(FStateTreeExecutionContext& Context,
+EStateTreeRunStatus FSTT_FindPathToBestWorkTile::Tick(FStateTreeExecutionContext& Context,
                                                                  const float DeltaTime) const
 {
 	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
 	if (!Civilian) return EStateTreeRunStatus::Failed;
 
-	return Civilian->TryFindPathToNearestTileValidForWork()
+	return Civilian->TryFindPathToBestWorkTile()
 		       ? EStateTreeRunStatus::Succeeded
 		       : EStateTreeRunStatus::Running;
-}
-
-EStateTreeRunStatus FSTT_FindPathToPriorityTile::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
-{
-	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
-	if (!Civilian) return EStateTreeRunStatus::Failed;
-
-	return Civilian->TryFindPathToPriorityTile()
-		       ? EStateTreeRunStatus::Succeeded
-		       : EStateTreeRunStatus::Running;
-}
-
-EStateTreeRunStatus FSTT_FindPathToNearestTileToSettlementValidForWork::Tick(FStateTreeExecutionContext& Context,
-	const float DeltaTime) const
-{
-	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
-	if (!Civilian) return EStateTreeRunStatus::Failed;
-
-	return Civilian->TryFindPathToNearestTileToSettlementValidForWork()
-			   ? EStateTreeRunStatus::Succeeded
-			   : EStateTreeRunStatus::Running;
 }
