@@ -1,7 +1,9 @@
 ﻿#include "Civilian.h"
 #include "CivilianSettings.h"
+#include "StateTree.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
@@ -55,8 +57,12 @@ ACivilian::ACivilian()
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	MeshComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	MeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
+
+	ConstructorHelpers::FObjectFinder<UStateTree> StateTreeFinder(
+		TEXT("/Game/CoreSystems/Entity/ST_Civilian"));
 	StateTree = CreateDefaultSubobject<UStateTreeCivilianComponent>("StateTree");
 	StateTree->SetStartLogicAutomatically(false);
+	StateTree->SetStateTree(Cast<UStateTree>(StateTreeFinder.Object.Get()));
 }
 
 void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
@@ -80,7 +86,7 @@ void ACivilian::S_Tick(const float DeltaSeconds)
 	if (bProgresserActive)
 	{
 		const float NewProgressRate = CalculateProgressRate();
-		if(ProgressRate != NewProgressRate)
+		if (ProgressRate != NewProgressRate)
 		{
 			ProgressRate = NewProgressRate;
 			MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, ProgressRate, this)
@@ -148,9 +154,9 @@ void ACivilian::S_StopProgresser()
 
 void ACivilian::ProgressTick(float DeltaSeconds)
 {
-	if(Progress == 100.f) return;
+	if (Progress == 100.f) return;
 	Progress += ProgressRate * DeltaSeconds;
-	if(Progress > 100.f)
+	if (Progress > 100.f)
 		Progress = 100.f;
 }
 
@@ -187,6 +193,32 @@ bool ACivilian::TryFindPathToNearestTileValidForWork()
 	if (!CurrentTile.IsValid()) return false;
 	if (IsTileValidForWork(GetCurrentTile())) return true;
 	Path = GameState->GetTileMap()->FindPathToNearestTile(GetCurrentTile(), EEntityType::Civilian,
+	                                                      [this](const ATile* Tile)
+	                                                      {
+		                                                      return IsTileValidForWork(Tile);
+	                                                      });
+	return !Path.IsEmpty();
+}
+
+bool ACivilian::TryFindPathToNearestTileToSettlementValidForWork()
+{
+	if (!GetBuilding() ||
+		!GetBuilding()->GetSettlement() ||
+		GetBuilding()->GetSettlement()->ClaimedTiles.IsEmpty())
+		return false;
+	for (ATile* ClaimedTile : GetBuilding()->GetSettlement()->ClaimedTiles)
+	{
+		if (IsTileValidForWork(ClaimedTile))
+		{
+			Path = GameState->GetTileMap()->GetPath(CurrentTile.Get(), ClaimedTile);
+			if (!Path.IsEmpty())
+			{
+				return true;
+			}
+		}
+	}
+	Path = GameState->GetTileMap()->FindPathToNearestTile(GetBuilding()->GetSettlement()->ClaimedTiles,
+	                                                      CurrentTile.Get(), EEntityType::Civilian,
 	                                                      [this](const ATile* Tile)
 	                                                      {
 		                                                      return IsTileValidForWork(Tile);

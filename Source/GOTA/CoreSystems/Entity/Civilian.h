@@ -51,14 +51,15 @@ private:
 	UPROPERTY()
 	UStaticMeshComponent* MeshComponent;
 
+	UPROPERTY(VisibleInstanceOnly)
+	UStateTreeCivilianComponent* StateTree;
+
 protected:
 	UBuilding* GetBuilding() const { return Building.Get(); }
 	UCivilianSettings* GetSettings() const { return Settings; }
 	UStaticMeshComponent* GetMeshComponent() const { return MeshComponent; }
+	UStateTreeCivilianComponent* GetStateTree() const { return StateTree; }
 
-private:
-	UPROPERTY(VisibleInstanceOnly)
-	UStateTreeCivilianComponent* StateTree;
 
 	// ----------------- Progresser ------------------------
 	// Progress of current Action in percent
@@ -99,6 +100,7 @@ public:
 	bool IsCurrentTileValidForWork() const;
 	bool IsPriorityTileValidForWork() const;
 	bool TryFindPathToNearestTileValidForWork();
+	bool TryFindPathToNearestTileToSettlementValidForWork();
 	ATile* GetPriorityTile() const { return PriorityTile.Get(); }
 	void SetPriorityTile(ATile* NewPriorityTile) { PriorityTile = NewPriorityTile; }
 	bool TryFindPathToPriorityTile();

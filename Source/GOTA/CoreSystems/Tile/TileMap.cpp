@@ -286,6 +286,55 @@ TArray<ATile*> ATileMap::FindPathToNearestTile(ATile* Origin, const EEntityType 
 	return Path;
 }
 
+TArray<ATile*> ATileMap::FindPathToNearestTile(const TArray<ATile*>& SearchOrigin, ATile* PathOrigin,
+                                               EEntityType EntityType,
+                                               const std::function<bool(const ATile*)>& Condition) const
+{
+	if (SearchOrigin.IsEmpty() || !PathOrigin) return TArray<ATile*>();
+	return GetPath(PathOrigin, FindNearestTile(SearchOrigin, EEntityType::Civilian, Condition));
+}
+
+ATile* ATileMap::FindNearestTile(const TArray<ATile*>& Origin, const EEntityType EntityType,
+                                 const std::function<bool(const ATile*)>& Condition) const
+{
+	if (Origin.IsEmpty()) return nullptr;
+	TArray<ATile*> Frontier = Origin;
+
+	TArray<int8> DistanceMap;
+	DistanceMap.SetNumZeroed(Tiles.Num());
+	for (const ATile* FrontierTile : Frontier)
+	{
+		DistanceMap[FrontierTile->HexCoords.Q * Size.R + FrontierTile->HexCoords.R] = 1;
+	}
+	TArray<ATile*> FoundTargets;
+	int8 Distance = 2;
+	while (!Frontier.IsEmpty() && FoundTargets.IsEmpty())
+	{
+		TArray<ATile*> NewFrontier;
+		for (ATile* Current : Frontier)
+		{
+			if (Condition(Current))
+			{
+				FoundTargets.Add(Current);
+			}
+			for (ATile* Neighbor : Current->Neighbors)
+			{
+				if (Neighbor
+					&& Neighbor->AcceptsEntity(EntityType)
+					&& DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] == 0)
+				{
+					NewFrontier.Add(Neighbor);
+					DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] = Distance;
+				}
+			}
+		}
+		++Distance;
+		Frontier = NewFrontier;
+	}
+	if (FoundTargets.IsEmpty()) return nullptr;
+	return FoundTargets[FMath::RandRange(0, FoundTargets.Num() - 1)];
+}
+
 TArray<ATile*> ATileMap::FindPathToNearestTileInRange(ATile* Origin, EEntityType EntityType, int32 Range,
                                                       const std::function<bool(const ATile*)>& Condition) const
 {

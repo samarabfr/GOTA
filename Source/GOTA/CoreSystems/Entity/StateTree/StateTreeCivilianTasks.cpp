@@ -77,3 +77,14 @@ EStateTreeRunStatus FSTT_FindPathToPriorityTile::Tick(FStateTreeExecutionContext
 		       ? EStateTreeRunStatus::Succeeded
 		       : EStateTreeRunStatus::Running;
 }
+
+EStateTreeRunStatus FSTT_FindPathToNearestTileToSettlementValidForWork::Tick(FStateTreeExecutionContext& Context,
+	const float DeltaTime) const
+{
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return EStateTreeRunStatus::Failed;
+
+	return Civilian->TryFindPathToNearestTileToSettlementValidForWork()
+			   ? EStateTreeRunStatus::Succeeded
+			   : EStateTreeRunStatus::Running;
+}
