@@ -10,7 +10,7 @@
 
 void ADamageBuildingAbility::Use(ATile* Target, ATile* PlayerPosition)
 {
-	if (!CanBeUsed(Target, PlayerPosition) &&
+	if (!CanBeUsed(Target, PlayerPosition) ||
 		!Target->GetBuilding())
 		return;
 	if (Target->GetBuilding()->GetPopulation()->GetSize() > 0)
