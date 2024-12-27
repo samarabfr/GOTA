@@ -16,6 +16,7 @@ class GOTA_API ASimplifiedAbility : public AActor
 protected:
 	ASimplifiedAbility();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void Tick(float DeltaSeconds) override;
 
 public:
 	void S_Init();
@@ -28,9 +29,11 @@ private:
 
 	// ----------------------- Cooldown -----------------------
 private:
+	UPROPERTY(VisibleInstanceOnly)
 	float CooldownLeft = 0.0f;
 protected:
 	float Cooldown = 60.0f;
+	void ActivateCooldown();
 	
 	// ----------------------- Usage -----------------------
 protected:

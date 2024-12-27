@@ -8,6 +8,11 @@
 #include "GOTA/CoreSystems/Tile/Tile.h"
 
 
+ADamageBuildingAbility::ADamageBuildingAbility()
+{
+	Cooldown = 5.0f;
+}
+
 void ADamageBuildingAbility::Use(ATile* Target, ATile* PlayerPosition)
 {
 	if (!CanBeUsed(Target, PlayerPosition) ||
@@ -21,4 +26,5 @@ void ADamageBuildingAbility::Use(ATile* Target, ATile* PlayerPosition)
 	{
 		Target->Unbuild();
 	}
+	ActivateCooldown();
 }

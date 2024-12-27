@@ -4,14 +4,36 @@
 #include "SimplifiedAbility.h"
 
 #include "GOTA/CoreSystems/Tile/Tile.h"
+#include "Net/UnrealNetwork.h"
 
 ASimplifiedAbility::ASimplifiedAbility()
 {
+	bReplicates = true;
+	bAlwaysRelevant = true;
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
 }
 
 void ASimplifiedAbility::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	FDoRepLifetimeParams Params;
+	Params.bIsPushBased = true;
+
+	Params.Condition = COND_InitialOnly;
+	Params.RepNotifyCondition = REPNOTIFY_Always;
+
+	Params.Condition = COND_None;
+	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
+}
+
+void ASimplifiedAbility::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	if (HasAuthority())
+		S_Tick(DeltaSeconds);
+	else
+		C_Tick(DeltaSeconds);
 }
 
 void ASimplifiedAbility::S_Init()
@@ -37,6 +59,11 @@ void ASimplifiedAbility::C_Tick(const float DeltaSeconds)
 void ASimplifiedAbility::BeginDestroy()
 {
 	Super::BeginDestroy();
+}
+
+void ASimplifiedAbility::ActivateCooldown()
+{
+	CooldownLeft = Cooldown;
 }
 
 bool ASimplifiedAbility::CanBeUsed(const ATile* Target, const ATile* PlayerPosition) const

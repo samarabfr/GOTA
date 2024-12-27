@@ -13,5 +13,6 @@ class GOTA_API ADamageBuildingAbility : public ASimplifiedAbility
 {
 	GENERATED_BODY()
 
+	ADamageBuildingAbility();
 	virtual void Use(ATile* Target, ATile* PlayerPosition) override;
 };
