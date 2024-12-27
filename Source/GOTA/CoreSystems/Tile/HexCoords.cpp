@@ -36,7 +36,7 @@ FHexCoords FHexCoords::operator-(const FHexCoords& Other) const
 
 int32 FHexCoords::DistanceTo(const FHexCoords Target) const
 {
-	const FHexCoords Diff = this & -Target;
+	const FHexCoords Diff = *this - Target;
 	return (FMath::Abs(Diff.Q) +
 			FMath::Abs(Diff.Q + Diff.R) +
 			FMath::Abs(Diff.R))
