@@ -14,6 +14,7 @@
 #include "Terrain.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/CoreSystems/Entity/Entity.h"
+#include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Tile.generated.h"
 
@@ -63,13 +64,13 @@ public:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Replicated, Category="Tile")
 	TArray<ATile*> Neighbors;
 
-	TArray<ATile*> GetNeighbors() const {return Neighbors; }
+	TArray<ATile*> GetNeighbors() const { return Neighbors; }
 
 	TArray<ATile*> GetPathTo(ATile* Target);
 	int32 GetTileDistanceTo(ATile* Target);
-	
+
 	// ------------------------Gameplay Tags---------------------------
-	
+
 public:
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_GameplayTags, Category="Tile")
 	FGameplayTagContainer GameplayTags;
@@ -83,7 +84,7 @@ public:
 	// ------------------------Entity---------------------------
 public:
 	bool AcceptsEntity(const EEntityType EntityType) const;
-	
+
 	// ------------------------Army---------------------------
 private:
 	UPROPERTY(VisibleInstanceOnly)
@@ -112,7 +113,7 @@ private:
 
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Building, Category="Tile")
 	UBuilding* Building;
-	
+
 	UFUNCTION()
 	void OnRep_Building();
 
@@ -120,7 +121,7 @@ private:
 
 public:
 	UBuilding* GetBuilding() const { return Building; }
-	
+
 	FOnTileChangedSignature OnBuildingChanged;
 
 	bool CanBuild();
@@ -131,14 +132,9 @@ public:
 
 	void OnBuildingFinishedConstruction();
 
-	ASettlement* GetClaimant() const;
+	ASettlement* GetClaimant() const { return Building == nullptr ? nullptr : Building->GetSettlement(); }
 
 	bool IsClaimed() { return Building != nullptr; }
-
-private:
-	void UpdateClaimWallsWithNeighbors();
-
-	void UpdateClaimWalls();
 
 	// ------------------- Ticking -------------------------
 private:
@@ -154,12 +150,12 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Tile")
 	UEcoValues* EcoValues;
-	
+
 	void SetupEcoValuesChanging();
-	
+
 	UFUNCTION()
 	void TreesChanged(const int32 Change);
-	
+
 	UFUNCTION()
 	void ForageChanged(const int32 Change);
 
