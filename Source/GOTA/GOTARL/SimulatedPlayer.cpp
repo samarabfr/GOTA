@@ -3,7 +3,6 @@
 
 #include "SimulatedPlayer.h"
 
-#include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
 
 ASimulatedPlayer::ASimulatedPlayer()

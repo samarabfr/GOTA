@@ -2,16 +2,18 @@
 
 #pragma once
 
-#include "SimulatedPlayer.generated.h"
+#include "SimulatedPlayerManager.generated.h"
+
+class ULearningAgentsManager;
 
 UCLASS(Blueprintable)
-class GOTA_API ASimulatedPlayer : public AActor
+class GOTA_API ASimulatedPlayerManager : public AActor
 {
 	GENERATED_BODY()
 
 	// ----------------------- LifeCycle -----------------------
 protected:
-	ASimulatedPlayer();
+	ASimulatedPlayerManager();
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void Tick(float DeltaSeconds) override;
 
@@ -23,4 +25,12 @@ public:
 
 private:
 	virtual void BeginDestroy() override;
+
+	// ----------------------- Learning Agents plugin -----------------------
+private:
+	UPROPERTY()
+	ULearningAgentsManager* ManagerComponent;
+
+public:
+	void RegisterAgent(UObject* Agent);
 };
