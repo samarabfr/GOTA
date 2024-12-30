@@ -24,13 +24,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Biome Material Instances")
 	UMaterialInstance* M_Volcano;
-
-	UPROPERTY(EditDefaultsOnly, Category="Claim Meshes")
-	UStaticMesh* ClaimMesh;
-
-	UPROPERTY(EditDefaultsOnly, Category="Claim Meshes")
-	UStaticMesh* ClaimMeshRiver;
-
+	
 	UPROPERTY(EditDefaultsOnly, Category="Claim Meshes")
 	UStaticMesh* OceanLinesMesh;
 
