@@ -120,3 +120,11 @@ enum class EEntityType : uint8
 	Civilian UMETA(DisplayName = "Civilian"),
 	Army UMETA(DisplayName = "Military")
 };
+
+UENUM()
+enum class EAbilityCategory : uint8
+{
+	Debug UMETA(DisplayName = "Debug"),
+	Common UMETA(DisplayName = "Common"),
+	Fire UMETA(DisplayName = "Fire")
+};
