@@ -84,20 +84,18 @@ void UEcoValues::ClientTick(double DeltaSeconds)
 		ForageGrowthProgress += ForageGrowth * DeltaSeconds;
 }
 
-void UEcoValues::SetMaxValues(int32 NewMaxTrees, EBiome Biome)
+void UEcoValues::SetMaxValues(int32 NewMaxTrees, int32 NewMaxForage)
 {
 	// Set Max Trees
 	MaxTrees = NewMaxTrees;
 	if (MaxTrees < 0) MaxTrees = 0;
 	if (Trees > MaxTrees) SubtractTrees(Trees - MaxTrees);
 	MARK_PROPERTY_DIRTY_FROM_NAME(UEcoValues, MaxTrees, this)
+	
 	// Set Max Forage
-	MaxForage = 0;
-	if (DA_EcoSystem->MaxForagePerBiome.Contains(Biome))
-	{
-		MaxForage += *DA_EcoSystem->MaxForagePerBiome.Find(Biome);
-	}
-	MaxForage += MaxTrees * DA_EcoSystem->MaxForagePerMaxTree;
+	MaxForage = NewMaxForage;
+	if (MaxForage < 0) MaxForage = 0;
+	if (Forage > MaxForage) SubtractForage(Forage - MaxForage);
 	MARK_PROPERTY_DIRTY_FROM_NAME(UEcoValues, MaxForage, this)
 }
 
