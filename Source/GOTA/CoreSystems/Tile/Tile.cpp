@@ -531,7 +531,7 @@ void ATile::ValidateSpawnLayout()
 	Algo::RandomShuffle(SL.Buildings);
 
 	SetSpawnLayout(SL);
-	EcoValues->SetMaxValues(SpawnLayout.Trees.Num(), Terrain.Biome);
+	EcoValues->SetMaxValues(SpawnLayout.Trees.Num(), SpawnLayout.Forage.Num());
 }
 
 void ATile::ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints)
