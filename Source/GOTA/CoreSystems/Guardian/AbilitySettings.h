@@ -8,17 +8,17 @@ class AAbility;
 class AGuardian;
 
 UCLASS()
-class GOTA_API UAbilitySettings : public UPrimaryDataAsset
+class GOTA_API UAbilitySettings : public UDataAsset
 {
 	GENERATED_BODY()
 
-public:
+private:
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AAbility> AbilityClass;
-	
+	TSubclassOf<AAbility> Class;
+
 	UPROPERTY(EditDefaultsOnly)
 	EAbilityCategory Category;
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	FName Name;
 
@@ -28,7 +28,14 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	FText Description;
 
-	// Cooldown in seconds
 	UPROPERTY(EditDefaultsOnly)
 	float Cooldown;
+
+public:
+	TSubclassOf<AAbility> GetAbilityClass() const { return Class; }
+	EAbilityCategory GetCategory() const { return Category; }
+	FName GetAbilityName() const { return Name; }
+	UTexture2D* GetIcon() const { return Icon; }
+	FText GetDescription() const { return Description; }
+	float GetCooldown() const { return Cooldown; }
 };
