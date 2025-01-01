@@ -6,6 +6,8 @@
 #include "Net/Core/PushModel/PushModel.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 
+// ------------------------------------ Replication Setup --------------------------------------
+
 void AGuardian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -19,6 +21,8 @@ void AGuardian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 }
+
+// ---------------------------------------- Lifecycle ----------------------------------------
 
 AGuardian::AGuardian()
 {
@@ -37,8 +41,12 @@ void AGuardian::BeginPlay()
 	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
 }
 
-void AGuardian::Init(UGuardianSettings* InSettings)
+void AGuardian::S_Init(UGuardianSettings* InSettings)
 {
 	Settings = InSettings;
 }
+
+// ---------------------------------------- Utility ----------------------------------------
+
+// ---------------------------------------- Abilities ----------------------------------------
 

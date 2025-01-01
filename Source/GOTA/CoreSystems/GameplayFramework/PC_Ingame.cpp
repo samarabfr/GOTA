@@ -64,9 +64,6 @@ void APC_Ingame::GuardianChanged()
 		return;
 	
 	DistanceUtils->AttachToActor(Guardian, FAttachmentTransformRules::SnapToTargetIncludingScale);
-	
-	if (MouseUtils)
-		Guardian->SetupGAM(MouseUtils);
 
 	FRotator InitialRotation = FRotator(-30.0f, 0.0f, 0.0f); // Adjust these values
 	SetControlRotation(InitialRotation);
@@ -146,7 +143,6 @@ void APC_Ingame::MouseUtilsChanged()
 	if (!IsLocalController()) return;
 	MouseUtils->SetPlayerController(this);
 	MouseUtils->OnHoverActorChanged.AddDynamic(this, &APC_Ingame::OnHoverActorChanged);
-	if (Guardian) Guardian->SetupGAM(MouseUtils);
 }
 
 void APC_Ingame::OnHoverActorChanged(AActor* Actor)

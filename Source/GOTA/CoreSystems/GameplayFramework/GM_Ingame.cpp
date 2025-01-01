@@ -195,7 +195,7 @@ void AGM_Ingame::CreateGuardians()
 		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(PlayerStateIngame->SelectedGuardian->GuardianBlueprint,
 		                                                        SpawnLocation, FRotator::ZeroRotator);
 		GOTAGameState->SetGuardian(PlayerStateIngame->GOTAPlayerID, Guardian);
-		Guardian->Init(PlayerStateIngame->SelectedGuardian);
+		Guardian->S_Init(PlayerStateIngame->SelectedGuardian);
 	}
 }
 
