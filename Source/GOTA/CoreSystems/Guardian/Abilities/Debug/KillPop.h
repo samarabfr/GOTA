@@ -9,5 +9,5 @@ UCLASS()
 class GOTA_API AKillPop : public AAbility
 {
 	GENERATED_BODY()
-	
+	virtual bool ActivateAbility() override;
 };

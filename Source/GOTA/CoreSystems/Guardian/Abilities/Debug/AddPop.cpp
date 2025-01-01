@@ -2,3 +2,9 @@
 
 
 #include "AddPop.h"
+
+bool AAddPop::ActivateAbility()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Add Pop Activated"))
+	return true;
+}

@@ -2,6 +2,10 @@
 
 
 #include "Guardian.h"
+
+#include "Ability.h"
+#include "AbilityManager.h"
+#include "AbilitySettings.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
@@ -39,6 +43,14 @@ void AGuardian::BeginPlay()
 {
 	Super::BeginPlay();
 	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
+
+	UAbilityManager* AbilityManager = GetGameInstance()->GetSubsystem<UAbilityManager>();
+	for (UAbilitySettings* AbilitySettings : AbilityManager->GetAllAbilities())
+	{
+		AActor* Actor = GetWorld()->SpawnActor(AbilitySettings->GetAbilityClass());
+		AAbility* Ability = Cast<AAbility>(Actor);
+		AbilityBar.Add(Ability);
+	}
 }
 
 void AGuardian::S_Init(UGuardianSettings* InSettings)
@@ -50,3 +62,11 @@ void AGuardian::S_Init(UGuardianSettings* InSettings)
 
 // ---------------------------------------- Abilities ----------------------------------------
 
+void AGuardian::ActivateAbility(int32 Index)
+{
+	int32 ShiftedIndex = Index - 1;
+	if (AbilityBar.IsValidIndex(ShiftedIndex) && AbilityBar[ShiftedIndex])
+	{
+		AbilityBar[ShiftedIndex]->ActivateAbility();
+	}
+}

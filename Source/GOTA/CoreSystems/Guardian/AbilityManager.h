@@ -10,8 +10,11 @@ UCLASS()
 class GOTA_API UAbilityManager : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
+
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+
+	TArray<UAbilitySettings*> GetAllAbilities() const { return Abilities; }
 
 private:
 	TArray<UAbilitySettings*> Abilities;

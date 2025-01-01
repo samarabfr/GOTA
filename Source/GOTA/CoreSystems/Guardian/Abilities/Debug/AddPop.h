@@ -9,5 +9,6 @@ UCLASS()
 class GOTA_API AAddPop : public AAbility
 {
 	GENERATED_BODY()
-	
+
+	virtual bool ActivateAbility() override;
 };

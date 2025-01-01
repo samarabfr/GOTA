@@ -2,3 +2,9 @@
 
 
 #include "InstantBuild.h"
+
+bool AInstantBuild::ActivateAbility()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Instant Build Activated"))
+	return true;
+}

@@ -21,11 +21,11 @@ void APC_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 
 	Params.Condition = COND_InitialOnly;
 	Params.RepNotifyCondition = REPNOTIFY_Always;
-	
+
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(APC_Ingame, BuildingPlacer, Params)
-	
+
 	DOREPLIFETIME(APC_Ingame, Guardian)
 	DOREPLIFETIME(APC_Ingame, MouseUtils)
 }
@@ -59,10 +59,10 @@ void APC_Ingame::GuardianChanged()
 {
 	if (!Guardian)
 		return;
-	
+
 	if (!IsLocalController())
 		return;
-	
+
 	DistanceUtils->AttachToActor(Guardian, FAttachmentTransformRules::SnapToTargetIncludingScale);
 
 	FRotator InitialRotation = FRotator(-30.0f, 0.0f, 0.0f); // Adjust these values
@@ -129,6 +129,15 @@ void APC_Ingame::InitInput()
 	Component->BindAction(DataAsset->ActivateLooking, ETriggerEvent::Completed, this, &APC_Ingame::StopLookingAround);
 
 	Component->BindAction(DataAsset->BuildMenu, ETriggerEvent::Triggered, this, &APC_Ingame::ToggleBuildMenu);
+
+	Component->BindAction(DataAsset->Ability1, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility1);
+	Component->BindAction(DataAsset->Ability2, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility2);
+	Component->BindAction(DataAsset->Ability3, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility3);
+	Component->BindAction(DataAsset->Ability4, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility4);
+	Component->BindAction(DataAsset->Ability5, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility5);
+	Component->BindAction(DataAsset->Ability6, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility6);
+	Component->BindAction(DataAsset->Ability7, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility7);
+	Component->BindAction(DataAsset->Ability8, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility8);
 }
 
 
@@ -201,6 +210,54 @@ void APC_Ingame::StopLookingAround(const FInputActionInstance& Instance)
 
 void APC_Ingame::ToggleBuildMenu()
 {
-	if(!IngameUI) return;
+	if (!IngameUI) return;
 	IngameUI->ToggleBuildMenu();
+}
+
+void APC_Ingame::ActivateAbility(const int32 Index)
+{
+	if (Guardian)
+	{
+		Guardian->ActivateAbility(Index);
+	}
+}
+
+void APC_Ingame::ActivateAbility1()
+{
+	ActivateAbility(1);
+}
+
+void APC_Ingame::ActivateAbility2()
+{
+	ActivateAbility(2);
+}
+
+void APC_Ingame::ActivateAbility3()
+{
+	ActivateAbility(3);
+}
+
+void APC_Ingame::ActivateAbility4()
+{
+	ActivateAbility(4);
+}
+
+void APC_Ingame::ActivateAbility5()
+{
+	ActivateAbility(5);
+}
+
+void APC_Ingame::ActivateAbility6()
+{
+	ActivateAbility(6);
+}
+
+void APC_Ingame::ActivateAbility7()
+{
+	ActivateAbility(7);
+}
+
+void APC_Ingame::ActivateAbility8()
+{
+	ActivateAbility(8);
 }

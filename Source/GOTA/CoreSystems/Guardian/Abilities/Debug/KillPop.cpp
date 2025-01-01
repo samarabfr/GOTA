@@ -2,3 +2,9 @@
 
 
 #include "KillPop.h"
+
+bool AKillPop::ActivateAbility()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Kill Pop Activated"))
+	return true;
+}

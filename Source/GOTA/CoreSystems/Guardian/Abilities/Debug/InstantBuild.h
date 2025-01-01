@@ -9,5 +9,7 @@ UCLASS()
 class GOTA_API AInstantBuild : public AAbility
 {
 	GENERATED_BODY()
+
+	virtual bool ActivateAbility() override;
 	
 };

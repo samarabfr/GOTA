@@ -119,4 +119,15 @@ private:
 	void StopLookingAround(const FInputActionInstance& Instance);
 
 	void ToggleBuildMenu();
+
+	void ActivateAbility(const int32 Index);
+	
+	void ActivateAbility1();
+	void ActivateAbility2();
+	void ActivateAbility3();
+	void ActivateAbility4();
+	void ActivateAbility5();
+	void ActivateAbility6();
+	void ActivateAbility7();
+	void ActivateAbility8();
 };

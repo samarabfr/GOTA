@@ -10,4 +10,9 @@ UCLASS()
 class GOTA_API AAbility : public AActor
 {
 	GENERATED_BODY()
+
+public:
+	// Activates the Ability, returns false if the ability could not be activated for any reason. For example when
+	// no target was selected first.
+	virtual bool ActivateAbility() { return false; }
 };

@@ -7,6 +7,7 @@
 #include "GOTA/CoreSystems/Utility/MouseUtils.h"
 #include "Guardian.generated.h"
 
+class AAbility;
 class UGuardianSettings;
 class UGuardianDataAsset;
 
@@ -14,19 +15,19 @@ UCLASS()
 class GOTA_API AGuardian : public ACharacter
 {
 	GENERATED_BODY()
-	
+
 	// ------------------------------------ Replication Setup --------------------------------------
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
 	// ---------------------------------------- Lifecycle ----------------------------------------
 public:
 	AGuardian();
-	
+
 	void S_Init(UGuardianSettings* InSettings);
-	
+
 	virtual void BeginPlay() override;
-	
+
 	// ---------------------------------------- Utility ----------------------------------------
 private:
 	UPROPERTY(Replicated)
@@ -34,8 +35,11 @@ private:
 
 public:
 	UGuardianSettings* GetSettings() const { return Settings; }
-	
-	// ---------------------------------------- Abilities ----------------------------------------
 
-	
+	// ---------------------------------------- Abilities ----------------------------------------
+private:
+	TArray<AAbility*> AbilityBar;
+
+public:
+	void ActivateAbility(int32 Index);
 };
