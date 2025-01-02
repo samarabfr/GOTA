@@ -58,19 +58,17 @@ public:
 	// ------------------------ Guardian ------------------------
 public:
 	virtual void OnPossess(APawn* InPawn) override;
-
-private:
-	UPROPERTY(ReplicatedUsing=GuardianChanged)
-	AGuardian* Guardian;
-
-public:
+	
 	AGuardian* GetGuardian() { return Guardian; }
-
+	
 private:
+	UPROPERTY(ReplicatedUsing=OnRep_Guardian)
+	AGuardian* Guardian;
+	
 	void SetGuardian(AGuardian* NewGuardian);
 
 	UFUNCTION()
-	void GuardianChanged();
+	void OnRep_Guardian();
 
 	// ---------------------- InteractionMode ----------------------
 
@@ -89,22 +87,25 @@ public:
 private:
 	void PlaceBuilding();
 
-	// ----------------------- Input -----------------------
+	// ------------------------------------------- MouseUtils -------------------------------------------
 public:
-	void InitInput();
-
-	UPROPERTY(ReplicatedUsing=MouseUtilsChanged)
-	AMouseUtils* MouseUtils;
-
-	AMouseUtils* GetMouseUtils() const { return MouseUtils; }
-
 	void SetMouseUtils(AMouseUtils* NewMouseUtils);
+
+private:
+	UPROPERTY(ReplicatedUsing=MouseUtilsChanged)
+	TWeakObjectPtr<AMouseUtils> MouseUtils;
+
+	AMouseUtils* GetMouseUtils() const { return MouseUtils.Get(); }
 
 	UFUNCTION()
 	void MouseUtilsChanged();
-
+	
 	UFUNCTION()
 	void OnHoverActorChanged(AActor* Actor);
+
+	// ------------------------------------------- Input -------------------------------------------
+public:
+	void InitInput();
 
 private:
 	void LeftClick(const FInputActionInstance& Instance);

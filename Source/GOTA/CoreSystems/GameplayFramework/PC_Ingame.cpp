@@ -8,6 +8,7 @@
 #include "InputDataAsset.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Utility/DistanceUtils.h"
+#include "GOTA/CoreSystems/Utility/MouseUtils.h"
 #include "GOTA/UI/Ingame/IngameUI.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
@@ -25,8 +26,8 @@ void APC_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(APC_Ingame, BuildingPlacer, Params)
-
-	DOREPLIFETIME(APC_Ingame, Guardian)
+	DOREPLIFETIME_WITH_PARAMS(APC_Ingame, Guardian, Params)
+	
 	DOREPLIFETIME(APC_Ingame, MouseUtils)
 }
 
@@ -38,24 +39,28 @@ void APC_Ingame::BeginPlay()
 	DistanceUtils = GetWorld()->SpawnActor<ADistanceUtils>();
 }
 
-void APC_Ingame::OnPossess(APawn* InPawn)
-{
-	Super::OnPossess(InPawn);
-	SetGuardian(Cast<AGuardian>(InPawn));
-}
-
 // -------------------------UI Stuff------------------------
 
 
 // ------------------------ Guardian ------------------------
 
+void APC_Ingame::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+	SetGuardian(Cast<AGuardian>(InPawn));
+	
+	FRotator InitialRotation = FRotator(-30.0f, 0.0f, 0.0f); // Adjust these values
+	SetControlRotation(InitialRotation);
+}
+
 void APC_Ingame::SetGuardian(AGuardian* NewGuardian)
 {
 	Guardian = NewGuardian;
-	GuardianChanged();
+	OnRep_Guardian();
+	MARK_PROPERTY_DIRTY_FROM_NAME(APC_Ingame, Guardian, this)
 }
 
-void APC_Ingame::GuardianChanged()
+void APC_Ingame::OnRep_Guardian()
 {
 	if (!Guardian)
 		return;
@@ -64,9 +69,6 @@ void APC_Ingame::GuardianChanged()
 		return;
 
 	DistanceUtils->AttachToActor(Guardian, FAttachmentTransformRules::SnapToTargetIncludingScale);
-
-	FRotator InitialRotation = FRotator(-30.0f, 0.0f, 0.0f); // Adjust these values
-	SetControlRotation(InitialRotation);
 }
 
 // ---------------------- InteractionMode ----------------------
@@ -97,7 +99,28 @@ void APC_Ingame::PlaceBuilding()
 	BuildingPlacer->PlaceBuilding();
 }
 
-// ----------------------- Input -----------------------
+
+// ------------------------------------------- MouseUtils -------------------------------------------
+
+void APC_Ingame::SetMouseUtils(AMouseUtils* NewMouseUtils)
+{
+	MouseUtils = NewMouseUtils;
+	MouseUtilsChanged();
+}
+
+void APC_Ingame::MouseUtilsChanged()
+{
+	if (!IsLocalController()) return;
+	MouseUtils->SetPlayerController(this);
+	MouseUtils->OnHoverActorChanged.AddDynamic(this, &APC_Ingame::OnHoverActorChanged);
+}
+
+void APC_Ingame::OnHoverActorChanged(AActor* Actor)
+{
+	IngameUI->HoverActor(Actor);
+}
+
+// ------------------------------------------- Input -------------------------------------------
 
 void APC_Ingame::InitInput()
 {
@@ -138,25 +161,6 @@ void APC_Ingame::InitInput()
 	Component->BindAction(DataAsset->Ability6, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility6);
 	Component->BindAction(DataAsset->Ability7, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility7);
 	Component->BindAction(DataAsset->Ability8, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility8);
-}
-
-
-void APC_Ingame::SetMouseUtils(AMouseUtils* NewMouseUtils)
-{
-	MouseUtils = NewMouseUtils;
-	MouseUtilsChanged();
-}
-
-void APC_Ingame::MouseUtilsChanged()
-{
-	if (!IsLocalController()) return;
-	MouseUtils->SetPlayerController(this);
-	MouseUtils->OnHoverActorChanged.AddDynamic(this, &APC_Ingame::OnHoverActorChanged);
-}
-
-void APC_Ingame::OnHoverActorChanged(AActor* Actor)
-{
-	IngameUI->HoverActor(Actor);
 }
 
 void APC_Ingame::LeftClick(const FInputActionInstance& Instance)
