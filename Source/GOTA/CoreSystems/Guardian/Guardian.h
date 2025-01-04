@@ -15,13 +15,14 @@ class GOTA_API AGuardian : public ACharacter
 {
 	GENERATED_BODY()
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	AGuardian();
 	
 	virtual void BeginPlay() override;
 
 	UPROPERTY(Replicated)
 	UGuardianSettings* Settings;
+
+protected:
+	AGuardian();
 
 public:
 	void Init(UGuardianSettings* InSettings);

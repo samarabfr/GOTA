@@ -86,6 +86,7 @@ void APC_Ingame::GuardianChanged()
 
 void APC_Ingame::ClickActor()
 {
+	if(!IngameUI) return;
 	IngameUI->ClickActor(MouseUtils->GetHoverActor());
 }
 

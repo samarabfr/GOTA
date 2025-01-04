@@ -1,12 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "SimulatedPlayerManager.h"
+#include "SimulatedGuardianManager.h"
 
 #include "LearningAgentsManager.h"
 #include "Net/UnrealNetwork.h"
 
-ASimulatedPlayerManager::ASimulatedPlayerManager()
+ASimulatedGuardianManager::ASimulatedGuardianManager()
 {
 	bReplicates = true;
 	bAlwaysRelevant = true;
@@ -19,7 +19,7 @@ ASimulatedPlayerManager::ASimulatedPlayerManager()
 	Tags.Add("LearningAgentsManager");
 }
 
-void ASimulatedPlayerManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void ASimulatedGuardianManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	FDoRepLifetimeParams Params;
@@ -32,7 +32,7 @@ void ASimulatedPlayerManager::GetLifetimeReplicatedProps(TArray<FLifetimePropert
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 }
 
-void ASimulatedPlayerManager::Tick(float DeltaSeconds)
+void ASimulatedGuardianManager::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	if (HasAuthority())
@@ -41,24 +41,24 @@ void ASimulatedPlayerManager::Tick(float DeltaSeconds)
 		C_Tick(DeltaSeconds);
 }
 
-void ASimulatedPlayerManager::S_Init()
+void ASimulatedGuardianManager::S_Init()
 {
 }
 
-void ASimulatedPlayerManager::S_Tick(const float DeltaSeconds)
+void ASimulatedGuardianManager::S_Tick(const float DeltaSeconds)
 {
 }
 
-void ASimulatedPlayerManager::C_Tick(const float DeltaSeconds)
+void ASimulatedGuardianManager::C_Tick(const float DeltaSeconds)
 {
 }
 
-void ASimulatedPlayerManager::BeginDestroy()
+void ASimulatedGuardianManager::BeginDestroy()
 {
 	Super::BeginDestroy();
 }
 
-void ASimulatedPlayerManager::RegisterAgent(UObject* Agent)
+void ASimulatedGuardianManager::RegisterAgent(UObject* Agent)
 {
 	if(!ManagerComponent || !Agent) return;
 	ManagerComponent->AddAgent(Agent);
