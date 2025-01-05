@@ -28,17 +28,3 @@ FHexCoords FHexCoords::operator+(const FHexCoords& Other) const
 {
 	return FHexCoords(Q + Other.Q, R + Other.R);
 }
-
-FHexCoords FHexCoords::operator-(const FHexCoords& Other) const
-{
-	return FHexCoords(Q - Other.Q, R - Other.R);
-}
-
-int32 FHexCoords::DistanceTo(const FHexCoords Target) const
-{
-	const FHexCoords Diff = *this - Target;
-	return (FMath::Abs(Diff.Q) +
-			FMath::Abs(Diff.Q + Diff.R) +
-			FMath::Abs(Diff.R))
-		/ 2;
-}
