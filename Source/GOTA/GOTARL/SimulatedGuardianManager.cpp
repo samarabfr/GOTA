@@ -4,7 +4,8 @@
 #include "SimulatedGuardianManager.h"
 
 #include "LearningAgentsManager.h"
-#include "Net/UnrealNetwork.h"
+#include "SimulatedGuardian.h"
+#include "Kismet/GameplayStatics.h"
 
 ASimulatedGuardianManager::ASimulatedGuardianManager()
 {
@@ -19,43 +20,11 @@ ASimulatedGuardianManager::ASimulatedGuardianManager()
 	Tags.Add("LearningAgentsManager");
 }
 
-void ASimulatedGuardianManager::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+void ASimulatedGuardianManager::BeginPlay()
 {
-	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	FDoRepLifetimeParams Params;
-	Params.bIsPushBased = true;
-
-	Params.Condition = COND_InitialOnly;
-	Params.RepNotifyCondition = REPNOTIFY_Always;
-
-	Params.Condition = COND_None;
-	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
-}
-
-void ASimulatedGuardianManager::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-	if (HasAuthority())
-		S_Tick(DeltaSeconds);
-	else
-		C_Tick(DeltaSeconds);
-}
-
-void ASimulatedGuardianManager::S_Init()
-{
-}
-
-void ASimulatedGuardianManager::S_Tick(const float DeltaSeconds)
-{
-}
-
-void ASimulatedGuardianManager::C_Tick(const float DeltaSeconds)
-{
-}
-
-void ASimulatedGuardianManager::BeginDestroy()
-{
-	Super::BeginDestroy();
+	Super::BeginPlay();
+	TArray<AActor*> GuardianActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASimulatedGuardian::StaticClass(), GuardianActors);
 }
 
 void ASimulatedGuardianManager::RegisterAgent(UObject* Agent)
