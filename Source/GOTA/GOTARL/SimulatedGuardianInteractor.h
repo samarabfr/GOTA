@@ -5,8 +5,6 @@
 
 #include "SimulatedGuardianInteractor.generated.h"
 
-class ULearningAgentsManager;
-
 UCLASS(Blueprintable)
 class GOTA_API USimulatedGuardianInteractor : public ULearningAgentsInteractor
 {
