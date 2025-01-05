@@ -9,5 +9,5 @@ class GOTA_API UStateTreeComponentArmy : public UStateTreeComponent
 {
 	GENERATED_BODY()
 
-	UStateTreeComponentArmy();
+	virtual void BeginPlay() override;
 };

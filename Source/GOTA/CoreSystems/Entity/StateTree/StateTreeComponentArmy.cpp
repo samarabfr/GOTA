@@ -5,9 +5,15 @@
 
 #include "StateTree.h"
 
-UStateTreeComponentArmy::UStateTreeComponentArmy()
+void UStateTreeComponentArmy::BeginPlay()
 {
-	ConstructorHelpers::FObjectFinder<UStateTree> StateTreeFinder(
-		TEXT("/Game/CoreSystems/Entity/ST_Army"));
-	StateTreeRef.SetStateTree(StateTreeFinder.Object);
+	Super::BeginPlay();
+	// Define the asset path
+	FSoftObjectPath StateTreePath(TEXT("/Game/CoreSystems/Entity/ST_Army.ST_Army"));
+	// Load the asset synchronously
+	UStateTree* LoadedStateTree = Cast<UStateTree>(StateTreePath.TryLoad());
+	if (LoadedStateTree)
+	{
+		StateTreeRef.SetStateTree(LoadedStateTree);
+	}
 }
