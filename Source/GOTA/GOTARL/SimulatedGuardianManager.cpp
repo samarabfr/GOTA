@@ -15,7 +15,7 @@ ASimulatedGuardianManager::ASimulatedGuardianManager()
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
-	ManagerComponent = CreateDefaultSubobject<ULearningAgentsManager>("StateTree");
+	ManagerComponent = CreateDefaultSubobject<ULearningAgentsManager>("LearningAgentsManager");
 
 	Tags.Add("LearningAgentsManager");
 }

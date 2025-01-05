@@ -1,15 +1,15 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-/*
+
 #pragma once
-#include "LearningAgentsTraining/Public/LearningAgentsTrainer.h"
+#include "LearningAgentsTrainingEnvironment.h"
 
 #include "SimulatedGuardianTrainingEnv.generated.h"
 
 UCLASS(Blueprintable)
-class GOTA_API USimulatedGuardianTrainingEnv : public ULearningAgentsTrainer
+class GOTA_API USimulatedGuardianTrainingEnv : public ULearningAgentsTrainingEnvironment 
 {
 	GENERATED_BODY()
-
+	
 	// ----------------------- LifeCycle -----------------------
 protected:
 	USimulatedGuardianTrainingEnv();
@@ -23,4 +23,4 @@ public:
 
 	virtual void ResetAgentEpisode_Implementation(const int32 AgentId) override;
 };
-*/
+

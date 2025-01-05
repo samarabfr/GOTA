@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-/*
+
 #include "SimulatedGuardianTrainingEnv.h"
 
 USimulatedGuardianTrainingEnv::USimulatedGuardianTrainingEnv()
@@ -22,5 +22,5 @@ void USimulatedGuardianTrainingEnv::ResetAgentEpisode_Implementation(const int32
 {
 	// TODO: return to starting conditions
 }
-*/
+
 
