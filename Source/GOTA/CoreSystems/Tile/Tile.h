@@ -67,8 +67,9 @@ public:
 	TArray<ATile*> GetNeighbors() const { return Neighbors; }
 
 	TArray<ATile*> GetPathTo(ATile* Target);
-	int32 GetTileDistanceTo(ATile* Target);
-
+	int32 GetPathTileDistanceTo(ATile* Target);
+	int32 GetTileDistanceTo(const ATile* Target) const;
+	
 	// ------------------------Gameplay Tags---------------------------
 
 public:
