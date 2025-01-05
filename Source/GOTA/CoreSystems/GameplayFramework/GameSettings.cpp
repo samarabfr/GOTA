@@ -41,7 +41,7 @@ AGameSettings::AGameSettings()
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
-	NetUpdateFrequency = 0.5f;
+	SetNetUpdateFrequency(0.5f);
 
 	PrimaryActorTick.bCanEverTick = false;
 	PrimaryActorTick.bStartWithTickEnabled = false;
