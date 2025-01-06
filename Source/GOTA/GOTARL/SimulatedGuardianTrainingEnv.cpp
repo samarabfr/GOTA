@@ -24,7 +24,13 @@ void USimulatedGuardianTrainingEnv::GatherAgentReward_Implementation(float& OutR
 void USimulatedGuardianTrainingEnv::GatherAgentCompletion_Implementation(ELearningAgentsCompletion& OutCompletion,
                                                                          const int32 AgentId)
 {
-	// TODO: specify early termination conditions
+	if (ASimulatedGuardian* Guardian = Cast<ASimulatedGuardian>(GetAgent(AgentId)))
+	{
+		// early termination conditions
+		OutCompletion = ULearningAgentsCompletions::MakeCompletionOnLocationDifferenceBelowThreshold(
+			Guardian->GetTargetTile()->GetActorTransform().GetLocation(),
+			Guardian->GetActorTransform().GetLocation(), 100.0f, ELearningAgentsCompletion::Truncation);
+	}
 }
 
 void USimulatedGuardianTrainingEnv::ResetAgentEpisode_Implementation(const int32 AgentId)
