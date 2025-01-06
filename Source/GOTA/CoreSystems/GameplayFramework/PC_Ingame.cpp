@@ -5,6 +5,7 @@
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
 #include "InputDataAsset.h"
+#include "GOTA/CoreSystems/Guardian/Ability.h"
 #include "GOTA/CoreSystems/Guardian/AbilityIndicator.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Utility/DistanceUtils.h"
@@ -57,7 +58,7 @@ void APC_Ingame::S_Init()
 	AAbilityIndicator* NewAbilityIndicator = GetWorld()->SpawnActor<AAbilityIndicator>(AbilityIndicatorSpawnParams);
 	S_SetAbilityIndicator(NewAbilityIndicator);
 	NewMouseUtils->AttachActorToTilePosition(NewAbilityIndicator);
-	
+
 	// Create BuildingPlacer
 	FActorSpawnParameters BuildingPlacerSpawnParams;
 	BuildingPlacerSpawnParams.Owner = this;
@@ -96,8 +97,6 @@ void APC_Ingame::OnGuardianChanged()
 {
 	if (!Guardian)
 		return;
-
-	Guardian->SetPlayerController(this);
 
 	if (!IsLocalController())
 		return;
@@ -149,31 +148,71 @@ void APC_Ingame::PlaceBuilding()
 	BuildingPlacer->PlaceBuilding();
 }
 
+// ---------------------------------------- Ability Targeting ----------------------------------------
+
+
+void APC_Ingame::ActivateAbility(int32 Index)
+{
+	if (!Guardian) return;
+
+	AAbility* Ability = Guardian->GetAbilityInSlot(Index-1);
+	
+	// Either Input was invalid or there is no skill in the selected index, either way we tried to activate
+	// an ability so we should probably cancel any active targeting process
+	if (!Ability)
+	{
+		CancelTargeting();
+		return;
+	}
+
+	if (CurrentlyTargeting == Ability)
+	{
+		Ability->ActivateAbility();
+		CancelTargeting();
+	}
+	else
+	{
+		CancelTargeting();
+		StartTargeting(Ability);
+	}
+}
+
+void APC_Ingame::StartTargeting(AAbility* Ability)
+{
+	CurrentlyTargeting = Ability;
+	AbilityIndicator->Activate();
+}
+
+void APC_Ingame::CancelTargeting()
+{
+	CurrentlyTargeting = nullptr;
+	AbilityIndicator->Deactivate();
+}
 
 // ------------------------------------------- MouseUtils -------------------------------------------
 
 void APC_Ingame::S_SetMouseUtils(AMouseUtils* NewMouseUtils)
 {
 	MouseUtils = NewMouseUtils;
-	OnMouseUtilsChanged();
+	MouseUtilsChanged();
 	MARK_PROPERTY_DIRTY_FROM_NAME(APC_Ingame, MouseUtils, this)
 }
 
 void APC_Ingame::OnRep_MouseUtils()
 {
-	OnMouseUtilsChanged();
+	MouseUtilsChanged();
 }
 
-void APC_Ingame::OnMouseUtilsChanged()
+void APC_Ingame::MouseUtilsChanged()
 {
 	if (IsLocalController())
 	{
 		MouseUtils->SetPlayerController(this);
-		MouseUtils->OnHoverActorChanged.AddDynamic(this, &APC_Ingame::OnHoverActorChanged);
+		MouseUtils->OnHoverActorChanged.AddDynamic(this, &APC_Ingame::HoverActorChanged);
 	}
 }
 
-void APC_Ingame::OnHoverActorChanged(AActor* Actor)
+void APC_Ingame::HoverActorChanged(AActor* Actor)
 {
 	IngameUI->HoverActor(Actor);
 }
@@ -274,14 +313,6 @@ void APC_Ingame::ToggleBuildMenu()
 {
 	if (!IngameUI) return;
 	IngameUI->ToggleBuildMenu();
-}
-
-void APC_Ingame::ActivateAbility(const int32 Index)
-{
-	if (Guardian)
-	{
-		Guardian->ActivateAbility(Index);
-	}
 }
 
 void APC_Ingame::ActivateAbility1()

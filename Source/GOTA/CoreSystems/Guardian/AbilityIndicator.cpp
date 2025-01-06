@@ -10,7 +10,7 @@ AAbilityIndicator::AAbilityIndicator()
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = false;
-	NetUpdateFrequency = 1.0f;
+	SetNetUpdateFrequency(1.0f);
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
@@ -30,7 +30,7 @@ void AAbilityIndicator::BeginPlay()
 		FX_IndicatorComponent->SetAsset(NiagaraSystem);
 		FX_IndicatorComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 		FX_IndicatorComponent->RegisterComponent();
-		FX_IndicatorComponent->ActivateSystem();
+		FX_IndicatorComponent->Deactivate();
 	}
 }
 
@@ -38,6 +38,7 @@ void AAbilityIndicator::Activate()
 {
 	if (FX_IndicatorComponent)
 	{
+		FX_IndicatorComponent->ResetSystem();
 		FX_IndicatorComponent->ActivateSystem();
 	}
 }

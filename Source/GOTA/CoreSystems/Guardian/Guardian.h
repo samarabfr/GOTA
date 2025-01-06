@@ -5,6 +5,7 @@
 #include "GameFramework/Character.h"
 #include "Guardian.generated.h"
 
+class UAbilitySettings;
 class APC_Ingame;
 class AAbility;
 class UGuardianSettings;
@@ -29,31 +30,21 @@ public:
 	// ---------------------------------------- Utility ----------------------------------------
 private:
 	UPROPERTY(Replicated)
-	UGuardianSettings* Settings;
-
-	UPROPERTY(Replicated)
-	TWeakObjectPtr<APC_Ingame> PlayerController;
-
+	TWeakObjectPtr<UGuardianSettings> Settings;
+	
 public:
-	UGuardianSettings* GetSettings() const { return Settings; }
-	void SetPlayerController(APC_Ingame* NewPlayerController);
+	UGuardianSettings* GetSettings() const { return Settings.Get(); }
 
 	// ---------------------------------------- Abilities ----------------------------------------
 private:
-	UPROPERTY()
+	UPROPERTY(Replicated)
+	TArray<TWeakObjectPtr<AAbility>> Abilities;
+
+	UPROPERTY(Replicated)
 	TArray<TWeakObjectPtr<AAbility>> AbilityBar;
-
-	UPROPERTY()
-	TWeakObjectPtr<AAbility> CurrentlyTargeting;
-
-	void LearnAbility(AAbility* Ability);
-
-	void StartTargeting(AAbility* Ability);
+	
+	void S_LearnAbility(const UAbilitySettings* AbilitySettings);
 
 public:
-	void ActivateAbility(int32 Index);
-
-	bool IsCurrentlyTargeting() { return CurrentlyTargeting != nullptr; }
-
-	void CancelTargeting();
+	AAbility* GetAbilityInSlot(int32 Index);	
 };

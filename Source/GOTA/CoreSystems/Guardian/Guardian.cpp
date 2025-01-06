@@ -6,6 +6,7 @@
 #include "Ability.h"
 #include "AbilityManager.h"
 #include "AbilitySettings.h"
+#include "GuardianSettings.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
@@ -24,6 +25,8 @@ void AGuardian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
+	DOREPLIFETIME_WITH_PARAMS(AGuardian, Abilities, Params);
+	DOREPLIFETIME_WITH_PARAMS(AGuardian, AbilityBar, Params);
 }
 
 // ---------------------------------------- Lifecycle ----------------------------------------
@@ -37,6 +40,8 @@ AGuardian::AGuardian()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	PrimaryActorTick.TickInterval = 0.2f;
+
+	AbilityBar.SetNumZeroed(8);
 }
 
 void AGuardian::BeginPlay()
@@ -44,12 +49,10 @@ void AGuardian::BeginPlay()
 	Super::BeginPlay();
 	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
 
-	UAbilityManager* AbilityManager = GetGameInstance()->GetSubsystem<UAbilityManager>();
+	const UAbilityManager* AbilityManager = GetGameInstance()->GetSubsystem<UAbilityManager>();
 	for (UAbilitySettings* AbilitySettings : AbilityManager->GetAllAbilities())
 	{
-		AActor* Actor = GetWorld()->SpawnActor(AbilitySettings->GetAbilityClass());
-		AAbility* Ability = Cast<AAbility>(Actor);
-		AbilityBar.Add(Ability);
+		S_LearnAbility(AbilitySettings);
 	}
 }
 
@@ -60,51 +63,26 @@ void AGuardian::S_Init(UGuardianSettings* InSettings)
 
 // ---------------------------------------- Utility ----------------------------------------
 
-void AGuardian::SetPlayerController(APC_Ingame* NewPlayerController)
-{
-	PlayerController = NewPlayerController;
-}
-
 // ---------------------------------------- Abilities ----------------------------------------
 
-void AGuardian::LearnAbility(AAbility* Ability)
+void AGuardian::S_LearnAbility(const UAbilitySettings* AbilitySettings)
 {
-}
-
-void AGuardian::StartTargeting(AAbility* Ability)
-{
-	CurrentlyTargeting = Ability;
-}
-
-void AGuardian::ActivateAbility(int32 Index)
-{
-	AAbility* Ability = nullptr;
-	if (AbilityBar.IsValidIndex(Index - 1))
+	AActor* Actor = GetWorld()->SpawnActor(AbilitySettings->GetAbilityClass());
+	AAbility* Ability = Cast<AAbility>(Actor);
+	Abilities.Add(Ability);
+	MARK_PROPERTY_DIRTY_FROM_NAME(AGuardian, Abilities, this)
+	for (int i = 0; i < AbilityBar.Num(); ++i)
 	{
-		Ability = AbilityBar[Index - 1].Get();
-	}
-
-	// Either Input was invalid or there is no skill in the selected index, either way we tried to activate
-	// an ability so we should probably cancel any active targeting process
-	if (!Ability)
-	{
-		CancelTargeting();
-		return;
-	}
-
-	if (CurrentlyTargeting == Ability)
-	{
-		Ability->ActivateAbility();
-		CancelTargeting();
-	}
-	else
-	{
-		CancelTargeting();
-		StartTargeting(Ability);
+		if (!AbilityBar[i].IsValid())
+		{
+			AbilityBar[i] = Ability;
+			MARK_PROPERTY_DIRTY_FROM_NAME(AGuardian, AbilityBar, this)
+			break;
+		}
 	}
 }
 
-void AGuardian::CancelTargeting()
+AAbility* AGuardian::GetAbilityInSlot(int32 Index)
 {
-	CurrentlyTargeting = nullptr;
+	return AbilityBar.IsValidIndex(Index) ? AbilityBar[Index].Get() : nullptr;
 }

@@ -7,6 +7,7 @@
 #include "GOTA/CoreSystems/Faction/Building/BuildingPlacer.h"
 #include "PC_Ingame.generated.h"
 
+class AAbility;
 class AAbilityIndicator;
 class UBuildingSettings;
 struct FInputActionInstance;
@@ -104,24 +105,31 @@ public:
 private:
 	void PlaceBuilding();
 
-	// ------------------------------------------- MouseUtils -------------------------------------------
-public:
-	void S_SetMouseUtils(AMouseUtils* NewMouseUtils);
+	// ---------------------------------------- Ability Targeting ----------------------------------------
+private:
+	UPROPERTY()
+	TWeakObjectPtr<AAbility> CurrentlyTargeting;
 
+	void ActivateAbility(int32 Index);
+	
+	void StartTargeting(AAbility* Ability);
+	void CancelTargeting();
+	
+	// ------------------------------------------- MouseUtils -------------------------------------------
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_MouseUtils)
 	TWeakObjectPtr<AMouseUtils> MouseUtils;
 
-	AMouseUtils* GetMouseUtils() const { return MouseUtils.Get(); }
-
 	UFUNCTION()
 	void OnRep_MouseUtils();
 	
-	void OnMouseUtilsChanged();
+	void S_SetMouseUtils(AMouseUtils* NewMouseUtils);
+	
+	void MouseUtilsChanged();
 
 	UFUNCTION()
-	void OnHoverActorChanged(AActor* Actor);
-
+	void HoverActorChanged(AActor* Actor);
+	
 	// ------------------------------------------- Input -------------------------------------------
 public:
 	void InitInput();
@@ -139,9 +147,7 @@ private:
 	void StopLookingAround(const FInputActionInstance& Instance);
 
 	void ToggleBuildMenu();
-
-	void ActivateAbility(const int32 Index);
-
+	
 	void ActivateAbility1();
 	void ActivateAbility2();
 	void ActivateAbility3();
