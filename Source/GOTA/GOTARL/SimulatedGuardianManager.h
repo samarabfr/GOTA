@@ -1,9 +1,16 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
+#include "LearningAgentsCommunicator.h"
 
 #include "SimulatedGuardianManager.generated.h"
 
+class ULearningAgentsPPOTrainer;
+class ULearningAgentsTrainingEnvironment;
+class ULearningAgentsCritic;
+class ULearningAgentsInteractor;
+class ULearningAgentsPolicy;
+class ULearningAgentsNeuralNetwork;
 class ULearningAgentsManager;
 
 UCLASS(Blueprintable)
@@ -16,11 +23,45 @@ protected:
 	ASimulatedGuardianManager();
 
 	virtual void BeginPlay() override;
+
+	virtual void Tick(float DeltaSeconds) override;
 	
 	// ----------------------- Learning Agents plugin -----------------------
 private:
 	UPROPERTY()
 	ULearningAgentsManager* ManagerComponent;
+	bool bRunInference = false;
+	UPROPERTY()
+	TArray<AActor*> GuardianActors;
+	
+	UPROPERTY()
+	ULearningAgentsNeuralNetwork* NN_Critic;
+	UPROPERTY()
+	ULearningAgentsNeuralNetwork* NN_Encoder;
+	UPROPERTY()
+	ULearningAgentsNeuralNetwork* NN_Policy;
+	UPROPERTY()
+	ULearningAgentsNeuralNetwork* NN_Decoder;
+
+	UPROPERTY()
+	ULearningAgentsInteractor* Interactor;
+	
+	UPROPERTY()
+	ULearningAgentsPolicy* Policy;
+	int32 PolicySeed = 1234;
+
+	UPROPERTY()
+	ULearningAgentsCritic* Critic;
+	int32 CriticSeed = 1234;
+
+	UPROPERTY()
+	ULearningAgentsTrainingEnvironment* TrainingEnv;
+
+	FLearningAgentsCommunicator Communicator;
+	FLearningAgentsTrainerProcess TrainerProcess;
+
+	UPROPERTY()
+	ULearningAgentsPPOTrainer* PPOTrainer;
 
 	void Init();
 
