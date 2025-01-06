@@ -36,4 +36,8 @@ void USimulatedGuardianTrainingEnv::GatherAgentCompletion_Implementation(ELearni
 void USimulatedGuardianTrainingEnv::ResetAgentEpisode_Implementation(const int32 AgentId)
 {
 	// TODO: return to starting conditions
+	if (ASimulatedGuardian* Guardian = Cast<ASimulatedGuardian>(GetAgent(AgentId)))
+	{
+		Guardian->ResetToRandomTile();
+	}
 }

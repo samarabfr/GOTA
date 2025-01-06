@@ -5,6 +5,7 @@
 
 #include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
+#include "GOTA/CoreSystems/Tile/TileMap.h"
 
 void ASimulatedGuardian::Tick(float DeltaSeconds)
 {
@@ -26,4 +27,16 @@ void ASimulatedGuardian::BeginPlay()
 {
 	Super::BeginPlay();
 	GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
+}
+
+void ASimulatedGuardian::ResetToRandomTile()
+{
+	if (!TargetTile.IsValid() &&
+		GameState.IsValid() &&
+		GameState->GetTileMap())
+	{
+		const ATile* RandomTile = GameState->GetTileMap()->GetRandomTile();
+		TeleportTo(RandomTile->GetActorTransform().GetLocation(),
+		           RandomTile->GetActorTransform().GetRotation().Rotator());
+	}
 }

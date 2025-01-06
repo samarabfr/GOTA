@@ -25,4 +25,5 @@ public:
 	bool GetIsMoving() { return bWantsToMove; };
 	void SetIsMoving(bool NewIsMoving) { bWantsToMove = NewIsMoving; };
 	ATile* GetTargetTile() { return TargetTile.Get(); }
+	void ResetToRandomTile();
 };
