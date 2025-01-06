@@ -10,5 +10,14 @@ class GOTA_API ASimulatedGuardian : public AGuardian
 {
 	GENERATED_BODY()
 
+	virtual void Tick(float DeltaSeconds) override;
 
+private:
+	FVector2d MoveDirection = FVector2d::ZeroVector;
+	bool bWantsToMove = false;
+
+public:
+	void SetMoveDirection(const FVector2d& NewDirection) {MoveDirection = NewDirection;};
+	bool GetIsMoving() { return bWantsToMove; };
+	void SetIsMoving(bool NewIsMoving) { bWantsToMove = NewIsMoving; };
 };
