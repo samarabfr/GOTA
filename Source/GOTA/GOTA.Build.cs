@@ -6,7 +6,7 @@ public class GOTA : ModuleRules
 {
 	public GOTA(ReadOnlyTargetRules Target) : base(Target)
 	{
-		PrivateDependencyModuleNames.AddRange(new string[] { "LearningAgents", "LearningAgentsTraining"});
+		PrivateDependencyModuleNames.AddRange(new string[] { "LearningAgents", "LearningAgentsTraining", "LearningTraining"});
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
 		PublicDependencyModuleNames.AddRange(new string[]
