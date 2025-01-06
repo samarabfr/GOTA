@@ -22,6 +22,8 @@ private:
 	UPROPERTY()
 	ULearningAgentsManager* ManagerComponent;
 
+	void Init();
+
 public:
 	void RegisterAgent(UObject* Agent);
 };
