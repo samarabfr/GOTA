@@ -10,6 +10,8 @@ class GOTA_API ASimulatedGuardian : public AGuardian
 {
 	GENERATED_BODY()
 
+	ASimulatedGuardian();
+
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
 

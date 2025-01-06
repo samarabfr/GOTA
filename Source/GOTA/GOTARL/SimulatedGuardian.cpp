@@ -7,6 +7,10 @@
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 
+ASimulatedGuardian::ASimulatedGuardian()
+{
+}
+
 void ASimulatedGuardian::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);

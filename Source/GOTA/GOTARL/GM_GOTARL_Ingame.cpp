@@ -34,7 +34,8 @@ void AGM_GOTARL_Ingame::CreateGuardians()
 		{
 			SpawnLocation = TribeStartingTile->GetActorLocation() + FVector(0, 0, 100);
 		}
-		ASimulatedGuardian* Guardian = GetWorld()->SpawnActor<ASimulatedGuardian>(SpawnLocation, FRotator::ZeroRotator);
+		ASimulatedGuardian* Guardian = GetWorld()->SpawnActor<ASimulatedGuardian>(
+			SimulatedGuardianClass, SpawnLocation, FRotator::ZeroRotator);
 		Guardian->Init(GuardianSettings);
 		LearningManager->RegisterAgent(Guardian);
 	}
