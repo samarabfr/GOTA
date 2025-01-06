@@ -14,7 +14,8 @@ void USimulatedGuardianInteractor::SpecifyAgentObservation_Implementation(
 	ULearningAgentsObservationSchema* InObservationSchema)
 {
 	// which observations the agents can do
-	OutObservationSchemaElement = ULearningAgentsObservations::SpecifyLocationObservation(InObservationSchema);
+	OutObservationSchemaElement =
+		ULearningAgentsObservations::SpecifyLocationObservation(InObservationSchema, 10000.0f);
 }
 
 void USimulatedGuardianInteractor::GatherAgentObservation_Implementation(
