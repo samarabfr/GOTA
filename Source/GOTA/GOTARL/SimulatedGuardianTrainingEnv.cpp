@@ -3,17 +3,26 @@
 
 #include "SimulatedGuardianTrainingEnv.h"
 
+#include "LearningAgentsRewards.h"
+#include "SimulatedGuardian.h"
+
 USimulatedGuardianTrainingEnv::USimulatedGuardianTrainingEnv()
 {
 }
 
 void USimulatedGuardianTrainingEnv::GatherAgentReward_Implementation(float& OutReward, const int32 AgentId)
 {
-	// TODO: specify rewards
+	// specifies rewards
+	if (ASimulatedGuardian* Guardian = Cast<ASimulatedGuardian>(GetAgent(AgentId)))
+	{
+		ULearningAgentsRewards::MakeRewardFromLocationDifference(
+			Guardian->GetTargetTile()->GetActorTransform().GetLocation(),
+			Guardian->GetActorTransform().GetLocation(), 10000.0f);
+	}
 }
 
 void USimulatedGuardianTrainingEnv::GatherAgentCompletion_Implementation(ELearningAgentsCompletion& OutCompletion,
-	const int32 AgentId)
+                                                                         const int32 AgentId)
 {
 	// TODO: specify early termination conditions
 }
@@ -22,5 +31,3 @@ void USimulatedGuardianTrainingEnv::ResetAgentEpisode_Implementation(const int32
 {
 	// TODO: return to starting conditions
 }
-
-
