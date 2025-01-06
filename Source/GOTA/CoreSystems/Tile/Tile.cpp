@@ -49,7 +49,7 @@ ATile::ATile()
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
-	NetUpdateFrequency = 1.0f;
+	SetNetUpdateFrequency(1.0f);
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
