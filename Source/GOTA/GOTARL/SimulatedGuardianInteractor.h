@@ -5,6 +5,9 @@
 
 #include "SimulatedGuardianInteractor.generated.h"
 
+class AGS_Ingame;
+class ATile;
+
 UCLASS(Blueprintable)
 class GOTA_API USimulatedGuardianInteractor : public ULearningAgentsInteractor
 {
@@ -15,7 +18,7 @@ protected:
 	USimulatedGuardianInteractor();
 
 	// ----------------------- Learning Agents plugin -----------------------
-public:
+public:	
 	virtual void SpecifyAgentObservation_Implementation(
 		FLearningAgentsObservationSchemaElement& OutObservationSchemaElement,
 		ULearningAgentsObservationSchema* InObservationSchema) override;

@@ -3,6 +3,9 @@
 
 #include "SimulatedGuardian.h"
 
+#include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
+#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
+
 void ASimulatedGuardian::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -10,4 +13,17 @@ void ASimulatedGuardian::Tick(float DeltaSeconds)
 	{
 		AddMovementInput(FVector(MoveDirection.X, MoveDirection.Y, 0.0f));
 	}
+	if (!TargetTile.IsValid() &&
+		GameState.IsValid() &&
+		GameState->GetColony() &&
+		GameState->GetColony()->ClaimedTiles.Num() > 0)
+	{
+		TargetTile = GameState->GetColony()->ClaimedTiles[0];
+	}
+}
+
+void ASimulatedGuardian::BeginPlay()
+{
+	Super::BeginPlay();
+	GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
 }
