@@ -2,14 +2,12 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "GOTA/CoreSystems/Utility/MouseUtils.h"
 #include "Guardian.generated.h"
 
+class APC_Ingame;
 class AAbility;
 class UGuardianSettings;
-class UGuardianDataAsset;
 
 UCLASS()
 class GOTA_API AGuardian : public ACharacter
@@ -33,13 +31,29 @@ private:
 	UPROPERTY(Replicated)
 	UGuardianSettings* Settings;
 
+	UPROPERTY(Replicated)
+	TWeakObjectPtr<APC_Ingame> PlayerController;
+
 public:
 	UGuardianSettings* GetSettings() const { return Settings; }
+	void SetPlayerController(APC_Ingame* NewPlayerController);
 
 	// ---------------------------------------- Abilities ----------------------------------------
 private:
-	TArray<AAbility*> AbilityBar;
+	UPROPERTY()
+	TArray<TWeakObjectPtr<AAbility>> AbilityBar;
+
+	UPROPERTY()
+	TWeakObjectPtr<AAbility> CurrentlyTargeting;
+
+	void LearnAbility(AAbility* Ability);
+
+	void StartTargeting(AAbility* Ability);
 
 public:
 	void ActivateAbility(int32 Index);
+
+	bool IsCurrentlyTargeting() { return CurrentlyTargeting != nullptr; }
+
+	void CancelTargeting();
 };

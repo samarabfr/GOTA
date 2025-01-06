@@ -39,6 +39,18 @@ AMouseUtils::AMouseUtils()
 	MouseLocation->SetupAttachment(RootComponent);
 	MouseTileLocation = CreateDefaultSubobject<USceneComponent>("Mouse Tile Location");
 	MouseTileLocation->SetupAttachment(RootComponent);
+
+	TestCube = CreateDefaultSubobject<UStaticMeshComponent>("TestCube");
+	TestCube->SetupAttachment(MouseLocation);
+	
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> TestCubeFinder(
+		TEXT("/Game/Visuals/Meshes/TestCube")
+	);
+	if(TestCubeFinder.Succeeded())
+	{
+		TestCube->SetStaticMesh(TestCubeFinder.Object);
+		TestCube->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
 }
 
 void AMouseUtils::BeginPlay()
@@ -49,6 +61,12 @@ void AMouseUtils::BeginPlay()
 	if (IsOwnedBy(GetWorld()->GetFirstPlayerController()))
 	{
 		SetActorTickEnabled(true);
+	}
+
+	static const TCHAR* PathToDataTable = TEXT("/Game/Visuals/VFX/FXS_AbilityIndicator");
+	if (UNiagaraSystem* NiagaraSystem = LoadObject<UNiagaraSystem>(nullptr, PathToDataTable))
+	{
+		
 	}
 }
 

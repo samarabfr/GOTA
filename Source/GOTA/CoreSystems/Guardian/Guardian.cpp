@@ -60,13 +60,51 @@ void AGuardian::S_Init(UGuardianSettings* InSettings)
 
 // ---------------------------------------- Utility ----------------------------------------
 
+void AGuardian::SetPlayerController(APC_Ingame* NewPlayerController)
+{
+	PlayerController = NewPlayerController;
+}
+
 // ---------------------------------------- Abilities ----------------------------------------
+
+void AGuardian::LearnAbility(AAbility* Ability)
+{
+}
+
+void AGuardian::StartTargeting(AAbility* Ability)
+{
+	CurrentlyTargeting = Ability;
+}
 
 void AGuardian::ActivateAbility(int32 Index)
 {
-	int32 ShiftedIndex = Index - 1;
-	if (AbilityBar.IsValidIndex(ShiftedIndex) && AbilityBar[ShiftedIndex])
+	AAbility* Ability = nullptr;
+	if (AbilityBar.IsValidIndex(Index - 1))
 	{
-		AbilityBar[ShiftedIndex]->ActivateAbility();
+		Ability = AbilityBar[Index - 1].Get();
 	}
+
+	// Either Input was invalid or there is no skill in the selected index, either way we tried to activate
+	// an ability so we should probably cancel any active targeting process
+	if (!Ability)
+	{
+		CancelTargeting();
+		return;
+	}
+
+	if (CurrentlyTargeting == Ability)
+	{
+		Ability->ActivateAbility();
+		CancelTargeting();
+	}
+	else
+	{
+		CancelTargeting();
+		StartTargeting(Ability);
+	}
+}
+
+void AGuardian::CancelTargeting()
+{
+	CurrentlyTargeting = nullptr;
 }

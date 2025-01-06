@@ -7,6 +7,7 @@
 #include "GOTA/CoreSystems/Faction/Building/BuildingPlacer.h"
 #include "PC_Ingame.generated.h"
 
+class AAbilityIndicator;
 class UBuildingSettings;
 struct FInputActionInstance;
 class AMouseUtils;
@@ -18,15 +19,29 @@ UCLASS()
 class GOTA_API APC_Ingame : public APlayerController
 {
 	GENERATED_BODY()
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	// ----------------------------------------- Replication Setup -----------------------------------------
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
+	// -------------------------------------------- Lifecycle --------------------------------------------
+public:	
+	virtual void BeginPlay() override;
+
+	void S_Init();
+
+	void C_Init();
+	
+	// -------------------------------------------- Utility --------------------------------------------
+private:
 	UPROPERTY()
 	ADistanceUtils* DistanceUtils;
 
-	// ---------------------------------------------------------
-	// Setup
-	virtual void BeginPlay() override;
-
+	UPROPERTY(Replicated)
+	TWeakObjectPtr<AAbilityIndicator> AbilityIndicator;
+	
+	void S_SetAbilityIndicator(AAbilityIndicator* NewAbilityIndicator);
+	
 	// -------------------------UI Stuff------------------------
 
 private:
@@ -39,7 +54,7 @@ public:
 
 	UFUNCTION(BlueprintSetter)
 	void SetIngameUI(UIngameUI* InIngameUI) { IngameUI = InIngameUI; }
-	
+
 	UFUNCTION(BlueprintImplementableEvent, Category="PlayerController")
 	void CreateLobbyUI();
 
@@ -55,20 +70,22 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category="PlayerController")
 	void CreateIngameUI();
 
-	// ------------------------ Guardian ------------------------
-public:
-	virtual void OnPossess(APawn* InPawn) override;
-	
-	AGuardian* GetGuardian() { return Guardian; }
-	
+	// -------------------------------------------- Guardian --------------------------------------------
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_Guardian)
 	AGuardian* Guardian;
-	
+
 	void SetGuardian(AGuardian* NewGuardian);
 
 	UFUNCTION()
 	void OnRep_Guardian();
+
+	void OnGuardianChanged();
+	
+public:
+	virtual void OnPossess(APawn* InPawn) override;
+
+	AGuardian* GetGuardian() { return Guardian; }
 
 	// ---------------------- InteractionMode ----------------------
 
@@ -78,28 +95,30 @@ private:
 	ABuildingPlacer* BuildingPlacer;
 
 public:
-	void SetBuildingPlacer(ABuildingPlacer* NewBuildingPlacer);
+	void S_SetBuildingPlacer(ABuildingPlacer* NewBuildingPlacer);
 
 	void StartPlacingBuilding(UBuildingSettings* Building);
 
 	void StopPlacingBuilding();
-	
+
 private:
 	void PlaceBuilding();
 
 	// ------------------------------------------- MouseUtils -------------------------------------------
 public:
-	void SetMouseUtils(AMouseUtils* NewMouseUtils);
+	void S_SetMouseUtils(AMouseUtils* NewMouseUtils);
 
 private:
-	UPROPERTY(ReplicatedUsing=MouseUtilsChanged)
+	UPROPERTY(ReplicatedUsing=OnRep_MouseUtils)
 	TWeakObjectPtr<AMouseUtils> MouseUtils;
 
 	AMouseUtils* GetMouseUtils() const { return MouseUtils.Get(); }
 
 	UFUNCTION()
-	void MouseUtilsChanged();
+	void OnRep_MouseUtils();
 	
+	void OnMouseUtilsChanged();
+
 	UFUNCTION()
 	void OnHoverActorChanged(AActor* Actor);
 
@@ -122,7 +141,7 @@ private:
 	void ToggleBuildMenu();
 
 	void ActivateAbility(const int32 Index);
-	
+
 	void ActivateAbility1();
 	void ActivateAbility2();
 	void ActivateAbility3();

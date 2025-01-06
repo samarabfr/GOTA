@@ -3,9 +3,9 @@
 #include "PC_Ingame.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
-#include "InputMappingContext.h"
 #include "InputAction.h"
 #include "InputDataAsset.h"
+#include "GOTA/CoreSystems/Guardian/AbilityIndicator.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Utility/DistanceUtils.h"
 #include "GOTA/CoreSystems/Utility/MouseUtils.h"
@@ -13,6 +13,7 @@
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
+// ------------------------------------ Replication Setup --------------------------------------
 
 void APC_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -27,16 +28,58 @@ void APC_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(APC_Ingame, BuildingPlacer, Params)
 	DOREPLIFETIME_WITH_PARAMS(APC_Ingame, Guardian, Params)
-	
-	DOREPLIFETIME(APC_Ingame, MouseUtils)
+	DOREPLIFETIME_WITH_PARAMS(APC_Ingame, AbilityIndicator, Params)
+	DOREPLIFETIME_WITH_PARAMS(APC_Ingame, MouseUtils, Params)
 }
+
+// ---------------------------------------- Lifecycle ----------------------------------------
 
 void APC_Ingame::BeginPlay()
 {
 	Super::BeginPlay();
-	if (!IsLocalController()) return;
+	if (IsLocalController())
+	{
+		C_Init();
+	}
+}
+
+void APC_Ingame::S_Init()
+{
+	// Create MouseUtils
+	FActorSpawnParameters MouseUtilsSpawnParams;
+	MouseUtilsSpawnParams.Owner = this;
+	AMouseUtils* NewMouseUtils = GetWorld()->SpawnActor<AMouseUtils>(MouseUtilsSpawnParams);
+	S_SetMouseUtils(NewMouseUtils);
+
+	// Create AbilityIndicator
+	FActorSpawnParameters AbilityIndicatorSpawnParams;
+	AbilityIndicatorSpawnParams.Owner = this;
+	AAbilityIndicator* NewAbilityIndicator = GetWorld()->SpawnActor<AAbilityIndicator>(AbilityIndicatorSpawnParams);
+	S_SetAbilityIndicator(NewAbilityIndicator);
+	NewMouseUtils->AttachActorToTilePosition(NewAbilityIndicator);
+	
+	// Create BuildingPlacer
+	FActorSpawnParameters BuildingPlacerSpawnParams;
+	BuildingPlacerSpawnParams.Owner = this;
+	ABuildingPlacer* NewBuildingPlacer = GetWorld()->SpawnActor<ABuildingPlacer>(BuildingPlacerSpawnParams);
+	NewBuildingPlacer->S_Init(NewMouseUtils);
+	S_SetBuildingPlacer(NewBuildingPlacer);
+
+	ForceNetUpdate();
+}
+
+void APC_Ingame::C_Init()
+{
 	CreateLobbyUI();
 	DistanceUtils = GetWorld()->SpawnActor<ADistanceUtils>();
+}
+
+// ---------------------------------------- Utility ----------------------------------------
+
+void APC_Ingame::S_SetAbilityIndicator(AAbilityIndicator* NewAbilityIndicator)
+{
+	AbilityIndicator = NewAbilityIndicator;
+	MARK_PROPERTY_DIRTY_FROM_NAME(APC_Ingame, AbilityIndicator, this)
 }
 
 // -------------------------UI Stuff------------------------
@@ -44,11 +87,29 @@ void APC_Ingame::BeginPlay()
 
 // ------------------------ Guardian ------------------------
 
+void APC_Ingame::OnRep_Guardian()
+{
+	OnGuardianChanged();
+}
+
+void APC_Ingame::OnGuardianChanged()
+{
+	if (!Guardian)
+		return;
+
+	Guardian->SetPlayerController(this);
+
+	if (!IsLocalController())
+		return;
+
+	DistanceUtils->AttachToActor(Guardian, FAttachmentTransformRules::SnapToTargetIncludingScale);
+}
+
 void APC_Ingame::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	SetGuardian(Cast<AGuardian>(InPawn));
-	
+
 	FRotator InitialRotation = FRotator(-30.0f, 0.0f, 0.0f); // Adjust these values
 	SetControlRotation(InitialRotation);
 }
@@ -56,19 +117,8 @@ void APC_Ingame::OnPossess(APawn* InPawn)
 void APC_Ingame::SetGuardian(AGuardian* NewGuardian)
 {
 	Guardian = NewGuardian;
-	OnRep_Guardian();
+	OnGuardianChanged();
 	MARK_PROPERTY_DIRTY_FROM_NAME(APC_Ingame, Guardian, this)
-}
-
-void APC_Ingame::OnRep_Guardian()
-{
-	if (!Guardian)
-		return;
-
-	if (!IsLocalController())
-		return;
-
-	DistanceUtils->AttachToActor(Guardian, FAttachmentTransformRules::SnapToTargetIncludingScale);
 }
 
 // ---------------------- InteractionMode ----------------------
@@ -78,7 +128,7 @@ void APC_Ingame::ClickActor()
 	IngameUI->ClickActor(MouseUtils->GetHoverActor());
 }
 
-void APC_Ingame::SetBuildingPlacer(ABuildingPlacer* NewBuildingPlacer)
+void APC_Ingame::S_SetBuildingPlacer(ABuildingPlacer* NewBuildingPlacer)
 {
 	BuildingPlacer = NewBuildingPlacer;
 	MARK_PROPERTY_DIRTY_FROM_NAME(APC_Ingame, BuildingPlacer, this)
@@ -102,17 +152,25 @@ void APC_Ingame::PlaceBuilding()
 
 // ------------------------------------------- MouseUtils -------------------------------------------
 
-void APC_Ingame::SetMouseUtils(AMouseUtils* NewMouseUtils)
+void APC_Ingame::S_SetMouseUtils(AMouseUtils* NewMouseUtils)
 {
 	MouseUtils = NewMouseUtils;
-	MouseUtilsChanged();
+	OnMouseUtilsChanged();
+	MARK_PROPERTY_DIRTY_FROM_NAME(APC_Ingame, MouseUtils, this)
 }
 
-void APC_Ingame::MouseUtilsChanged()
+void APC_Ingame::OnRep_MouseUtils()
 {
-	if (!IsLocalController()) return;
-	MouseUtils->SetPlayerController(this);
-	MouseUtils->OnHoverActorChanged.AddDynamic(this, &APC_Ingame::OnHoverActorChanged);
+	OnMouseUtilsChanged();
+}
+
+void APC_Ingame::OnMouseUtilsChanged()
+{
+	if (IsLocalController())
+	{
+		MouseUtils->SetPlayerController(this);
+		MouseUtils->OnHoverActorChanged.AddDynamic(this, &APC_Ingame::OnHoverActorChanged);
+	}
 }
 
 void APC_Ingame::OnHoverActorChanged(AActor* Actor)

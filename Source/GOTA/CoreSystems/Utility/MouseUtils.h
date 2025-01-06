@@ -27,6 +27,11 @@ class GOTA_API AMouseUtils : public AActor
 public:
 	void SetPlayerController(APC_Ingame* PC);
 	
+	// ---------------------------------------- Utility ----------------------------------------
+private:
+	UPROPERTY()
+	UStaticMeshComponent* TestCube;
+	
 	// ------------------ Mouse Location ------------------
 
 private:

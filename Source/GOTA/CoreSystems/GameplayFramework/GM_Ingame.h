@@ -26,9 +26,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<ATileMap> TileMapClass;
 	
-	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
-	TSubclassOf<AMouseUtils> MouseUtilsClass;
-	
 	// ---------------------------------------------------------
 	// Control the Flow of the Game
 private:
@@ -70,7 +67,7 @@ public:
 
 	void CreateGuardians();
 
-	void CreateUtilActors();
+	void InitPlayerControllers();
 
 	void InitialPossession();
 };
