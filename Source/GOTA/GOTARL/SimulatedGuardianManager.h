@@ -30,7 +30,7 @@ private:
 	ULearningAgentsManager* ManagerComponent;
 	bool bRunInference = false;
 	UPROPERTY()
-	TArray<AActor*> GuardianActors;
+	TArray<AActor*> GuardianSimulatorActors;
 	
 	UPROPERTY()
 	ULearningAgentsNeuralNetwork* NN_Critic;

@@ -44,7 +44,7 @@ void ASimulatedGuardianManager::Tick(float DeltaSeconds)
 
 void ASimulatedGuardianManager::Init()
 {
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGuardianSimulator::StaticClass(), GuardianActors);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGuardianSimulator::StaticClass(), GuardianSimulatorActors);
 	// Interactor
 	Interactor = ULearningAgentsInteractor::MakeInteractor(
 		ManagerComponent, USimulatedGuardianInteractor::StaticClass(), FName("SimulatedGuardianInteractor"));
@@ -101,7 +101,13 @@ void ASimulatedGuardianManager::Init()
 	// Run Inference Reset
 	if (bRunInference)
 	{
-		// TODO: Reset methods
+		for (AActor* GuardianSimulatorActor : GuardianSimulatorActors)
+		{
+			if (AGuardianSimulator* GuardianSimulator = Cast<AGuardianSimulator>(GuardianSimulatorActor))
+			{
+				GuardianSimulator->ResetToRandomTile();
+			}
+		}
 	}
 }
 
