@@ -8,12 +8,7 @@
 void UStateTreeArmyComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	// Define the asset path
-	FSoftObjectPath StateTreePath(TEXT("/Game/CoreSystems/Entity/ST_Army.ST_Army"));
-	// Load the asset synchronously
+	const FSoftObjectPath StateTreePath(TEXT("/Game/CoreSystems/Entity/ST_Army.ST_Army"));
 	UStateTree* LoadedStateTree = Cast<UStateTree>(StateTreePath.TryLoad());
-	if (LoadedStateTree)
-	{
-		StateTreeRef.SetStateTree(LoadedStateTree);
-	}
+	if (LoadedStateTree) StateTreeRef.SetStateTree(LoadedStateTree);
 }

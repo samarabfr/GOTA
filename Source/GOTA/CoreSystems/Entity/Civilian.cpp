@@ -57,12 +57,9 @@ ACivilian::ACivilian()
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	MeshComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	MeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
-
-	ConstructorHelpers::FObjectFinder<UStateTree> StateTreeFinder(
-		TEXT("/Game/CoreSystems/Entity/ST_Civilian"));
+	
 	StateTree = CreateDefaultSubobject<UStateTreeCivilianComponent>("StateTree");
 	StateTree->SetStartLogicAutomatically(false);
-	StateTree->SetStateTree(Cast<UStateTree>(StateTreeFinder.Object.Get()));
 }
 
 void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
@@ -78,6 +75,9 @@ void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	WorkAmount = BuildingSettings->CivilianProductionAmount;
 	MovementRate = 100 / BuildingSettings->CivilianMoveTime;
 
+	const FSoftObjectPath StateTreePath(TEXT("/Game/CoreSystems/Entity/ST_Civilian"));
+	UStateTree* LoadedStateTree = Cast<UStateTree>(StateTreePath.TryLoad());
+	if (LoadedStateTree) StateTree->SetStateTree(LoadedStateTree);
 	StateTree->StartLogic();
 }
 

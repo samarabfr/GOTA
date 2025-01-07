@@ -9,8 +9,6 @@ class GOTA_API UStateTreeCivilianComponent : public UStateTreeComponent
 {
 	GENERATED_BODY()
 
-	UStateTreeCivilianComponent();
-
 public:
 	void SetStateTree(UStateTree* StateTree);
 };

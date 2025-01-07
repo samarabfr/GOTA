@@ -3,10 +3,6 @@
 
 #include "StateTreeCivilianComponent.h"
 
-UStateTreeCivilianComponent::UStateTreeCivilianComponent()
-{
-}
-
 void UStateTreeCivilianComponent::SetStateTree(UStateTree* StateTree)
 {
 	StateTreeRef.SetStateTree(StateTree);
