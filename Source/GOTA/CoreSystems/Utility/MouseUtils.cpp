@@ -3,8 +3,11 @@
 
 #include "MouseUtils.h"
 
+#include "GOTA/CoreSystems/Entity/Army.h"
+#include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "GOTA/CoreSystems/GameplayFramework/PC_Ingame.h"
+#include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -157,6 +160,16 @@ void AMouseUtils::HoverTileChanged()
 void AMouseUtils::AttachActorToTilePosition(AActor* Actor)
 {
 	Actor->AttachToComponent(MouseTileLocation, FAttachmentTransformRules::SnapToTargetIncludingScale);
+}
+
+FAbilityTarget AMouseUtils::GetHoverAbilityTarget() const
+{
+	FAbilityTarget AbilityTarget;
+	AbilityTarget.Tile = Cast<ATile>(HoverActor);
+	AbilityTarget.Guardian = Cast<AGuardian>(HoverActor);
+	AbilityTarget.Civilian = Cast<ACivilian>(HoverActor);
+	AbilityTarget.Army = Cast<AArmy>(HoverActor);
+	return AbilityTarget;
 }
 
 // ------------------ Hover Actor ------------------

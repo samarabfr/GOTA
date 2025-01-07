@@ -167,7 +167,7 @@ void APC_Ingame::ActivateAbility(int32 Index)
 
 	if (CurrentlyTargeting == Ability)
 	{
-		Ability->ActivateAbility();
+		Ability->SRPC_ActivateAbility(MouseUtils->GetHoverAbilityTarget());
 		CancelTargeting();
 	}
 	else

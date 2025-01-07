@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilityTarget.h"
 #include "GameFramework/Actor.h"
 #include "Ability.generated.h"
 
@@ -10,9 +11,16 @@ UCLASS()
 class GOTA_API AAbility : public AActor
 {
 	GENERATED_BODY()
-
+	
+	// ------------------------------------ Replication Setup --------------------------------------
+	
+	// ---------------------------------------- Lifecycle ----------------------------------------
 public:
-	// Activates the Ability, returns false if the ability could not be activated for any reason. For example when
-	// no target was selected first.
-	virtual bool ActivateAbility() { return false; }
+	AAbility();
+	
+	// ---------------------------------------- Utility ----------------------------------------
+public:
+	virtual void SRPC_ActivateAbility(FAbilityTarget Target) { }
+
+	virtual bool IsValidTarget(FAbilityTarget Target) { return false; }
 };

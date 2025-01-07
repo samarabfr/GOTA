@@ -10,5 +10,7 @@ class GOTA_API AAddPop : public AAbility
 {
 	GENERATED_BODY()
 
-	virtual bool ActivateAbility() override;
+	virtual void SRPC_ActivateAbility(FAbilityTarget Target) override;
+
+	virtual bool IsValidTarget(FAbilityTarget Target) override;
 };
