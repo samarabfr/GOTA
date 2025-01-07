@@ -180,7 +180,7 @@ void APC_Ingame::ActivateCurrentlyTargetingAbility()
 {
 	if (!CurrentlyTargeting.IsValid()) return;
 
-	CurrentlyTargeting.Get()->SRPC_ActivateAbility(MouseUtils->GetHoverAbilityTarget());
+	CurrentlyTargeting.Get()->ActivateAbility(MouseUtils->GetHoverAbilityTarget());
 	CancelTargeting();
 }
 

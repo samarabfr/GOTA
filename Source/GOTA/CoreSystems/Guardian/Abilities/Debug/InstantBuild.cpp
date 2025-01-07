@@ -5,7 +5,7 @@
 
 #include "GOTA/CoreSystems/Tile/Tile.h"
 
-void AInstantBuild::SRPC_ActivateAbility(FAbilityTarget Target)
+void AInstantBuild::S_ActivateAbility(FAbilityTarget Target)
 {
 	if (Target.Tile.IsValid() && Target.Tile->GetBuilding())
 	{

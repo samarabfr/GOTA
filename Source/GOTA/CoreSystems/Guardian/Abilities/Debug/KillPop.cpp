@@ -5,7 +5,7 @@
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 
-void AKillPop::SRPC_ActivateAbility(FAbilityTarget Target)
+void AKillPop::S_ActivateAbility(FAbilityTarget Target)
 {
 	if (Target.Tile.IsValid() && Target.Tile->GetBuilding())
 	{

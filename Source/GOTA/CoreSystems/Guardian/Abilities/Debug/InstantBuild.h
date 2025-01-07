@@ -10,7 +10,7 @@ class GOTA_API AInstantBuild : public AAbility
 {
 	GENERATED_BODY()
 
-	virtual void SRPC_ActivateAbility(FAbilityTarget Target) override;
+	virtual void S_ActivateAbility(FAbilityTarget Target) override;
 
 	virtual bool IsValidTarget(FAbilityTarget Target) override;
 };

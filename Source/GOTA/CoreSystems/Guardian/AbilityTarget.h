@@ -15,8 +15,15 @@ struct FAbilityTarget
 	GENERATED_BODY()
 
 public:
+	UPROPERTY()
 	TWeakObjectPtr<ATile> Tile;
+	
+	UPROPERTY()
 	TWeakObjectPtr<AGuardian> Guardian;
+	
+	UPROPERTY()
 	TWeakObjectPtr<ACivilian> Civilian;
+	
+	UPROPERTY()
 	TWeakObjectPtr<AArmy> Army;
 };

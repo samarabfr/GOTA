@@ -13,3 +13,13 @@ AAbility::AAbility()
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	PrimaryActorTick.TickInterval = 1.0f;
 }
+
+void AAbility::SRPC_ActivateAbility_Implementation(FAbilityTarget Target)
+{
+	S_ActivateAbility(Target);
+}
+
+void AAbility::ActivateAbility(FAbilityTarget Target)
+{
+	SRPC_ActivateAbility(Target);
+}

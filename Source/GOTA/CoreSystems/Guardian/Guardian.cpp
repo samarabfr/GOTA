@@ -67,7 +67,11 @@ void AGuardian::S_Init(UGuardianSettings* InSettings)
 
 void AGuardian::S_LearnAbility(const UAbilitySettings* AbilitySettings)
 {
-	AActor* Actor = GetWorld()->SpawnActor(AbilitySettings->GetAbilityClass());
+	FActorSpawnParameters AbilitySpawnParams;
+	AbilitySpawnParams.Owner = this;
+	AActor* Actor = GetWorld()->SpawnActor(AbilitySettings->GetAbilityClass(),
+	                                       &FTransform::Identity,
+	                                       AbilitySpawnParams);
 	AAbility* Ability = Cast<AAbility>(Actor);
 	Abilities.Add(Ability);
 	MARK_PROPERTY_DIRTY_FROM_NAME(AGuardian, Abilities, this)

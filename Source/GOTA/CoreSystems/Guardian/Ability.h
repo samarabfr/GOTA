@@ -19,8 +19,15 @@ public:
 	AAbility();
 	
 	// ---------------------------------------- Utility ----------------------------------------
+private:
+	UFUNCTION(Server, Reliable)
+	void SRPC_ActivateAbility(FAbilityTarget Target);
+	
+protected:
+	virtual void S_ActivateAbility(FAbilityTarget Target) {}
+	
 public:
-	virtual void SRPC_ActivateAbility(FAbilityTarget Target) { }
+	void ActivateAbility(FAbilityTarget Target);
 
 	virtual bool IsValidTarget(FAbilityTarget Target) { return false; }
 };
