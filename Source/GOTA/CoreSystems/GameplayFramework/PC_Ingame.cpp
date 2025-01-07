@@ -167,14 +167,21 @@ void APC_Ingame::ActivateAbility(int32 Index)
 
 	if (CurrentlyTargeting == Ability)
 	{
-		Ability->SRPC_ActivateAbility(MouseUtils->GetHoverAbilityTarget());
-		CancelTargeting();
+		ActivateCurrentlyTargetingAbility();
 	}
 	else
 	{
 		CancelTargeting();
 		StartTargeting(Ability);
 	}
+}
+
+void APC_Ingame::ActivateCurrentlyTargetingAbility()
+{
+	if (!CurrentlyTargeting.IsValid()) return;
+
+	CurrentlyTargeting.Get()->SRPC_ActivateAbility(MouseUtils->GetHoverAbilityTarget());
+	CancelTargeting();
 }
 
 void APC_Ingame::StartTargeting(AAbility* Ability)
@@ -263,7 +270,11 @@ void APC_Ingame::InitInput()
 void APC_Ingame::LeftClick(const FInputActionInstance& Instance)
 {
 	if (bIsLookingAround) return;
-	if (BuildingPlacer->IsPlacing())
+	if (CurrentlyTargeting.IsValid())
+	{
+		ActivateCurrentlyTargetingAbility();
+	}
+	else if (BuildingPlacer->IsPlacing())
 	{
 		PlaceBuilding();
 	}
@@ -271,6 +282,7 @@ void APC_Ingame::LeftClick(const FInputActionInstance& Instance)
 	{
 		ClickActor();
 	}
+
 }
 
 void APC_Ingame::StartJump(const FInputActionInstance& Instance)

@@ -111,6 +111,7 @@ private:
 	TWeakObjectPtr<AAbility> CurrentlyTargeting;
 
 	void ActivateAbility(int32 Index);
+	void ActivateCurrentlyTargetingAbility();
 	
 	void StartTargeting(AAbility* Ability);
 	void CancelTargeting();

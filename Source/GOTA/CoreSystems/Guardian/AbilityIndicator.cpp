@@ -48,5 +48,6 @@ void AAbilityIndicator::Deactivate()
 	if (FX_IndicatorComponent)
 	{
 		FX_IndicatorComponent->Deactivate();
+
 	}
 }
