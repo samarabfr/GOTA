@@ -11,7 +11,6 @@ void AKillPop::SRPC_ActivateAbility(FAbilityTarget Target)
 	{
 		Target.Tile->GetBuilding()->GetPopulation()->S_DecreaseSize(1);
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Kill Pop Activated"))
 }
 
 bool AKillPop::IsValidTarget(FAbilityTarget Target)

@@ -11,7 +11,6 @@ void AAddPop::SRPC_ActivateAbility(FAbilityTarget Target)
 	{
 		Target.Tile->GetBuilding()->GetPopulation()->S_IncreaseSize(1);
 	}
-	UE_LOG(LogTemp, Warning, TEXT("Add Pop Activated"))
 }
 
 bool AAddPop::IsValidTarget(FAbilityTarget Target)
