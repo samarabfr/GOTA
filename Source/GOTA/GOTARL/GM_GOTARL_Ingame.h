@@ -8,7 +8,7 @@
 #include "GM_GOTARL_Ingame.generated.h"
 
 
-class ASimulatedGuardian;
+class AGuardianSimulator;
 class ASimulatedGuardianManager;
 class UGuardianSettings;
 
@@ -26,7 +26,7 @@ class GOTA_API AGM_GOTARL_Ingame : public AGM_Ingame
 	TWeakObjectPtr<ASimulatedGuardianManager> LearningManager;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<ASimulatedGuardian> SimulatedGuardianClass;
+	TSubclassOf<AGuardian> GuardianClass;
 
 	virtual void BeginPlay() override;
 };

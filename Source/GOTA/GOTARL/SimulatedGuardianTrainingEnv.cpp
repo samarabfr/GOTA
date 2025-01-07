@@ -4,7 +4,7 @@
 #include "SimulatedGuardianTrainingEnv.h"
 
 #include "LearningAgentsRewards.h"
-#include "SimulatedGuardian.h"
+#include "GuardianSimulator.h"
 
 USimulatedGuardianTrainingEnv::USimulatedGuardianTrainingEnv()
 {
@@ -13,31 +13,31 @@ USimulatedGuardianTrainingEnv::USimulatedGuardianTrainingEnv()
 void USimulatedGuardianTrainingEnv::GatherAgentReward_Implementation(float& OutReward, const int32 AgentId)
 {
 	// specifies rewards
-	if (ASimulatedGuardian* Guardian = Cast<ASimulatedGuardian>(GetAgent(AgentId)))
+	if (AGuardianSimulator* GuardianSimulator = Cast<AGuardianSimulator>(GetAgent(AgentId)))
 	{
-		ULearningAgentsRewards::MakeRewardFromLocationDifference(
-			Guardian->GetTargetTile()->GetActorTransform().GetLocation(),
-			Guardian->GetActorTransform().GetLocation(), 10000.0f);
+		OutReward = ULearningAgentsRewards::MakeRewardFromLocationDifference(
+			GuardianSimulator->GetTargetTile()->GetActorTransform().GetLocation(),
+			GuardianSimulator->GetPawn()->GetActorTransform().GetLocation(), 10000.0f);
 	}
 }
 
 void USimulatedGuardianTrainingEnv::GatherAgentCompletion_Implementation(ELearningAgentsCompletion& OutCompletion,
                                                                          const int32 AgentId)
 {
-	if (ASimulatedGuardian* Guardian = Cast<ASimulatedGuardian>(GetAgent(AgentId)))
+	if (AGuardianSimulator* GuardianSimulator = Cast<AGuardianSimulator>(GetAgent(AgentId)))
 	{
 		// early termination conditions
 		OutCompletion = ULearningAgentsCompletions::MakeCompletionOnLocationDifferenceBelowThreshold(
-			Guardian->GetTargetTile()->GetActorTransform().GetLocation(),
-			Guardian->GetActorTransform().GetLocation(), 100.0f, ELearningAgentsCompletion::Truncation);
+			GuardianSimulator->GetTargetTile()->GetActorTransform().GetLocation(),
+			GuardianSimulator->GetPawn()->GetActorTransform().GetLocation(), 100.0f, ELearningAgentsCompletion::Truncation);
 	}
 }
 
 void USimulatedGuardianTrainingEnv::ResetAgentEpisode_Implementation(const int32 AgentId)
 {
-	// TODO: return to starting conditions
-	if (ASimulatedGuardian* Guardian = Cast<ASimulatedGuardian>(GetAgent(AgentId)))
+	// return to starting conditions
+	if (AGuardianSimulator* GuardianSimulator = Cast<AGuardianSimulator>(GetAgent(AgentId)))
 	{
-		Guardian->ResetToRandomTile();
+		GuardianSimulator->ResetToRandomTile();
 	}
 }

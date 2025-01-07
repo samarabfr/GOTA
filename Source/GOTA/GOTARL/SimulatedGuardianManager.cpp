@@ -10,7 +10,7 @@
 #include "LearningAgentsPolicy.h"
 #include "LearningAgentsPPOTrainer.h"
 #include "LearningAgentsTrainingEnvironment.h"
-#include "SimulatedGuardian.h"
+#include "GuardianSimulator.h"
 #include "SimulatedGuardianInteractor.h"
 #include "SimulatedGuardianTrainingEnv.h"
 #include "Kismet/GameplayStatics.h"
@@ -25,12 +25,6 @@ ASimulatedGuardianManager::ASimulatedGuardianManager()
 	ManagerComponent = CreateDefaultSubobject<ULearningAgentsManager>("LearningAgentsManager");
 
 	Tags.Add("LearningAgentsManager");
-}
-
-void ASimulatedGuardianManager::BeginPlay()
-{
-	Super::BeginPlay();
-	Init();
 }
 
 void ASimulatedGuardianManager::Tick(float DeltaSeconds)
@@ -50,7 +44,7 @@ void ASimulatedGuardianManager::Tick(float DeltaSeconds)
 
 void ASimulatedGuardianManager::Init()
 {
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASimulatedGuardian::StaticClass(), GuardianActors);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGuardianSimulator::StaticClass(), GuardianActors);
 	// Interactor
 	Interactor = ULearningAgentsInteractor::MakeInteractor(
 		ManagerComponent, USimulatedGuardianInteractor::StaticClass(), FName("SimulatedGuardianInteractor"));
@@ -61,7 +55,7 @@ void ASimulatedGuardianManager::Init()
 	NN_Encoder = Cast<ULearningAgentsNeuralNetwork>(PathEncoder.TryLoad());
 	NN_Policy = Cast<ULearningAgentsNeuralNetwork>(PathPolicy.TryLoad());
 	NN_Decoder = Cast<ULearningAgentsNeuralNetwork>(PathDecoder.TryLoad());
-	NN_Critic = Cast<ULearningAgentsNeuralNetwork>(PathEncoder.TryLoad());
+	NN_Critic = Cast<ULearningAgentsNeuralNetwork>(PathCritic.TryLoad());
 	// Policy
 	FLearningAgentsPolicySettings PolicySettings = FLearningAgentsPolicySettings();
 	PolicySeed = 1234;
@@ -115,4 +109,5 @@ void ASimulatedGuardianManager::RegisterAgent(UObject* Agent)
 {
 	if (!ManagerComponent || !Agent) return;
 	ManagerComponent->AddAgent(Agent);
+	Init();
 }

@@ -4,7 +4,7 @@
 #include "GM_GOTARL_Ingame.h"
 
 #include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
-#include "SimulatedGuardian.h"
+#include "GuardianSimulator.h"
 #include "SimulatedGuardianManager.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
@@ -34,10 +34,13 @@ void AGM_GOTARL_Ingame::CreateGuardians()
 		{
 			SpawnLocation = TribeStartingTile->GetActorLocation() + FVector(0, 0, 100);
 		}
-		ASimulatedGuardian* Guardian = GetWorld()->SpawnActor<ASimulatedGuardian>(
-			SimulatedGuardianClass, SpawnLocation, FRotator::ZeroRotator);
+		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(
+			GuardianClass, SpawnLocation, FRotator::ZeroRotator);
 		Guardian->Init(GuardianSettings);
-		LearningManager->RegisterAgent(Guardian);
+		AGuardianSimulator* GuardianSimulator = GetWorld()->SpawnActor<AGuardianSimulator>(
+			AGuardianSimulator::StaticClass(), SpawnLocation, FRotator::ZeroRotator);
+		GuardianSimulator->Possess(Guardian);
+		LearningManager->RegisterAgent(GuardianSimulator);
 	}
 }
 

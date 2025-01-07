@@ -22,8 +22,6 @@ class GOTA_API ASimulatedGuardianManager : public AActor
 protected:
 	ASimulatedGuardianManager();
 
-	virtual void BeginPlay() override;
-
 	virtual void Tick(float DeltaSeconds) override;
 	
 	// ----------------------- Learning Agents plugin -----------------------

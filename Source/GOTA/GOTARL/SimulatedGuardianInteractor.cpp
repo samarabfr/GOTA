@@ -3,7 +3,7 @@
 
 #include "SimulatedGuardianInteractor.h"
 
-#include "SimulatedGuardian.h"
+#include "GuardianSimulator.h"
 
 USimulatedGuardianInteractor::USimulatedGuardianInteractor()
 {
@@ -23,11 +23,20 @@ void USimulatedGuardianInteractor::GatherAgentObservation_Implementation(
 	ULearningAgentsObservationObject* InObservationObject, const int32 AgentId)
 {
 	// how the observations are gathered from the game state
-	if (ASimulatedGuardian* Guardian = Cast<ASimulatedGuardian>(GetAgent(AgentId)))
+	AGuardianSimulator* GuardianSimulator = Cast<AGuardianSimulator>(GetAgent(AgentId));
+	if (GuardianSimulator)
 	{
-		OutObservationObjectElement = ULearningAgentsObservations::MakeLocationObservation(
-			InObservationObject, Guardian->GetTargetTile()->GetActorTransform().GetLocation(),
-			Guardian->GetActorTransform());
+		if (GuardianSimulator->GetTargetTile())
+		{
+			OutObservationObjectElement = ULearningAgentsObservations::MakeLocationObservation(
+				InObservationObject, GuardianSimulator->GetTargetTile()->GetActorTransform().GetLocation(),
+				GuardianSimulator->GetPawn()->GetActorTransform());
+		}
+		else
+		{
+			OutObservationObjectElement = ULearningAgentsObservations::MakeLocationObservation(
+			InObservationObject, FVector::ZeroVector, GuardianSimulator->GetPawn()->GetActorTransform());
+		}
 	}
 }
 
@@ -46,17 +55,18 @@ void USimulatedGuardianInteractor::PerformAgentAction_Implementation(const ULear
                                                                      InActionObjectElement, const int32 AgentId)
 {
 	// how the actions are done
-	if (ASimulatedGuardian* Guardian = Cast<ASimulatedGuardian>(GetAgent(AgentId)))
+	if (AGuardianSimulator* GuardianSimulator = Cast<AGuardianSimulator>(GetAgent(AgentId)))
 	{
 		TMap<FName, FLearningAgentsActionObjectElement> ActionElements;
 		ULearningAgentsActions::GetStructAction(ActionElements, InActionObject, InActionObjectElement);
 		// moving
 		bool bIsMoving;
 		ULearningAgentsActions::GetBoolAction(bIsMoving, InActionObject, *ActionElements.Find(FName("Moving")));
-		Guardian->SetIsMoving(bIsMoving);
+		GuardianSimulator->SetIsMoving(bIsMoving);
 		// steering
 		float SteeringAngle;
 		ULearningAgentsActions::GetAngleAction(SteeringAngle, InActionObject, *ActionElements.Find(FName("Steering")));
-		Guardian->SetMoveDirection(Guardian->GetMoveDirection().GetRotated(SteeringAngle));
+		FRotator Rotation = FRotator(0.f, SteeringAngle, 0.f);
+		GuardianSimulator->SetMoveDirection(Rotation.Vector());
 	}
 }
