@@ -14,6 +14,7 @@
 #include "Terrain.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/CoreSystems/Entity/Entity.h"
+#include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "Tile.generated.h"
 
@@ -132,14 +133,9 @@ public:
 
 	void OnBuildingFinishedConstruction();
 
-	ASettlement* GetClaimant() const;
+	ASettlement* GetClaimant() const { return Building == nullptr ? nullptr : Building->GetSettlement(); }
 
 	bool IsClaimed() { return Building != nullptr; }
-
-private:
-	void UpdateClaimWallsWithNeighbors();
-
-	void UpdateClaimWalls();
 
 	// ------------------- Ticking -------------------------
 private:

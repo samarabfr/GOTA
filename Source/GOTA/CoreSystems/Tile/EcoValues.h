@@ -23,7 +23,7 @@ public:
 	void ServerTick(double DeltaSeconds);
 	void ClientTick(double DeltaSeconds);
 	
-	void SetMaxValues(int32 NewMaxTrees, EBiome Biome);
+	void SetMaxValues(int32 NewMaxTrees, int32 NewMaxForage);
 	void MaxALlValues();
 	
 	void NeighborChangedTrees(int32 Amount);

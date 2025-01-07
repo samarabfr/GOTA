@@ -49,7 +49,7 @@ ATile::ATile()
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
-	NetUpdateFrequency = 1.0f;
+	SetNetUpdateFrequency(1.0f);
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
@@ -181,7 +181,6 @@ void ATile::BuildingChanged()
 	if (Building)
 	{
 		SetupPopSizeChanging();
-		UpdateClaimWallsWithNeighbors();
 	}
 }
 
@@ -218,8 +217,6 @@ bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 	AddReplicatedSubObject(Building);
 	AddReplicatedSubObject(Building->GetPopulation());
 
-	UpdateClaimWallsWithNeighbors();
-
 	GameplayTags.AppendTags(Builder->GetGameplayTags());
 	GameplayTags.AppendTags(BuildingDataAsset->GameplayTags);
 	GameplayTags.AddTag(Settings->BuildingUnderConstructionTag);
@@ -251,64 +248,6 @@ void ATile::OnBuildingFinishedConstruction()
 	GameplayTags.RemoveTag(Settings->BuildingUnderConstructionTag);
 	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, GameplayTags, this);
 	OnGameplayTagsChanged.Broadcast();
-}
-
-ASettlement* ATile::GetClaimant() const
-{
-	if (Building)
-	{
-		return Building->GetSettlement();
-	}
-	return nullptr;
-}
-
-void ATile::UpdateClaimWallsWithNeighbors()
-{
-	for (ATile* Neighbor : Neighbors)
-	{
-		if (Neighbor) Neighbor->UpdateClaimWalls();
-	}
-	UpdateClaimWalls();
-}
-
-void ATile::UpdateClaimWalls()
-{
-	if (IsClaimed())
-	{
-		for (uint8 i = 0; i < 6; ++i)
-		{
-			if (!Neighbors[i] || !Neighbors[i]->IsClaimed() || Neighbors[i]->GetClaimant() != GetClaimant())
-			{
-				// Should have flag in this direction
-				if (!ClaimWallsInstanceIds.Contains(i))
-				{
-					// doesn't have one yet, so we make one
-					FTransform Transform = FTransform();
-					Transform.SetLocation(GetActorLocation());
-					Transform.SetRotation(
-						FRotator(0, 60 * i, 0).Quaternion());
-					ClaimWallsInstanceIds.Add(i, GameState->GetStaticMeshBatcher()->AddStaticMeshInstance(
-						                          Settings->ClaimMesh, Transform));
-				}
-			}
-			else if (ClaimWallsInstanceIds.Contains(i))
-			{
-				// Should NOT have flag in this direction
-				GameState->GetStaticMeshBatcher()->RemoveStaticMeshInstance(
-					Settings->ClaimMesh, *ClaimWallsInstanceIds.Find(i));
-				ClaimWallsInstanceIds.Remove(i);
-			}
-		}
-	}
-	else
-	{
-		// remove all flags
-		for (TTuple<uint8, FPrimitiveInstanceId> Tuple : ClaimWallsInstanceIds)
-		{
-			GameState->GetStaticMeshBatcher()->RemoveStaticMeshInstance(Settings->ClaimMesh, Tuple.Value);
-		}
-		ClaimWallsInstanceIds.Empty();
-	}
 }
 
 // ------------------- Ticking -------------------------
@@ -592,7 +531,7 @@ void ATile::ValidateSpawnLayout()
 	Algo::RandomShuffle(SL.Buildings);
 
 	SetSpawnLayout(SL);
-	EcoValues->SetMaxValues(SpawnLayout.Trees.Num(), Terrain.Biome);
+	EcoValues->SetMaxValues(SpawnLayout.Trees.Num(), SpawnLayout.Forage.Num());
 }
 
 void ATile::ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints)

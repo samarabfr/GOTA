@@ -45,7 +45,7 @@ ACivilian::ACivilian()
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
-	NetUpdateFrequency = .1f;
+	SetNetUpdateFrequency(0.1f);
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Static Mesh");
