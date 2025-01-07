@@ -60,9 +60,7 @@ ATile* AGuardianSimulator::GetTargetTile()
 
 void AGuardianSimulator::ResetToRandomTile()
 {
-	if (!TargetTile.IsValid() &&
-		GameState.IsValid() &&
-		GameState->GetTileMap())
+	if (GameState.IsValid() && GameState->GetTileMap())
 	{
 		const ATile* RandomTile = GameState->GetTileMap()->GetRandomTile();
 		GetPawn()->TeleportTo(RandomTile->GetActorTransform().GetLocation(),

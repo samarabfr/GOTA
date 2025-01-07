@@ -15,9 +15,11 @@ void USimulatedGuardianTrainingEnv::GatherAgentReward_Implementation(float& OutR
 	// specifies rewards
 	if (AGuardianSimulator* GuardianSimulator = Cast<AGuardianSimulator>(GetAgent(AgentId)))
 	{
-		OutReward = ULearningAgentsRewards::MakeRewardFromLocationDifference(
-			GuardianSimulator->GetTargetTile()->GetActorTransform().GetLocation(),
-			GuardianSimulator->GetPawn()->GetActorTransform().GetLocation(), 10000.0f);
+		FVector GuardianLocation = GuardianSimulator->GetPawn()->GetActorTransform().GetLocation();
+		FVector TargetLocation = GuardianSimulator->GetTargetTile()->GetActorTransform().GetLocation();
+		float Reward = ULearningAgentsRewards::MakeRewardFromLocationDifference(
+			GuardianLocation, TargetLocation, 10000.0f);
+		OutReward = Reward;
 	}
 }
 
@@ -27,9 +29,11 @@ void USimulatedGuardianTrainingEnv::GatherAgentCompletion_Implementation(ELearni
 	if (AGuardianSimulator* GuardianSimulator = Cast<AGuardianSimulator>(GetAgent(AgentId)))
 	{
 		// early termination conditions
+		FVector GuardianLocation = GuardianSimulator->GetPawn()->GetActorTransform().GetLocation();
+		FVector TargetLocation = GuardianSimulator->GetTargetTile()->GetActorTransform().GetLocation();
+		float DebugDistance = FVector::Dist(GuardianLocation, TargetLocation);
 		OutCompletion = ULearningAgentsCompletions::MakeCompletionOnLocationDifferenceBelowThreshold(
-			GuardianSimulator->GetTargetTile()->GetActorTransform().GetLocation(),
-			GuardianSimulator->GetPawn()->GetActorTransform().GetLocation(), 100.0f, ELearningAgentsCompletion::Truncation);
+			GuardianLocation, TargetLocation, 500.0f);
 	}
 }
 

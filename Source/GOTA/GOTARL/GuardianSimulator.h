@@ -19,8 +19,10 @@ class GOTA_API AGuardianSimulator : public AAIController
 private:
 	FVector MoveDirection = FVector::ZeroVector;
 	bool bWantsToMove = false;
-	TWeakObjectPtr<ATile> TargetTile;
 	TWeakObjectPtr<AGS_Ingame> GameState;
+
+	UPROPERTY(VisibleInstanceOnly)
+	TWeakObjectPtr<ATile> TargetTile;
 
 public:
 	void SetMoveDirection(FVector NewDirection);
