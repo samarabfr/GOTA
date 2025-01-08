@@ -7,6 +7,7 @@
 #include "GOTA/CoreSystems/Faction/Building/BuildingPlacer.h"
 #include "PC_Ingame.generated.h"
 
+class UAbilitySlot;
 class AAbility;
 class AAbilityIndicator;
 class UBuildingSettings;
@@ -109,12 +110,17 @@ private:
 private:
 	UPROPERTY()
 	TWeakObjectPtr<AAbility> CurrentlyTargeting;
-
-	void ActivateAbility(int32 Index);
+	
 	void ActivateCurrentlyTargetingAbility();
 	
 	void StartTargeting(AAbility* Ability);
 	void CancelTargeting();
+	
+public:
+	void ActivateAbility(FName SlotName);
+	void ActivateAbility(UAbilitySlot* Slot);
+
+	void LearnDebugAbilities();
 	
 	// ------------------------------------------- MouseUtils -------------------------------------------
 private:

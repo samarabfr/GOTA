@@ -26,7 +26,6 @@ void AGuardian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(AGuardian, Abilities, Params);
-	DOREPLIFETIME_WITH_PARAMS(AGuardian, AbilityBar, Params);
 }
 
 // ---------------------------------------- Lifecycle ----------------------------------------
@@ -40,20 +39,12 @@ AGuardian::AGuardian()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	PrimaryActorTick.TickInterval = 0.2f;
-
-	AbilityBar.SetNumZeroed(8);
 }
 
 void AGuardian::BeginPlay()
 {
 	Super::BeginPlay();
 	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
-
-	const UAbilityManager* AbilityManager = GetGameInstance()->GetSubsystem<UAbilityManager>();
-	for (UAbilitySettings* AbilitySettings : AbilityManager->GetAllAbilities())
-	{
-		S_LearnAbility(AbilitySettings);
-	}
 }
 
 void AGuardian::S_Init(UGuardianSettings* InSettings)
@@ -65,7 +56,9 @@ void AGuardian::S_Init(UGuardianSettings* InSettings)
 
 // ---------------------------------------- Abilities ----------------------------------------
 
-void AGuardian::S_LearnAbility(const UAbilitySettings* AbilitySettings)
+// ToDo implement replication shit, srpc and that stuff to learn abilities... react to replication of a new ability as well
+
+void AGuardian::S_LearnAbility(UAbilitySettings* AbilitySettings, FName AbilitySlotName)
 {
 	FActorSpawnParameters AbilitySpawnParams;
 	AbilitySpawnParams.Owner = this;
@@ -73,20 +66,8 @@ void AGuardian::S_LearnAbility(const UAbilitySettings* AbilitySettings)
 	                                       &FTransform::Identity,
 	                                       AbilitySpawnParams);
 	AAbility* Ability = Cast<AAbility>(Actor);
+	Ability->S_Init(AbilitySettings, AbilitySlotName);
+	
 	Abilities.Add(Ability);
 	MARK_PROPERTY_DIRTY_FROM_NAME(AGuardian, Abilities, this)
-	for (int i = 0; i < AbilityBar.Num(); ++i)
-	{
-		if (!AbilityBar[i].IsValid())
-		{
-			AbilityBar[i] = Ability;
-			MARK_PROPERTY_DIRTY_FROM_NAME(AGuardian, AbilityBar, this)
-			break;
-		}
-	}
-}
-
-AAbility* AGuardian::GetAbilityInSlot(int32 Index)
-{
-	return AbilityBar.IsValidIndex(Index) ? AbilityBar[Index].Get() : nullptr;
 }

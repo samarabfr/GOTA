@@ -2,6 +2,28 @@
 
 #include "Ability.h"
 
+#include "AbilityManager.h"
+#include "Net/UnrealNetwork.h"
+#include "AbilitySettings.h"
+#include "Net/Core/PushModel/PushModel.h"
+
+void AAbility::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	FDoRepLifetimeParams Params;
+	Params.bIsPushBased = true;
+
+	Params.Condition = COND_InitialOnly;
+	Params.RepNotifyCondition = REPNOTIFY_Always;
+	DOREPLIFETIME_WITH_PARAMS(AAbility, Settings, Params);
+
+	Params.Condition = COND_None;
+	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
+	DOREPLIFETIME_WITH_PARAMS(AAbility, SlotName, Params);
+}
+
+// ---------------------------------------- Lifecycle ----------------------------------------
+
 AAbility::AAbility()
 {
 	bReplicates = true;
@@ -14,6 +36,20 @@ AAbility::AAbility()
 	PrimaryActorTick.TickInterval = 1.0f;
 }
 
+void AAbility::S_Init(UAbilitySettings* InSettings, const FName InAbilitySlotName)
+{
+	Settings = InSettings;
+	SetSlotName(InAbilitySlotName);
+}
+
+// ---------------------------------------- Utility ----------------------------------------
+
+// ---------------------------------------- Activation ----------------------------------------
+
+void AAbility::S_ActivateAbility(FAbilityTarget Target)
+{
+}
+
 void AAbility::SRPC_ActivateAbility_Implementation(FAbilityTarget Target)
 {
 	S_ActivateAbility(Target);
@@ -22,4 +58,24 @@ void AAbility::SRPC_ActivateAbility_Implementation(FAbilityTarget Target)
 void AAbility::ActivateAbility(FAbilityTarget Target)
 {
 	SRPC_ActivateAbility(Target);
+}
+
+// ---------------------------------------- Ability Slot ----------------------------------------
+
+void AAbility::SRPC_SetSlotName_Implementation(FName NewSlotName)
+{
+	SlotName = NewSlotName;
+	MARK_PROPERTY_DIRTY_FROM_NAME(AAbility, SlotName, this)
+}
+
+void AAbility::SetSlotName(const FName NewSlotName)
+{
+	UAbilityManager* AbilityManager = GetWorld()->GetGameInstance()->GetSubsystem<UAbilityManager>();
+	if (AbilityManager)
+	{
+		AbilityManager->UnregisterAbilityInSlot(SlotName, this);
+		AbilityManager->RegisterAbilityInSlot(NewSlotName, this);
+	}
+	SlotName = NewSlotName;
+	SRPC_SetSlotName(NewSlotName);
 }

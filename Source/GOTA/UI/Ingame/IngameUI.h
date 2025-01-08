@@ -5,6 +5,9 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "IngameUI.generated.h"
 
+class UAbilityBar;
+class UAbilitySlot;
+class UAbilityWidget;
 class AGS_Ingame;
 class UBuildingMenu;
 class UButton;
@@ -78,4 +81,12 @@ protected:
 private:
 	UFUNCTION()
 	void OnGameEnding(const EGameEnding Ending, const FString& EndingMessage);
+	
+	// ------------------------------- Ability -------------------------------
+protected:
+	UPROPERTY(meta = (BindWidget))
+	UAbilityBar* WBP_AbilityBar;
+	
+public:
+	TArray<UAbilitySlot*> GetAbilityBarSlots();
 };

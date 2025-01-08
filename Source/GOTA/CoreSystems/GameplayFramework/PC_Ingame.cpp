@@ -7,6 +7,8 @@
 #include "InputDataAsset.h"
 #include "GOTA/CoreSystems/Guardian/Ability.h"
 #include "GOTA/CoreSystems/Guardian/AbilityIndicator.h"
+#include "GOTA/UI/Ingame/AbilitySlot.h"
+#include "GOTA/CoreSystems/Guardian/AbilityManager.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Utility/DistanceUtils.h"
 #include "GOTA/CoreSystems/Utility/MouseUtils.h"
@@ -151,31 +153,6 @@ void APC_Ingame::PlaceBuilding()
 // ---------------------------------------- Ability Targeting ----------------------------------------
 
 
-void APC_Ingame::ActivateAbility(int32 Index)
-{
-	if (!Guardian) return;
-
-	AAbility* Ability = Guardian->GetAbilityInSlot(Index-1);
-	
-	// Either Input was invalid or there is no skill in the selected index, either way we tried to activate
-	// an ability so we should probably cancel any active targeting process
-	if (!Ability)
-	{
-		CancelTargeting();
-		return;
-	}
-
-	if (CurrentlyTargeting == Ability)
-	{
-		ActivateCurrentlyTargetingAbility();
-	}
-	else
-	{
-		CancelTargeting();
-		StartTargeting(Ability);
-	}
-}
-
 void APC_Ingame::ActivateCurrentlyTargetingAbility()
 {
 	if (!CurrentlyTargeting.IsValid()) return;
@@ -194,6 +171,63 @@ void APC_Ingame::CancelTargeting()
 {
 	CurrentlyTargeting = nullptr;
 	AbilityIndicator->Deactivate();
+}
+
+void APC_Ingame::ActivateAbility(FName SlotName)
+{
+	UAbilityManager* AbilityManager = GetGameInstance()->GetSubsystem<UAbilityManager>();
+	if (AbilityManager)
+	{
+		if (UAbilitySlot* AbilitySlot = AbilityManager->GetAbilitySlot(SlotName))
+		{
+			ActivateAbility(AbilitySlot);
+		}
+	}
+}
+
+void APC_Ingame::ActivateAbility(UAbilitySlot* Slot)
+{
+	if (!Slot) return;
+	
+	AAbility* Ability = Slot->GetAbility();
+
+	// Either Input was invalid or there is no skill in the selected slot, either way we tried to activate
+	// an ability so we should probably cancel any active targeting process
+	if (!Ability)
+	{
+		CancelTargeting();
+		return;
+	}
+
+	if (CurrentlyTargeting == Ability)
+	{
+		ActivateCurrentlyTargetingAbility();
+	}
+	else
+	{
+		CancelTargeting();
+		StartTargeting(Ability);
+	}
+}
+
+void APC_Ingame::LearnDebugAbilities()
+{
+	if (!Guardian) return;
+	
+	const UAbilityManager* AbilityManager = GetGameInstance()->GetSubsystem<UAbilityManager>();
+	TArray<UAbilitySettings*> AbilitySettings = AbilityManager->GetAllAbilitySettings();
+	if (AbilitySettings.IsValidIndex(0))
+	{
+		Guardian->S_LearnAbility(AbilitySettings[0], FName("AbilityBar1"));
+	}
+	if (AbilitySettings.IsValidIndex(1))
+	{
+		Guardian->S_LearnAbility(AbilitySettings[1], FName("AbilityBar2"));
+	}
+	if (AbilitySettings.IsValidIndex(2))
+	{
+		Guardian->S_LearnAbility(AbilitySettings[2], FName("AbilityBar3"));
+	}
 }
 
 // ------------------------------------------- MouseUtils -------------------------------------------
@@ -282,7 +316,6 @@ void APC_Ingame::LeftClick(const FInputActionInstance& Instance)
 	{
 		ClickActor();
 	}
-
 }
 
 void APC_Ingame::StartJump(const FInputActionInstance& Instance)
@@ -329,40 +362,40 @@ void APC_Ingame::ToggleBuildMenu()
 
 void APC_Ingame::ActivateAbility1()
 {
-	ActivateAbility(1);
+	ActivateAbility(FName("AbilityBar1"));
 }
 
 void APC_Ingame::ActivateAbility2()
 {
-	ActivateAbility(2);
+	ActivateAbility(FName("AbilityBar2"));
 }
 
 void APC_Ingame::ActivateAbility3()
 {
-	ActivateAbility(3);
+	ActivateAbility(FName("AbilityBar3"));
 }
 
 void APC_Ingame::ActivateAbility4()
 {
-	ActivateAbility(4);
+	ActivateAbility(FName("AbilityBar4"));
 }
 
 void APC_Ingame::ActivateAbility5()
 {
-	ActivateAbility(5);
+	ActivateAbility(FName("AbilityBar5"));
 }
 
 void APC_Ingame::ActivateAbility6()
 {
-	ActivateAbility(6);
+	ActivateAbility(FName("AbilityBar6"));
 }
 
 void APC_Ingame::ActivateAbility7()
 {
-	ActivateAbility(7);
+	ActivateAbility(FName("AbilityBar7"));
 }
 
 void APC_Ingame::ActivateAbility8()
 {
-	ActivateAbility(8);
+	ActivateAbility(FName("AbilityBar8"));
 }

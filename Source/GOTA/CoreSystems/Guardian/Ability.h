@@ -7,27 +7,57 @@
 #include "GameFramework/Actor.h"
 #include "Ability.generated.h"
 
+class UAbilityWidget;
+class UAbilitySettings;
+
 UCLASS()
 class GOTA_API AAbility : public AActor
 {
 	GENERATED_BODY()
-	
+
 	// ------------------------------------ Replication Setup --------------------------------------
-	
+
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+
 	// ---------------------------------------- Lifecycle ----------------------------------------
 public:
 	AAbility();
-	
+
+	void S_Init(UAbilitySettings* InSettings, const FName InAbilitySlotName);
+
 	// ---------------------------------------- Utility ----------------------------------------
 private:
+	UPROPERTY(Replicated)
+	TWeakObjectPtr<UAbilitySettings> Settings;
+
+public:
+	UAbilitySettings* GetSettings() { return Settings.Get(); }
+
+	// ---------------------------------------- Activation ----------------------------------------
+
 	UFUNCTION(Server, Reliable)
 	void SRPC_ActivateAbility(FAbilityTarget Target);
-	
+
 protected:
-	virtual void S_ActivateAbility(FAbilityTarget Target) {}
-	
+	virtual void S_ActivateAbility(FAbilityTarget Target);
+
 public:
 	void ActivateAbility(FAbilityTarget Target);
 
 	virtual bool IsValidTarget(FAbilityTarget Target) { return false; }
+
+	// ---------------------------------------- UI ----------------------------------------
+
+private:
+	UPROPERTY(Replicated)
+	FName SlotName;
+
+	UFUNCTION(Server, Reliable)
+	void SRPC_SetSlotName(FName NewSlotName);
+
+	TWeakObjectPtr<UAbilityWidget> Widget;
+	
+public:
+	void SetSlotName(const FName NewSlotName);
+	FName GetSlotName() const { return SlotName; }
 };

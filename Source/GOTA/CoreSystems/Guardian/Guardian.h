@@ -39,12 +39,7 @@ public:
 private:
 	UPROPERTY(Replicated)
 	TArray<TWeakObjectPtr<AAbility>> Abilities;
-
-	UPROPERTY(Replicated)
-	TArray<TWeakObjectPtr<AAbility>> AbilityBar;
 	
-	void S_LearnAbility(const UAbilitySettings* AbilitySettings);
-
 public:
-	AAbility* GetAbilityInSlot(int32 Index);	
+	void S_LearnAbility(UAbilitySettings* AbilitySettings, FName AbilitySlotName);
 };

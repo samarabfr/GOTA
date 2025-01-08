@@ -1,5 +1,6 @@
 ﻿#include "IngameUI.h"
 
+#include "AbilityBar.h"
 #include "BuildingMenu.h"
 #include "ClickedInfo.h"
 #include "GuardianInfo.h"
@@ -70,4 +71,9 @@ void UIngameUI::OpenBuildMenu()
 void UIngameUI::OnGameEnding(const EGameEnding Ending, const FString& EndingMessage)
 {
 	TXT_GameEnding->SetText(FText::FromString(EndingMessage));
+}
+
+TArray<UAbilitySlot*> UIngameUI::GetAbilityBarSlots()
+{
+	return WBP_AbilityBar->GetAbilitySlots();
 }
