@@ -45,8 +45,8 @@ private:
 	void SpawnAbilityWidgetIfNeeded(FAbilitySlotEntry* Entry);
 	
 public:
-	void RegisterAbilitySlot(UAbilitySlot* AbilitySlot, FName SlotName);
-	void UnregisterAbilitySlot(UAbilitySlot* AbilitySlot, FName SlotName);
+	void RegisterAbilitySlot(FName SlotName, UAbilitySlot* AbilitySlot);
+	void UnregisterAbilitySlot(FName SlotName, UAbilitySlot* AbilitySlot);
 	
 	void RegisterAbilityInSlot(FName SlotName, AAbility* Ability);
 	void UnregisterAbilityInSlot(FName SlotName, AAbility* Ability);

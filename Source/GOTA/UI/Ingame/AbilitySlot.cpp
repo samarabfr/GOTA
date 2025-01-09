@@ -12,7 +12,7 @@ void UAbilitySlot::Init(FName InSlotName)
 	SlotName = InSlotName;
 	if (UAbilityManager* AbilityManager = GetWorld()->GetGameInstance()->GetSubsystem<UAbilityManager>())
 	{
-		AbilityManager->RegisterAbilitySlot(this, SlotName);
+		AbilityManager->RegisterAbilitySlot(SlotName, this);
 	}
 }
 

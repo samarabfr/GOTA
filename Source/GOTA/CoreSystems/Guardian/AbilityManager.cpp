@@ -34,7 +34,7 @@ void UAbilityManager::SpawnAbilityWidgetIfNeeded(FAbilitySlotEntry* Entry)
 	}
 }
 
-void UAbilityManager::RegisterAbilitySlot(UAbilitySlot* AbilitySlot, FName SlotName)
+void UAbilityManager::RegisterAbilitySlot(FName SlotName, UAbilitySlot* AbilitySlot)
 {
 	if (FAbilitySlotEntry* Entry = AbilitySlotRegister.Find(SlotName))
 	{
@@ -58,7 +58,7 @@ void UAbilityManager::RegisterAbilitySlot(UAbilitySlot* AbilitySlot, FName SlotN
 	}
 }
 
-void UAbilityManager::UnregisterAbilitySlot(UAbilitySlot* AbilitySlot, FName SlotName)
+void UAbilityManager::UnregisterAbilitySlot(FName SlotName, UAbilitySlot* AbilitySlot)
 {
 	if (FAbilitySlotEntry* Entry = AbilitySlotRegister.Find(SlotName))
 	{

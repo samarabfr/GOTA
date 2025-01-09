@@ -91,8 +91,8 @@ void ALoadingManager::ServerTick()
 		if (IsEveryoneOn(ELoadingStatus::WaitForReplication))
 		{
 			LocalPlayerController->CreateIngameUI();
-			LocalPlayerController->LearnDebugAbilities();
 			GameMode->InitialPossession();
+			LocalPlayerController->LearnDebugAbilities();
 			LoadingStatus->SetCurrentStatus(ELoadingStatus::WaitForFinished);
 			GameState->GetTileMap()->MaxAllEcoValues();
 			GracePeriodTime = 0.0;
