@@ -62,20 +62,33 @@ void AAbility::ActivateAbility(FAbilityTarget Target)
 
 // ---------------------------------------- Ability Slot ----------------------------------------
 
+void AAbility::OnRep_SlotName(FName OldSlotName)
+{
+	NotifySlotNameChangeToUI(OldSlotName, SlotName);
+}
+
 void AAbility::SRPC_SetSlotName_Implementation(FName NewSlotName)
 {
 	SlotName = NewSlotName;
 	MARK_PROPERTY_DIRTY_FROM_NAME(AAbility, SlotName, this)
 }
 
-void AAbility::SetSlotName(const FName NewSlotName)
+void AAbility::NotifySlotNameChangeToUI(const FName OldSlotName, const FName NewSlotName)
 {
-	UAbilityManager* AbilityManager = GetWorld()->GetGameInstance()->GetSubsystem<UAbilityManager>();
-	if (AbilityManager)
+	// Make sure this is only done on the local playercontroller
+	if (!IsOwnedBy(GetWorld()->GetFirstPlayerController()))
+		return;
+	
+	if (UAbilityManager* AbilityManager = GetWorld()->GetGameInstance()->GetSubsystem<UAbilityManager>())
 	{
-		AbilityManager->UnregisterAbilityInSlot(SlotName, this);
+		AbilityManager->UnregisterAbilityInSlot(OldSlotName, this);
 		AbilityManager->RegisterAbilityInSlot(NewSlotName, this);
 	}
-	SlotName = NewSlotName;
+}
+
+void AAbility::SetSlotName(const FName NewSlotName)
+{
+	if (NewSlotName == SlotName) return;
+	NotifySlotNameChangeToUI(SlotName, NewSlotName);
 	SRPC_SetSlotName(NewSlotName);
 }

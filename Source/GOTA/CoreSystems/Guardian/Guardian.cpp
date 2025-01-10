@@ -56,18 +56,21 @@ void AGuardian::S_Init(UGuardianSettings* InSettings)
 
 // ---------------------------------------- Abilities ----------------------------------------
 
-// ToDo implement replication shit, srpc and that stuff to learn abilities... react to replication of a new ability as well
-
-void AGuardian::S_LearnAbility(UAbilitySettings* AbilitySettings, FName AbilitySlotName)
+void AGuardian::SRPC_LearnAbility_Implementation(UAbilitySettings* AbilitySettings, FName AbilitySlotName)
 {
 	FActorSpawnParameters AbilitySpawnParams;
 	AbilitySpawnParams.Owner = this;
 	AActor* Actor = GetWorld()->SpawnActor(AbilitySettings->GetAbilityClass(),
-	                                       &FTransform::Identity,
-	                                       AbilitySpawnParams);
+										   &FTransform::Identity,
+										   AbilitySpawnParams);
 	AAbility* Ability = Cast<AAbility>(Actor);
 	Ability->S_Init(AbilitySettings, AbilitySlotName);
 	
 	Abilities.Add(Ability);
 	MARK_PROPERTY_DIRTY_FROM_NAME(AGuardian, Abilities, this)
+}
+
+void AGuardian::LearnAbility(UAbilitySettings* AbilitySettings, FName AbilitySlotName)
+{
+	SRPC_LearnAbility(AbilitySettings, AbilitySlotName);
 }

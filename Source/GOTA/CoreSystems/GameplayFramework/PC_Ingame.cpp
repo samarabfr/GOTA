@@ -10,6 +10,7 @@
 #include "GOTA/UI/Ingame/AbilitySlot.h"
 #include "GOTA/CoreSystems/Guardian/AbilityManager.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
+#include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
 #include "GOTA/CoreSystems/Utility/DistanceUtils.h"
 #include "GOTA/CoreSystems/Utility/MouseUtils.h"
 #include "GOTA/UI/Ingame/IngameUI.h"
@@ -218,15 +219,19 @@ void APC_Ingame::LearnDebugAbilities()
 	TArray<UAbilitySettings*> AbilitySettings = AbilityManager->GetAllAbilitySettings();
 	if (AbilitySettings.IsValidIndex(0))
 	{
-		Guardian->S_LearnAbility(AbilitySettings[0], FName("AbilityBar1"));
+		Guardian->LearnAbility(AbilitySettings[0], FName("AbilityBar1"));
 	}
 	if (AbilitySettings.IsValidIndex(1))
 	{
-		Guardian->S_LearnAbility(AbilitySettings[1], FName("AbilityBar2"));
+		Guardian->LearnAbility(AbilitySettings[1], FName("AbilityBar2"));
 	}
 	if (AbilitySettings.IsValidIndex(2))
 	{
-		Guardian->S_LearnAbility(AbilitySettings[2], FName("AbilityBar3"));
+		Guardian->LearnAbility(AbilitySettings[2], FName("AbilityBar3"));
+	}
+	if (Guardian->GetSettings()->Name == FName("Flamey"))
+	{
+		Guardian->LearnAbility(AbilitySettings[2], FName("AbilityBar4"));
 	}
 }
 

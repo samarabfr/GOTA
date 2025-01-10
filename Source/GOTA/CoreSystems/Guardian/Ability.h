@@ -48,14 +48,20 @@ public:
 
 	// ---------------------------------------- UI ----------------------------------------
 
-private:
-	UPROPERTY(Replicated)
+private:	
+	TWeakObjectPtr<UAbilityWidget> Widget;
+	
+	UPROPERTY(ReplicatedUsing = OnRep_SlotName)
 	FName SlotName;
-
+	
+	UFUNCTION()
+	void OnRep_SlotName(FName OldSlotName);
+	
 	UFUNCTION(Server, Reliable)
 	void SRPC_SetSlotName(FName NewSlotName);
 
-	TWeakObjectPtr<UAbilityWidget> Widget;
+	// Only Notifies UI if this Ability is owned by the local playercontroller
+	void NotifySlotNameChangeToUI(FName OldSlotName, FName NewSlotName);
 	
 public:
 	void SetSlotName(const FName NewSlotName);

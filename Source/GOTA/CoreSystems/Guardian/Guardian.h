@@ -39,7 +39,10 @@ public:
 private:
 	UPROPERTY(Replicated)
 	TArray<TWeakObjectPtr<AAbility>> Abilities;
+
+	UFUNCTION(Server, Reliable)
+	void SRPC_LearnAbility(UAbilitySettings* AbilitySettings, FName AbilitySlotName);
 	
 public:
-	void S_LearnAbility(UAbilitySettings* AbilitySettings, FName AbilitySlotName);
+	void LearnAbility(UAbilitySettings* AbilitySettings, FName AbilitySlotName);
 };
