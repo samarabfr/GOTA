@@ -37,11 +37,14 @@ public:
 
 	// ---------------------------------------- Abilities ----------------------------------------
 private:
-	UPROPERTY(Replicated)
+	UPROPERTY(Replicated, VisibleInstanceOnly)
 	TArray<TWeakObjectPtr<AAbility>> Abilities;
 
 	UFUNCTION(Server, Reliable)
 	void SRPC_LearnAbility(UAbilitySettings* AbilitySettings, FName AbilitySlotName);
+
+	UFUNCTION()
+	void HandleAbilityDestruction(AActor* DestroyedAbility);
 	
 public:
 	void LearnAbility(UAbilitySettings* AbilitySettings, FName AbilitySlotName);

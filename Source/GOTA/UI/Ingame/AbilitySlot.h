@@ -9,7 +9,7 @@ class AAbility;
 class UAbilityImage;
 class UImage;
 
-UCLASS(Blueprintable)
+UCLASS()
 class GOTA_API UAbilitySlot : public UUserWidget
 {
 	GENERATED_BODY()
@@ -51,4 +51,6 @@ private:
 
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
 	                          UDragDropOperation* InOperation) override;
+protected:
+	virtual void OnSuccessfulDrop(UAbilitySlot* OriginSlot);
 };

@@ -83,12 +83,17 @@ bool UAbilitySlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEven
 	{
 		// Dragging from another AbilitySlot into this one
 		UAbilitySlot* OriginSlot = Cast<UAbilitySlot>(InOperation->Payload);
-		if (OriginSlot)
+		if (OriginSlot != nullptr)
 		{
-			SetAbility(OriginSlot->GetAbility());
-			OriginSlot->SetAbility(nullptr);
+			OnSuccessfulDrop(OriginSlot);
 			return true;
 		}
 	}
 	return false;
+}
+
+void UAbilitySlot::OnSuccessfulDrop(UAbilitySlot* OriginSlot)
+{
+	SetAbility(OriginSlot->GetAbility());
+	OriginSlot->SetAbility(nullptr);
 }

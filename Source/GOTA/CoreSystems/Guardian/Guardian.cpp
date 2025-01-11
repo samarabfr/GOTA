@@ -61,13 +61,26 @@ void AGuardian::SRPC_LearnAbility_Implementation(UAbilitySettings* AbilitySettin
 	FActorSpawnParameters AbilitySpawnParams;
 	AbilitySpawnParams.Owner = this;
 	AActor* Actor = GetWorld()->SpawnActor(AbilitySettings->GetAbilityClass(),
-										   &FTransform::Identity,
-										   AbilitySpawnParams);
+	                                       &FTransform::Identity,
+	                                       AbilitySpawnParams);
 	AAbility* Ability = Cast<AAbility>(Actor);
 	Ability->S_Init(AbilitySettings, AbilitySlotName);
-	
+
+	Ability->OnDestroyed.AddDynamic(this, &AGuardian::HandleAbilityDestruction);
+
 	Abilities.Add(Ability);
 	MARK_PROPERTY_DIRTY_FROM_NAME(AGuardian, Abilities, this)
+}
+
+void AGuardian::HandleAbilityDestruction(AActor* DestroyedAbility)
+{
+	for (int32 i = Abilities.Num() - 1; i >= 0; --i)
+	{
+		if (!Abilities[i].IsValid() || Abilities[i].Get() == DestroyedAbility)
+		{
+			Abilities.RemoveAt(i);
+		}
+	}
 }
 
 void AGuardian::LearnAbility(UAbilitySettings* AbilitySettings, FName AbilitySlotName)
