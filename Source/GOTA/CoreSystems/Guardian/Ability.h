@@ -7,7 +7,7 @@
 #include "GameFramework/Actor.h"
 #include "Ability.generated.h"
 
-class UAbilityWidget;
+class UAbilityImage;
 class UAbilitySettings;
 
 UCLASS()
@@ -49,7 +49,7 @@ public:
 	// ---------------------------------------- UI ----------------------------------------
 
 private:	
-	TWeakObjectPtr<UAbilityWidget> Widget;
+	TWeakObjectPtr<UAbilityImage> Widget;
 	
 	UPROPERTY(ReplicatedUsing = OnRep_SlotName)
 	FName SlotName;

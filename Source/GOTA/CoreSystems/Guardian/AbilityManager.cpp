@@ -30,7 +30,7 @@ void UAbilityManager::SpawnAbilityWidgetIfNeeded(FAbilitySlotEntry* Entry)
 {
 	if (Entry && Entry->Ability.IsValid() && Entry->AbilitySlot.IsValid())
 	{
-		Entry->AbilitySlot->SpawnAbilityWidget(Entry->Ability.Get());
+		Entry->AbilitySlot->SetAbility(Entry->Ability.Get());
 	}
 }
 

@@ -1,9 +1,11 @@
 ﻿#include "AbilitySlot.h"
 
 #include "GOTA/CoreSystems/Guardian/AbilityManager.h"
-#include "AbilityWidget.h"
+#include "GOTA/CoreSystems/Guardian/Ability.h"
+#include "Blueprint/DragDropOperation.h"
 #include "Components/CanvasPanel.h"
-#include "Components/CanvasPanelSlot.h"
+#include "Components/Image.h"
+#include "GOTA/CoreSystems/Guardian/AbilitySettings.h"
 
 // ---------------------------------------- Lifecycle ----------------------------------------
 
@@ -18,48 +20,75 @@ void UAbilitySlot::Init(FName InSlotName)
 
 // ---------------------------------------- Utility ----------------------------------------
 
+// ---------------------------------------- Ability ----------------------------------------
+
 AAbility* UAbilitySlot::GetAbility() const
 {
-	return AbilityWidget.IsValid() ? AbilityWidget->GetAbility() : nullptr;
+	return Ability.Get();
 }
 
-void UAbilitySlot::SetAbilityWidget(UAbilityWidget* NewAbilityWidget)
+void UAbilitySlot::SetAbility(AAbility* NewAbility)
 {
-	AbilityWidget = NewAbilityWidget;
-	UCanvasPanelSlot* PanelSlot = Canvas->AddChildToCanvas(AbilityWidget.Get());
-	PanelSlot->SetAnchors(FAnchors(0.5f, 0.5f));
-	PanelSlot->SetPosition(FVector2D(0.0f, 0.0f));
-	PanelSlot->SetAlignment(FVector2D(0.5f, 0.5f));
-	PanelSlot->SetSize(FVector2D(64.0f, 64.0f));
-}
-
-void UAbilitySlot::SpawnAbilityWidget(AAbility* Ability)
-{
-	if (!Ability || !GetWorld())
+	Ability = NewAbility;
+	if (NewAbility != nullptr)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("SpawnAbilityWidget: Invalid ability or world context."));
-		return;
+		AbilityImage->SetBrushFromTexture(Ability->GetSettings()->GetIcon());
+		AbilityImage->SetVisibility(ESlateVisibility::Visible);
 	}
-
-	if (AbilityWidget.IsValid())
+	else
 	{
-		UE_LOG(LogTemp, Warning,
-		       TEXT("SpawnAbilityWidget: AbilityWidget already exists for SlotName: %s."),
-		       *SlotName.ToString());
-		return;
+		AbilityImage->SetVisibility(ESlateVisibility::Hidden);
 	}
-
-	UAbilityWidget* NewAbilityWidget = CreateWidget<UAbilityWidget>(GetWorld(), AbilityWidgetClass);
-	if (!NewAbilityWidget)
-	{
-		UE_LOG(LogTemp, Error, TEXT("SpawnAbilityWidget: Failed to create AbilityWidget."));
-		return;
-	}
-
-	NewAbilityWidget->Init(Ability);
-	NewAbilityWidget->AddToViewport();
-
-	SetAbilityWidget(NewAbilityWidget);
 }
 
 // ---------------------------------------- SlotName ----------------------------------------
+
+// ---------------------------------------- Drag & Drop ----------------------------------------
+
+FReply UAbilitySlot::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	if (Ability != nullptr)
+	{
+		// Start Dragging
+		return FReply::Handled().DetectDrag(TakeWidget(), EKeys::LeftMouseButton);
+	}
+	else
+	{
+		return FReply::Handled();
+	}
+}
+
+
+void UAbilitySlot::NativeOnDragDetected(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent,
+                                        UDragDropOperation*& OutOperation)
+{
+	UDragDropOperation* DragDropOp = NewObject<UDragDropOperation>();
+	DragDropOp->Payload = this;
+
+	UImage* VisualDrag = NewObject<UImage>();
+	VisualDrag->SetBrush(AbilityImage->GetBrush());
+	DragDropOp->DefaultDragVisual = VisualDrag;
+
+	OutOperation = DragDropOp;
+}
+
+
+bool UAbilitySlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
+                                UDragDropOperation* InOperation)
+{
+	// If this Slot has an Ability, reject the DragDrop
+	if (Ability != nullptr) return false;
+
+	if (InOperation->Payload && InOperation->Payload->IsA(StaticClass()))
+	{
+		// Dragging from another AbilitySlot into this one
+		UAbilitySlot* OriginSlot = Cast<UAbilitySlot>(InOperation->Payload);
+		if (OriginSlot)
+		{
+			SetAbility(OriginSlot->GetAbility());
+			OriginSlot->SetAbility(nullptr);
+			return true;
+		}
+	}
+	return false;
+}

@@ -7,7 +7,7 @@
 
 class UAbilityBar;
 class UAbilitySlot;
-class UAbilityWidget;
+class UAbilityImage;
 class AGS_Ingame;
 class UBuildingMenu;
 class UButton;
