@@ -6,6 +6,7 @@
 #include "GuardianInfo.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "GOTA/UI/Menu/IngameMenu.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 
 // ------------------------------- LifeCycle -------------------------------
@@ -24,6 +25,18 @@ void UIngameUI::NativeConstruct()
 
 void UIngameUI::HoverActor(AActor* Actor)
 {
+}
+
+void UIngameUI::HandleEscapePressed()
+{
+	ToggleMenu();
+}
+
+// ------------------------------- Ingame Menu -------------------------------
+
+void UIngameUI::ToggleMenu()
+{
+	IngameMenu->Toggle();
 }
 
 // ------------------------------- Guardian Info -------------------------------

@@ -294,6 +294,7 @@ void APC_Ingame::InitInput()
 	Component->BindAction(DataAsset->ActivateLooking, ETriggerEvent::Started, this, &APC_Ingame::StartLookingAround);
 	Component->BindAction(DataAsset->ActivateLooking, ETriggerEvent::Completed, this, &APC_Ingame::StopLookingAround);
 
+	Component->BindAction(DataAsset->Escape, ETriggerEvent::Triggered, this, &APC_Ingame::HandleEscapePressed);
 	Component->BindAction(DataAsset->BuildMenu, ETriggerEvent::Triggered, this, &APC_Ingame::ToggleBuildMenu);
 
 	Component->BindAction(DataAsset->Ability1, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility1);
@@ -357,6 +358,12 @@ void APC_Ingame::StopLookingAround(const FInputActionInstance& Instance)
 {
 	bIsLookingAround = false;
 	SetShowMouseCursor(true);
+}
+
+void APC_Ingame::HandleEscapePressed()
+{
+	if (!IngameUI) return;
+	IngameUI->HandleEscapePressed();
 }
 
 void APC_Ingame::ToggleBuildMenu()

@@ -5,6 +5,7 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "IngameUI.generated.h"
 
+class UIngameMenu;
 class UAbilityBar;
 class UAbilitySlot;
 class UAbilityImage;
@@ -29,6 +30,17 @@ protected:
 	// ------------------------------- Utility -------------------------------
 public:
 	void HoverActor(AActor* Actor);
+	
+	void HandleEscapePressed();
+
+	// ------------------------------- Ingame Menu -------------------------------
+private:
+	UPROPERTY(meta = (BindWidget))
+	UIngameMenu* IngameMenu;
+
+	
+public:
+	void ToggleMenu();
 
 	// ------------------------------- Guardian Info -------------------------------
 protected:
@@ -81,12 +93,12 @@ protected:
 private:
 	UFUNCTION()
 	void OnGameEnding(const EGameEnding Ending, const FString& EndingMessage);
-	
+
 	// ------------------------------- Ability -------------------------------
 protected:
 	UPROPERTY(meta = (BindWidget))
 	UAbilityBar* WBP_AbilityBar;
-	
+
 public:
 	TArray<UAbilitySlot*> GetAbilityBarSlots();
 };

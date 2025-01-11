@@ -153,6 +153,7 @@ private:
 	void StartLookingAround(const FInputActionInstance& Instance);
 	void StopLookingAround(const FInputActionInstance& Instance);
 
+	void HandleEscapePressed();
 	void ToggleBuildMenu();
 	
 	void ActivateAbility1();
