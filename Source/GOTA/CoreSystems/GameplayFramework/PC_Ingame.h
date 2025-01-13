@@ -120,8 +120,7 @@ private:
 public:
 	void ActivateAbility(FName SlotName);
 	void ActivateAbility(UAbilitySlot* Slot);
-
-	void LearnDebugAbilities();
+	
 	void LearnAbility(UAbilitySettings* AbilitySettings);
 	
 	// ------------------------------------------- MouseUtils -------------------------------------------

@@ -211,30 +211,6 @@ void APC_Ingame::ActivateAbility(UAbilitySlot* Slot)
 	}
 }
 
-void APC_Ingame::LearnDebugAbilities()
-{
-	if (!Guardian) return;
-
-	const UAbilityManager* AbilityManager = GetGameInstance()->GetSubsystem<UAbilityManager>();
-	TArray<UAbilitySettings*> AbilitySettings = AbilityManager->GetAllAbilitySettings();
-	if (AbilitySettings.IsValidIndex(0))
-	{
-		Guardian->LearnAbility(AbilitySettings[0], FName("AbilityBar1"));
-	}
-	if (AbilitySettings.IsValidIndex(1))
-	{
-		Guardian->LearnAbility(AbilitySettings[1], FName("AbilityBar2"));
-	}
-	if (AbilitySettings.IsValidIndex(2))
-	{
-		Guardian->LearnAbility(AbilitySettings[2], FName("AbilityBar3"));
-	}
-	if (Guardian->GetSettings()->Name == FName("Flamey"))
-	{
-		Guardian->LearnAbility(AbilitySettings[2], FName("AbilityBar4"));
-	}
-}
-
 void APC_Ingame::LearnAbility(UAbilitySettings* AbilitySettings)
 {
 	if (!Guardian) return;

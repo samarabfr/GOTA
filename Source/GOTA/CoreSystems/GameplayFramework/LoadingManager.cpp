@@ -92,7 +92,6 @@ void ALoadingManager::ServerTick()
 		{
 			LocalPlayerController->CreateIngameUI();
 			GameMode->InitialPossession();
-			LocalPlayerController->LearnDebugAbilities();
 			LoadingStatus->SetCurrentStatus(ELoadingStatus::WaitForFinished);
 			GameState->GetTileMap()->MaxAllEcoValues();
 			GracePeriodTime = 0.0;
@@ -168,7 +167,6 @@ void ALoadingManager::ClientTick()
 		if (LoadingStatuses[0]->CurrentStatus == ELoadingStatus::WaitForFinished)
 		{
 			LocalPlayerController->CreateIngameUI();
-			LocalPlayerController->LearnDebugAbilities();
 			LoadingStatus->SetCurrentStatus(ELoadingStatus::WaitForFinished);
 		}
 		break;
