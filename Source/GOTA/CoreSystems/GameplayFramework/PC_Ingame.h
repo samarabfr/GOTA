@@ -5,6 +5,7 @@
 
 #include "GameFramework/PlayerController.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingPlacer.h"
+#include "GOTA/CoreSystems/Guardian/AbilitySettings.h"
 #include "PC_Ingame.generated.h"
 
 class UAbilitySlot;
@@ -33,7 +34,7 @@ public:
 	void S_Init();
 
 	void C_Init();
-	
+
 	// -------------------------------------------- Utility --------------------------------------------
 private:
 	UPROPERTY()
@@ -106,7 +107,7 @@ public:
 private:
 	void PlaceBuilding();
 
-	// ---------------------------------------- Ability Targeting ----------------------------------------
+	// ---------------------------------------- Ability ----------------------------------------
 private:
 	UPROPERTY()
 	TWeakObjectPtr<AAbility> CurrentlyTargeting;
@@ -121,6 +122,7 @@ public:
 	void ActivateAbility(UAbilitySlot* Slot);
 
 	void LearnDebugAbilities();
+	void LearnAbility(UAbilitySettings* AbilitySettings);
 	
 	// ------------------------------------------- MouseUtils -------------------------------------------
 private:
@@ -155,6 +157,7 @@ private:
 
 	void HandleEscapePressed();
 	void ToggleBuildMenu();
+	void ToggleDebugMenu();
 	
 	void ActivateAbility1();
 	void ActivateAbility2();

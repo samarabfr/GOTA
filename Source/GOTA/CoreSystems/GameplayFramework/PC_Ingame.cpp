@@ -151,7 +151,7 @@ void APC_Ingame::PlaceBuilding()
 	BuildingPlacer->PlaceBuilding();
 }
 
-// ---------------------------------------- Ability Targeting ----------------------------------------
+// ---------------------------------------- Ability ----------------------------------------
 
 
 void APC_Ingame::ActivateCurrentlyTargetingAbility()
@@ -189,7 +189,7 @@ void APC_Ingame::ActivateAbility(FName SlotName)
 void APC_Ingame::ActivateAbility(UAbilitySlot* Slot)
 {
 	if (!Slot) return;
-	
+
 	AAbility* Ability = Slot->GetAbility();
 
 	// Either Input was invalid or there is no skill in the selected slot, either way we tried to activate
@@ -214,7 +214,7 @@ void APC_Ingame::ActivateAbility(UAbilitySlot* Slot)
 void APC_Ingame::LearnDebugAbilities()
 {
 	if (!Guardian) return;
-	
+
 	const UAbilityManager* AbilityManager = GetGameInstance()->GetSubsystem<UAbilityManager>();
 	TArray<UAbilitySettings*> AbilitySettings = AbilityManager->GetAllAbilitySettings();
 	if (AbilitySettings.IsValidIndex(0))
@@ -232,6 +232,18 @@ void APC_Ingame::LearnDebugAbilities()
 	if (Guardian->GetSettings()->Name == FName("Flamey"))
 	{
 		Guardian->LearnAbility(AbilitySettings[2], FName("AbilityBar4"));
+	}
+}
+
+void APC_Ingame::LearnAbility(UAbilitySettings* AbilitySettings)
+{
+	if (!Guardian) return;
+
+	const UAbilityManager* AbilityManager = GetGameInstance()->GetSubsystem<UAbilityManager>();
+	const FName AbilitySlotName = AbilityManager->GetFreeAbilitySlotName();
+	if (!AbilitySlotName.IsNone())
+	{
+		Guardian->LearnAbility(AbilitySettings, AbilitySlotName);
 	}
 }
 
@@ -296,6 +308,7 @@ void APC_Ingame::InitInput()
 
 	Component->BindAction(DataAsset->Escape, ETriggerEvent::Triggered, this, &APC_Ingame::HandleEscapePressed);
 	Component->BindAction(DataAsset->BuildMenu, ETriggerEvent::Triggered, this, &APC_Ingame::ToggleBuildMenu);
+	Component->BindAction(DataAsset->DebugMenu, ETriggerEvent::Triggered, this, &APC_Ingame::ToggleDebugMenu);
 
 	Component->BindAction(DataAsset->Ability1, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility1);
 	Component->BindAction(DataAsset->Ability2, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility2);
@@ -370,6 +383,12 @@ void APC_Ingame::ToggleBuildMenu()
 {
 	if (!IngameUI) return;
 	IngameUI->ToggleBuildMenu();
+}
+
+void APC_Ingame::ToggleDebugMenu()
+{
+	if (!IngameUI) return;
+	IngameUI->ToggleDebugMenu();
 }
 
 void APC_Ingame::ActivateAbility1()

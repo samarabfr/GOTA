@@ -8,6 +8,7 @@
 #include "Components/TextBlock.h"
 #include "GOTA/UI/Menu/IngameMenu.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
+#include "GOTA/UI/DebugMenu/DebugMenu.h"
 
 // ------------------------------- LifeCycle -------------------------------
 
@@ -89,4 +90,15 @@ void UIngameUI::OnGameEnding(const EGameEnding Ending, const FString& EndingMess
 TArray<UAbilitySlot*> UIngameUI::GetAbilityBarSlots()
 {
 	return WBP_AbilityBar->GetAbilitySlots();
+}
+
+void UIngameUI::ToggleDebugMenu()
+{
+	if (DebugMenu->GetVisibility() == ESlateVisibility::Hidden)
+	{
+		DebugMenu->SetVisibility(ESlateVisibility::Visible);
+	} else
+	{
+		DebugMenu->SetVisibility(ESlateVisibility::Hidden);
+	}
 }

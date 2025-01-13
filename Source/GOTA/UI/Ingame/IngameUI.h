@@ -5,6 +5,7 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "IngameUI.generated.h"
 
+class UDebugMenu;
 class UIngameMenu;
 class UAbilityBar;
 class UAbilitySlot;
@@ -101,4 +102,12 @@ protected:
 
 public:
 	TArray<UAbilitySlot*> GetAbilityBarSlots();
+
+	// ------------------------------- Debug Menu -------------------------------
+protected:
+	UPROPERTY(meta = (BindWidget))
+	UDebugMenu* DebugMenu;
+
+public:
+	void ToggleDebugMenu();
 };

@@ -66,4 +66,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Ability Actions")
 	UInputAction* Ability8;
+
+	UPROPERTY(EditDefaultsOnly, Category="Ability Actions")
+	UInputAction* DebugMenu;
 };
