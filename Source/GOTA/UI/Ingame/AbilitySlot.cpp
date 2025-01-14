@@ -12,9 +12,9 @@
 void UAbilitySlot::Init(FName InSlotName)
 {
 	SlotName = InSlotName;
-	if (UAbilityManager* AbilityManager = GetWorld()->GetGameInstance()->GetSubsystem<UAbilityManager>())
+	if (UAbilityManager* AbilityManager = GetGameInstance()->GetSubsystem<UAbilityManager>())
 	{
-		AbilityManager->RegisterAbilitySlot(SlotName, this);
+		AbilityManager->RegisterAbilitySlotWidget(SlotName, this);
 	}
 }
 
@@ -76,9 +76,6 @@ void UAbilitySlot::NativeOnDragDetected(const FGeometry& InGeometry, const FPoin
 bool UAbilitySlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
                                 UDragDropOperation* InOperation)
 {
-	// If this Slot has an Ability, reject the DragDrop
-	if (Ability != nullptr) return false;
-
 	if (InOperation->Payload && InOperation->Payload->IsA(StaticClass()))
 	{
 		// Dragging from another AbilitySlot into this one
@@ -94,6 +91,9 @@ bool UAbilitySlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEven
 
 void UAbilitySlot::OnSuccessfulDrop(UAbilitySlot* OriginSlot)
 {
-	SetAbility(OriginSlot->GetAbility());
-	OriginSlot->SetAbility(nullptr);
+	UAbilityManager* AbilityManager = GetGameInstance()->GetSubsystem<UAbilityManager>();
+	if (AbilityManager)
+	{
+		AbilityManager->SwapAbilitiesInSlots(OriginSlot->GetSlotName(), SlotName);
+	}
 }

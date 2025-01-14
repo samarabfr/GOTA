@@ -3,6 +3,7 @@
 #include "Blueprint/UserWidget.h"
 #include "AbilitySlot.generated.h"
 
+class UAbilityManager;
 class UCanvasPanel;
 class UOverlay;
 class AAbility;
@@ -31,6 +32,7 @@ private:
 	TWeakObjectPtr<AAbility> Ability;
 
 public:
+	// Should only be called by the AbilityManager, use AbilityManager::RegisterAbilityInSlot instead
 	void SetAbility(AAbility* NewAbility);
 
 	AAbility* GetAbility() const;
@@ -51,6 +53,7 @@ private:
 
 	virtual bool NativeOnDrop(const FGeometry& InGeometry, const FDragDropEvent& InDragDropEvent,
 	                          UDragDropOperation* InOperation) override;
+
 protected:
 	virtual void OnSuccessfulDrop(UAbilitySlot* OriginSlot);
 };

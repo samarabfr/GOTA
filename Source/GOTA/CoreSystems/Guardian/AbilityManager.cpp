@@ -26,84 +26,64 @@ void UAbilityManager::Initialize(FSubsystemCollectionBase& Collection)
 
 // ---------------------------------------- AbilitySlots ----------------------------------------
 
-void UAbilityManager::SpawnAbilityWidgetIfNeeded(FAbilitySlotEntry* Entry)
-{
-	if (Entry && Entry->Ability.IsValid() && Entry->AbilitySlot.IsValid())
-	{
-		Entry->AbilitySlot->SetAbility(Entry->Ability.Get());
-	}
-}
-
-void UAbilityManager::RegisterAbilitySlot(FName SlotName, UAbilitySlot* AbilitySlot)
+void UAbilityManager::RegisterAbilitySlotWidget(const FName SlotName, UAbilitySlot* AbilitySlot)
 {
 	if (FAbilitySlotEntry* Entry = AbilitySlotRegister.Find(SlotName))
 	{
+		// Entry Exists
+		Entry->AbilitySlot = AbilitySlot;
 		if (Entry->AbilitySlot.IsValid())
 		{
-			UE_LOG(LogTemp, Warning,
-			       TEXT("Tried to Register an AbilitySlot that already exists. Slot: %s")
-			       , *SlotName.ToString())
+			// Inform AbilitySlot of the Ability that was Registered in this SlotName already
+			Entry->AbilitySlot->SetAbility(Entry->Ability.Get());
 		}
-		else
+		else if (!Entry->Ability.IsValid())
 		{
-			Entry->AbilitySlot = AbilitySlot;
-			SpawnAbilityWidgetIfNeeded(Entry);
+			// The Entry Exists but both pointers are Invalid. we can remove this Entry
+			AbilitySlotRegister.Remove(SlotName);
 		}
 	}
-	else
+	else if (AbilitySlot)
 	{
+		// Entry doesn't exist and we get a valid AbilitySlot, so we make a new Entry for it
 		FAbilitySlotEntry Value = FAbilitySlotEntry();
 		Value.AbilitySlot = AbilitySlot;
+		Value.AbilitySlot->SetAbility(Value.Ability.Get());
 		AbilitySlotRegister.Add(SlotName, Value);
 	}
 }
 
-void UAbilityManager::UnregisterAbilitySlot(FName SlotName, UAbilitySlot* AbilitySlot)
+void UAbilityManager::AssignAbilityToSlot(const FName SlotName, AAbility* Ability)
 {
 	if (FAbilitySlotEntry* Entry = AbilitySlotRegister.Find(SlotName))
 	{
-		Entry->AbilitySlot.Reset();
-		if (!Entry->Ability.IsValid())
+		// Entry Exists
+		Entry->Ability = Ability;
+		if (Entry->AbilitySlot.IsValid())
+			Entry->AbilitySlot->SetAbility(Entry->Ability.Get());
+
+		// Entry Exists, but is now empty. we can remove it
+		if (!Entry->Ability.IsValid() && !Entry->AbilitySlot.IsValid())
 		{
 			AbilitySlotRegister.Remove(SlotName);
 		}
 	}
-}
-
-void UAbilityManager::RegisterAbilityInSlot(FName SlotName, AAbility* Ability)
-{
-	if (FAbilitySlotEntry* Entry = AbilitySlotRegister.Find(SlotName))
+	else if (Ability)
 	{
-		if (Entry->Ability.IsValid())
-		{
-			UE_LOG(LogTemp, Warning,
-			       TEXT("Tried to Register an Ability to an AbilitySlot that is already in use. Slot: %s")
-			       , *SlotName.ToString())
-		}
-		else
-		{
-			Entry->Ability = Ability;
-			SpawnAbilityWidgetIfNeeded(Entry);
-		}
-	}
-	else
-	{
+		// Entry doesn't Exist and Ability is not nullptr so we need a new Entry
 		FAbilitySlotEntry Value = FAbilitySlotEntry();
 		Value.Ability = Ability;
+		if (Value.AbilitySlot.IsValid())
+			Value.AbilitySlot->SetAbility(Value.Ability.Get());
 		AbilitySlotRegister.Add(SlotName, Value);
 	}
 }
 
-void UAbilityManager::UnregisterAbilityInSlot(const FName SlotName, AAbility* Ability)
+void UAbilityManager::SwapAbilitiesInSlots(const FName SlotName1, const FName SlotName2)
 {
-	if (FAbilitySlotEntry* Entry = AbilitySlotRegister.Find(SlotName))
-	{
-		Entry->Ability.Reset();
-		if (!Entry->AbilitySlot.IsValid())
-		{
-			AbilitySlotRegister.Remove(SlotName);
-		}
-	}
+	AAbility* Ability1 = GetAbilityFromSlotName(SlotName1);
+	AssignAbilityToSlot(SlotName1, GetAbilityFromSlotName(SlotName2));
+	AssignAbilityToSlot(SlotName2, Ability1);
 }
 
 FName UAbilityManager::GetFreeAbilitySlotName() const
@@ -118,7 +98,7 @@ FName UAbilityManager::GetFreeAbilitySlotName() const
 	return FName();
 }
 
-UAbilitySlot* UAbilityManager::GetAbilitySlot(FName SlotName) const
+UAbilitySlot* UAbilityManager::GetAbilitySlot(const FName SlotName) const
 {
 	if (const FAbilitySlotEntry* Entry = AbilitySlotRegister.Find(SlotName))
 	{
@@ -127,7 +107,7 @@ UAbilitySlot* UAbilityManager::GetAbilitySlot(FName SlotName) const
 	return nullptr;
 }
 
-AAbility* UAbilityManager::GetAbilityFromSlotName(FName SlotName)
+AAbility* UAbilityManager::GetAbilityFromSlotName(const FName SlotName) const
 {
 	if (const FAbilitySlotEntry* Entry = AbilitySlotRegister.Find(SlotName))
 	{

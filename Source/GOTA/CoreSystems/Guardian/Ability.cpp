@@ -82,7 +82,7 @@ void AAbility::NotifySlotNameChangeToUI(const FName OldSlotName, const FName New
 	if (UAbilityManager* AbilityManager = GetWorld()->GetGameInstance()->GetSubsystem<UAbilityManager>())
 	{
 		AbilityManager->UnregisterAbilityInSlot(OldSlotName, this);
-		AbilityManager->RegisterAbilityInSlot(NewSlotName, this);
+		AbilityManager->AssignAbilityToSlot(NewSlotName, this);
 	}
 }
 
