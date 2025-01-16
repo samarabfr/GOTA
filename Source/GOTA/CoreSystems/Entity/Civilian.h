@@ -94,17 +94,17 @@ private:
 protected:
 	virtual bool IsTileValidForWork(const ATile* Tile) const;
 	int32 GetWorkAmount() const { return WorkAmount; }
-	bool TryFindPathToClosestWorkTile();
-	bool TryFindPathToWorkTileClosestToSettlement();
-	bool TryFindPathToPriorityTile();
+	bool S_TryFindPathToClosestWorkTile();
+	bool S_TryFindPathToWorkTileClosestToSettlement();
+	bool S_TryFindPathToPriorityTile();
 
 public:
 	virtual void S_Work();
-	virtual bool TryFindPathToBestWorkTile();
+	virtual bool S_TryFindPathToBestWorkTile();
 	virtual bool IsCurrentTileAmongBestWorkTiles();
 	float GetWorkRate() const;
 	ATile* GetPriorityTile() const { return PriorityTile.Get(); }
-	void SetPriorityTile(ATile* NewPriorityTile) { PriorityTile = NewPriorityTile; }
+	void S_SetPriorityTile(ATile* NewPriorityTile) { PriorityTile = NewPriorityTile; }
 
 	// ----------------- Moving ------------------------
 private:
@@ -128,7 +128,7 @@ private:
 
 protected:
 	ATile* GetCurrentTile() const { return CurrentTile.Get(); }
-	void SetPath(const TArray<ATile*>& NewPath) { Path = NewPath; }
+	void S_SetPath(const TArray<ATile*>& NewPath) { Path = NewPath; }
 
 public:
 	void S_MoveToNextTileOnPath();

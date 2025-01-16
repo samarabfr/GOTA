@@ -63,7 +63,7 @@ EStateTreeRunStatus FSTT_FindPathToBestWorkTile::Tick(FStateTreeExecutionContext
 	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
 	if (!Civilian) return EStateTreeRunStatus::Failed;
 
-	return Civilian->TryFindPathToBestWorkTile()
+	return Civilian->S_TryFindPathToBestWorkTile()
 		       ? EStateTreeRunStatus::Succeeded
 		       : EStateTreeRunStatus::Running;
 }

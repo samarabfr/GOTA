@@ -171,9 +171,9 @@ void ACivilian::S_Work()
 {
 }
 
-bool ACivilian::TryFindPathToBestWorkTile()
+bool ACivilian::S_TryFindPathToBestWorkTile()
 {
-	return TryFindPathToClosestWorkTile();
+	return S_TryFindPathToClosestWorkTile();
 }
 
 bool ACivilian::IsCurrentTileAmongBestWorkTiles()
@@ -186,7 +186,7 @@ float ACivilian::GetWorkRate() const
 	return 100.f / Building->GetSettings()->CivilianProductionTime * Building->GetEfficiency();
 }
 
-bool ACivilian::TryFindPathToClosestWorkTile()
+bool ACivilian::S_TryFindPathToClosestWorkTile()
 {
 	if (!CurrentTile.IsValid()) return false;
 	if (IsTileValidForWork(GetCurrentTile())) return true;
@@ -198,7 +198,7 @@ bool ACivilian::TryFindPathToClosestWorkTile()
 	return !Path.IsEmpty();
 }
 
-bool ACivilian::TryFindPathToWorkTileClosestToSettlement()
+bool ACivilian::S_TryFindPathToWorkTileClosestToSettlement()
 {
 	if (!GetBuilding() ||
 		!GetBuilding()->GetSettlement() ||
@@ -221,7 +221,7 @@ bool ACivilian::TryFindPathToWorkTileClosestToSettlement()
 	return !Path.IsEmpty();
 }
 
-bool ACivilian::TryFindPathToPriorityTile()
+bool ACivilian::S_TryFindPathToPriorityTile()
 {
 	if (!CurrentTile.IsValid() || !PriorityTile.IsValid()) return false;
 	Path = GameState->GetTileMap()->GetPath(GetCurrentTile(), GetPriorityTile(), EEntityType::Civilian);
