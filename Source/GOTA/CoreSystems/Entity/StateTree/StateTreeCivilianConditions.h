@@ -92,3 +92,87 @@ struct GOTA_API FSTC_IsCurrentTileBestWorkTile : public FStateTreeConditionCommo
 	UPROPERTY(EditAnywhere, Category = "Parameter")
 	bool bInvert = false;
 };
+
+USTRUCT()
+struct GOTA_API FSTC_IsCurrentTilePriorityTileInstanceData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category=Context)
+	TObjectPtr<ACivilian> CivilianRef = nullptr;
+};
+
+/**
+ * Condition checking if the current tile is the priority tile
+ */
+USTRUCT(DisplayName = "Is current tile priority tile")
+struct GOTA_API FSTC_IsCurrentTilePriorityTile : public FStateTreeConditionCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FSTC_IsCurrentTilePriorityTileInstanceData;
+
+	FSTC_IsCurrentTilePriorityTile() = default;
+
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
+
+	UPROPERTY(EditAnywhere, Category = "Parameter")
+	bool bInvert = false;
+};
+
+USTRUCT()
+struct GOTA_API FSTC_HasPriorityTileInstanceData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category=Context)
+	TObjectPtr<ACivilian> CivilianRef = nullptr;
+};
+
+/**
+ * Condition checking if civilian has priority tile
+ */
+USTRUCT(DisplayName = "Has priority tile")
+struct GOTA_API FSTC_HasPriorityTile : public FStateTreeConditionCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FSTC_HasPriorityTileInstanceData;
+
+	FSTC_HasPriorityTile() = default;
+
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
+
+	UPROPERTY(EditAnywhere, Category = "Parameter")
+	bool bInvert = false;
+};
+
+USTRUCT()
+struct GOTA_API FSTC_IsCurrentTileTheTargetInstanceData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category=Context)
+	TObjectPtr<ACivilian> CivilianRef = nullptr;
+};
+
+/**
+ * Condition checking if the current tile is the target tile
+ */
+USTRUCT(DisplayName = "Is current tile the target")
+struct GOTA_API FSTC_IsCurrentTileTheTarget : public FStateTreeConditionCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FSTC_IsCurrentTileTheTargetInstanceData;
+
+	FSTC_IsCurrentTileTheTarget() = default;
+
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
+
+	UPROPERTY(EditAnywhere, Category = "Parameter")
+	bool bInvert = false;
+};

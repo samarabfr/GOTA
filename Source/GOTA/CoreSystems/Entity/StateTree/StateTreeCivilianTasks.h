@@ -56,3 +56,14 @@ struct GOTA_API FSTT_FindPathToBestWorkTile : public FStateTreeTaskCommonBase
 
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
 };
+
+USTRUCT(DisplayName="Find path to priority tile")
+struct GOTA_API FSTT_FindPathToPriorityTile : public FStateTreeTaskCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FCivilianInstanceData;
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+
+	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+};

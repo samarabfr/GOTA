@@ -181,6 +181,11 @@ bool ACivilian::IsCurrentTileAmongBestWorkTiles()
 	return IsTileValidForWork(GetCurrentTile());
 }
 
+bool ACivilian::IsCurrentTilePriorityTile()
+{
+	return GetCurrentTile() == GetPriorityTile();
+}
+
 float ACivilian::GetWorkRate() const
 {
 	return 100.f / Building->GetSettings()->CivilianProductionTime * Building->GetEfficiency();

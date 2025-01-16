@@ -31,3 +31,31 @@ bool FSTC_IsCurrentTileBestWorkTile::TestCondition(FStateTreeExecutionContext& C
 	const bool bResult = Civilian->IsCurrentTileAmongBestWorkTiles();
 	return bResult ^ bInvert;
 }
+
+bool FSTC_IsCurrentTilePriorityTile::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return false;
+
+	const bool bResult = Civilian->IsCurrentTilePriorityTile();
+	return bResult ^ bInvert;
+}
+
+bool FSTC_HasPriorityTile::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return false;
+
+	const bool bResult = Civilian->GetPriorityTile() != nullptr;
+	return bResult ^ bInvert;
+}
+
+bool FSTC_IsCurrentTileTheTarget::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return false;
+
+	const bool bResult = Civilian->GetPriorityTile() != nullptr && Civilian->IsCurrentTilePriorityTile() ||
+		Civilian->GetPriorityTile() == nullptr && Civilian->IsCurrentTileAmongBestWorkTiles();
+	return bResult ^ bInvert;
+}

@@ -96,12 +96,13 @@ protected:
 	int32 GetWorkAmount() const { return WorkAmount; }
 	bool S_TryFindPathToClosestWorkTile();
 	bool S_TryFindPathToWorkTileClosestToSettlement();
-	bool S_TryFindPathToPriorityTile();
 
 public:
 	virtual void S_Work();
 	virtual bool S_TryFindPathToBestWorkTile();
+	bool S_TryFindPathToPriorityTile();
 	virtual bool IsCurrentTileAmongBestWorkTiles();
+	bool IsCurrentTilePriorityTile();
 	float GetWorkRate() const;
 	ATile* GetPriorityTile() const { return PriorityTile.Get(); }
 	void S_SetPriorityTile(ATile* NewPriorityTile) { PriorityTile = NewPriorityTile; }
