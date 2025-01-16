@@ -24,7 +24,6 @@ public class GOTA : ModuleRules
 			"SlateCore",
 			"NetCore",
 			"StateTreeModule",
-			"StateTreeEditorModule",
 			"GameplayStateTreeModule",
 			"AIModule",
 			"NetCore",
