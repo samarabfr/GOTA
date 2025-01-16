@@ -28,8 +28,3 @@ bool AWoodcutter::S_TryFindPathToBestWorkTile()
 {
 	return S_TryFindPathToWorkTileClosestToSettlement();
 }
-
-bool AWoodcutter::IsCurrentTileAmongBestWorkTiles()
-{
-	return IsTileValidForWork(GetCurrentTile());
-}

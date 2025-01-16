@@ -102,7 +102,7 @@ public:
 	virtual bool S_TryFindPathToBestWorkTile();
 	bool S_TryFindPathToPriorityTile();
 	virtual bool IsCurrentTileAmongBestWorkTiles();
-	bool IsCurrentTilePriorityTile();
+	bool IsCurrentTilePriorityTile() const;
 	float GetWorkRate() const;
 	ATile* GetPriorityTile() const { return PriorityTile.Get(); }
 	void S_SetPriorityTile(ATile* NewPriorityTile) { PriorityTile = NewPriorityTile; }

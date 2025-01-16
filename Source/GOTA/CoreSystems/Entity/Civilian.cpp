@@ -181,7 +181,7 @@ bool ACivilian::IsCurrentTileAmongBestWorkTiles()
 	return IsTileValidForWork(GetCurrentTile());
 }
 
-bool ACivilian::IsCurrentTilePriorityTile()
+bool ACivilian::IsCurrentTilePriorityTile() const
 {
 	return GetCurrentTile() == GetPriorityTile();
 }

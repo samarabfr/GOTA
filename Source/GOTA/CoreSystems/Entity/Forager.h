@@ -11,4 +11,5 @@ class GOTA_API AForager : public ACivilian
 	
 	virtual void S_Work() override;
 	virtual bool IsTileValidForWork(const ATile* Tile) const override;
+	virtual bool S_TryFindPathToBestWorkTile() override;
 };
