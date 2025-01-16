@@ -7,6 +7,8 @@
 #include "GOTA/CoreSystems/Faction/Building/BuildingPlacer.h"
 #include "PC_Ingame.generated.h"
 
+class AGS_Ingame;
+class ASimplifiedAbility;
 class UBuildingSettings;
 struct FInputActionInstance;
 class AMouseUtils;
@@ -119,4 +121,16 @@ private:
 	void StopLookingAround(const FInputActionInstance& Instance);
 
 	void ToggleBuildMenu();
+	
+	// ----------------------- Simplified ability -----------------------
+private:
+	TObjectPtr<AGS_Ingame> GameState;
+	TObjectPtr<ASimplifiedAbility> Ability1;
+	TObjectPtr<ASimplifiedAbility> Ability2;
+	TObjectPtr<ASimplifiedAbility> Ability3;
+
+	void UseAbility(ASimplifiedAbility* Ability);
+	void UseAbility1();
+	void UseAbility2();
+	void UseAbility3();
 };

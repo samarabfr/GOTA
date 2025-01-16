@@ -7,7 +7,13 @@
 #include "InputAction.h"
 #include "InputDataAsset.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
+#include "GOTA/CoreSystems/Tile/HexCoordsFunctions.h"
+#include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "GOTA/CoreSystems/Utility/DistanceUtils.h"
+#include "GOTA/GOTARL/CreatePopAbility.h"
+#include "GOTA/GOTARL/DamageArmyAbility.h"
+#include "GOTA/GOTARL/DamageBuildingAbility.h"
+#include "GOTA/GOTARL/SimplifiedAbility.h"
 #include "GOTA/UI/Ingame/IngameUI.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
@@ -21,11 +27,11 @@ void APC_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 
 	Params.Condition = COND_InitialOnly;
 	Params.RepNotifyCondition = REPNOTIFY_Always;
-	
+
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(APC_Ingame, BuildingPlacer, Params)
-	
+
 	DOREPLIFETIME(APC_Ingame, Guardian)
 	DOREPLIFETIME(APC_Ingame, MouseUtils)
 }
@@ -36,6 +42,10 @@ void APC_Ingame::BeginPlay()
 	if (!IsLocalController()) return;
 	CreateLobbyUI();
 	DistanceUtils = GetWorld()->SpawnActor<ADistanceUtils>();
+	GameState = GetWorld()->GetGameState<AGS_Ingame>();
+	Ability1 = GetWorld()->SpawnActor<ADamageBuildingAbility>();
+	Ability2 = GetWorld()->SpawnActor<ADamageArmyAbility>();
+	Ability3 = GetWorld()->SpawnActor<ACreatePopAbility>();
 }
 
 void APC_Ingame::OnPossess(APawn* InPawn)
@@ -59,12 +69,12 @@ void APC_Ingame::GuardianChanged()
 {
 	if (!Guardian)
 		return;
-	
+
 	if (!IsLocalController())
 		return;
-	
+
 	DistanceUtils->AttachToActor(Guardian, FAttachmentTransformRules::SnapToTargetIncludingScale);
-	
+
 	if (MouseUtils)
 		Guardian->SetupGAM(MouseUtils);
 
@@ -76,6 +86,7 @@ void APC_Ingame::GuardianChanged()
 
 void APC_Ingame::ClickActor()
 {
+	if(!IngameUI) return;
 	IngameUI->ClickActor(MouseUtils->GetHoverActor());
 }
 
@@ -132,6 +143,10 @@ void APC_Ingame::InitInput()
 	Component->BindAction(DataAsset->ActivateLooking, ETriggerEvent::Completed, this, &APC_Ingame::StopLookingAround);
 
 	Component->BindAction(DataAsset->BuildMenu, ETriggerEvent::Triggered, this, &APC_Ingame::ToggleBuildMenu);
+	
+	Component->BindAction(DataAsset->Ability1, ETriggerEvent::Triggered, this, &APC_Ingame::UseAbility1);
+	Component->BindAction(DataAsset->Ability2, ETriggerEvent::Triggered, this, &APC_Ingame::UseAbility2);
+	Component->BindAction(DataAsset->Ability3, ETriggerEvent::Triggered, this, &APC_Ingame::UseAbility3);
 }
 
 
@@ -205,6 +220,29 @@ void APC_Ingame::StopLookingAround(const FInputActionInstance& Instance)
 
 void APC_Ingame::ToggleBuildMenu()
 {
-	if(!IngameUI) return;
+	if (!IngameUI) return;
 	IngameUI->ToggleBuildMenu();
+}
+
+void APC_Ingame::UseAbility(ASimplifiedAbility* Ability)
+{
+	if (!Ability || !GameState || !GameState->GetTileMap()) return;
+	ATile* PlayerLocation = GameState->GetTileMap()->GetTile(
+		UHexCoordsFunctions::VectorToHexCoords(Guardian->GetActorLocation()));
+	Ability->Use(MouseUtils->GetHoverTile(), PlayerLocation);
+}
+
+void APC_Ingame::UseAbility1()
+{
+	UseAbility(Ability1);
+}
+
+void APC_Ingame::UseAbility2()
+{
+	UseAbility(Ability2);
+}
+
+void APC_Ingame::UseAbility3()
+{
+	UseAbility(Ability3);
 }
