@@ -23,24 +23,6 @@ bool FSTC_IsPathEmptyCivilian::TestCondition(FStateTreeExecutionContext& Context
 	return bResult ^ bInvert;
 }
 
-bool FSTC_IsCurrentTileBestWorkTile::TestCondition(FStateTreeExecutionContext& Context) const
-{
-	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
-	if (!Civilian) return false;
-
-	const bool bResult = Civilian->IsCurrentTileAmongBestWorkTiles();
-	return bResult ^ bInvert;
-}
-
-bool FSTC_IsCurrentTilePriorityTile::TestCondition(FStateTreeExecutionContext& Context) const
-{
-	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
-	if (!Civilian) return false;
-
-	const bool bResult = Civilian->IsCurrentTilePriorityTile();
-	return bResult ^ bInvert;
-}
-
 bool FSTC_HasPriorityTile::TestCondition(FStateTreeExecutionContext& Context) const
 {
 	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();

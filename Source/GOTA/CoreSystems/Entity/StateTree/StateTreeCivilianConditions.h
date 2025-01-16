@@ -66,62 +66,6 @@ struct GOTA_API FSTC_IsPathEmptyCivilian : public FStateTreeConditionCommonBase
 };
 
 USTRUCT()
-struct GOTA_API FSTC_IsCurrentTileBestWorkTileInstanceData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, Category=Context)
-	TObjectPtr<ACivilian> CivilianRef = nullptr;
-};
-
-/**
- * Condition checking if the current tile is the best work tile
- */
-USTRUCT(DisplayName = "Is current tile best work tile")
-struct GOTA_API FSTC_IsCurrentTileBestWorkTile : public FStateTreeConditionCommonBase
-{
-	GENERATED_BODY()
-
-	using FInstanceDataType = FSTC_IsCurrentTileBestWorkTileInstanceData;
-
-	FSTC_IsCurrentTileBestWorkTile() = default;
-
-	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
-	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
-
-	UPROPERTY(EditAnywhere, Category = "Parameter")
-	bool bInvert = false;
-};
-
-USTRUCT()
-struct GOTA_API FSTC_IsCurrentTilePriorityTileInstanceData
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, Category=Context)
-	TObjectPtr<ACivilian> CivilianRef = nullptr;
-};
-
-/**
- * Condition checking if the current tile is the priority tile
- */
-USTRUCT(DisplayName = "Is current tile priority tile")
-struct GOTA_API FSTC_IsCurrentTilePriorityTile : public FStateTreeConditionCommonBase
-{
-	GENERATED_BODY()
-
-	using FInstanceDataType = FSTC_IsCurrentTilePriorityTileInstanceData;
-
-	FSTC_IsCurrentTilePriorityTile() = default;
-
-	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
-	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
-
-	UPROPERTY(EditAnywhere, Category = "Parameter")
-	bool bInvert = false;
-};
-
-USTRUCT()
 struct GOTA_API FSTC_HasPriorityTileInstanceData
 {
 	GENERATED_BODY()
