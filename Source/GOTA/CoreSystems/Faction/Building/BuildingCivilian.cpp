@@ -34,6 +34,21 @@ void UBuildingCivilian::S_Tick(float DeltaSeconds)
 	UBuilding::S_Tick(DeltaSeconds);
 	if (Civilian)
 		Civilian->S_Tick(DeltaSeconds);
+	// respawn
+	if (!GetIsUnderConstruction() && !Civilian)
+	{
+		if (CivilianRespawnTimer < GetSettings()->CivilianRespawnTime)
+		{
+			CivilianRespawnTimer += DeltaSeconds;
+		}
+		else if (GetTile()->AcceptsCivilian())
+		{
+			CivilianRespawnTimer = 0.0f;
+			ACivilian* NewCivilian = GetTile()->GetWorld()->SpawnActor<ACivilian>(GetSettings()->CivilianClass);
+			NewCivilian->S_Init(this, GetTile());
+			SetCivilian(NewCivilian);
+		}
+	}
 }
 
 void UBuildingCivilian::C_Tick(const float DeltaSeconds)
@@ -43,9 +58,11 @@ void UBuildingCivilian::C_Tick(const float DeltaSeconds)
 		Civilian->C_Tick(DeltaSeconds);
 }
 
-void UBuildingCivilian::BeginDestroy()
+void UBuildingCivilian::Destroy()
 {
-	Super::BeginDestroy();
+	Super::Destroy();
+	if(Civilian)
+		Civilian->S_HandleDeath();
 }
 
 // ---------------- Civilian Entity ----------------
@@ -54,12 +71,4 @@ void UBuildingCivilian::SetCivilian(ACivilian* NewCivilian)
 {
 	Civilian = NewCivilian;
 	MARK_PROPERTY_DIRTY_FROM_NAME(UBuildingCivilian, Civilian, this)
-}
-
-void UBuildingCivilian::FinishConstruction()
-{
-	Super::FinishConstruction();
-	ACivilian* NewCivilian = GetTile()->GetWorld()->SpawnActor<ACivilian>(GetSettings()->CivilianClass);
-	NewCivilian->S_Init(this, GetTile());
-	SetCivilian(NewCivilian);
 }

@@ -103,6 +103,7 @@ private:
 	TArray<ACivilian*> Civilians;
 
 public:
+	TArray<ACivilian*> GetCivilians() const { return Civilians; }
 	bool AcceptsCivilian() const;
 	void AddCivilian(ACivilian* Civilian, FVector& NewLocation);
 	void RemoveCivilian(const ACivilian* Civilian);

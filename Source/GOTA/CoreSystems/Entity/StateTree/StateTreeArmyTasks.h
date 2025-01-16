@@ -30,8 +30,8 @@ struct GOTA_API FSTT_AttackEnemy : public FStateTreeTaskCommonBase
 	                                       const FStateTreeTransitionResult& Transition) const override;
 };
 
-USTRUCT(DisplayName="Move to next Tile")
-struct GOTA_API FSTT_MoveToNextTile : public FStateTreeTaskCommonBase
+USTRUCT(DisplayName="Army move to next Tile")
+struct GOTA_API FSTT_ArmyMoveToNextTile : public FStateTreeTaskCommonBase
 {
 	GENERATED_BODY()
 
