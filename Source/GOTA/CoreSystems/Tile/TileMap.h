@@ -1,4 +1,4 @@
- // Fill out your copyright notice in the Description page of Project Settings.
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
@@ -75,11 +75,17 @@ public:
 	TArray<ATile*> FindPathToNearestTile(ATile* Origin, EEntityType EntityType,
 	                                     const std::function<bool(const ATile*)>& Condition) const;
 
-	TArray<ATile*> FindPathToNearestTileInRange(ATile* Origin, EEntityType EntityType, int32 Range,
+	TArray<ATile*> FindPathToNearestTile(const TArray<ATile*>& SearchOrigin, ATile* PathOrigin, EEntityType EntityType,
 	                                     const std::function<bool(const ATile*)>& Condition) const;
 
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
+	ATile* FindNearestTile(const TArray<ATile*>& Origin, EEntityType EntityType,
+	                       const std::function<bool(const ATile*)>& Condition) const;
+
+	TArray<ATile*> FindPathToNearestTileInRange(ATile* Origin, EEntityType EntityType, int32 Range,
+	                                            const std::function<bool(const ATile*)>& Condition) const;
+
 	static TArray<ATile*> GetPath(ATile* Start, ATile* End);
+	static TArray<ATile*> GetPath(ATile* Start, ATile* End, EEntityType EntityType);
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	TArray<ATile*>
@@ -94,10 +100,10 @@ public:
 private:
 	UPROPERTY(EditDefaultsOnly)
 	UTerrainGeneratorDataAsset* TerrainGenData;
-	
+
 	TWeakObjectPtr<ATile> ColonistsStart;
 	TWeakObjectPtr<ATile> NativesStart;
-	
+
 public:
 	UTerrainGeneratorDataAsset* GetTerrainGenData() const { return TerrainGenData; }
 	TWeakObjectPtr<ATile> GetColonistsStart() const { return ColonistsStart; }

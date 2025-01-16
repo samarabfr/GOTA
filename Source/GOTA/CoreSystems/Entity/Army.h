@@ -6,7 +6,7 @@
 #include "Army.generated.h"
 
 class UCombatValues;
-class UStateTreeComponentArmy;
+class UStateTreeArmyComponent;
 class UBuilding;
 class AGS_Ingame;
 class ATile;
@@ -31,6 +31,10 @@ public:
 
 private:
 	virtual void BeginDestroy() override;
+	
+public:
+	UFUNCTION()
+	void S_HandleDeath();
 
 	// ----------------------- Utility -----------------------
 
@@ -71,7 +75,7 @@ private:
 	EArmyStatus Status = EArmyStatus::Idling;
 
 	UPROPERTY(VisibleInstanceOnly)
-	UStateTreeComponentArmy* StateTree;
+	UStateTreeArmyComponent* StateTree;
 
 protected:
 	void SetStatus(EArmyStatus NewStatus);
@@ -109,7 +113,7 @@ private:
 
 	// How fast the progress increases when moving, in percent per second
 	UPROPERTY(VisibleInstanceOnly, Replicated)
-	float MovementRate; // in percent per second
+	float MovementRate;
 
 	UPROPERTY(VisibleInstanceOnly)
 	TArray<ATile*> Path;
@@ -137,10 +141,6 @@ public:
 
 private:
 	void S_AttackEnemy();
-
-public:
-	UFUNCTION()
-	void S_HandleDeath();
 
 	// -----------------Ravaging------------------------
 

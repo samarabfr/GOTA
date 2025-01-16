@@ -11,7 +11,7 @@
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
-#include "StateTree/StateTreeComponentArmy.h"
+#include "StateTree/StateTreeArmyComponent.h"
 
 void AArmy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -64,7 +64,7 @@ AArmy::AArmy()
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	MeshComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	MeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
-	StateTree = CreateDefaultSubobject<UStateTreeComponentArmy>("StateTree");
+	StateTree = CreateDefaultSubobject<UStateTreeArmyComponent>("StateTree");
 	StateTree->SetStartLogicAutomatically(false);
 }
 
@@ -139,6 +139,7 @@ void AArmy::C_Tick(const float DeltaSeconds)
 void AArmy::BeginDestroy()
 {
 	Super::BeginDestroy();
+	S_HandleDeath();
 }
 
 // -----------------------  -----------------------
@@ -174,7 +175,9 @@ void AArmy::SetStatus(EArmyStatus NewStatus)
 {
 	if (Status == NewStatus) return;
 	Status = NewStatus;
+	Progress = 0.0f;
 	MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, Status, this)
+	MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, Progress, this)
 }
 
 // ----------------------- Recruiting -----------------------
