@@ -14,6 +14,8 @@ UCLASS()
 class GOTA_API AGM_Ingame : public AGameMode
 {
 	GENERATED_BODY()
+	
+protected:
 	AGM_Ingame();
 
 public:
@@ -68,7 +70,7 @@ public:
 
 	void CreateSettlements();
 
-	void CreateGuardians();
+	virtual void CreateGuardians();
 
 	void CreateUtilActors();
 
