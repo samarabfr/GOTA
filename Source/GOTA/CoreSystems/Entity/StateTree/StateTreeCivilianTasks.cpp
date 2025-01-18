@@ -88,3 +88,14 @@ EStateTreeRunStatus FSTT_FindPathToOriginBuilding::Tick(FStateTreeExecutionConte
 			   ? EStateTreeRunStatus::Succeeded
 			   : EStateTreeRunStatus::Running;
 }
+
+EStateTreeRunStatus FSTT_UnloadResources::EnterState(FStateTreeExecutionContext& Context,
+	const FStateTreeTransitionResult& Transition) const
+{
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return EStateTreeRunStatus::Failed;
+
+	TWeakObjectPtr<ACivilian> WeakCivilian = Civilian;
+	Civilian->S_UnloadResources();
+	return EStateTreeRunStatus::Succeeded;
+}

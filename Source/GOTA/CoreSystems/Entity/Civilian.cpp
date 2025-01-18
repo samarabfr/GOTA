@@ -210,6 +210,12 @@ bool ACivilian::IsCurrentTileOriginBuilding() const
 	return GetCurrentTile() == GetOriginBuilding()->GetTile();
 }
 
+void ACivilian::S_UnloadResources()
+{
+	GetOriginBuilding()->GetSettlement()->S_AddResources(GetResourceInventory());
+	ResourceInventory = FGameResources::Zero();
+}
+
 void ACivilian::S_AddResources(const FGameResources Resources)
 {
 	if (Resources <= FGameResources::Zero() || IsInventoryFull()) return;

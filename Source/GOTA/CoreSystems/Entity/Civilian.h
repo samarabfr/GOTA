@@ -119,6 +119,7 @@ public:
 	bool HasResourcesInInventory() const;
 	bool IsInventoryFull() const;
 	bool IsCurrentTileOriginBuilding() const;
+	void S_UnloadResources();
 
 	// ----------------- Moving ------------------------
 private:
