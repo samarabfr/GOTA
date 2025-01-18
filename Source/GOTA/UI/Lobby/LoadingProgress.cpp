@@ -18,7 +18,7 @@ void ULoadingProgress::NativeTick(const FGeometry& MyGeometry, float InDeltaTime
 	Super::NativeTick(MyGeometry, InDeltaTime);
 	if (LoadingStatus)
 	{
-		const UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, TEXT("ELoadingStatus"), true);
+		const UEnum* EnumPtr = FindFirstObject<UEnum>(TEXT("ELoadingStatus"), EFindFirstObjectOptions::NativeFirst);
 		if (EnumPtr)
 		{
 			const FText StatusText = EnumPtr->GetDisplayNameTextByValue(
