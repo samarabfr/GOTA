@@ -22,10 +22,10 @@ struct FGameResources
 	float Stone = 0;
 
 	void AddProduction(const float Amount, const EProductionType ProductionType);
-	void RemoveProduction(const float Amount,const  EProductionType ProductionType);
+	void RemoveProduction(const float Amount, const EProductionType ProductionType);
 
-	void AddConsumption(const float Amount,const  EConsumptionType ConsumptionType);
-	void RemoveConsumption(const float Amount,const  EConsumptionType ConsumptionType);
+	void AddConsumption(const float Amount, const EConsumptionType ConsumptionType);
+	void RemoveConsumption(const float Amount, const EConsumptionType ConsumptionType);
 
 	FGameResources& operator+=(const FGameResources& Other);
 	FGameResources& operator-=(const FGameResources& Other);
@@ -34,7 +34,11 @@ struct FGameResources
 	bool operator>(const FGameResources& Other) const;
 	bool operator<=(const FGameResources& Other) const;
 	bool operator>=(const FGameResources& Other) const;
+	bool operator==(const FGameResources& Other) const;
+	bool operator!=(const FGameResources& Other) const;
 
 	FGameResources operator+(const FGameResources& Other) const;
 	FGameResources operator-(const FGameResources& Other) const;
+
+	static FGameResources Zero() { return FGameResources(0, 0, 0); }
 };

@@ -67,3 +67,26 @@ struct GOTA_API FSTT_FindPathToPriorityTile : public FStateTreeTaskCommonBase
 
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
 };
+
+USTRUCT(DisplayName="Find path to origin building")
+struct GOTA_API FSTT_FindPathToOriginBuilding : public FStateTreeTaskCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FCivilianInstanceData;
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+
+	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+};
+
+USTRUCT(DisplayName="Unload Resources")
+struct GOTA_API FSTT_UnloadResources : public FStateTreeTaskCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FCivilianInstanceData;
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context,
+	                                       const FStateTreeTransitionResult& Transition) const override;
+};

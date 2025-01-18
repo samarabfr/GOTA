@@ -120,6 +120,16 @@ bool FGameResources::operator>=(const FGameResources& Other) const
 	return this->Food >= Other.Food && this->Wood >= Other.Wood && this->Stone >= Other.Stone;
 }
 
+bool FGameResources::operator==(const FGameResources& Other) const
+{
+	return this->Food == Other.Food && this->Wood == Other.Wood && this->Stone == Other.Stone;
+}
+
+bool FGameResources::operator!=(const FGameResources& Other) const
+{
+	return this->Food != Other.Food || this->Wood != Other.Wood || this->Stone != Other.Stone;
+}
+
 FGameResources FGameResources::operator+(const FGameResources& Other) const
 {
 	FGameResources Result;
