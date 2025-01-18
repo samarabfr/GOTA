@@ -76,6 +76,7 @@ void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	const UBuildingSettings* BuildingSettings = OriginBuilding->GetSettings();
 	WorkAmount = BuildingSettings->CivilianProductionAmount;
 	MovementRate = 100 / BuildingSettings->CivilianMoveTime;
+	ResourceInventoryLimit = BuildingSettings->CivilianInventoryLimit;
 
 	const FSoftObjectPath StateTreePath(TEXT("/Game/CoreSystems/Entity/ST_Civilian"));
 	UStateTree* LoadedStateTree = Cast<UStateTree>(StateTreePath.TryLoad());
