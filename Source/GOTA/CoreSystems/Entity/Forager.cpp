@@ -16,7 +16,7 @@ void AForager::S_Work()
 	GetCurrentTile()->EcoValues->SubtractForage(1);
 	FGameResources WorkResources = FGameResources();
 	WorkResources.Food = GetWorkAmount();
-	GetBuilding()->GetSettlement()->S_AddResources(WorkResources);
+	GetOriginBuilding()->GetSettlement()->S_AddResources(WorkResources);
 }
 
 bool AForager::IsTileValidForWork(const ATile* Tile) const

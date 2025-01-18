@@ -23,7 +23,7 @@ bool AMigrant::IsTileValidForWork(const ATile* Tile) const
 	return Tile->GetBuilding()
 		&& Tile->GetBuilding()->GetPopulation()->GetSize() < Tile->GetBuilding()->GetPopulation()->GetMaxSize()
 		&& Tile->GetClaimant()
-		&& Tile->GetClaimant() == GetBuilding()->GetSettlement();
+		&& Tile->GetClaimant() == GetOriginBuilding()->GetSettlement();
 }
 
 void AMigrant::SetSize(const int32 NewSize)
