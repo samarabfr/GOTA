@@ -1,7 +1,6 @@
 ﻿#include "Forager.h"
 
 #include "CivilianSettings.h"
-#include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 
@@ -13,10 +12,11 @@ AForager::AForager()
 
 void AForager::S_Work()
 {
+	if (IsInventoryFull()) return;
 	GetCurrentTile()->EcoValues->SubtractForage(1);
 	FGameResources WorkResources = FGameResources();
 	WorkResources.Food = GetWorkAmount();
-	GetOriginBuilding()->GetSettlement()->S_AddResources(WorkResources);
+	S_AddResources(WorkResources);
 }
 
 bool AForager::IsTileValidForWork(const ATile* Tile) const
