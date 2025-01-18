@@ -2,12 +2,10 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "AbilityTarget.h"
 #include "GameFramework/Actor.h"
 #include "Ability.generated.h"
 
-class UAbilityImage;
 class UAbilitySettings;
 
 UCLASS()
@@ -18,7 +16,9 @@ class GOTA_API AAbility : public AActor
 	// ------------------------------------ Replication Setup --------------------------------------
 
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
-
+	
+	void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	
 	// ---------------------------------------- Lifecycle ----------------------------------------
 public:
 	AAbility();
@@ -49,18 +49,17 @@ public:
 	// ---------------------------------------- UI ----------------------------------------
 
 private:	
-	TWeakObjectPtr<UAbilityImage> Widget;
-	
 	UPROPERTY(ReplicatedUsing = OnRep_SlotName)
 	FName SlotName;
 	
 	UFUNCTION()
-	void OnRep_SlotName(FName OldSlotName);
+	void OnRep_SlotName(const FName OldSlotName);
 	
 	UFUNCTION(Server, Reliable)
-	void SRPC_SetSlotName(FName NewSlotName);
-
-	// Only Notifies UI if this Ability is owned by the local playercontroller
+	void SRPC_SetSlotName(const FName NewSlotName);
+	
+	// Only Notifies UI if this Ability is owned by the local playercontroller. You can give an
+	// empty FName() to indicate that it didn't have a slot before or doesn't need one anymore
 	void NotifySlotNameChangeToUI(FName OldSlotName, FName NewSlotName);
 	
 public:

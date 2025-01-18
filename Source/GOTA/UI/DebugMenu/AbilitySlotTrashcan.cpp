@@ -1,17 +1,17 @@
 ﻿#include "AbilitySlotTrashcan.h"
 
 #include "GOTA/CoreSystems/Guardian/Ability.h"
-#include "GOTA/CoreSystems/Guardian/AbilityManager.h"
+#include "GOTA/CoreSystems/Guardian/AbilitySlotRegister.h"
 
 void UAbilitySlotTrashcan::OnSuccessfulDrop(UAbilitySlot* OriginSlot)
 {
 	AAbility* OriginAbility = OriginSlot->GetAbility();
 
 	// Set Ability in the OriginSlot to nullptr
-	UAbilityManager* AbilityManager = GetGameInstance()->GetSubsystem<UAbilityManager>();
+	UAbilitySlotRegister* AbilityManager = GetGameInstance()->GetSubsystem<UAbilitySlotRegister>();
 	if (AbilityManager)
 	{
-		AbilityManager->AssignAbilityToSlot(OriginSlot->GetSlotName(), nullptr);
+		AbilityManager->AssignAbilityToSlot(nullptr, OriginSlot->GetSlotName());
 	}
 
 	// Destroy the Ability

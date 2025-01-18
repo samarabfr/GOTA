@@ -1,6 +1,6 @@
 ﻿#include "AbilitySlot.h"
 
-#include "GOTA/CoreSystems/Guardian/AbilityManager.h"
+#include "GOTA/CoreSystems/Guardian/AbilitySlotRegister.h"
 #include "GOTA/CoreSystems/Guardian/Ability.h"
 #include "Blueprint/DragDropOperation.h"
 #include "Components/CanvasPanel.h"
@@ -12,9 +12,9 @@
 void UAbilitySlot::Init(FName InSlotName)
 {
 	SlotName = InSlotName;
-	if (UAbilityManager* AbilityManager = GetGameInstance()->GetSubsystem<UAbilityManager>())
+	if (UAbilitySlotRegister* AbilitySlotRegister = GetGameInstance()->GetSubsystem<UAbilitySlotRegister>())
 	{
-		AbilityManager->RegisterAbilitySlotWidget(SlotName, this);
+		AbilitySlotRegister->RegisterAbilitySlotWidget(SlotName, this);
 	}
 }
 
@@ -91,9 +91,9 @@ bool UAbilitySlot::NativeOnDrop(const FGeometry& InGeometry, const FDragDropEven
 
 void UAbilitySlot::OnSuccessfulDrop(UAbilitySlot* OriginSlot)
 {
-	UAbilityManager* AbilityManager = GetGameInstance()->GetSubsystem<UAbilityManager>();
-	if (AbilityManager)
+	UAbilitySlotRegister* AbilitySlotRegister = GetGameInstance()->GetSubsystem<UAbilitySlotRegister>();
+	if (AbilitySlotRegister)
 	{
-		AbilityManager->SwapAbilitiesInSlots(OriginSlot->GetSlotName(), SlotName);
+		AbilitySlotRegister->SwapAbilitiesInSlots(OriginSlot->GetSlotName(), SlotName);
 	}
 }

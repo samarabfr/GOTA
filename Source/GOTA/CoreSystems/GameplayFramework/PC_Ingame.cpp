@@ -8,7 +8,7 @@
 #include "GOTA/CoreSystems/Guardian/Ability.h"
 #include "GOTA/CoreSystems/Guardian/AbilityIndicator.h"
 #include "GOTA/UI/Ingame/AbilitySlot.h"
-#include "GOTA/CoreSystems/Guardian/AbilityManager.h"
+#include "GOTA/CoreSystems/Guardian/AbilitySlotRegister.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
 #include "GOTA/CoreSystems/Utility/DistanceUtils.h"
@@ -176,7 +176,7 @@ void APC_Ingame::CancelTargeting()
 
 void APC_Ingame::ActivateAbility(FName SlotName)
 {
-	UAbilityManager* AbilityManager = GetGameInstance()->GetSubsystem<UAbilityManager>();
+	UAbilitySlotRegister* AbilityManager = GetGameInstance()->GetSubsystem<UAbilitySlotRegister>();
 	if (AbilityManager)
 	{
 		if (UAbilitySlot* AbilitySlot = AbilityManager->GetAbilitySlot(SlotName))
@@ -215,7 +215,7 @@ void APC_Ingame::LearnAbility(UAbilitySettings* AbilitySettings)
 {
 	if (!Guardian) return;
 
-	const UAbilityManager* AbilityManager = GetGameInstance()->GetSubsystem<UAbilityManager>();
+	const UAbilitySlotRegister* AbilityManager = GetGameInstance()->GetSubsystem<UAbilitySlotRegister>();
 	const FName AbilitySlotName = AbilityManager->GetFreeAbilitySlotName();
 	if (!AbilitySlotName.IsNone())
 	{

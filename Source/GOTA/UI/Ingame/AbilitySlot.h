@@ -3,7 +3,7 @@
 #include "Blueprint/UserWidget.h"
 #include "AbilitySlot.generated.h"
 
-class UAbilityManager;
+class UAbilitySlotRegister;
 class UCanvasPanel;
 class UOverlay;
 class AAbility;
@@ -32,7 +32,9 @@ private:
 	TWeakObjectPtr<AAbility> Ability;
 
 public:
-	// Should only be called by the AbilityManager, use AbilityManager::RegisterAbilityInSlot instead
+	// Updates the Ability and visuals for this slot but does not notify other systems.
+	// To propagate changes to the AbilitySlotRegister and other components, 
+	// use AAbility::SetSlotName instead.
 	void SetAbility(AAbility* NewAbility);
 
 	AAbility* GetAbility() const;

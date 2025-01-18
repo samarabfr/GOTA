@@ -2,17 +2,18 @@
 
 #include "DebugMenuAbilityEntry.h"
 #include "Components/UniformGridPanel.h"
-#include "GOTA/CoreSystems/Guardian/AbilityManager.h"
+#include "GOTA/CoreSystems/Guardian/AbilityProvider.h"
+#include "GOTA/CoreSystems/Guardian/AbilitySlotRegister.h"
 
 void UDebugMenu::NativeConstruct()
 {
 	Super::NativeConstruct();
-	UAbilityManager* AbilityManager = GetGameInstance()->GetSubsystem<UAbilityManager>();
-	if (AbilityManager)
+	const UAbilityProvider* AbilityProvider = GetGameInstance()->GetSubsystem<UAbilityProvider>();
+	if (AbilityProvider)
 	{
 		for (int32 i = 0; i < 10; ++i)
 		{
-			for (UAbilitySettings* AbilitySettings : AbilityManager->GetAllAbilitySettings())
+			for (UAbilitySettings* AbilitySettings : AbilityProvider->GetAllAbilitySettings())
 			{
 				AddToGrid(AbilitySettings);
 			}

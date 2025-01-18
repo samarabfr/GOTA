@@ -2,7 +2,7 @@
 
 #include "Ability.h"
 
-#include "AbilityManager.h"
+#include "AbilitySlotRegister.h"
 #include "Net/UnrealNetwork.h"
 #include "AbilitySettings.h"
 #include "Net/Core/PushModel/PushModel.h"
@@ -20,6 +20,12 @@ void AAbility::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLi
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(AAbility, SlotName, Params);
+}
+
+void AAbility::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	Super::EndPlay(EndPlayReason);
+	NotifySlotNameChangeToUI(SlotName, FName());
 }
 
 // ---------------------------------------- Lifecycle ----------------------------------------
@@ -62,12 +68,12 @@ void AAbility::ActivateAbility(FAbilityTarget Target)
 
 // ---------------------------------------- Ability Slot ----------------------------------------
 
-void AAbility::OnRep_SlotName(FName OldSlotName)
+void AAbility::OnRep_SlotName(const FName OldSlotName)
 {
 	NotifySlotNameChangeToUI(OldSlotName, SlotName);
 }
 
-void AAbility::SRPC_SetSlotName_Implementation(FName NewSlotName)
+void AAbility::SRPC_SetSlotName_Implementation(const FName NewSlotName)
 {
 	SlotName = NewSlotName;
 	MARK_PROPERTY_DIRTY_FROM_NAME(AAbility, SlotName, this)
@@ -75,14 +81,14 @@ void AAbility::SRPC_SetSlotName_Implementation(FName NewSlotName)
 
 void AAbility::NotifySlotNameChangeToUI(const FName OldSlotName, const FName NewSlotName)
 {
-	// Make sure this is only done on the local playercontroller
+	// Make sure this is only done on the local PlayerController
 	if (!IsOwnedBy(GetWorld()->GetFirstPlayerController()))
 		return;
 	
-	if (UAbilityManager* AbilityManager = GetWorld()->GetGameInstance()->GetSubsystem<UAbilityManager>())
+	if (UAbilitySlotRegister* AbilitySlotRegister = GetGameInstance()->GetSubsystem<UAbilitySlotRegister>())
 	{
-		AbilityManager->UnregisterAbilityInSlot(OldSlotName, this);
-		AbilityManager->AssignAbilityToSlot(NewSlotName, this);
+		AbilitySlotRegister->UnassignAbilityFromSlot(this, OldSlotName);
+		AbilitySlotRegister->AssignAbilityToSlot(this, NewSlotName);
 	}
 }
 
