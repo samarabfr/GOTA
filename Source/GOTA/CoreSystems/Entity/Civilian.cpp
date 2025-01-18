@@ -238,12 +238,14 @@ bool ACivilian::S_TryFindPathToClosestWorkTile()
 {
 	if (!CurrentTile.IsValid()) return false;
 	if (IsTileValidForWork(GetCurrentTile())) return true;
-	Path = GameState->GetTileMap()->FindPathToNearestTile(GetCurrentTile(), EEntityType::Civilian,
+	const TArray<ATile*> ResultPath = GameState->GetTileMap()->FindPathToNearestTile(GetCurrentTile(), EEntityType::Civilian,
 	                                                      [this](const ATile* Tile)
 	                                                      {
 		                                                      return IsTileValidForWork(Tile);
 	                                                      });
-	return !Path.IsEmpty();
+	if (ResultPath.IsEmpty()) return false;
+	Path = ResultPath;
+	return true;
 }
 
 bool ACivilian::S_TryFindPathToWorkTileClosestToSettlement()
@@ -256,31 +258,45 @@ bool ACivilian::S_TryFindPathToWorkTileClosestToSettlement()
 	{
 		if (IsTileValidForWork(ClaimedTile))
 		{
-			Path = GameState->GetTileMap()->GetPath(CurrentTile.Get(), ClaimedTile);
-			if (!Path.IsEmpty()) return true;
+			const TArray<ATile*> ResultPath = GameState->GetTileMap()->GetPath(CurrentTile.Get(), ClaimedTile);
+			if (!ResultPath.IsEmpty())
+			{
+				Path = ResultPath;
+				return true;
+			}
 		}
 	}
-	Path = GameState->GetTileMap()->FindPathToNearestTile(GetOriginBuilding()->GetSettlement()->ClaimedTiles,
-	                                                      CurrentTile.Get(), EEntityType::Civilian,
-	                                                      [this](const ATile* Tile)
-	                                                      {
-		                                                      return IsTileValidForWork(Tile);
-	                                                      });
-	return !Path.IsEmpty();
+	const TArray<ATile*> ResultPath = GameState->GetTileMap()->FindPathToNearestTile(
+		GetOriginBuilding()->GetSettlement()->ClaimedTiles,
+		CurrentTile.Get(), EEntityType::Civilian,
+		[this](const ATile* Tile)
+		{
+			return IsTileValidForWork(Tile);
+		});
+	if (ResultPath.IsEmpty()) return false;
+	Path = ResultPath;
+	return true;
 }
 
 bool ACivilian::S_TryFindPathToPriorityTile()
 {
 	if (!CurrentTile.IsValid() || !PriorityTile.IsValid()) return false;
-	Path = GameState->GetTileMap()->GetPath(GetCurrentTile(), GetPriorityTile(), EEntityType::Civilian);
-	return !Path.IsEmpty();
+	const TArray<ATile*> ResultPath = GameState->GetTileMap()->GetPath(GetCurrentTile(), GetPriorityTile(),
+	                                                                   EEntityType::Civilian);
+	if (ResultPath.IsEmpty()) return false;
+	Path = ResultPath;
+	return true;
 }
 
 bool ACivilian::S_TryFindPathToOriginBuilding()
 {
 	if (!CurrentTile.IsValid() || !OriginBuilding.IsValid() || !GetOriginBuilding()->GetTile()) return false;
-	Path = GameState->GetTileMap()->GetPath(GetCurrentTile(), GetOriginBuilding()->GetTile(), EEntityType::Civilian);
-	return !Path.IsEmpty();
+
+	const TArray<ATile*> ResultPath = GameState->GetTileMap()->GetPath(GetCurrentTile(), GetOriginBuilding()->GetTile(),
+	                                                                   EEntityType::Civilian);
+	if (ResultPath.IsEmpty()) return false;
+	Path = ResultPath;
+	return true;
 }
 
 // ----------------- Moving ------------------------
