@@ -18,7 +18,7 @@ void USimulatedGuardianTrainingEnv::GatherAgentReward_Implementation(float& OutR
 		FVector GuardianLocation = GuardianSimulator->GetPawn()->GetActorTransform().GetLocation();
 		FVector TargetLocation = GuardianSimulator->GetTargetTile()->GetActorTransform().GetLocation();
 		float Reward = ULearningAgentsRewards::MakeRewardFromLocationSimilarity(
-			GuardianLocation, TargetLocation, 10000.0f, 50.0f);
+			GuardianLocation, TargetLocation, 10000.0f, 500.0f);
 		OutReward = Reward;
 	}
 }
