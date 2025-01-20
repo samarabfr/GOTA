@@ -29,13 +29,28 @@ void USimulatedGuardianInteractor::GatherAgentObservation_Implementation(
 		if (GuardianSimulator->GetTargetTile())
 		{
 			OutObservationObjectElement = ULearningAgentsObservations::MakeLocationObservation(
-				InObservationObject, GuardianSimulator->GetTargetTile()->GetActorTransform().GetLocation(),
-				GuardianSimulator->GetPawn()->GetActorTransform());
+				InObservationObject,
+				GuardianSimulator->GetTargetTile()->GetActorTransform().GetLocation(),
+				GuardianSimulator->GetPawn()->GetActorTransform(),
+				L"LocationObservation",
+				true,
+				this,
+				AgentId,
+				GuardianSimulator->GetTargetTile()->GetActorTransform().GetLocation(),
+				FLinearColor::Blue);
 		}
 		else
 		{
 			OutObservationObjectElement = ULearningAgentsObservations::MakeLocationObservation(
-			InObservationObject, FVector::ZeroVector, GuardianSimulator->GetPawn()->GetActorTransform());
+				InObservationObject,
+				FVector::ZeroVector,
+				GuardianSimulator->GetPawn()->GetActorTransform(),
+				L"LocationObservation",
+				true,
+				this,
+				AgentId,
+				FVector::ZeroVector,
+				FLinearColor::Blue);
 		}
 	}
 }
