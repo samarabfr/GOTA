@@ -99,7 +99,6 @@ void USimulatedGuardianInteractor::PerformAgentAction_Implementation(const ULear
 			GuardianSimulator->GetPawn()->GetActorTransform().GetLocation(),
 			GuardianSimulator->GetPawn()->GetActorTransform().GetLocation(),
 			FLinearColor::Blue);
-		FRotator Rotation = FRotator(0.f, SteeringAngle, 0.f);
-		GuardianSimulator->SetMoveDirection(Rotation.Vector());
+		GuardianSimulator->SteerPawn(SteeringAngle);
 	}
 }

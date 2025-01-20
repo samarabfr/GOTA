@@ -14,9 +14,9 @@ AGuardianSimulator::AGuardianSimulator()
 void AGuardianSimulator::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if (bWantsToMove && !MoveDirection.IsZero())
+	if (bWantsToMove)
 	{
-		GetPawn()->AddMovementInput(FVector(MoveDirection.X, MoveDirection.Y, 0.0f));
+		GetPawn()->AddMovementInput(GetPawn()->GetActorForwardVector());
 	}
 	if (!TargetTile.IsValid() &&
 		GameState.IsValid() &&
@@ -31,16 +31,6 @@ void AGuardianSimulator::BeginPlay()
 {
 	Super::BeginPlay();
 	GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
-}
-
-void AGuardianSimulator::SetMoveDirection(const FVector NewDirection)
-{
-	MoveDirection = NewDirection;
-}
-
-FVector AGuardianSimulator::GetMoveDirection()
-{
-	return MoveDirection;
 }
 
 bool AGuardianSimulator::GetIsMoving()
@@ -66,4 +56,10 @@ void AGuardianSimulator::ResetToRandomTile()
 		GetPawn()->TeleportTo(RandomTile->GetActorTransform().GetLocation(),
 		           RandomTile->GetActorTransform().GetRotation().Rotator());
 	}
+}
+
+void AGuardianSimulator::SteerPawn(float SteeringAngle)
+{
+	if (SteeringAngle == 0.f) return;
+	GetPawn()->AddActorLocalRotation(FRotator(0.f, SteeringAngle, 0.f));
 }

@@ -17,7 +17,6 @@ class GOTA_API AGuardianSimulator : public AAIController
 	virtual void BeginPlay() override;
 
 private:
-	FVector MoveDirection = FVector::ZeroVector;
 	bool bWantsToMove = false;
 	TWeakObjectPtr<AGS_Ingame> GameState;
 
@@ -25,10 +24,9 @@ private:
 	TWeakObjectPtr<ATile> TargetTile;
 
 public:
-	void SetMoveDirection(FVector NewDirection);
-	FVector GetMoveDirection();
 	bool GetIsMoving();
 	void SetIsMoving(bool NewIsMoving);
 	ATile* GetTargetTile();
 	void ResetToRandomTile();
+	void SteerPawn(float SteeringAngle);
 };
