@@ -50,7 +50,7 @@ void USimulatedGuardianInteractor::GatherAgentObservation_Implementation(
 				this,
 				AgentId,
 				FVector::ZeroVector,
-				FLinearColor::Blue);
+				FLinearColor::Yellow);
 		}
 	}
 }
@@ -76,11 +76,29 @@ void USimulatedGuardianInteractor::PerformAgentAction_Implementation(const ULear
 		ULearningAgentsActions::GetStructAction(ActionElements, InActionObject, InActionObjectElement);
 		// moving
 		bool bIsMoving;
-		ULearningAgentsActions::GetBoolAction(bIsMoving, InActionObject, *ActionElements.Find(FName("Moving")));
+		ULearningAgentsActions::GetBoolAction(bIsMoving,
+			InActionObject,
+			*ActionElements.Find(FName("Moving")),
+			L"BoolAction",
+			true,
+			this,
+			AgentId,
+			GuardianSimulator->GetPawn()->GetActorTransform().GetLocation(),
+			FLinearColor::Yellow);
 		GuardianSimulator->SetIsMoving(bIsMoving);
 		// steering
 		float SteeringAngle;
-		ULearningAgentsActions::GetAngleAction(SteeringAngle, InActionObject, *ActionElements.Find(FName("Steering")));
+		ULearningAgentsActions::GetAngleAction(SteeringAngle,
+			InActionObject,
+			*ActionElements.Find(FName("Steering")),
+			0,
+			L"AngleAction",
+			true,
+			this,
+			AgentId,
+			GuardianSimulator->GetPawn()->GetActorTransform().GetLocation(),
+			GuardianSimulator->GetPawn()->GetActorTransform().GetLocation(),
+			FLinearColor::Blue);
 		FRotator Rotation = FRotator(0.f, SteeringAngle, 0.f);
 		GuardianSimulator->SetMoveDirection(Rotation.Vector());
 	}
