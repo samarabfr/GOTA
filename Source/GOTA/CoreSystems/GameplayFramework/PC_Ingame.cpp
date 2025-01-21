@@ -82,10 +82,6 @@ void APC_Ingame::C_Init()
 {
 	CreateLobbyUI();
 	DistanceUtils = GetWorld()->SpawnActor<ADistanceUtils>();
-	GameState = GetWorld()->GetGameState<AGS_Ingame>();
-	Ability1 = GetWorld()->SpawnActor<ADamageBuildingAbility>();
-	Ability2 = GetWorld()->SpawnActor<ADamageArmyAbility>();
-	Ability3 = GetWorld()->SpawnActor<ACreatePopAbility>();
 }
 
 // ---------------------------------------- Utility ----------------------------------------
