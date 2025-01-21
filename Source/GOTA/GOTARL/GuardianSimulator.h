@@ -6,6 +6,9 @@
 
 #include "GuardianSimulator.generated.h"
 
+class ATile;
+class AGS_Ingame;
+
 UCLASS(Blueprintable)
 class GOTA_API AGuardianSimulator : public AAIController
 {

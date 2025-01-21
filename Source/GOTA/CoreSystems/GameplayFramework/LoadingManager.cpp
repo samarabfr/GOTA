@@ -84,7 +84,7 @@ void ALoadingManager::ServerTick()
 			GameMode->CreateWorld();
 			GameMode->CreateSettlements();
 			GameMode->CreateGuardians();
-			GameMode->CreateUtilActors();
+			GameMode->InitPlayerControllers();
 			GameState->CountIslandMaxEcoValues();
 			LoadingStatus->SetNetRepCount(LoadingStatus->RepCount);
 			LoadingStatus->SetCurrentStatus(ELoadingStatus::WaitForReplication);

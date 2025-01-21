@@ -2,32 +2,50 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "GOTA/CoreSystems/Utility/MouseUtils.h"
 #include "Guardian.generated.h"
 
+class UAbilitySettings;
+class APC_Ingame;
+class AAbility;
 class UGuardianSettings;
-class UGuardianDataAsset;
 
 UCLASS()
 class GOTA_API AGuardian : public ACharacter
 {
 	GENERATED_BODY()
-	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
-	UPROPERTY(Replicated)
-	UGuardianSettings* Settings;
 
-protected:
+	// ------------------------------------ Replication Setup --------------------------------------
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	// ---------------------------------------- Lifecycle ----------------------------------------
+public:
 	AGuardian();
+
+	void S_Init(UGuardianSettings* InSettings);
+
 	virtual void BeginPlay() override;
 
+	// ---------------------------------------- Utility ----------------------------------------
+private:
+	UPROPERTY(Replicated)
+	TWeakObjectPtr<UGuardianSettings> Settings;
+	
 public:
-	void Init(UGuardianSettings* InSettings);
+	UGuardianSettings* GetSettings() const { return Settings.Get(); }
 
-	UGuardianSettings* GetSettings() const { return Settings; }
+	// ---------------------------------------- Abilities ----------------------------------------
+private:
+	UPROPERTY(Replicated, VisibleInstanceOnly)
+	TArray<TWeakObjectPtr<AAbility>> Abilities;
 
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCosmetic, Category="PlayerController")
-	void SetupGAM(AMouseUtils* MouseUtils_);
+	UFUNCTION(Server, Reliable)
+	void SRPC_LearnAbility(UAbilitySettings* AbilitySettings, FName AbilitySlotName);
+
+	UFUNCTION()
+	void HandleAbilityDestruction(AActor* DestroyedAbility);
+	
+public:
+	void LearnAbility(UAbilitySettings* AbilitySettings, FName AbilitySlotName);
 };
