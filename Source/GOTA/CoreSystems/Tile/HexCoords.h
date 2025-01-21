@@ -29,6 +29,8 @@ public:
 	bool Equals(const FHexCoords& Other) const;
 	
 	FHexCoords operator+(const FHexCoords& Other) const;
+	
+	FHexCoords operator-(const FHexCoords& Other) const;
 
 	friend inline uint32 GetTypeHash(const FHexCoords& Key)
 	{
@@ -37,4 +39,6 @@ public:
 		HashValue = HashCombine(HashValue, GetTypeHash(Key.R));
 		return HashValue;
 	}
+
+	int32 DistanceTo(const FHexCoords Target) const;
 };

@@ -35,8 +35,11 @@ void ALoadingManager::BeginPlay()
 	GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->SetLoadingManager(this);
 	LocalPlayerController = GetWorld()->GetFirstPlayerController<APC_Ingame>();
-	LocalPlayerController->RemoveLobbyUI();
-	LocalPlayerController->CreateLoadingUI();
+	if(LocalPlayerController.IsValid())
+	{
+		LocalPlayerController->RemoveLobbyUI();
+		LocalPlayerController->CreateLoadingUI();
+	}
 
 	// We have to Apply the GameUserSettings once we are on the Island.lvl, and before we show the game because
 	// for some reason some CVars get set when changing the level
@@ -67,6 +70,7 @@ void ALoadingManager::ServerTick()
 		GOTAPlayerID = 0;
 		SpawnLoadingStatuses();
 		LoadingStatus = LoadingStatuses[0];
+		if(!LoadingStatus) return;
 	}
 	switch (LoadingStatus->CurrentStatus)
 	{
@@ -193,6 +197,7 @@ void ALoadingManager::SpawnLoadingStatuses()
 	for (APlayerState* PlayerState : GameState->PlayerArray)
 	{
 		APS_Ingame* PS = Cast<APS_Ingame>(PlayerState);
+		if(!PS || PS->GOTAPlayerID < 0) return;
 		ALoadingStatusActor* LSA = GetWorld()->SpawnActor<ALoadingStatusActor>();
 		LSA->SetOwner(PS->GetOwningController());
 		LSA->GOTAPlayerID = PS->GOTAPlayerID;

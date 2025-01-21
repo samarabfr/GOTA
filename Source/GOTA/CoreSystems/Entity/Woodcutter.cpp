@@ -1,76 +1,30 @@
 ﻿#include "Woodcutter.h"
 
 #include "CivilianSettings.h"
-#include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
-#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
-#include "GOTA/CoreSystems/Tile/TileMap.h"
 
 AWoodcutter::AWoodcutter()
 {
-	if (Settings)
-		MeshComponent->SetStaticMesh(Settings->WoodCutterMesh);
+	if (GetSettings())
+		GetMeshComponent()->SetStaticMesh(GetSettings()->WoodCutterMesh);
 }
 
-void AWoodcutter::ValidateStatus()
+void AWoodcutter::S_Work()
 {
-	if (GetStatus() == ECivilianStatus::Idle)
-	{
-		if (CurrentTile->EcoValues->GetTrees() > 0)
-			SetStatus(ECivilianStatus::Working);
-		else if (TryFindPath())
-			SetStatus(ECivilianStatus::Moving);
-	}
-	else if (GetStatus() == ECivilianStatus::Moving)
-	{
-		if ((Path.IsEmpty() || !Path[Path.Num() - 1]->AcceptsCivilian()) && !TryFindPath())
-			SetStatus(ECivilianStatus::Idle);
-	}
-	else if (GetStatus() == ECivilianStatus::Working)
-	{
-		if (CurrentTile->EcoValues->GetTrees() <= 0)
-		{
-			if (TryFindPath())
-				SetStatus(ECivilianStatus::Moving);
-			else
-				SetStatus(ECivilianStatus::Idle);
-		}
-	}
-}
-
-void AWoodcutter::Work()
-{
-	CurrentTile->EcoValues->SubtractTrees(1);
+	if (IsInventoryFull()) return;
+	GetCurrentTile()->EcoValues->SubtractTrees(1);
 	FGameResources WorkResources = FGameResources();
-	WorkResources.Wood = WorkAmount;
-	Building->GetSettlement()->S_AddResources(WorkResources);
+	WorkResources.Wood = GetWorkAmount();
+	S_AddResources(WorkResources);
 }
 
-bool AWoodcutter::TryFindPath()
+bool AWoodcutter::IsTileValidForWork(const ATile* Tile) const
 {
-	bool HasBorderingTileWithTrees = false;
-	for (ATile* Tile : Building->GetSettlement()->BorderingUnclaimedTiles)
-	{
-		if (Tile->EcoValues->GetTrees() > 0)
-		{
-			HasBorderingTileWithTrees = true;
-			break;
-		}
-	}
-	if (HasBorderingTileWithTrees)
-	{
-		Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [this](const ATile* Tile)
-		{
-			return Tile->EcoValues->GetTrees() > 0 && Building->GetSettlement()->IsBorderingUnclaimedTile(Tile);
-		});
-	}
-	else
-	{
-		Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile, EEntityType::Civilian, [](const ATile* Tile)
-		{
-			return Tile->EcoValues->GetTrees() > 0;
-		});
-	}
-	return !Path.IsEmpty();
+	return Tile->EcoValues->GetTrees() > 0;
+}
+
+bool AWoodcutter::S_TryFindPathToBestWorkTile()
+{
+	return S_TryFindPathToWorkTileClosestToSettlement();
 }

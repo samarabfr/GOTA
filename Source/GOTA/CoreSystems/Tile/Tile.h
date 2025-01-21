@@ -67,8 +67,9 @@ public:
 	TArray<ATile*> GetNeighbors() const { return Neighbors; }
 
 	TArray<ATile*> GetPathTo(ATile* Target);
-	int32 GetTileDistanceTo(ATile* Target);
-
+	int32 GetPathTileDistanceTo(ATile* Target);
+	int32 GetTileDistanceTo(const ATile* Target) const;
+	
 	// ------------------------Gameplay Tags---------------------------
 
 public:
@@ -102,6 +103,7 @@ private:
 	TArray<ACivilian*> Civilians;
 
 public:
+	TArray<ACivilian*> GetCivilians() const { return Civilians; }
 	bool AcceptsCivilian() const;
 	void AddCivilian(ACivilian* Civilian, FVector& NewLocation);
 	void RemoveCivilian(const ACivilian* Civilian);

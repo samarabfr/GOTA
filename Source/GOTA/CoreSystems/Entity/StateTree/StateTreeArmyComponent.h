@@ -2,10 +2,10 @@
 
 #pragma once
 #include "Components/StateTreeComponent.h"
-#include "StateTreeComponentArmy.generated.h"
+#include "StateTreeArmyComponent.generated.h"
 
 UCLASS()
-class GOTA_API UStateTreeComponentArmy : public UStateTreeComponent
+class GOTA_API UStateTreeArmyComponent : public UStateTreeComponent
 {
 	GENERATED_BODY()
 

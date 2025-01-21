@@ -11,8 +11,14 @@
 #include "GOTA/CoreSystems/Guardian/AbilitySlotRegister.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
+#include "GOTA/CoreSystems/Tile/HexCoordsFunctions.h"
+#include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "GOTA/CoreSystems/Utility/DistanceUtils.h"
 #include "GOTA/CoreSystems/Utility/MouseUtils.h"
+#include "GOTA/GOTARL/CreatePopAbility.h"
+#include "GOTA/GOTARL/DamageArmyAbility.h"
+#include "GOTA/GOTARL/DamageBuildingAbility.h"
+#include "GOTA/GOTARL/SimplifiedAbility.h"
 #include "GOTA/UI/Ingame/IngameUI.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
@@ -76,6 +82,10 @@ void APC_Ingame::C_Init()
 {
 	CreateLobbyUI();
 	DistanceUtils = GetWorld()->SpawnActor<ADistanceUtils>();
+	GameState = GetWorld()->GetGameState<AGS_Ingame>();
+	Ability1 = GetWorld()->SpawnActor<ADamageBuildingAbility>();
+	Ability2 = GetWorld()->SpawnActor<ADamageArmyAbility>();
+	Ability3 = GetWorld()->SpawnActor<ACreatePopAbility>();
 }
 
 // ---------------------------------------- Utility ----------------------------------------
@@ -127,6 +137,7 @@ void APC_Ingame::SetGuardian(AGuardian* NewGuardian)
 
 void APC_Ingame::ClickActor()
 {
+	if(!IngameUI) return;
 	IngameUI->ClickActor(MouseUtils->GetHoverActor());
 }
 

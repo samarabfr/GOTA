@@ -37,7 +37,7 @@ struct GOTA_API FSTC_CurrentTileIsValidForRecruiting : public FStateTreeConditio
 };
 
 USTRUCT()
-struct GOTA_API FSTC_IsPathValidInstanceData
+struct GOTA_API FSTC_IsPathValidArmyInstanceData
 {
 	GENERATED_BODY()
 
@@ -46,16 +46,16 @@ struct GOTA_API FSTC_IsPathValidInstanceData
 };
 
 /**
- * Condition checking if path is valid
+ * Condition checking if path is valid for army
  */
-USTRUCT(DisplayName = "Is Path valid")
-struct GOTA_API FSTC_IsPathValid : public FStateTreeConditionCommonBase
+USTRUCT(DisplayName = "Is Path valid for Army")
+struct GOTA_API FSTC_IsPathValidArmy : public FStateTreeConditionCommonBase
 {
 	GENERATED_BODY()
 
-	using FInstanceDataType = FSTC_IsPathValidInstanceData;
+	using FInstanceDataType = FSTC_IsPathValidArmyInstanceData;
 
-	FSTC_IsPathValid() = default;
+	FSTC_IsPathValidArmy() = default;
 
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;

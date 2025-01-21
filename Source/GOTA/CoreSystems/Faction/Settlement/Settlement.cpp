@@ -211,7 +211,7 @@ void ASettlement::UnregisterBuildingForResourcePrediction(UBuilding* Building)
 		Building->OnPredictedConsumptionChanged.RemoveDynamic(this, &ASettlement::UpdatePredictedConsumption);
 	}
 	PredictedConsumption.RemoveConsumption(
-	Building->GetPopulation()->GetSize() * Settings->GetPopEatingPerSecond(), EConsumptionType::Food);
+		Building->GetPopulation()->GetSize() * Settings->GetPopEatingPerSecond(), EConsumptionType::Food);
 	Building->GetPopulation()->OnSizeChanged.RemoveDynamic(this, &ASettlement::UpdatePredictionFromPopulation);
 }
 
