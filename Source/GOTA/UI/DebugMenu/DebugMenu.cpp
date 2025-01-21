@@ -3,7 +3,8 @@
 #include "DebugMenuAbilityEntry.h"
 #include "Components/UniformGridPanel.h"
 #include "GOTA/CoreSystems/Guardian/AbilityProvider.h"
-#include "GOTA/CoreSystems/Guardian/AbilitySlotRegister.h"
+
+// -------------------------------------- LifeCycle --------------------------------------
 
 void UDebugMenu::NativeConstruct()
 {
@@ -11,17 +12,14 @@ void UDebugMenu::NativeConstruct()
 	const UAbilityProvider* AbilityProvider = GetGameInstance()->GetSubsystem<UAbilityProvider>();
 	if (AbilityProvider)
 	{
-		for (int32 i = 0; i < 10; ++i)
+		for (UAbilitySettings* AbilitySettings : AbilityProvider->GetAllAbilitySettings())
 		{
-			for (UAbilitySettings* AbilitySettings : AbilityProvider->GetAllAbilitySettings())
-			{
-				AddToGrid(AbilitySettings);
-			}
+			AddToGrid(AbilitySettings);
 		}
 	}
 }
 
-
+// ---------------------------------------- Utility ----------------------------------------
 
 void UDebugMenu::AddToGrid(UAbilitySettings* AbilitySettings)
 {
@@ -34,7 +32,6 @@ void UDebugMenu::AddToGrid(UAbilitySettings* AbilitySettings)
 	GrantAbilityGrid->AddChildToUniformGrid(AbilityEntry, Row, Column);
 	++GridCounter;
 }
-
 
 // ------------------------------------ Prevent Clicking Through ------------------------------------
 
