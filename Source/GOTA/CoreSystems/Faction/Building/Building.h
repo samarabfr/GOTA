@@ -38,7 +38,7 @@ public:
 
 	// ---------------------------------------- Utility ----------------------------------------
 private:
-	UPROPERTY(Replicated)
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	ASettlement* Settlement;
 	
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")

@@ -20,6 +20,7 @@
 #include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "GOTA/CoreSystems/Tile/WorldGenerator.h"
+#include "GOTA/CoreSystems/Utility/MouseUtils.h"
 #include "Kismet/GameplayStatics.h"
 
 AGM_Ingame::AGM_Ingame()
@@ -195,28 +196,17 @@ void AGM_Ingame::CreateGuardians()
 		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(PlayerStateIngame->SelectedGuardian->GuardianBlueprint,
 		                                                        SpawnLocation, FRotator::ZeroRotator);
 		GOTAGameState->SetGuardian(PlayerStateIngame->GOTAPlayerID, Guardian);
-		Guardian->Init(PlayerStateIngame->SelectedGuardian);
+		Guardian->S_Init(PlayerStateIngame->SelectedGuardian);
 	}
 }
 
-void AGM_Ingame::CreateUtilActors()
+void AGM_Ingame::InitPlayerControllers()
 {
 	for (const APlayerState* PlayerState : GOTAGameState->PlayerArray)
 	{
 		APC_Ingame* PlayerController = Cast<APC_Ingame>(PlayerState->GetOwningController());
 
-		// Create MouseUtils
-		FActorSpawnParameters MouseUtilsSpawnParams;
-		MouseUtilsSpawnParams.Owner = PlayerController;
-		AMouseUtils* MouseUtils = GetWorld()->SpawnActor<AMouseUtils>(MouseUtilsClass, MouseUtilsSpawnParams);
-		PlayerController->SetMouseUtils(MouseUtils);
-
-		// Create BuildingPlacer
-		FActorSpawnParameters BuildingPlacerSpawnParams;
-		BuildingPlacerSpawnParams.Owner = PlayerController;
-		ABuildingPlacer* BuildingPlacer = GetWorld()->SpawnActor<ABuildingPlacer>(BuildingPlacerSpawnParams);
-		BuildingPlacer->S_Init(MouseUtils);
-		PlayerController->SetBuildingPlacer(BuildingPlacer);
+		PlayerController->S_Init();
 	}
 }
 

@@ -14,6 +14,8 @@ UCLASS()
 class GOTA_API AGM_Ingame : public AGameMode
 {
 	GENERATED_BODY()
+	
+protected:
 	AGM_Ingame();
 
 public:
@@ -25,9 +27,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<ATileMap> TileMapClass;
-	
-	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
-	TSubclassOf<AMouseUtils> MouseUtilsClass;
 	
 	// ---------------------------------------------------------
 	// Control the Flow of the Game
@@ -68,9 +67,9 @@ public:
 
 	void CreateSettlements();
 
-	void CreateGuardians();
+	virtual void CreateGuardians();
 
-	void CreateUtilActors();
+	void InitPlayerControllers();
 
 	void InitialPossession();
 };

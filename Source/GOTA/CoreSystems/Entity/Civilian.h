@@ -1,8 +1,11 @@
 ﻿#pragma once
 
-#include "GOTA/CoreSystems/Utility/Enums.h"
+#include <functional>
+
+#include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Civilian.generated.h"
 
+class UStateTreeCivilianComponent;
 class AGS_Ingame;
 class ATile;
 class ASettlement;
@@ -29,14 +32,15 @@ public:
 private:
 	virtual void BeginDestroy() override;
 
-	// -----------------------  -----------------------
-
-protected:
-	UPROPERTY(ReplicatedUsing=OnRep_Building)
-	UBuilding* Building;
-
+public:
 	UFUNCTION()
-	void OnRep_Building();
+	void S_HandleDeath();
+
+	// ----------------------- Utility -----------------------
+
+private:
+	UPROPERTY(Replicated)
+	TWeakObjectPtr<UBuilding> OriginBuilding;
 
 	UPROPERTY(Replicated)
 	UCivilianSettings* Settings;
@@ -47,57 +51,89 @@ protected:
 	UPROPERTY()
 	UStaticMeshComponent* MeshComponent;
 
-	// ----------------------- Status -----------------------
-private:
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	ECivilianStatus Status;
+	UPROPERTY(VisibleInstanceOnly)
+	UStateTreeCivilianComponent* StateTree;
 
 protected:
+	UBuilding* GetOriginBuilding() const { return OriginBuilding.Get(); }
+	UCivilianSettings* GetSettings() const { return Settings; }
+	AGS_Ingame* GetGameState()const { return GameState; }
+	UStaticMeshComponent* GetMeshComponent() const { return MeshComponent; }
+	UStateTreeCivilianComponent* GetStateTree() const { return StateTree; }
+
+
+	// ----------------- Progresser ------------------------
 	// Progress of current Action in percent
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float Progress;
 
-	virtual void ValidateStatus();
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	bool bProgresserActive = false;
 
-	ECivilianStatus GetStatus() const { return Status; }
-	void SetStatus(ECivilianStatus NewStatus);
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	float ProgressRate = 0.f;
+
+	std::function<float()> CalculateProgressRate;
+	std::function<void()> FinishProgress;
+
+public:
+	void S_StartProgresser(const std::function<float()>& ProgressRateCalculator,
+	                       const std::function<void()>& Finisher);
+	void S_StopProgresser();
+	void ProgressTick(float DeltaSeconds);
 
 	// ----------------- Working ------------------------
-
-	// How fast the progress increases when working, in percent per second
-	UPROPERTY(VisibleInstanceOnly)
-	float WorkRate;
-
+private:
 	// How much impact the Work has, for example when producing resources how many resources get produced
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	int32 WorkAmount;
 
-private:
-	void SetupPopSizeChanging();
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	FGameResources ResourceInventoryLimit;
+	
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	FGameResources ResourceInventory;
 
-	UFUNCTION()
-	void OnPopSizeChanged(int16 Change);
-
-	void CalculateWorkRate();
+	UPROPERTY(EditAnywhere, Replicated)
+	TWeakObjectPtr<ATile> PriorityTile;
 
 protected:
-	virtual void Work();
+	virtual bool IsTileValidForWork(const ATile* Tile) const;
+	int32 GetWorkAmount() const { return WorkAmount; }
+	FGameResources GetResourceInventoryLimit() const { return ResourceInventoryLimit; }
+	FGameResources GetResourceInventory() const { return ResourceInventory; }
+	void S_AddResources(FGameResources Resources);
+	bool S_TryFindPathToClosestWorkTile();
+	bool S_TryFindPathToWorkTileClosestToSettlement();
+
+public:
+	virtual void S_Work();
+	virtual bool S_TryFindPathToBestWorkTile();
+	bool S_TryFindPathToPriorityTile();
+	bool S_TryFindPathToOriginBuilding();
+	virtual bool IsCurrentTileAmongBestWorkTiles();
+	bool IsCurrentTilePriorityTile() const;
+	float GetWorkRate() const;
+	ATile* GetPriorityTile() const { return PriorityTile.Get(); }
+	void S_SetPriorityTile(ATile* NewPriorityTile) { PriorityTile = NewPriorityTile; }
+	bool HasResourcesInInventory() const;
+	bool IsInventoryFull() const;
+	bool IsCurrentTileOriginBuilding() const;
+	void S_UnloadResources();
 
 	// ----------------- Moving ------------------------
-
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	ATile* CurrentTile;
-
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_NetLocation)
 	FVector NetLocation;
+
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	TWeakObjectPtr<ATile> CurrentTile;
 
 	UFUNCTION()
 	void OnRep_NetLocation();
 
 	void SetNetLocation(const FVector& NewNetLocation);
 
-protected:
 	// How fast the progress increases when moving, in percent per second
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float MovementRate;
@@ -105,6 +141,13 @@ protected:
 	UPROPERTY(VisibleInstanceOnly)
 	TArray<ATile*> Path;
 
-private:
-	void Move();
+protected:
+	ATile* GetCurrentTile() const { return CurrentTile.Get(); }
+	void S_SetPath(const TArray<ATile*>& NewPath) { Path = NewPath; }
+
+public:
+	void S_MoveToNextTileOnPath();
+	float GetMovementRate() const { return MovementRate; };
+	bool IsPathValid();
+	bool IsPathEmpty() const { return Path.IsEmpty(); }
 };

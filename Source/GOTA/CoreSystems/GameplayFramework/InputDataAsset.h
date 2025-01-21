@@ -38,7 +38,7 @@ public:
 	UInputAction* Zoom;
 
 	UPROPERTY(EditDefaultsOnly, Category="Interface Actions")
-	UInputAction* OpenMenu;
+	UInputAction* Escape;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Interface Actions")
 	UInputAction* BuildMenu;
@@ -66,4 +66,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Ability Actions")
 	UInputAction* Ability8;
+
+	UPROPERTY(EditDefaultsOnly, Category="Ability Actions")
+	UInputAction* DebugMenu;
 };

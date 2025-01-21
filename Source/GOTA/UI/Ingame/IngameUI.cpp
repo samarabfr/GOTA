@@ -1,11 +1,14 @@
 ﻿#include "IngameUI.h"
 
+#include "AbilityBar.h"
 #include "BuildingMenu.h"
 #include "ClickedInfo.h"
 #include "GuardianInfo.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "GOTA/UI/Menu/IngameMenu.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
+#include "GOTA/UI/DebugMenu/DebugMenu.h"
 
 // ------------------------------- LifeCycle -------------------------------
 
@@ -23,6 +26,18 @@ void UIngameUI::NativeConstruct()
 
 void UIngameUI::HoverActor(AActor* Actor)
 {
+}
+
+void UIngameUI::HandleEscapePressed()
+{
+	ToggleMenu();
+}
+
+// ------------------------------- Ingame Menu -------------------------------
+
+void UIngameUI::ToggleMenu()
+{
+	IngameMenu->Toggle();
 }
 
 // ------------------------------- Guardian Info -------------------------------
@@ -70,4 +85,20 @@ void UIngameUI::OpenBuildMenu()
 void UIngameUI::OnGameEnding(const EGameEnding Ending, const FString& EndingMessage)
 {
 	TXT_GameEnding->SetText(FText::FromString(EndingMessage));
+}
+
+TArray<UAbilitySlot*> UIngameUI::GetAbilityBarSlots()
+{
+	return WBP_AbilityBar->GetAbilitySlots();
+}
+
+void UIngameUI::ToggleDebugMenu()
+{
+	if (DebugMenu->GetVisibility() == ESlateVisibility::Hidden)
+	{
+		DebugMenu->SetVisibility(ESlateVisibility::Visible);
+	} else
+	{
+		DebugMenu->SetVisibility(ESlateVisibility::Hidden);
+	}
 }

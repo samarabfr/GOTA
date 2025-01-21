@@ -21,7 +21,7 @@ EStateTreeRunStatus FSTT_AttackEnemy::EnterState(FStateTreeExecutionContext& Con
 	return EStateTreeRunStatus::Running;
 }
 
-EStateTreeRunStatus FSTT_MoveToNextTile::EnterState(FStateTreeExecutionContext& Context,
+EStateTreeRunStatus FSTT_ArmyMoveToNextTile::EnterState(FStateTreeExecutionContext& Context,
 													const FStateTreeTransitionResult& Transition) const
 {
 	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);

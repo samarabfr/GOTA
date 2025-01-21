@@ -90,17 +90,17 @@ enum class EGameStatus : uint8
 UENUM()
 enum class ECivilianStatus : uint8
 {
-	Idle UMETA(DisplayName = "Idle"),
-	Moving UMETA(DisplayName = "Moving"),
+	Idling UMETA(DisplayName = "Idling"),
+	Moving UMETA(DisplayName = "Moving to next tile"),
 	Working UMETA(DisplayName = "Working")
 };
 
 UENUM()
 enum class EArmyStatus : uint8
 {
-	Idling UMETA(DisplayName = "Idle"),
-	MovingToNextTile UMETA(DisplayName = "Moving"),
-	RecruitingFromTile UMETA(DisplayName = "Recruiting"),
+	Idling UMETA(DisplayName = "Idling"),
+	MovingToNextTile UMETA(DisplayName = "Moving to next tile"),
+	RecruitingFromTile UMETA(DisplayName = "Recruiting from tile"),
 	Attacking UMETA(DisplayName = "Fighting"),
 	Ravaging UMETA(DisplayName = "Ravaging")
 };
@@ -119,4 +119,12 @@ enum class EEntityType : uint8
 {
 	Civilian UMETA(DisplayName = "Civilian"),
 	Army UMETA(DisplayName = "Military")
+};
+
+UENUM()
+enum class EAbilityCategory : uint8
+{
+	Debug UMETA(DisplayName = "Debug"),
+	Common UMETA(DisplayName = "Common"),
+	Fire UMETA(DisplayName = "Fire")
 };

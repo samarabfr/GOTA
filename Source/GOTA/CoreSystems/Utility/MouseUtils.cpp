@@ -3,8 +3,11 @@
 
 #include "MouseUtils.h"
 
+#include "GOTA/CoreSystems/Entity/Army.h"
+#include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "GOTA/CoreSystems/GameplayFramework/PC_Ingame.h"
+#include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -39,6 +42,18 @@ AMouseUtils::AMouseUtils()
 	MouseLocation->SetupAttachment(RootComponent);
 	MouseTileLocation = CreateDefaultSubobject<USceneComponent>("Mouse Tile Location");
 	MouseTileLocation->SetupAttachment(RootComponent);
+
+	TestCube = CreateDefaultSubobject<UStaticMeshComponent>("TestCube");
+	TestCube->SetupAttachment(MouseLocation);
+	
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> TestCubeFinder(
+		TEXT("/Game/Visuals/Meshes/TestCube")
+	);
+	if(TestCubeFinder.Succeeded())
+	{
+		TestCube->SetStaticMesh(TestCubeFinder.Object);
+		TestCube->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
 }
 
 void AMouseUtils::BeginPlay()
@@ -49,6 +64,12 @@ void AMouseUtils::BeginPlay()
 	if (IsOwnedBy(GetWorld()->GetFirstPlayerController()))
 	{
 		SetActorTickEnabled(true);
+	}
+
+	static const TCHAR* PathToDataTable = TEXT("/Game/Visuals/VFX/FXS_AbilityIndicator");
+	if (UNiagaraSystem* NiagaraSystem = LoadObject<UNiagaraSystem>(nullptr, PathToDataTable))
+	{
+		
 	}
 }
 
@@ -139,6 +160,16 @@ void AMouseUtils::HoverTileChanged()
 void AMouseUtils::AttachActorToTilePosition(AActor* Actor)
 {
 	Actor->AttachToComponent(MouseTileLocation, FAttachmentTransformRules::SnapToTargetIncludingScale);
+}
+
+FAbilityTarget AMouseUtils::GetHoverAbilityTarget() const
+{
+	FAbilityTarget AbilityTarget;
+	AbilityTarget.Tile = Cast<ATile>(HoverActor);
+	AbilityTarget.Guardian = Cast<AGuardian>(HoverActor);
+	AbilityTarget.Civilian = Cast<ACivilian>(HoverActor);
+	AbilityTarget.Army = Cast<AArmy>(HoverActor);
+	return AbilityTarget;
 }
 
 // ------------------ Hover Actor ------------------

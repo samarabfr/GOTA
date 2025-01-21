@@ -72,9 +72,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Civilian")
 	float CivilianConsumptionAmount = 0;
 
+	UPROPERTY(EditDefaultsOnly, Category="Civilian")
+	FGameResources CivilianInventoryLimit = FGameResources::Zero();
+
 	// In Seconds
 	UPROPERTY(EditDefaultsOnly, Category="Civilian", meta=(Tooltip="In Seconds"))
 	float CivilianMoveTime = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Civilian", meta=(Tooltip="In Seconds"))
+	float CivilianRespawnTime = 0.0f;
 
 	// Multiplies the theoretical optimum production to estimate the time spent not working
 	UPROPERTY(EditDefaultsOnly, Category="Civilian"
