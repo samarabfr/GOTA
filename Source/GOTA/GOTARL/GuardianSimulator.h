@@ -20,7 +20,7 @@ private:
 	bool bWantsToMove = false;
 	TWeakObjectPtr<AGS_Ingame> GameState;
 
-	UPROPERTY(VisibleInstanceOnly)
+	UPROPERTY(EditInstanceOnly)
 	TWeakObjectPtr<ATile> TargetTile;
 
 public:
