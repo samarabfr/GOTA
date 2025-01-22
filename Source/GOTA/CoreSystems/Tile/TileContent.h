@@ -5,6 +5,7 @@
 #include "TileAssetSpawn.h"
 #include "TileContent.generated.h"
 
+class UTileAssetProvider;
 class AGS_Ingame;
 class ATile;
 
@@ -13,7 +14,9 @@ class GOTA_API UTileContent : public UObject
 {
 	//Unreal Engine Mystery Code
 	GENERATED_BODY()
-
+	
+	TWeakObjectPtr<UTileAssetProvider> TileAssetProvider;
+	
 public:
 	void Init(ATile* InTile, AGS_Ingame* InGameState);
 

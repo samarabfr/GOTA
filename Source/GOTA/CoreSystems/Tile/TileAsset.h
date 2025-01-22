@@ -13,7 +13,18 @@ enum class ERotationMode : uint8
 {
 	Default UMETA(DisplayName = "Default Spawn Point Rotation"),
 	Random90Degree UMETA(DisplayName = "90 Degree Random"),
-	Random360Degree UMETA(DisplayName = "360 Degree Random"),
+	Random360Degree UMETA(DisplayName = "360 Degree Random")
+};
+
+UENUM()
+enum class ETileAssetCategory : uint8
+{
+	None UMETA(DisplayName = "None"),
+	Tree UMETA(DisplayName = "Tree"),
+	Forage UMETA(DisplayName = "Forage"),
+	Prop UMETA(DisplayName = "Prop"),
+	MainBuilding UMETA(DisplayName = "Main Building"),
+	Building UMETA(DisplayName = "Building"),
 };
 
 UCLASS(BlueprintType)
@@ -22,6 +33,9 @@ class UTileAsset : public UPrimaryDataAsset
 	GENERATED_BODY()
 	
 public:
+	UPROPERTY(EditDefaultsOnly)
+	ETileAssetCategory Category = ETileAssetCategory::None;
+	
 	UPROPERTY(EditDefaultsOnly)
 	UStaticMesh* MeshFinished = nullptr;
 
