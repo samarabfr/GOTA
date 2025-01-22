@@ -37,6 +37,7 @@ void ASimulatedGuardianManager::Tick(float DeltaSeconds)
 	else
 	{
 		FLearningAgentsPPOTrainingSettings TrainingSettings = FLearningAgentsPPOTrainingSettings();
+		TrainingSettings.bUseTensorboard = true;
 		FLearningAgentsTrainingGameSettings TrainingGameSettings = FLearningAgentsTrainingGameSettings();
 		PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings);
 	}
