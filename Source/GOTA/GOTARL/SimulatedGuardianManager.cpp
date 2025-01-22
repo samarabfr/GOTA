@@ -66,9 +66,9 @@ void ASimulatedGuardianManager::Init()
 	                                           NN_Encoder,
 	                                           NN_Policy,
 	                                           NN_Decoder,
-	                                           !bRunInference,
-	                                           !bRunInference,
-	                                           !bRunInference,
+	                                           !bRunInference && bResetNNsWhenStartingTraining,
+	                                           !bRunInference && bResetNNsWhenStartingTraining,
+	                                           !bRunInference && bResetNNsWhenStartingTraining,
 	                                           PolicySettings,
 	                                           PolicySeed);
 	// Critic
@@ -78,7 +78,7 @@ void ASimulatedGuardianManager::Init()
 	                                           ULearningAgentsCritic::StaticClass(),
 	                                           FName("SimulatedGuardianCritic"),
 	                                           NN_Critic,
-	                                           !bRunInference,
+	                                           !bRunInference && bResetNNsWhenStartingTraining,
 	                                           CriticSettings,
 	                                           CriticSeed);
 	// Training Environment
