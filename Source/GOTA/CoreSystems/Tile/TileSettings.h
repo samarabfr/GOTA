@@ -40,24 +40,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Tile Content")
 	FGameplayTag BuildingDestroyedTag;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Tile Content")
-	UTileAsset* DefaultTileAsset;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Tile Content")
-	TArray<UTileAsset*> MainBuildingTileAssets;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Tile Content")
-	TArray<UTileAsset*> BuildingTileAssets;
-
-	UPROPERTY(EditDefaultsOnly, Category="Tile Content")
-	TArray<UTileAsset*> TreeTileAssets;
-
-	UPROPERTY(EditDefaultsOnly, Category="Tile Content")
-	TArray<UTileAsset*> PropTileAssets;
-
-	UPROPERTY(EditDefaultsOnly, Category="Tile Content")
-	TArray<UTileAsset*> ForageTileAssets;
-	
 	UPROPERTY(EditDefaultsOnly, Category="Tile Graphics")
 	UDataTable* TileLayouts;
 
