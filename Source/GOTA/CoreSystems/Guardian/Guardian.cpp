@@ -37,7 +37,7 @@ AGuardian::AGuardian()
 
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
-	PrimaryActorTick.TickInterval = 0.2f;
+	PrimaryActorTick.TickInterval = 0.0f;
 }
 
 void AGuardian::BeginPlay()
