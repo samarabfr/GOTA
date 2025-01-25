@@ -75,3 +75,6 @@ DerivedDataCache/*
 
 # Blender autosaves
 *.blend1
+
+# rider
+.idea
