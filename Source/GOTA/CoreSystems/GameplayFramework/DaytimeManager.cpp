@@ -223,7 +223,13 @@ void ADaytimeManager::RefreshMaterial()
 void ADaytimeManager::RefreshLightSetup()
 {
 	HorizonFog->GetComponent()->SetFogInscatteringColor(HorizonFogColorCurve->GetClampedLinearColorValue(SunHeight));
+	RefreshLightIntensity();
+	RefreshLightColors();
+}
 
+void ADaytimeManager::RefreshLightIntensity()
+{
+	// Sun
 	const FLinearColor LightsIntensity = LightsIntensityCurve->GetLinearColorValue(SunHeight);
 	if (LightsIntensity.R <= 0.0f)
 	{
@@ -236,9 +242,9 @@ void ADaytimeManager::RefreshLightSetup()
 			SunLightComponent->SetVisibility(true);
 		SunLightComponent->SetIntensity(LightsIntensity.R);
 	}
-
+	// Skylight
 	SkyLightComponent->SetIntensity(LightsIntensity.G);
-
+	// moon
 	if (LightsIntensity.B <= 0.0f)
 	{
 		if (MoonLightComponent->IsVisible())
@@ -249,5 +255,28 @@ void ADaytimeManager::RefreshLightSetup()
 		if (!MoonLightComponent->IsVisible())
 			MoonLightComponent->SetVisibility(true);
 		MoonLightComponent->SetIntensity(LightsIntensity.B);
+	}
+}
+
+void ADaytimeManager::RefreshLightColors()
+{
+	const float Daytime = GetDaytimeNormalized();
+	// Sun
+	const FLinearColor SunLightColor = SunLightColorCurve->GetLinearColorValue(Daytime);
+	if (SunLightComponent->IsVisible())
+	{
+		SunLightComponent->SetLightColor(SunLightColor);
+	}
+	// Skylight
+	const FLinearColor SkylightLightColor = SkylightColorCurve->GetLinearColorValue(Daytime);
+	if (SkyLightComponent->IsVisible())
+	{
+		SkyLightComponent->SetLightColor(SkylightLightColor);
+	}
+	// Skylight
+	const FLinearColor MoonLightColor = MoonLightColorCurve->GetLinearColorValue(Daytime);
+	if (MoonLightComponent->IsVisible())
+	{
+		MoonLightComponent->SetLightColor(MoonLightColor);
 	}
 }

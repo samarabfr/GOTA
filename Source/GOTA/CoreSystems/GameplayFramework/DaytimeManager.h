@@ -48,6 +48,8 @@ private:
 	void RefreshSunHeight();
 	void RefreshMaterial();
 	void RefreshLightSetup();
+	void RefreshLightIntensity();
+	void RefreshLightColors();
 
 	// ------------------------ Settings ------------------------
 
@@ -113,6 +115,15 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	UCurveLinearColor* LightsIntensityCurve;
+
+	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
+	UCurveLinearColor* SunLightColorCurve;
+
+	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
+	UCurveLinearColor* SkylightColorCurve;
+
+	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
+	UCurveLinearColor* MoonLightColorCurve;
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	UCurveLinearColor* HorizonColorCurve;
