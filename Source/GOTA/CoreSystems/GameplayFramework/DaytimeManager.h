@@ -48,8 +48,8 @@ private:
 	void RefreshSunHeight();
 	void RefreshMaterial();
 	void RefreshLightSetup();
-	void RefreshLightIntensity();
-	void RefreshLightColors();
+	void RefreshLightIntensity(float DaytimeNormalized);
+	void RefreshLightColors(float DaytimeNormalized);
 
 	// ------------------------ Settings ------------------------
 
