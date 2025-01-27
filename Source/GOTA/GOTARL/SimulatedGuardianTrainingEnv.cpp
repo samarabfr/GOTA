@@ -23,7 +23,7 @@ void USimulatedGuardianTrainingEnv::GatherAgentReward_Implementation(float& OutR
 		const FVector GuardianLocation = GuardianSimulator->GetPawn()->GetActorTransform().GetLocation();
 		const FVector TargetLocation = GuardianSimulator->GetTargetTile()->GetActorTransform().GetLocation();
 		Reward += ULearningAgentsRewards::MakeRewardOnLocationDifferenceBelowThreshold(
-			GuardianLocation, TargetLocation, CompletionDistance, 1.0f,
+			GuardianLocation, TargetLocation, CompletionDistance, CompletionReward,
 			L"LocationDifferenceBelowThreshold", true, this, AgentId,
 			GuardianLocation, FLinearColor::Green);
 		OutReward = Reward;
@@ -52,7 +52,7 @@ void USimulatedGuardianTrainingEnv::ResetAgentEpisode_Implementation(const int32
 	// return to starting conditions
 	if (AGuardianSimulator* GuardianSimulator = Cast<AGuardianSimulator>(GetAgent(AgentId)))
 	{
-		GuardianSimulator->ResetToRandomTileInRangeToTarget(3);
+		GuardianSimulator->ResetToRandomTileInRangeToTarget(ResetTileRange);
 		LastDistance = GetDistanceToTarget(GuardianSimulator);
 	}
 }

@@ -30,7 +30,9 @@ private:
 	float LastDistance = 0.f;
 	
 	float CompletionDistance = 500.f;
-	float ResetDistance = 5000.f;
+	float ResetDistance = 2500.f;
+	int32 ResetTileRange = 2;
+	float CompletionReward = 10.0f;
 
 	static float GetDistanceToTarget(AGuardianSimulator* GuardianSimulator);
 };

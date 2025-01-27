@@ -27,7 +27,7 @@ protected:
 	// ----------------------- Learning Agents plugin -----------------------
 private:
 
-	bool bRunInference = true;
+	bool bRunInference = false;
 	bool bResetNNsWhenStartingTraining = false;
 	
 	UPROPERTY()
