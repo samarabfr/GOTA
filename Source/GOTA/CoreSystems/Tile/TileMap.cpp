@@ -7,6 +7,7 @@
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "Misc/LowLevelTestAdapter.h"
 #include "Net/UnrealNetwork.h"
+#include "Tile.h"
 
 void ATileMap::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -132,6 +133,22 @@ bool ATileMap::TryAddTile(FHexCoords HexCoords, ATile* Tile)
 	TilesArray[HexCoords.Q * Size.R + HexCoords.R] = Tile;
 	Tile->HexCoords = HexCoords;
 	return true;
+}
+
+ATile* ATileMap::GetVolcanoTile()
+{
+	if (!VolcanoTile.IsValid())
+	{
+		for (ATile* Tile : Tiles)
+		{
+			if (Tile && Tile->GetTerrain().Biome == EBiome::Volcano)
+			{
+				VolcanoTile = Tile;
+				return Tile;
+			}
+		}
+	}
+	return VolcanoTile.Get();
 }
 
 ATile* ATileMap::GetTile(FHexCoords HexCoords)

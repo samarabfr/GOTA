@@ -47,12 +47,15 @@ private:
 	UPROPERTY(Replicated)
 	TArray<ATile*> Tiles;
 
+	TWeakObjectPtr<ATile> VolcanoTile;
+
 	// Array for fast access on server
 	ATile** TilesArray;
 
 	bool TryAddTile(FHexCoords HexCoords, ATile* Tile);
 
 public:
+	ATile* GetVolcanoTile();
 	void InitializeBothArrays(FHexCoords SizeInit);
 
 	ATile* SpawnNewTile(FHexCoords Coords, float Height);

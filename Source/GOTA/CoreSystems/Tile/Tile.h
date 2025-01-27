@@ -192,6 +192,7 @@ private:
 
 public:
 	void S_TerrainInit(const FTerrain& Terrain_);
+	FTerrain GetTerrain() const { return Terrain; }
 
 private:
 	void UpdateHexagonMaterial();

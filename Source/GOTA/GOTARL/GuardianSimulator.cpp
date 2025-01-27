@@ -20,10 +20,9 @@ void AGuardianSimulator::Tick(float DeltaSeconds)
 	}
 	if (!TargetTile.IsValid() &&
 		GameState.IsValid() &&
-		GameState->GetColony() &&
-		GameState->GetColony()->ClaimedTiles.Num() > 0)
+		GameState->GetTileMap())
 	{
-		TargetTile = GameState->GetColony()->ClaimedTiles[0];
+		TargetTile = GameState->GetTileMap()->GetVolcanoTile();
 	}
 }
 
