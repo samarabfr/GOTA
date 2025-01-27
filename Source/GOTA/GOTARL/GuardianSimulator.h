@@ -28,5 +28,6 @@ public:
 	void SetIsMoving(bool NewIsMoving);
 	ATile* GetTargetTile();
 	void ResetToRandomTile();
+	void ResetToRandomTileInRangeToTarget(int32 Range);
 	void SteerPawn(float SteeringAngle);
 };

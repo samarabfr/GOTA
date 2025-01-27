@@ -28,6 +28,9 @@ public:
 	// ----------------------- Learning  -----------------------
 private:
 	float LastDistance = 0.f;
+	
+	float CompletionDistance = 500.f;
+	float ResetDistance = 5000.f;
 
 	static float GetDistanceToTarget(AGuardianSimulator* GuardianSimulator);
 };

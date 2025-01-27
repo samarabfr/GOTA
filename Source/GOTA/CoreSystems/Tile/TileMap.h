@@ -69,6 +69,8 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	ATile* GetRandomTile();
 
+	ATile* GetRandomTileInRange(ATile* Origin, int32 Range);
+
 	ATile* FindNearestTileInRange(ATile* Origin, int32 Range,
 	                              const std::function<bool(const ATile*)>& Condition) const;
 
