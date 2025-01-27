@@ -60,6 +60,7 @@ void AGuardianSimulator::ResetToRandomTileInRangeToTarget(int32 Range)
 {
 	if (!GameState.IsValid() || !GameState->GetTileMap()) return;
 	const ATile* RandomTile = GameState->GetTileMap()->GetRandomTileInRange(TargetTile.Get(), Range);
+	if (RandomTile == nullptr) RandomTile = GameState->GetTileMap()->GetRandomTile();
 	GetPawn()->TeleportTo(RandomTile->GetActorTransform().GetLocation(),
 	                      RandomTile->GetActorTransform().GetRotation().Rotator());
 }
