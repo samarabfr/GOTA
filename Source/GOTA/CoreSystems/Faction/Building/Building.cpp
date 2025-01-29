@@ -49,8 +49,7 @@ void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement
 	Population->S_Init(InSettlement->GetPopulationSettings());
 	Settings = InSettings;
 	Tile = InTile;
-	Settlement = InSettlement;
-	Settlement->RegisterPopulation(Population);
+	S_SetSettlement(InSettlement);
 	bIsUnderConstruction = true;
 }
 
@@ -80,9 +79,18 @@ void UBuilding::C_PrepareDestroy()
 
 // ---------------------------------------- Utility ----------------------------------------
 
+// --------------------------------------- Settlement ---------------------------------------
+
 void UBuilding::OnRep_Settlement()
 {
 	if (Settlement) Settlement->RegisterPopulation(Population);
+}
+
+void UBuilding::S_SetSettlement(ASettlement* InSettlement)
+{
+	Settlement = InSettlement;
+	if (Settlement) Settlement->RegisterPopulation(Population);
+	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, Settlement, this)
 }
 
 // --------------------------------------- Population ---------------------------------------
