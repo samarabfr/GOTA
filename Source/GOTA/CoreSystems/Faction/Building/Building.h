@@ -34,12 +34,16 @@ public:
 	virtual void S_Tick(float DeltaSeconds);
 	virtual void C_Tick(const float DeltaSeconds);
 
-	virtual void Destroy();
+	virtual void S_PrepareDestroy();
+	void C_PrepareDestroy();
 
 	// ---------------------------------------- Utility ----------------------------------------
 private:
-	UPROPERTY(VisibleInstanceOnly, Replicated)
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Settlement)
 	ASettlement* Settlement;
+
+	UFUNCTION()
+	void OnRep_Settlement();
 	
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UBuildingSettings* Settings;
@@ -54,15 +58,15 @@ public:
 	
 
 	// --------------------------------------- Population ---------------------------------------
-public:
-	UPopulation* GetPopulation() const { return Population; }
-
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UPopulation* Population;
 
 	UFUNCTION()
 	void PopulationChanged(int16 Change);
+
+public:
+	UPopulation* GetPopulation() const { return Population; }
 
 	// --------------------------------------- Efficiency ---------------------------------------
 	// When a Building Pop is not influenced by any modifiers and has exactly the pop as the default

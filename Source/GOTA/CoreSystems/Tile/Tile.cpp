@@ -171,8 +171,12 @@ void ATile::RemoveCivilian(const ACivilian* Civilian)
 
 // ----------------------- Building and Claiming ---------------------
 
-void ATile::OnRep_Building()
+void ATile::OnRep_Building(UBuilding* OldBuilding)
 {
+	if (OldBuilding)
+	{
+		OldBuilding->S_PrepareDestroy();
+	}
 	if (Building)
 	{
 		Building->C_Init();
@@ -194,7 +198,7 @@ bool ATile::CanBuild()
 	return !Building && Terrain.Biome != EBiome::Volcano;
 }
 
-bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
+bool ATile::S_TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
 	if (!CanBuild() || !Builder) return false;
 	//check if multiple production things are on
@@ -207,6 +211,7 @@ bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 		UE_LOG(LogTemp, Warning, TEXT("Multiple building types enabled in BuildingDataAsset. Only one allowed!"))
 		return false;
 	}
+	Builder->S_RegisterTile(this);
 	// Choose fitting class
 	if (BuildingDataAsset->bDirectProductionEnabled)
 		Building = NewObject<UBuildingDirectProduction>();
@@ -235,14 +240,15 @@ bool ATile::TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 	return true;
 }
 
-void ATile::Unbuild()
+void ATile::S_Unbuild()
 {
 	if (!Building) return;
+	Building->GetSettlement()->S_UnregisterTile(this);
 	GameplayTags.RemoveTags(Building->GetSettings()->GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
 	RemoveReplicatedSubObject(Building);
 	RemoveReplicatedSubObject(Building->GetPopulation());
-	Building->Destroy();
+	Building->S_PrepareDestroy();
 	Building = nullptr;
 	BuildingChanged();
 	ValidateSpawnLayout();

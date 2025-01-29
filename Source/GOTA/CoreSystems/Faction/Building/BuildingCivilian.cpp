@@ -58,9 +58,9 @@ void UBuildingCivilian::C_Tick(const float DeltaSeconds)
 		Civilian->C_Tick(DeltaSeconds);
 }
 
-void UBuildingCivilian::Destroy()
+void UBuildingCivilian::S_PrepareDestroy()
 {
-	Super::Destroy();
+	Super::S_PrepareDestroy();
 	if(Civilian)
 		Civilian->S_HandleDeath();
 }

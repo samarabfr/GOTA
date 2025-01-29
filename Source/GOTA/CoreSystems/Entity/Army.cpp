@@ -443,7 +443,7 @@ void AArmy::S_RavageEnemyBuilding()
 	}
 	else
 	{
-		CurrentTile->Unbuild();
+		CurrentTile->S_Unbuild();
 	}
 }
 

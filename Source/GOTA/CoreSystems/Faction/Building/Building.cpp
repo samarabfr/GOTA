@@ -10,6 +10,8 @@
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
+// ------------------------------------ Replication Setup --------------------------------------
+
 void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -42,6 +44,20 @@ UBuilding::UBuilding()
 	Population->OnSizeChanged.AddDynamic(this, &UBuilding::PopulationChanged);
 }
 
+void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
+{
+	Population->S_Init(InSettlement->GetPopulationSettings());
+	Settings = InSettings;
+	Tile = InTile;
+	Settlement = InSettlement;
+	Settlement->RegisterPopulation(Population);
+	bIsUnderConstruction = true;
+}
+
+void UBuilding::C_Init()
+{
+}
+
 void UBuilding::S_Tick(const float DeltaSeconds)
 {
 	Population->S_Tick(DeltaSeconds);
@@ -52,25 +68,21 @@ void UBuilding::C_Tick(const float DeltaSeconds)
 	Population->C_Tick(DeltaSeconds);
 }
 
-void UBuilding::Destroy()
+void UBuilding::S_PrepareDestroy()
 {
-	if (Settlement && Tile)
-		Settlement->OnBuildingRemoved(this, Tile);
+	if (Settlement) Settlement->UnregisterPopulation(Population);
 }
 
-void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
+void UBuilding::C_PrepareDestroy()
 {
-	Population->S_Init(InSettlement->GetPopulationSettings());
-	Settings = InSettings;
-	Tile = InTile;
-	Settlement = InSettlement;
-	Settlement->OnBuildingAdded(this, Tile);
-	bIsUnderConstruction = true;
+	if (Settlement) Settlement->UnregisterPopulation(Population);
 }
 
-void UBuilding::C_Init()
+// ---------------------------------------- Utility ----------------------------------------
+
+void UBuilding::OnRep_Settlement()
 {
-	Settlement->OnBuildingAdded(this, Tile);
+	if (Settlement) Settlement->RegisterPopulation(Population);
 }
 
 // --------------------------------------- Population ---------------------------------------

@@ -24,7 +24,7 @@ void ADamageBuildingAbility::Use(ATile* Target, ATile* PlayerPosition)
 	}
 	else
 	{
-		Target->Unbuild();
+		Target->S_Unbuild();
 	}
 	ActivateCooldown();
 }

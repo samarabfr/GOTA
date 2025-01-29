@@ -62,13 +62,13 @@ void ASettlement::S_Init(ATile* SpawnTile,
 
 	const TArray<UBuildingSettings*>& StartingBuildings = Settings->GetStartingBuildings();
 
-	SpawnTile->TryBuild(StartingBuildings[0], this);
+	SpawnTile->S_TryBuild(StartingBuildings[0], this);
 	SpawnTile->GetBuilding()->FinishConstruction();
 	for (int32 i = 1; i < StartingBuildings.Num(); ++i)
 	{
 		if (BorderingUnclaimedTiles.Num() <= 0) break;
 		ATile* Tile = BorderingUnclaimedTiles[FMath::RandRange(0, BorderingUnclaimedTiles.Num() - 1)];
-		Tile->TryBuild(StartingBuildings[i], this);
+		Tile->S_TryBuild(StartingBuildings[i], this);
 		Tile->GetBuilding()->FinishConstruction();
 	}
 	for (ATile* Tile : ClaimedTiles)
@@ -136,20 +136,26 @@ bool ASettlement::IsBorderingUnclaimedTile(const ATile* Tile) const
 
 // --------------------------- Building ---------------------------
 
-void ASettlement::OnBuildingAdded(UBuilding* Building, ATile* Tile)
+void ASettlement::S_RegisterTile(ATile* Tile)
 {
-	GetPopulation()->RegisterPop(Building->GetPopulation());
-	RegisterBuildingForResourcePrediction(Building);
 	ClaimedTiles.Add(Tile);
 	RefreshBorderingUnclaimedTiles();
 }
 
-void ASettlement::OnBuildingRemoved(UBuilding* Building, ATile* Tile)
+void ASettlement::RegisterPopulation(UPopulation* InPopulation)
 {
-	GetPopulation()->UnregisterPop(Building->GetPopulation());
-	UnregisterBuildingForResourcePrediction(Building);
+	GetPopulation()->RegisterPop(InPopulation);
+}
+
+void ASettlement::S_UnregisterTile(ATile* Tile)
+{
 	ClaimedTiles.Remove(Tile);
 	RefreshBorderingUnclaimedTiles();
+}
+
+void ASettlement::UnregisterPopulation(UPopulation* InPopulation)
+{
+	GetPopulation()->UnregisterPop(InPopulation);
 }
 
 // --------------------------- Resources ---------------------------
