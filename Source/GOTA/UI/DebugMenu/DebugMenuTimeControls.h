@@ -14,7 +14,7 @@ class GOTA_API UDebugMenuTimeControls : public UUserWidget
 	GENERATED_BODY()
 
 	// -------------------------------------------- LifeCycle --------------------------------------------
-
+protected:
 	virtual void NativeConstruct() override;
 
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
