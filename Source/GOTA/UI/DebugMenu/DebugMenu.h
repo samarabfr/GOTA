@@ -3,9 +3,8 @@
 #include "Blueprint/UserWidget.h"
 #include "DebugMenu.generated.h"
 
-class UAbilitySettings;
-class UDebugMenuAbilityEntry;
-class UUniformGridPanel;
+class UButton;
+class UWidgetSwitcher;
 
 UCLASS()
 class UDebugMenu : public UUserWidget
@@ -18,18 +17,20 @@ class UDebugMenu : public UUserWidget
 
 	// ---------------------------------------- Utility ----------------------------------------
 private:
-	UPROPERTY(EditDefaultsOnly)
-	int32 GridColumns = 6;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<UDebugMenuAbilityEntry> AbilityEntryClass;
+	UPROPERTY(meta = (BindWidget))
+	UWidgetSwitcher* WidgetSwitcher;
 
 	UPROPERTY(meta = (BindWidget))
-	UUniformGridPanel* GrantAbilityGrid;
+	UButton* BTN_OpenTimeControls;
 
-	int32 GridCounter = 0;
+	UPROPERTY(meta = (BindWidget))
+	UButton* BTN_OpenAbilityGranter;
 
-	void AddToGrid(UAbilitySettings* AbilitySettings);
+	UFUNCTION()
+	void OpenTimeControls();
+
+	UFUNCTION()
+	void OpenAbilityGranter();
 
 	// ------------------------------------ Prevent Clicking Through ------------------------------------
 
