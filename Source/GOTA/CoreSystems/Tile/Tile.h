@@ -117,7 +117,7 @@ private:
 	UBuilding* Building;
 
 	UFUNCTION()
-	void OnRep_Building();
+	void OnRep_Building(UBuilding* OldBuilding);
 
 	void BuildingChanged();
 
@@ -128,9 +128,9 @@ public:
 
 	bool CanBuild();
 
-	bool TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder);
+	bool S_TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder);
 
-	void Unbuild();
+	void S_Unbuild();
 
 	void OnBuildingFinishedConstruction();
 

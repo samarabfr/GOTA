@@ -45,13 +45,13 @@ void ADaytimeManager::BeginPlay()
 	{
 		ParameterCollection = GetWorld()->GetParameterCollectionInstance(ParameterCollectionFinder);
 	}
-	
+
 	if (!SunActor || !MoonActor || !SkyLight || !HorizonFog || !SkyboxMaterial)
 	{
 		UE_LOG(LogTemp, Error, TEXT("DaytimeManager: One or more required actors are not set."));
 		return;
 	}
-	
+
 	DynamicMaterial = SkyboxComponent->CreateDynamicMaterialInstance(0, SkyboxMaterial);
 
 	SunLightComponent = SunActor->GetLightComponent();
@@ -154,7 +154,12 @@ float ADaytimeManager::GetDaytimeNormalized() const
 		return -1.0f * NightProgress / HalfNightLength;
 	}
 	// Linearly map [HalfNightLength, NightLength] to [-1, 0]
-	return - 1.0f + ((NightProgress - HalfNightLength) / HalfNightLength);
+	return -1.0f + ((NightProgress - HalfNightLength) / HalfNightLength);
+}
+
+void ADaytimeManager::SetDaytimeSpeed(const float InSpeed)
+{
+	DayTimeSpeed = InSpeed;
 }
 
 void ADaytimeManager::StartDay()
@@ -164,7 +169,7 @@ void ADaytimeManager::StartDay()
 
 	SunActor->SetCastShadows(true);
 	MoonActor->SetCastShadows(false);
-	
+
 	if (ParameterCollection)
 		ParameterCollection->SetScalarParameterValue(FName("IsNight"), 0.0f);
 }
@@ -176,7 +181,7 @@ void ADaytimeManager::StartNight()
 
 	SunActor->SetCastShadows(false);
 	MoonActor->SetCastShadows(true);
-	
+
 	if (ParameterCollection)
 		ParameterCollection->SetScalarParameterValue(FName("IsNight"), 1.0f);
 }

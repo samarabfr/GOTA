@@ -7,6 +7,7 @@
 #include "SettlementSettings.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "GameFramework/Actor.h"
+#include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "Settlement.generated.h"
 
 class USettlementPopulation;
@@ -81,9 +82,11 @@ public:
 
 	// --------------------------- Building ---------------------------
 public:
-	void OnBuildingAdded(UBuilding* Building, ATile* Tile);
+	void S_RegisterTile(ATile* Tile);
+	void RegisterPopulation(UPopulation* InPopulation);
 
-	void OnBuildingRemoved(UBuilding* Building, ATile* Tile);
+	void S_UnregisterTile(ATile* Tile);
+	void UnregisterPopulation(UPopulation* InPopulation);
 
 	// --------------------------- Resources ---------------------------
 private:

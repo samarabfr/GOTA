@@ -58,10 +58,13 @@ void FSTT_Work::ExitState(FStateTreeExecutionContext& Context, const FStateTreeT
 }
 
 EStateTreeRunStatus FSTT_FindPathToBestWorkTile::Tick(FStateTreeExecutionContext& Context,
-                                                                 const float DeltaTime) const
+                                                      const float DeltaTime) const
 {
 	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
 	if (!Civilian) return EStateTreeRunStatus::Failed;
+
+	const bool bOverridePath = Context.GetInstanceData(*this).bOverridePathIn;
+	if (!bOverridePath && !Civilian->IsPathEmpty()) return EStateTreeRunStatus::Succeeded;
 
 	return Civilian->S_TryFindPathToBestWorkTile()
 		       ? EStateTreeRunStatus::Succeeded
@@ -73,24 +76,30 @@ EStateTreeRunStatus FSTT_FindPathToPriorityTile::Tick(FStateTreeExecutionContext
 	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
 	if (!Civilian) return EStateTreeRunStatus::Failed;
 
+	const bool bOverridePath = Context.GetInstanceData(*this).bOverridePathIn;
+	if (!bOverridePath && !Civilian->IsPathEmpty()) return EStateTreeRunStatus::Succeeded;
+
 	return Civilian->S_TryFindPathToPriorityTile()
-			   ? EStateTreeRunStatus::Succeeded
-			   : EStateTreeRunStatus::Running;
+		       ? EStateTreeRunStatus::Succeeded
+		       : EStateTreeRunStatus::Running;
 }
 
 EStateTreeRunStatus FSTT_FindPathToOriginBuilding::Tick(FStateTreeExecutionContext& Context,
-	const float DeltaTime) const
+                                                        const float DeltaTime) const
 {
 	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
 	if (!Civilian) return EStateTreeRunStatus::Failed;
 
+	const bool bOverridePath = Context.GetInstanceData(*this).bOverridePathIn;
+	if (!bOverridePath && !Civilian->IsPathEmpty()) return EStateTreeRunStatus::Succeeded;
+
 	return Civilian->S_TryFindPathToOriginBuilding()
-			   ? EStateTreeRunStatus::Succeeded
-			   : EStateTreeRunStatus::Running;
+		       ? EStateTreeRunStatus::Succeeded
+		       : EStateTreeRunStatus::Running;
 }
 
 EStateTreeRunStatus FSTT_UnloadResources::EnterState(FStateTreeExecutionContext& Context,
-	const FStateTreeTransitionResult& Transition) const
+                                                     const FStateTreeTransitionResult& Transition) const
 {
 	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
 	if (!Civilian) return EStateTreeRunStatus::Failed;
