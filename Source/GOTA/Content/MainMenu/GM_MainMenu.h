@@ -6,10 +6,6 @@
 #include "GameFramework/GameModeBase.h"
 #include "GM_MainMenu.generated.h"
 
-class ULevelStreamingDynamic;
-/**
- * 
- */
 UCLASS()
 class GOTA_API AGM_MainMenu : public AGameModeBase
 {
@@ -17,8 +13,7 @@ class GOTA_API AGM_MainMenu : public AGameModeBase
 
 
 private:
-	UPROPERTY(EditDefaultsOnly)
-	UWorld* Level = nullptr;
+	const FString IslandPath = "/Game/CoreSystems/GameplayFramework/Island";
 	
 public:
 	UFUNCTION(BlueprintCallable)
