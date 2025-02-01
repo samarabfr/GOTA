@@ -16,6 +16,14 @@ class GOTA_API UGOTAGameInstance : public UGameInstance
 	// ------------------- LifeCycle -------------------
 
 	virtual void Init() override;
+	
+	// ------------------- Ability Provider -------------------
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Ability Provider")
+	UDataTable* AbilityRegister;
+
+	public:
+	UDataTable* GetAbilityRegister() const { return AbilityRegister; }
 
 	// ------------------- Tile Asset Provider -------------------
 private:
