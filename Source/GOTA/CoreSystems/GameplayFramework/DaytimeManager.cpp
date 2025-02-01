@@ -227,9 +227,17 @@ void ADaytimeManager::RefreshMaterial()
 
 void ADaytimeManager::RefreshLightSetup()
 {
-	HorizonFog->GetComponent()->SetFogInscatteringColor(HorizonFogColorCurve->GetClampedLinearColorValue(SunHeight));
+	const float DaytimeNormalized = GetDaytimeNormalized();
+	HorizonFog->GetComponent()->SetFogInscatteringColor(
+		HorizonFogColorCurve->GetClampedLinearColorValue(DaytimeNormalized));
+	RefreshLightIntensity(DaytimeNormalized);
+	RefreshLightColors(DaytimeNormalized);
+}
 
-	const FLinearColor LightsIntensity = LightsIntensityCurve->GetLinearColorValue(SunHeight);
+void ADaytimeManager::RefreshLightIntensity(const float DaytimeNormalized)
+{
+	// Sun
+	const FLinearColor LightsIntensity = LightsIntensityCurve->GetLinearColorValue(DaytimeNormalized);
 	if (LightsIntensity.R <= 0.0f)
 	{
 		if (SunLightComponent->IsVisible())
@@ -241,9 +249,9 @@ void ADaytimeManager::RefreshLightSetup()
 			SunLightComponent->SetVisibility(true);
 		SunLightComponent->SetIntensity(LightsIntensity.R);
 	}
-
+	// Skylight
 	SkyLightComponent->SetIntensity(LightsIntensity.G);
-
+	// moon
 	if (LightsIntensity.B <= 0.0f)
 	{
 		if (MoonLightComponent->IsVisible())
@@ -254,5 +262,27 @@ void ADaytimeManager::RefreshLightSetup()
 		if (!MoonLightComponent->IsVisible())
 			MoonLightComponent->SetVisibility(true);
 		MoonLightComponent->SetIntensity(LightsIntensity.B);
+	}
+}
+
+void ADaytimeManager::RefreshLightColors(const float DaytimeNormalized)
+{
+	// Sun
+	const FLinearColor SunLightColor = SunLightColorCurve->GetLinearColorValue(DaytimeNormalized);
+	if (SunLightComponent->IsVisible())
+	{
+		SunLightComponent->SetLightColor(SunLightColor);
+	}
+	// Skylight
+	const FLinearColor SkylightLightColor = SkylightColorCurve->GetLinearColorValue(DaytimeNormalized);
+	if (SkyLightComponent->IsVisible())
+	{
+		SkyLightComponent->SetLightColor(SkylightLightColor);
+	}
+	// Skylight
+	const FLinearColor MoonLightColor = MoonLightColorCurve->GetLinearColorValue(DaytimeNormalized);
+	if (MoonLightComponent->IsVisible())
+	{
+		MoonLightComponent->SetLightColor(MoonLightColor);
 	}
 }
