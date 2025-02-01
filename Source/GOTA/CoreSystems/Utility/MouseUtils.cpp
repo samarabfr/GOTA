@@ -45,31 +45,18 @@ AMouseUtils::AMouseUtils()
 
 	TestCube = CreateDefaultSubobject<UStaticMeshComponent>("TestCube");
 	TestCube->SetupAttachment(MouseLocation);
-	
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> TestCubeFinder(
-		TEXT("/Game/Visuals/Meshes/TestCube")
-	);
-	if(TestCubeFinder.Succeeded())
-	{
-		TestCube->SetStaticMesh(TestCubeFinder.Object);
-		TestCube->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	}
+	TestCube->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AMouseUtils::BeginPlay()
 {
 	Super::BeginPlay();
+	TestCube->SetStaticMesh(TestCubeMesh);
 	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
 
 	if (IsOwnedBy(GetWorld()->GetFirstPlayerController()))
 	{
 		SetActorTickEnabled(true);
-	}
-
-	static const TCHAR* PathToDataTable = TEXT("/Game/Visuals/VFX/FXS_AbilityIndicator");
-	if (UNiagaraSystem* NiagaraSystem = LoadObject<UNiagaraSystem>(nullptr, PathToDataTable))
-	{
-		
 	}
 }
 
@@ -150,7 +137,7 @@ void AMouseUtils::OnRep_HoverTile()
 
 void AMouseUtils::HoverTileChanged()
 {
-	if(HoverTile)
+	if (HoverTile)
 	{
 		MouseTileLocation->SetRelativeLocation(HoverTile->GetActorLocation());
 	}
@@ -173,5 +160,3 @@ FAbilityTarget AMouseUtils::GetHoverAbilityTarget() const
 }
 
 // ------------------ Hover Actor ------------------
-
-

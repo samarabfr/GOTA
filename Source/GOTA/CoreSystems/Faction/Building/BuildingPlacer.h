@@ -33,8 +33,14 @@ private:
 	UPROPERTY()
 	UStaticMeshComponent* MeshComponent;
 
-	UPROPERTY()
-	UBuildingPlacerSettings* Settings;
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* Mesh = nullptr;
+
+	UPROPERTY(EditDefaultsOnly)
+	UMaterial* PlacingPossibleMaterial = nullptr;
+
+	UPROPERTY(EditDefaultsOnly)
+	UMaterial* PlacingImpossibleMaterial = nullptr;
 
 	UPROPERTY(ReplicatedUsing=OnRep_BuildingToPlace)
 	UBuildingSettings* BuildingToPlace = nullptr;

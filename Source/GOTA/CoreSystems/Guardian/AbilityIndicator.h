@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "AbilityIndicator.generated.h"
 
+class UNiagaraSystem;
 class UNiagaraComponent;
 
 UCLASS()
@@ -24,6 +25,9 @@ public:
 private:
 	UPROPERTY(VisibleAnywhere)
 	UNiagaraComponent* FX_IndicatorComponent;
+
+	UPROPERTY(EditAnywhere)
+	UNiagaraSystem* NiagaraSystem = nullptr;
 	
 public:
 	void Activate();
