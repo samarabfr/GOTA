@@ -20,7 +20,6 @@ void ACivilian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Params.Condition = COND_InitialOnly;
 	Params.RepNotifyCondition = REPNOTIFY_Always;
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, OriginBuilding, Params);
-	DOREPLIFETIME_WITH_PARAMS(ACivilian, Settings, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, WorkAmount, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, MovementRate, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, ResourceInventoryLimit, Params);
@@ -40,10 +39,6 @@ void ACivilian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 
 ACivilian::ACivilian()
 {
-	static ConstructorHelpers::FObjectFinder<UCivilianSettings> SettingsFinder(
-		TEXT("/Game/CoreSystems/Entity/DA_Civilian"));
-	Settings = SettingsFinder.Object;
-
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;

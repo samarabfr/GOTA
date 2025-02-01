@@ -41,10 +41,7 @@ public:
 private:
 	UPROPERTY(Replicated)
 	TWeakObjectPtr<UBuilding> OriginBuilding;
-
-	UPROPERTY(Replicated)
-	UCivilianSettings* Settings;
-
+	
 	UPROPERTY()
 	AGS_Ingame* GameState;
 
@@ -53,7 +50,6 @@ private:
 
 protected:
 	UBuilding* GetOriginBuilding() const { return OriginBuilding.Get(); }
-	UCivilianSettings* GetSettings() const { return Settings; }
 	AGS_Ingame* GetGameState()const { return GameState; }
 	UStateTreeCivilianComponent* GetStateTree() const { return StateTree; }
 
