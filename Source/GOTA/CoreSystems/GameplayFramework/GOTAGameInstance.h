@@ -6,13 +6,26 @@
 #include "Engine/GameInstance.h"
 #include "GOTAGameInstance.generated.h"
 
+class UTileAsset;
+
 UCLASS()
 class GOTA_API UGOTAGameInstance : public UGameInstance
 {
 	GENERATED_BODY()
-	
+
 	// ------------------- LifeCycle -------------------
 
 	virtual void Init() override;
-	
+
+	// ------------------- Tile Asset Provider -------------------
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Tile Asset Provider")
+	UTileAsset* DefaultTileAsset;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Tile Asset Provider")
+	UDataTable* TileAssetRegister;
+
+public:
+	UTileAsset* GetDefaultTileAsset() const { return DefaultTileAsset; }
+	UDataTable* GetTileAssetRegister() const { return TileAssetRegister; }
 };
