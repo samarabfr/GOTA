@@ -23,11 +23,14 @@ protected:
 private:
 	TWeakObjectPtr<ADaytimeManager> DaytimeManager;
 
+	UFUNCTION()
+	static void ValidateFloatText(const FText& InText, FString& OutString);
+
 	// -------------------------------------------- Daytime --------------------------------------------
 
 	// Morning, Midday, Evening, Night
 	const TArray<float> TimeMarkers = {1.0f, 5.0f, 9.0f, 12.5f};
-	
+
 	UPROPERTY(meta = (BindWidget))
 	UButton* BTN_Morning;
 
@@ -57,7 +60,7 @@ private:
 
 	UFUNCTION()
 	void SkipToNextTime();
-
+	
 	// -------------------------------------------- Daytime Slider --------------------------------------------
 
 	UPROPERTY(meta = (BindWidget))
@@ -74,6 +77,8 @@ private:
 	UFUNCTION()
 	void SetDaytime(const float InValue);
 
+	// -------------------------------------------- Daytime Speed --------------------------------------------
+
 	UPROPERTY(meta = (BindWidget))
 	UButton* BTN_Stop;
 
@@ -87,17 +92,46 @@ private:
 	UEditableTextBox* TB_Speed;
 
 	UFUNCTION()
-	void SetSpeedZero();
+	void SetDaytimeSpeedZero();
 
 	UFUNCTION()
-	void SetSpeedOne();
+	void SetDaytimeSpeedOne();
 
 	UFUNCTION()
-	void SetSpeedTwenty();
+	void SetDaytimeSpeedTwenty();
 
 	UFUNCTION()
-	void SetSpeedCustom(const FText& Text, const ETextCommit::Type CommitMethod);
+	void SetDaytimeSpeedCustom(const FText& Text, const ETextCommit::Type CommitMethod);
+	
+	UFUNCTION()
+	void ValidateDaytimeSpeedTextBox(const FText& InText);
+
+	// -------------------------------------------- Game Speed --------------------------------------------
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* BTN_GameStop;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* BTN_GameNormal;
+
+	UPROPERTY(meta = (BindWidget))
+	UButton* BTN_GameFast;
+
+	UPROPERTY(meta = (BindWidget))
+	UEditableTextBox* TB_GameSpeed;
 
 	UFUNCTION()
-	void ValidateSpeedTextBox(const FText& InText);
+	void SetGameDilationZero();
+
+	UFUNCTION()
+	void SetGameDilationOne();
+
+	UFUNCTION()
+	void SetGameDilationFive();
+
+	UFUNCTION()
+	void SetGameDilationCustom(const FText& Text, const ETextCommit::Type CommitMethod);
+
+	UFUNCTION()
+	void ValidateGameSpeedTextBox(const FText& InText);
 };

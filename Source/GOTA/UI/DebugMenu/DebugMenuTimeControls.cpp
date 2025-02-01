@@ -5,6 +5,7 @@
 #include "Components/Slider.h"
 #include "GOTA/CoreSystems/GameplayFramework/DaytimeManager.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
+#include "Kismet/GameplayStatics.h"
 
 // -------------------------------------------- LifeCycle --------------------------------------------
 
@@ -27,16 +28,23 @@ void UDebugMenuTimeControls::NativeConstruct()
 
 	BTN_Skip->OnClicked.AddDynamic(this, &UDebugMenuTimeControls::SkipToNextTime);
 
-	BTN_Stop->OnClicked.AddDynamic(this, &UDebugMenuTimeControls::SetSpeedZero);
-	BTN_Normal->OnClicked.AddDynamic(this, &UDebugMenuTimeControls::SetSpeedOne);
-	BTN_Fast->OnClicked.AddDynamic(this, &UDebugMenuTimeControls::SetSpeedTwenty);
-
-	TB_Speed->OnTextCommitted.AddDynamic(this, &UDebugMenuTimeControls::SetSpeedCustom);
-	TB_Speed->OnTextChanged.AddDynamic(this, &UDebugMenuTimeControls::ValidateSpeedTextBox);
-
 	Slider_Daytime->OnValueChanged.AddDynamic(this, &UDebugMenuTimeControls::SetDaytime);
 	Slider_Daytime->OnMouseCaptureBegin.AddDynamic(this, &UDebugMenuTimeControls::SetSliderMouseCapturedTrue);
 	Slider_Daytime->OnMouseCaptureEnd.AddDynamic(this, &UDebugMenuTimeControls::SetSliderMouseCapturedFalse);
+
+	BTN_Stop->OnClicked.AddDynamic(this, &UDebugMenuTimeControls::SetDaytimeSpeedZero);
+	BTN_Normal->OnClicked.AddDynamic(this, &UDebugMenuTimeControls::SetDaytimeSpeedOne);
+	BTN_Fast->OnClicked.AddDynamic(this, &UDebugMenuTimeControls::SetDaytimeSpeedTwenty);
+
+	TB_Speed->OnTextCommitted.AddDynamic(this, &UDebugMenuTimeControls::SetDaytimeSpeedCustom);
+	TB_Speed->OnTextChanged.AddDynamic(this, &UDebugMenuTimeControls::ValidateDaytimeSpeedTextBox);
+
+	BTN_GameStop->OnClicked.AddDynamic(this, &UDebugMenuTimeControls::SetGameDilationZero);
+	BTN_GameNormal->OnClicked.AddDynamic(this, &UDebugMenuTimeControls::SetGameDilationOne);
+	BTN_GameFast->OnClicked.AddDynamic(this, &UDebugMenuTimeControls::SetGameDilationFive);
+
+	TB_GameSpeed->OnTextCommitted.AddDynamic(this, &UDebugMenuTimeControls::SetGameDilationCustom);
+	TB_GameSpeed->OnTextChanged.AddDynamic(this, &UDebugMenuTimeControls::ValidateGameSpeedTextBox);
 }
 
 void UDebugMenuTimeControls::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -57,6 +65,26 @@ void UDebugMenuTimeControls::NativeTick(const FGeometry& MyGeometry, float InDel
 }
 
 // -------------------------------------------- Utility --------------------------------------------
+
+void UDebugMenuTimeControls::ValidateFloatText(const FText& InText, FString& OutString)
+{
+	FString InputString = InText.ToString();
+	bool FoundDot = false;
+
+	for (int32 i = 0; i < InputString.Len(); i++)
+	{
+		const TCHAR Char = InputString[i];
+		if (FChar::IsDigit(Char))
+		{
+			OutString.AppendChar(Char);
+		}
+		if ((Char == '.') && !FoundDot)
+		{
+			OutString.AppendChar(Char);
+			FoundDot = true;
+		}
+	}
+}
 
 // -------------------------------------------- Daytime --------------------------------------------
 
@@ -111,49 +139,64 @@ void UDebugMenuTimeControls::SetDaytime(const float InValue)
 
 // -------------------------------------------- Daytime Speed --------------------------------------------
 
-void UDebugMenuTimeControls::SetSpeedZero()
+void UDebugMenuTimeControls::SetDaytimeSpeedZero()
 {
 	if (DaytimeManager.IsValid())
 		DaytimeManager->SetDaytimeSpeed(0.0f);
 }
 
-void UDebugMenuTimeControls::SetSpeedOne()
+void UDebugMenuTimeControls::SetDaytimeSpeedOne()
 {
 	if (DaytimeManager.IsValid())
 		DaytimeManager->SetDaytimeSpeed(1.0f);
 }
 
-void UDebugMenuTimeControls::SetSpeedTwenty()
+void UDebugMenuTimeControls::SetDaytimeSpeedTwenty()
 {
 	if (DaytimeManager.IsValid())
 		DaytimeManager->SetDaytimeSpeed(20.0f);
 }
 
-void UDebugMenuTimeControls::SetSpeedCustom(const FText& Text, const ETextCommit::Type CommitMethod)
+void UDebugMenuTimeControls::SetDaytimeSpeedCustom(const FText& Text, const ETextCommit::Type CommitMethod)
 {
 	const float Speed = FCString::Atof(*Text.ToString());
 	if (DaytimeManager.IsValid())
 		DaytimeManager->SetDaytimeSpeed(Speed);
 }
 
-void UDebugMenuTimeControls::ValidateSpeedTextBox(const FText& InText)
+void UDebugMenuTimeControls::ValidateDaytimeSpeedTextBox(const FText& InText)
 {
-	FString FilteredText;
-	FString InputString = InText.ToString();
-	bool FoundDot = false;
+	FString OutString;
+	ValidateFloatText(InText, OutString);
+	TB_Speed->SetText(FText::FromString(OutString));
+}
 
-	for (int32 i = 0; i < InputString.Len(); i++)
-	{
-		const TCHAR Char = InputString[i];
-		if (FChar::IsDigit(Char))
-		{
-			FilteredText.AppendChar(Char);
-		}
-		if ((Char == '.') && !FoundDot)
-		{
-			FilteredText.AppendChar(Char);
-			FoundDot = true;
-		}
-	}
-	TB_Speed->SetText(FText::FromString(FilteredText));
+// -------------------------------------------- Game Speed --------------------------------------------
+
+void UDebugMenuTimeControls::SetGameDilationZero()
+{
+	UGameplayStatics::SetGlobalTimeDilation(this, 0.0f);
+}
+
+void UDebugMenuTimeControls::SetGameDilationOne()
+{
+	UGameplayStatics::SetGlobalTimeDilation(this, 1.0f);
+}
+
+void UDebugMenuTimeControls::SetGameDilationFive()
+{
+	UGameplayStatics::SetGlobalTimeDilation(this, 5.0f);
+}
+
+void UDebugMenuTimeControls::SetGameDilationCustom(const FText& Text, const ETextCommit::Type CommitMethod)
+{
+	const float Speed = FCString::Atof(*Text.ToString());
+	UGameplayStatics::SetGlobalTimeDilation(this, Speed);
+}
+
+void UDebugMenuTimeControls::ValidateGameSpeedTextBox(const FText& InText)
+{
+	FString OutString;
+	ValidateFloatText(InText, OutString);
+	TB_GameSpeed->SetText(FText::FromString(OutString));
 }
