@@ -5,7 +5,7 @@
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Civilian.generated.h"
 
-class UStateTreeCivilianComponent;
+class UStateTreeComponent;
 class AGS_Ingame;
 class ATile;
 class ASettlement;
@@ -41,20 +41,19 @@ public:
 private:
 	UPROPERTY(Replicated)
 	TWeakObjectPtr<UBuilding> OriginBuilding;
-	
+
 	UPROPERTY()
 	AGS_Ingame* GameState;
 
-	UPROPERTY(VisibleInstanceOnly)
-	UStateTreeCivilianComponent* StateTree;
-
 protected:
+	UPROPERTY(EditDefaultsOnly)
+	UStateTreeComponent* StateTree;
+	
 	UBuilding* GetOriginBuilding() const { return OriginBuilding.Get(); }
-	AGS_Ingame* GetGameState()const { return GameState; }
-	UStateTreeCivilianComponent* GetStateTree() const { return StateTree; }
-
+	AGS_Ingame* GetGameState() const { return GameState; }
 
 	// ----------------- Progresser ------------------------
+protected:
 	// Progress of current Action in percent
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float Progress;
@@ -82,7 +81,7 @@ private:
 
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	FGameResources ResourceInventoryLimit;
-	
+
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	FGameResources ResourceInventory;
 

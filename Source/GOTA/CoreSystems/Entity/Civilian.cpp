@@ -1,6 +1,5 @@
 ﻿#include "Civilian.h"
-#include "CivilianSettings.h"
-#include "StateTree.h"
+#include "Components/StateTreeComponent.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
@@ -9,7 +8,6 @@
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
-#include "StateTree/StateTreeCivilianComponent.h"
 
 void ACivilian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -44,8 +42,8 @@ ACivilian::ACivilian()
 	bReplicateUsingRegisteredSubObjectList = true;
 	SetNetUpdateFrequency(0.1f);
 
-	StateTree = CreateDefaultSubobject<UStateTreeCivilianComponent>("StateTree");
-	StateTree->SetStartLogicAutomatically(false);
+	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
+	StateTree = CreateDefaultSubobject<UStateTreeComponent>("StateTree");
 }
 
 void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
@@ -61,10 +59,7 @@ void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	WorkAmount = BuildingSettings->CivilianProductionAmount;
 	MovementRate = 100 / BuildingSettings->CivilianMoveTime;
 	ResourceInventoryLimit = BuildingSettings->CivilianInventoryLimit;
-
-	const FSoftObjectPath StateTreePath(TEXT("/Game/CoreSystems/Entity/ST_Civilian"));
-	UStateTree* LoadedStateTree = Cast<UStateTree>(StateTreePath.TryLoad());
-	if (LoadedStateTree) StateTree->SetStateTree(LoadedStateTree);
+	
 	StateTree->StartLogic();
 }
 
