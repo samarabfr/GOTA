@@ -4,15 +4,13 @@
 
 #include "GameplayTagContainer.h"
 #include "GameResources.h"
-#include "SettlementSettings.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "Settlement.generated.h"
 
+class UBuildingSettings;
 class USettlementPopulation;
-class UPopulationSettings;
-class USettlementSettings;
 class ACivilian;
 class UBuilding;
 class ATile;
@@ -33,9 +31,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	void S_Init(ATile* SpawnTile,
-	            USettlementSettings* InSettlementSettings,
-	            UPopulationSettings* InPopulationSettings);
+	void S_Init(ATile* SpawnTile);
 
 	void EnableTick();
 
@@ -44,28 +40,55 @@ protected:
 
 	// --------------------------- Utility ---------------------------
 private:
-	UPROPERTY(Replicated)
-	USettlementSettings* Settings;
+	UPROPERTY(EditDefaultsOnly)
+	EAffiliation Affiliation;
+
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTagContainer GameplayTags;
 
 public:
-	USettlementSettings* GetSettings() const { return Settings; }
+	EAffiliation GetAffiliation() const { return Affiliation; }
 
-	EAffiliation GetAffiliation() const { return Settings->GetAffiliation(); }
-
-	FGameplayTagContainer GetGameplayTags() const { return Settings->GetGameplayTags(); }
+	FGameplayTagContainer GetGameplayTags() const { return GameplayTags; }
 
 	// --------------------------- Population ---------------------------
 private:
 	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
 	USettlementPopulation* Population;
 
-	UPROPERTY()
-	UPopulationSettings* PopulationSettings;
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPopEatingPerSecondChangedSig, float, Change);
 
+	UPROPERTY(EditDefaultsOnly, ReplicatedUsing=OnRep_PopEatingPerSecond)
+	float PopEatingPerSecond;
+
+	UFUNCTION()
+	void OnRep_PopEatingPerSecond(const float OldValue);
+
+	UPROPERTY(EditAnywhere, Replicated)
+	float StarvingThreshold;
+
+	// Per Second
+	UPROPERTY(EditAnywhere, Replicated)
+	float GrowthPerOwnPop = 0.0f;
+
+	// Per Second
+	UPROPERTY(EditAnywhere, Replicated)
+	float GrowthPerNeighborPop = 0.0f;
+	
 public:
 	USettlementPopulation* GetPopulation() { return Population; }
 
-	UPopulationSettings* GetPopulationSettings() { return PopulationSettings; }
+	FOnPopEatingPerSecondChangedSig OnPopEatingPerSecondChanged;
+	float GetPopEatingPerSecond() const { return PopEatingPerSecond; }
+	void S_SetPopEatingPerSecond(float NewValue);
+
+	float GetStarvingThreshold() const { return StarvingThreshold; }
+	void S_SetStarvingThreshold(float NewValue);
+
+	float GetGrowthPerOwnPop() const { return GrowthPerOwnPop; }
+
+	float GetGrowthPerNeighborPop() const { return GrowthPerNeighborPop; }
 
 	// --------------------------- Claims ---------------------------
 protected:
@@ -81,6 +104,10 @@ public:
 	bool IsBorderingUnclaimedTile(const ATile* Tile) const;
 
 	// --------------------------- Building ---------------------------
+private:
+	UPROPERTY(EditDefaultsOnly)
+	TArray<UBuildingSettings*> StartingBuildings;
+
 public:
 	void S_RegisterTile(ATile* Tile);
 	void RegisterPopulation(UPopulation* InPopulation);
@@ -90,6 +117,9 @@ public:
 
 	// --------------------------- Resources ---------------------------
 private:
+	UPROPERTY(EditDefaultsOnly)
+	FGameResources StartingResources;
+
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
 	FGameResources Resources;
 
