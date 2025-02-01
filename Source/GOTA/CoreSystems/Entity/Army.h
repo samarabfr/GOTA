@@ -2,11 +2,12 @@
 
 #pragma once
 
+#include "GameplayTagContainer.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "Army.generated.h"
 
+class UStateTreeComponent;
 class UCombatValues;
-class UStateTreeArmyComponent;
 class UBuilding;
 class AGS_Ingame;
 class ATile;
@@ -42,14 +43,17 @@ private:
 	UPROPERTY(Replicated)
 	UBuilding* Building;
 
-	UPROPERTY(Replicated)
-	UArmySettings* Settings;
-
 	UPROPERTY()
 	AGS_Ingame* GameState;
 
 	UPROPERTY()
 	UStaticMeshComponent* MeshComponent;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* ColonyArmyMesh;
+	
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* NativeArmyMesh;
 
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Affiliation)
 	EAffiliation Affiliation;
@@ -74,8 +78,11 @@ private:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	EArmyStatus Status = EArmyStatus::Idling;
 
-	UPROPERTY(VisibleInstanceOnly)
-	UStateTreeArmyComponent* StateTree;
+	UPROPERTY(EditDefaultsOnly)
+	UStateTreeComponent* StateTree;
+	
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTag StateTreeCompletedTaskEventTag;
 
 protected:
 	void SetStatus(EArmyStatus NewStatus);
@@ -126,6 +133,9 @@ public:
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	UCombatValues* CombatValues;
+	
+	UPROPERTY(EditDefaultsOnly)
+	int32 GarrisonModeInterceptingRange = 4;
 
 public:
 	UCombatValues* GetCombatValues() const { return CombatValues; }
@@ -175,6 +185,9 @@ public:
 private:
 	UPROPERTY(EditInstanceOnly, Replicated)
 	TWeakObjectPtr<AArmy> InterceptArmy;
+	
+	UPROPERTY(EditDefaultsOnly)
+	int32 GuardModeInterceptingRange = 3;
 
 public:
 	TWeakObjectPtr<AArmy>  GetInterceptArmy() const { return InterceptArmy; }

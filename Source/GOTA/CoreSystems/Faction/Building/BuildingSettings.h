@@ -101,6 +101,9 @@ public:
 	bool bArmyEnabled = false;
 
 	UPROPERTY(EditDefaultsOnly, Category="Army")
+	TSubclassOf<AArmy> ArmyClass;
+
+	UPROPERTY(EditDefaultsOnly, Category="Army")
 	float SecondsPerRecruitCycle = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Army")
