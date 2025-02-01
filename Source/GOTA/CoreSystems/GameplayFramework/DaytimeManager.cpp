@@ -157,6 +157,11 @@ float ADaytimeManager::GetDaytimeNormalized() const
 	return -1.0f + ((NightProgress - HalfNightLength) / HalfNightLength);
 }
 
+void ADaytimeManager::SetDaytimeSpeed(const float InSpeed)
+{
+	DayTimeSpeed = InSpeed;
+}
+
 void ADaytimeManager::StartDay()
 {
 	bIsDay = true;

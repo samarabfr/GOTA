@@ -113,7 +113,7 @@ void ABuildingPlacer::SRPC_PlaceBuilding_Implementation(ATile* Tile, UBuildingSe
 	if (!Tile || !Building || !CanPlace(Tile)) return;
 
 	const AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
-	Tile->TryBuild(BuildingToPlace, GameState->GetTribe());
+	Tile->S_TryBuild(BuildingToPlace, GameState->GetTribe());
 }
 
 void ABuildingPlacer::RefreshPlaceability(ATile* NewTile)

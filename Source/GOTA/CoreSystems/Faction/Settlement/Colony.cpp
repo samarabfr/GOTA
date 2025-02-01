@@ -14,10 +14,10 @@ void AColony::S_Tick(const float DeltaSeconds)
 	if (ColonyBrainSettings)
 	{
 		FigureOutBuilding();
-		if(SendArmiesIntervalTimeLeft <= 0.0f)
+		if (SendArmiesIntervalTimeLeft <= 0.0f)
 		{
 			SendArmies();
-			SendArmiesIntervalTimeLeft  = ColonyBrainSettings->GetSendArmiesIntervalTime();
+			SendArmiesIntervalTimeLeft = ColonyBrainSettings->GetSendArmiesIntervalTime();
 		}
 		else
 		{
@@ -27,7 +27,7 @@ void AColony::S_Tick(const float DeltaSeconds)
 	else
 	{
 		InitColonyBrainSettings();
-	}	
+	}
 }
 
 void AColony::C_Tick(const float DeltaSeconds)
@@ -42,7 +42,7 @@ void AColony::BeginDestroy()
 void AColony::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if(HasAuthority())
+	if (HasAuthority())
 		S_Tick(DeltaSeconds);
 	else
 		C_Tick(DeltaSeconds);
@@ -60,7 +60,8 @@ void AColony::FigureOutBuilding()
 	ATile* Tile = FindBuildableTile();
 	if (!Tile) return;
 	UBuildingSettings* NewBuilding = SelectNewBuilding();
-	Tile->TryBuild(NewBuilding, this);
+	if (!NewBuilding) return;
+	Tile->S_TryBuild(NewBuilding, this);
 }
 
 bool AColony::ShouldBuild() const
@@ -82,10 +83,30 @@ ATile* AColony::FindBuildableTile() const
 UBuildingSettings* AColony::SelectNewBuilding() const
 {
 	TArray<UBuildingSettings*> PossibleBuildings = ColonyBrainSettings->GetPossibleBuildings();
+	// prevent soft-locking
+	// 1. short-term: dont place buildings you cant build
+	//		no buildings that require resources that you dont have on you and you have no income for
+	//		build only food buildings when negative income or under certain threshhold
+	// 2. long-term: have enough income of everything as a buffer and to grow fast
+	//		1. prio: food; all buildings need food income
+	//		2. prio: wood; all buildings need wood one time
+	//		3. prio: stone; all military buildings need stone
+	for (int i = PossibleBuildings.Num() - 1; i >= 0; --i)
+	{
+		const auto [FoodIncome, WoodIncome, StoneIncome] = GetEffectivePredictedProduction();
+		const int32 FoodThreshhold = 300;
+		if (!PossibleBuildings[i] ||
+			(PossibleBuildings[i]->Cost.Food > GetResources().Food && FoodIncome <= 0) ||
+			(PossibleBuildings[i]->Cost.Stone > GetResources().Stone && StoneIncome <= 0) ||
+			(PossibleBuildings[i]->Cost.Wood > GetResources().Wood && WoodIncome <= 0) ||
+			((FoodIncome <= 0 || GetResources().Food < FoodThreshhold) &&
+				PossibleBuildings[i]->ProductionType != EProductionType::Food))
+		{
+			PossibleBuildings.RemoveAt(i);
+		}
+	}
+	if (PossibleBuildings.Num() <= 0) return nullptr;
 	return PossibleBuildings[FMath::RandRange(0, PossibleBuildings.Num() - 1)];
-	// TODO: Proper logic for figuring out building
-	//CalculateImportances();
-	//CalculateScores();
 }
 
 float AColony::CalculateScore(const UBuildingSettings* Data, FNewBuildingImportanceRatings ImportanceRatings)
@@ -183,7 +204,7 @@ TArray<AArmy*> AColony::GetAllColonyArmies()
 	TArray<AArmy*> Result;
 	for (ATile* Tile : ClaimedTiles)
 	{
-		if(Tile && Tile->GetBuilding() && Tile->GetBuilding()->GetArmy())
+		if (Tile && Tile->GetBuilding() && Tile->GetBuilding()->GetArmy())
 		{
 			Result.Add(Tile->GetBuilding()->GetArmy());
 		}

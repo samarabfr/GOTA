@@ -56,9 +56,9 @@ void UBuildingArmy::C_Tick(const float DeltaSeconds)
 	Super::C_Tick(DeltaSeconds);
 }
 
-void UBuildingArmy::Destroy()
+void UBuildingArmy::S_PrepareDestroy()
 {
-	Super::Destroy();
+	Super::S_PrepareDestroy();
 	if(Army)
 		Army->S_HandleDeath();
 }
