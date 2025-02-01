@@ -49,17 +49,6 @@ ACivilian::ACivilian()
 	bReplicateUsingRegisteredSubObjectList = true;
 	SetNetUpdateFrequency(0.1f);
 
-	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
-	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Static Mesh");
-	MeshComponent->SetupAttachment(RootComponent);
-	MeshComponent->SetRelativeScale3D(FVector(1, 1, 1));
-	// I still don't understand why i need to set both: the ResponseChannel and CollisionEnabled
-	// but this way it will only collide with ray casts, as intended
-	MeshComponent->SetSimulatePhysics(false);
-	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	MeshComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	MeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
-
 	StateTree = CreateDefaultSubobject<UStateTreeCivilianComponent>("StateTree");
 	StateTree->SetStartLogicAutomatically(false);
 }

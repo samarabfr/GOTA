@@ -48,9 +48,6 @@ private:
 	UPROPERTY()
 	AGS_Ingame* GameState;
 
-	UPROPERTY()
-	UStaticMeshComponent* MeshComponent;
-
 	UPROPERTY(VisibleInstanceOnly)
 	UStateTreeCivilianComponent* StateTree;
 
@@ -58,7 +55,6 @@ protected:
 	UBuilding* GetOriginBuilding() const { return OriginBuilding.Get(); }
 	UCivilianSettings* GetSettings() const { return Settings; }
 	AGS_Ingame* GetGameState()const { return GameState; }
-	UStaticMeshComponent* GetMeshComponent() const { return MeshComponent; }
 	UStateTreeCivilianComponent* GetStateTree() const { return StateTree; }
 
 

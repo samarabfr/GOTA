@@ -6,12 +6,6 @@
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 
-AMigrant::AMigrant()
-{
-	if (GetSettings())
-		GetMeshComponent()->SetStaticMesh(GetSettings()->MigrantMesh);
-}
-
 void AMigrant::S_Work()
 {
 	GetCurrentTile()->GetBuilding()->GetPopulation()->S_IncreaseSize(1);

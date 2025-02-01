@@ -6,12 +6,6 @@
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 
-ABuilder::ABuilder()
-{
-	if (GetSettings())
-		GetMeshComponent()->SetStaticMesh(GetSettings()->BuilderMesh);
-}
-
 void ABuilder::S_Work()
 {
 	int32 WorkAmountLeft = GetWorkAmount();

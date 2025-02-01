@@ -7,7 +7,6 @@ UCLASS()
 class GOTA_API AMigrant : public ACivilian
 {
 	GENERATED_BODY()
-	AMigrant();
 
 	virtual void S_Work() override;
 	virtual bool IsTileValidForWork(const ATile* Tile) const override;
