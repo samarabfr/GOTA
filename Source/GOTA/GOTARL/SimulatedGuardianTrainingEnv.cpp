@@ -17,8 +17,8 @@ void USimulatedGuardianTrainingEnv::GatherAgentReward_Implementation(float& OutR
 	{
 		float Reward = 0;
 		// progress reward
-		//Reward += LastDistance - GetDistanceToTarget(GuardianSimulator);
-		//LastDistance = GetDistanceToTarget(GuardianSimulator);
+		Reward += LastDistance - GetDistanceToTarget(GuardianSimulator);
+		LastDistance = GetDistanceToTarget(GuardianSimulator);
 		// completion reward
 		const FVector GuardianLocation = GuardianSimulator->GetPawn()->GetActorTransform().GetLocation();
 		const FVector TargetLocation = GuardianSimulator->GetTargetTile()->GetActorTransform().GetLocation();
@@ -40,10 +40,7 @@ void USimulatedGuardianTrainingEnv::GatherAgentCompletion_Implementation(ELearni
 		const ELearningAgentsCompletion SuccessfulCompletion =
 			ULearningAgentsCompletions::MakeCompletionOnLocationDifferenceBelowThreshold(
 				GuardianLocation, TargetLocation, CompletionDistance);
-		const ELearningAgentsCompletion FailedCompletion =
-			ULearningAgentsCompletions::MakeCompletionOnLocationDifferenceAboveThreshold(
-				GuardianLocation, TargetLocation, ResetDistance);
-		OutCompletion = ULearningAgentsCompletions::CompletionOr(SuccessfulCompletion, FailedCompletion);
+		OutCompletion = SuccessfulCompletion;
 	}
 }
 
@@ -52,7 +49,7 @@ void USimulatedGuardianTrainingEnv::ResetAgentEpisode_Implementation(const int32
 	// return to starting conditions
 	if (AGuardianSimulator* GuardianSimulator = Cast<AGuardianSimulator>(GetAgent(AgentId)))
 	{
-		GuardianSimulator->ResetToRandomTileInRangeToTarget(ResetTileRange);
+		GuardianSimulator->ResetToRandomTile();
 		LastDistance = GetDistanceToTarget(GuardianSimulator);
 	}
 }
