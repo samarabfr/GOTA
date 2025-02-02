@@ -8,6 +8,7 @@
 #include "GOTA/CoreSystems/Guardian/AbilitySettings.h"
 #include "PC_Ingame.generated.h"
 
+class UInputDataAsset;
 class UAbilitySlot;
 class AAbility;
 class AAbilityIndicator;
@@ -26,9 +27,9 @@ class GOTA_API APC_Ingame : public APlayerController
 	// ----------------------------------------- Replication Setup -----------------------------------------
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
 	// -------------------------------------------- Lifecycle --------------------------------------------
-public:	
+public:
 	virtual void BeginPlay() override;
 
 	void S_Init();
@@ -40,11 +41,14 @@ private:
 	UPROPERTY()
 	ADistanceUtils* DistanceUtils;
 
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AAbilityIndicator> AbilityIndicatorClass;
+
 	UPROPERTY(Replicated)
 	TWeakObjectPtr<AAbilityIndicator> AbilityIndicator;
-	
+
 	void S_SetAbilityIndicator(AAbilityIndicator* NewAbilityIndicator);
-	
+
 	// -------------------------UI Stuff------------------------
 
 private:
@@ -84,14 +88,18 @@ private:
 	void OnRep_Guardian();
 
 	void OnGuardianChanged();
-	
+
 public:
 	virtual void OnPossess(APawn* InPawn) override;
 
 	AGuardian* GetGuardian() { return Guardian; }
 
 	// ---------------------- InteractionMode ----------------------
+private:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABuildingPlacer> BuildingPlacerClass;
 
+public:
 	void ClickActor();
 
 	UPROPERTY(Replicated)
@@ -111,38 +119,41 @@ private:
 private:
 	UPROPERTY()
 	TWeakObjectPtr<AAbility> CurrentlyTargeting;
-	
+
 	void ActivateCurrentlyTargetingAbility();
-	
+
 	void StartTargeting(AAbility* Ability);
 	void CancelTargeting();
-	
+
 public:
 	void ActivateAbility(FName SlotName);
 	void ActivateAbility(UAbilitySlot* Slot);
-	
+
 	void LearnAbility(UAbilitySettings* AbilitySettings);
-	
+
 	// ------------------------------------------- MouseUtils -------------------------------------------
 private:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AMouseUtils> MouseUtilsClass;
+
 	UPROPERTY(ReplicatedUsing=OnRep_MouseUtils)
 	TWeakObjectPtr<AMouseUtils> MouseUtils;
 
 	UFUNCTION()
 	void OnRep_MouseUtils();
-	
+
 	void S_SetMouseUtils(AMouseUtils* NewMouseUtils);
-	
+
 	void MouseUtilsChanged();
 
 	UFUNCTION()
 	void HoverActorChanged(AActor* Actor);
-	
-	// ------------------------------------------- Input -------------------------------------------
-public:
-	void InitInput();
 
+	// ------------------------------------------- Input -------------------------------------------
 private:
+	UPROPERTY(EditDefaultsOnly)
+	UInputDataAsset* InputDataAsset;
+
 	void LeftClick(const FInputActionInstance& Instance);
 
 	void StartJump(const FInputActionInstance& Instance);
@@ -157,7 +168,7 @@ private:
 	void HandleEscapePressed();
 	void ToggleBuildMenu();
 	void ToggleDebugMenu();
-	
+
 	void ActivateAbility1();
 	void ActivateAbility2();
 	void ActivateAbility3();
@@ -166,4 +177,7 @@ private:
 	void ActivateAbility6();
 	void ActivateAbility7();
 	void ActivateAbility8();
+
+public:
+	void InitInput();
 };

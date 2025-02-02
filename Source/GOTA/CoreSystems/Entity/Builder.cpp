@@ -1,16 +1,9 @@
 ﻿#include "Builder.h"
 
-#include "CivilianSettings.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
-
-ABuilder::ABuilder()
-{
-	if (GetSettings())
-		GetMeshComponent()->SetStaticMesh(GetSettings()->BuilderMesh);
-}
 
 void ABuilder::S_Work()
 {

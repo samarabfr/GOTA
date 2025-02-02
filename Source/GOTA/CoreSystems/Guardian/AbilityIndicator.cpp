@@ -3,7 +3,7 @@
 #include "AbilityIndicator.h"
 
 #include "NiagaraComponent.h"
-#include "NiagaraSystem.h"
+#include "NiagaraSystem.h" //this is needed here, despite rider saying it isn't
 
 AAbilityIndicator::AAbilityIndicator()
 {
@@ -23,15 +23,11 @@ void AAbilityIndicator::BeginPlay()
 {
 	Super::BeginPlay();
 
-	static const TCHAR* PathToDataTable = TEXT("/Game/Visuals/VFX/FXS_AbilityIndicator");
-	if (UNiagaraSystem* NiagaraSystem = LoadObject<UNiagaraSystem>(nullptr, PathToDataTable))
-	{
-		FX_IndicatorComponent = NewObject<UNiagaraComponent>(this);
-		FX_IndicatorComponent->SetAsset(NiagaraSystem);
-		FX_IndicatorComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-		FX_IndicatorComponent->RegisterComponent();
-		FX_IndicatorComponent->Deactivate();
-	}
+	FX_IndicatorComponent = NewObject<UNiagaraComponent>(this);
+	FX_IndicatorComponent->SetAsset(NiagaraSystem);
+	FX_IndicatorComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
+	FX_IndicatorComponent->RegisterComponent();
+	FX_IndicatorComponent->Deactivate();
 }
 
 void AAbilityIndicator::Activate()
@@ -48,6 +44,5 @@ void AAbilityIndicator::Deactivate()
 	if (FX_IndicatorComponent)
 	{
 		FX_IndicatorComponent->Deactivate();
-
 	}
 }

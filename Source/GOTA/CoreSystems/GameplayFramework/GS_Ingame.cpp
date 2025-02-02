@@ -3,7 +3,6 @@
 
 #include "GS_Ingame.h"
 
-#include "GameSettings.h"
 #include "LoadingManager.h"
 #include "StartParameter.h"
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
@@ -25,7 +24,6 @@ void AGS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	DOREPLIFETIME_WITH_PARAMS(AGS_Ingame, Guardians, Params)
 
 	DOREPLIFETIME_WITH_PARAMS(AGS_Ingame, TileMap, Params)
-	DOREPLIFETIME_WITH_PARAMS(AGS_Ingame, GameSettings, Params)
 	DOREPLIFETIME_WITH_PARAMS(AGS_Ingame, Colony, Params)
 	DOREPLIFETIME_WITH_PARAMS(AGS_Ingame, Tribe, Params)
 
@@ -78,7 +76,6 @@ void AGS_Ingame::BeginPlay()
 void AGS_Ingame::S_Init()
 {
 	AddReplicatedSubobjects();
-	SpawnGameSettingsActor();
 	SpawnStaticMeshBatcher();
 }
 
@@ -95,16 +92,6 @@ void AGS_Ingame::SetTileMap(ATileMap* NewTileMap)
 {
 	TileMap = NewTileMap;
 	MARK_PROPERTY_DIRTY_FROM_NAME(AGS_Ingame, TileMap, this)
-}
-
-// ------------------- GameSettings -------------------
-
-void AGS_Ingame::SpawnGameSettingsActor()
-{
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Name = FName("GameSettings");
-	GameSettings = GetWorld()->SpawnActor<AGameSettings>(SpawnParams);
-	MARK_PROPERTY_DIRTY_FROM_NAME(AGS_Ingame, GameSettings, this)
 }
 
 // ------------------- LoadingManager -------------------

@@ -46,7 +46,7 @@ UBuilding::UBuilding()
 
 void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
 {
-	Population->S_Init(InSettlement->GetPopulationSettings());
+	Population->S_Init(InSettlement->GetGrowthPerOwnPop(), InSettlement->GetGrowthPerNeighborPop());
 	Settings = InSettings;
 	Tile = InTile;
 	S_SetSettlement(InSettlement);

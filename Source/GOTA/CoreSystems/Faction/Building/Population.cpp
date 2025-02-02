@@ -3,7 +3,6 @@
 
 #include "Population.h"
 
-#include "PopulationSettings.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
@@ -19,7 +18,6 @@ void UPopulation::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 	Params.Condition = COND_InitialOnly;
 	Params.RepNotifyCondition = REPNOTIFY_Always;
-	DOREPLIFETIME_WITH_PARAMS(UPopulation, Settings, Params)
 
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
@@ -28,6 +26,8 @@ void UPopulation::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME_WITH_PARAMS(UPopulation, Angry, Params)
 	DOREPLIFETIME_WITH_PARAMS(UPopulation, Fear, Params)
 	DOREPLIFETIME_WITH_PARAMS(UPopulation, GrowthProgress, Params)
+	DOREPLIFETIME_WITH_PARAMS(UPopulation, GrowthPerOwnPop, Params)
+	DOREPLIFETIME_WITH_PARAMS(UPopulation, GrowthPerNeighborPop, Params)
 }
 
 bool UPopulation::IsSupportedForNetworking() const
@@ -37,9 +37,12 @@ bool UPopulation::IsSupportedForNetworking() const
 
 // ------------------- LifeCycle -------------------
 
-void UPopulation::S_Init(UPopulationSettings* InSettings)
+void UPopulation::S_Init(float InGrowthPerOwnPop, float InGrowthPerNeighborPop)
 {
-	Settings = InSettings;
+	GrowthPerOwnPop = InGrowthPerOwnPop;
+	GrowthPerNeighborPop = InGrowthPerNeighborPop;
+	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, GrowthPerOwnPop, this)
+	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, GrowthPerNeighborPop, this)
 }
 
 void UPopulation::S_Tick(const float DeltaSeconds)
@@ -140,7 +143,7 @@ void UPopulation::ApplyGrowth(const float DeltaSeconds)
 	}
 
 	// If Settlement is starving, this Population should not grow
-	if (Settings->IsStarving)
+	if (bIsStarving)
 		return;
 	
 	GrowthProgress += GetGrowth() * DeltaSeconds;
@@ -148,12 +151,29 @@ void UPopulation::ApplyGrowth(const float DeltaSeconds)
 
 float UPopulation::GetGrowth() const
 {
-	return NeighborSize * Settings->GetGrowthPerNeighborPop() + GetSize() * Settings->GetGrowthPerOwnPop();
+	return NeighborSize * GetGrowthPerNeighborPop() + GetSize() * GetGrowthPerOwnPop();
 }
 
 void UPopulation::NeighborChangedPopSize(int16 Amount)
 {
 	NeighborSize += Amount;
+}
+
+void UPopulation::S_SetIsStarving(bool InIsStarving)
+{
+	bIsStarving = InIsStarving;
+}
+
+void UPopulation::S_SetGrowthPerOwnPop(float NewGrowthPerOwnPop)
+{
+	GrowthPerOwnPop = NewGrowthPerOwnPop;
+	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, GrowthPerOwnPop, this)
+}
+
+void UPopulation::S_SetGrowthPerNeighborPop(float NewGrowthPerNeighborPop)
+{
+	GrowthPerNeighborPop = NewGrowthPerNeighborPop;
+	MARK_PROPERTY_DIRTY_FROM_NAME(UPopulation, GrowthPerNeighborPop, this)
 }
 
 // ------------------- Mood -------------------

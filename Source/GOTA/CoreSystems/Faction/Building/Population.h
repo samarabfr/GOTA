@@ -21,17 +21,14 @@ class GOTA_API UPopulation : public UObject
 
 	// ------------------- LifeCycle -------------------
 public:
-	void S_Init(UPopulationSettings* InSettings);
+	void S_Init(float InGrowthPerOwnPop, float InGrowthPerNeighborPop);
 
 	void S_Tick(const float DeltaSeconds);
 
 	void C_Tick(const float DeltaSeconds);
 
 	// ------------------- Utility -------------------
-private:
-	UPROPERTY(Replicated)
-	UPopulationSettings* Settings;
-	
+private:	
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnInt16ChangedSig, int16, ChangedBy);
 
@@ -83,12 +80,31 @@ private:
 	
 	void ApplyGrowth(const float DeltaSeconds);
 
-public:
+	UPROPERTY(VisibleInstanceOnly)
+	bool bIsStarving = false;
+
+	// Per Second
+	UPROPERTY(Replicated)
+	float GrowthPerOwnPop = 0.0f;
+
+	// Per Second
+	UPROPERTY(Replicated)
+	float GrowthPerNeighborPop = 0.0f;
+
+public:	
 	float GetGrowth() const;
 	
 	void NeighborChangedPopSize(int16 Amount);
 
 	float GetGrowthProgress() const { return GrowthProgress; }
+
+	void S_SetIsStarving(bool InIsStarving);
+	
+	float GetGrowthPerOwnPop() const { return GrowthPerOwnPop; }
+	void S_SetGrowthPerOwnPop(float NewGrowthPerOwnPop);
+
+	float GetGrowthPerNeighborPop() const { return GrowthPerNeighborPop; }
+	void S_SetGrowthPerNeighborPop(float NewGrowthPerNeighborPop);
 	
 	// ------------------- Mood -------------------
 private:

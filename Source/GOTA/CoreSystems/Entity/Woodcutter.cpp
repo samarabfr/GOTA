@@ -1,14 +1,7 @@
 ﻿#include "Woodcutter.h"
 
-#include "CivilianSettings.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
-
-AWoodcutter::AWoodcutter()
-{
-	if (GetSettings())
-		GetMeshComponent()->SetStaticMesh(GetSettings()->WoodCutterMesh);
-}
 
 void AWoodcutter::S_Work()
 {

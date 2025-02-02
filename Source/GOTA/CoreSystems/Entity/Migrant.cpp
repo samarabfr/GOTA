@@ -1,16 +1,9 @@
 ﻿#include "Migrant.h"
 
-#include "CivilianSettings.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
-
-AMigrant::AMigrant()
-{
-	if (GetSettings())
-		GetMeshComponent()->SetStaticMesh(GetSettings()->MigrantMesh);
-}
 
 void AMigrant::S_Work()
 {

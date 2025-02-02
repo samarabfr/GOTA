@@ -10,15 +10,8 @@
 #include "GOTA/UI/Ingame/AbilitySlot.h"
 #include "GOTA/CoreSystems/Guardian/AbilitySlotRegister.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
-#include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
-#include "GOTA/CoreSystems/Tile/HexCoordsFunctions.h"
-#include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "GOTA/CoreSystems/Utility/DistanceUtils.h"
 #include "GOTA/CoreSystems/Utility/MouseUtils.h"
-#include "GOTA/GOTARL/CreatePopAbility.h"
-#include "GOTA/GOTARL/DamageArmyAbility.h"
-#include "GOTA/GOTARL/DamageBuildingAbility.h"
-#include "GOTA/GOTARL/SimplifiedAbility.h"
 #include "GOTA/UI/Ingame/IngameUI.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
@@ -58,20 +51,22 @@ void APC_Ingame::S_Init()
 	// Create MouseUtils
 	FActorSpawnParameters MouseUtilsSpawnParams;
 	MouseUtilsSpawnParams.Owner = this;
-	AMouseUtils* NewMouseUtils = GetWorld()->SpawnActor<AMouseUtils>(MouseUtilsSpawnParams);
+	AMouseUtils* NewMouseUtils = GetWorld()->SpawnActor<AMouseUtils>(MouseUtilsClass, MouseUtilsSpawnParams);
 	S_SetMouseUtils(NewMouseUtils);
 
 	// Create AbilityIndicator
 	FActorSpawnParameters AbilityIndicatorSpawnParams;
 	AbilityIndicatorSpawnParams.Owner = this;
-	AAbilityIndicator* NewAbilityIndicator = GetWorld()->SpawnActor<AAbilityIndicator>(AbilityIndicatorSpawnParams);
+	AAbilityIndicator* NewAbilityIndicator = GetWorld()->SpawnActor<AAbilityIndicator>(
+		AbilityIndicatorClass, AbilityIndicatorSpawnParams);
 	S_SetAbilityIndicator(NewAbilityIndicator);
 	NewMouseUtils->AttachActorToTilePosition(NewAbilityIndicator);
 
 	// Create BuildingPlacer
 	FActorSpawnParameters BuildingPlacerSpawnParams;
 	BuildingPlacerSpawnParams.Owner = this;
-	ABuildingPlacer* NewBuildingPlacer = GetWorld()->SpawnActor<ABuildingPlacer>(BuildingPlacerSpawnParams);
+	ABuildingPlacer* NewBuildingPlacer = GetWorld()->SpawnActor<ABuildingPlacer>(
+		BuildingPlacerClass, BuildingPlacerSpawnParams);
 	NewBuildingPlacer->S_Init(NewMouseUtils);
 	S_SetBuildingPlacer(NewBuildingPlacer);
 
@@ -133,7 +128,7 @@ void APC_Ingame::SetGuardian(AGuardian* NewGuardian)
 
 void APC_Ingame::ClickActor()
 {
-	if(!IngameUI) return;
+	if (!IngameUI) return;
 	IngameUI->ClickActor(MouseUtils->GetHoverActor());
 }
 
@@ -262,12 +257,6 @@ void APC_Ingame::HoverActorChanged(AActor* Actor)
 
 void APC_Ingame::InitInput()
 {
-	const UInputDataAsset* DataAsset = Cast<UInputDataAsset>(StaticLoadObject(
-		UInputDataAsset::StaticClass(),
-		nullptr,
-		TEXT("/Game/CoreSystems/Input/DA_Input")
-	));
-
 	FInputModeGameAndUI InputMode;
 	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	InputMode.SetHideCursorDuringCapture(false);
@@ -275,32 +264,34 @@ void APC_Ingame::InitInput()
 
 	const ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(Player);
 	UEnhancedInputLocalPlayerSubsystem* InputSystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	InputSystem->AddMappingContext(DataAsset->MappingContext, 1);
+	InputSystem->AddMappingContext(InputDataAsset->MappingContext, 1);
 
 	UEnhancedInputComponent* Component = Cast<UEnhancedInputComponent>(InputComponent);
 
-	Component->BindAction(DataAsset->LeftClick, ETriggerEvent::Triggered, this, &APC_Ingame::LeftClick);
+	Component->BindAction(InputDataAsset->LeftClick, ETriggerEvent::Triggered, this, &APC_Ingame::LeftClick);
 
-	Component->BindAction(DataAsset->Jump, ETriggerEvent::Triggered, this, &APC_Ingame::StartJump);
-	Component->BindAction(DataAsset->Jump, ETriggerEvent::Canceled, this, &APC_Ingame::StopJump);
-	Component->BindAction(DataAsset->Jump, ETriggerEvent::Completed, this, &APC_Ingame::StopJump);
+	Component->BindAction(InputDataAsset->Jump, ETriggerEvent::Triggered, this, &APC_Ingame::StartJump);
+	Component->BindAction(InputDataAsset->Jump, ETriggerEvent::Canceled, this, &APC_Ingame::StopJump);
+	Component->BindAction(InputDataAsset->Jump, ETriggerEvent::Completed, this, &APC_Ingame::StopJump);
 
-	Component->BindAction(DataAsset->LookAround, ETriggerEvent::Triggered, this, &APC_Ingame::LookAround);
-	Component->BindAction(DataAsset->ActivateLooking, ETriggerEvent::Started, this, &APC_Ingame::StartLookingAround);
-	Component->BindAction(DataAsset->ActivateLooking, ETriggerEvent::Completed, this, &APC_Ingame::StopLookingAround);
+	Component->BindAction(InputDataAsset->LookAround, ETriggerEvent::Triggered, this, &APC_Ingame::LookAround);
+	Component->BindAction(InputDataAsset->ActivateLooking, ETriggerEvent::Started, this,
+	                      &APC_Ingame::StartLookingAround);
+	Component->BindAction(InputDataAsset->ActivateLooking, ETriggerEvent::Completed, this,
+	                      &APC_Ingame::StopLookingAround);
 
-	Component->BindAction(DataAsset->Escape, ETriggerEvent::Triggered, this, &APC_Ingame::HandleEscapePressed);
-	Component->BindAction(DataAsset->BuildMenu, ETriggerEvent::Triggered, this, &APC_Ingame::ToggleBuildMenu);
-	Component->BindAction(DataAsset->DebugMenu, ETriggerEvent::Triggered, this, &APC_Ingame::ToggleDebugMenu);
+	Component->BindAction(InputDataAsset->Escape, ETriggerEvent::Triggered, this, &APC_Ingame::HandleEscapePressed);
+	Component->BindAction(InputDataAsset->BuildMenu, ETriggerEvent::Triggered, this, &APC_Ingame::ToggleBuildMenu);
+	Component->BindAction(InputDataAsset->DebugMenu, ETriggerEvent::Triggered, this, &APC_Ingame::ToggleDebugMenu);
 
-	Component->BindAction(DataAsset->Ability1, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility1);
-	Component->BindAction(DataAsset->Ability2, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility2);
-	Component->BindAction(DataAsset->Ability3, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility3);
-	Component->BindAction(DataAsset->Ability4, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility4);
-	Component->BindAction(DataAsset->Ability5, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility5);
-	Component->BindAction(DataAsset->Ability6, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility6);
-	Component->BindAction(DataAsset->Ability7, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility7);
-	Component->BindAction(DataAsset->Ability8, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility8);
+	Component->BindAction(InputDataAsset->Ability1, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility1);
+	Component->BindAction(InputDataAsset->Ability2, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility2);
+	Component->BindAction(InputDataAsset->Ability3, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility3);
+	Component->BindAction(InputDataAsset->Ability4, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility4);
+	Component->BindAction(InputDataAsset->Ability5, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility5);
+	Component->BindAction(InputDataAsset->Ability6, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility6);
+	Component->BindAction(InputDataAsset->Ability7, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility7);
+	Component->BindAction(InputDataAsset->Ability8, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility8);
 }
 
 void APC_Ingame::LeftClick(const FInputActionInstance& Instance)

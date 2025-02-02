@@ -7,7 +7,6 @@ UCLASS()
 class GOTA_API AForager : public ACivilian
 {
 	GENERATED_BODY()
-	AForager();
 	
 	virtual void S_Work() override;
 	virtual bool IsTileValidForWork(const ATile* Tile) const override;

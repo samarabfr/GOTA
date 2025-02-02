@@ -3,7 +3,6 @@
 
 #include "GM_Ingame.h"
 
-#include "GameSettings.h"
 #include "GOTAGameInstance.h"
 #include "LoadingManager.h"
 #include "PC_Ingame.h"
@@ -163,18 +162,12 @@ void AGM_Ingame::CreateWorld()
 
 void AGM_Ingame::CreateSettlements()
 {
-	AGameSettings* GameSettings = GOTAGameState->GetGameSettings();
-
-	AColony* Colony = GetWorld()->SpawnActor<AColony>();
-	Colony->S_Init(GOTAGameState->GetTileMap()->GetColonistsStart().Get(),
-	               GameSettings->GetColonySettings(),
-	               GameSettings->GetColonyPopulationSettings());
+	AColony* Colony = GetWorld()->SpawnActor<AColony>(ColonyClass);
+	Colony->S_Init(GOTAGameState->GetTileMap()->GetColonistsStart().Get());
 	GOTAGameState->SetColony(Colony);
 
-	ATribe* Tribe = GetWorld()->SpawnActor<ATribe>();
-	Tribe->S_Init(GOTAGameState->GetTileMap()->GetNativesStart().Get(),
-	              GameSettings->GetTribeSettings(),
-	              GameSettings->GetTribePopulationSettings());
+	ATribe* Tribe = GetWorld()->SpawnActor<ATribe>(TribeClass);
+	Tribe->S_Init(GOTAGameState->GetTileMap()->GetNativesStart().Get());
 	GOTAGameState->SetTribe(Tribe);
 }
 
