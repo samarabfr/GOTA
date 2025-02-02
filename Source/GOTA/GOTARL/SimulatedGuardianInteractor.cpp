@@ -4,6 +4,7 @@
 #include "SimulatedGuardianInteractor.h"
 
 #include "GuardianSimulator.h"
+#include "GOTA/CoreSystems/Tile/Tile.h"
 
 USimulatedGuardianInteractor::USimulatedGuardianInteractor()
 {

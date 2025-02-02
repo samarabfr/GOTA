@@ -5,6 +5,7 @@
 
 #include "LearningAgentsRewards.h"
 #include "GuardianSimulator.h"
+#include "GOTA/CoreSystems/Tile/Tile.h"
 
 USimulatedGuardianTrainingEnv::USimulatedGuardianTrainingEnv()
 {
