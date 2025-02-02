@@ -26,9 +26,12 @@ protected:
 	
 	// ----------------------- Learning Agents plugin -----------------------
 private:
+
+	bool bRunInference = false;
+	bool bResetNNsWhenStartingTraining = false;
+	
 	UPROPERTY()
 	ULearningAgentsManager* ManagerComponent;
-	bool bRunInference = false;
 	UPROPERTY()
 	TArray<AActor*> GuardianSimulatorActors;
 	

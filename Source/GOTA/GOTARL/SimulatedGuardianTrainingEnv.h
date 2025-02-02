@@ -5,6 +5,8 @@
 
 #include "SimulatedGuardianTrainingEnv.generated.h"
 
+class AGuardianSimulator;
+
 UCLASS(Blueprintable)
 class GOTA_API USimulatedGuardianTrainingEnv : public ULearningAgentsTrainingEnvironment 
 {
@@ -22,5 +24,14 @@ public:
 	GatherAgentCompletion_Implementation(ELearningAgentsCompletion& OutCompletion, const int32 AgentId) override;
 
 	virtual void ResetAgentEpisode_Implementation(const int32 AgentId) override;
+
+	// ----------------------- Learning  -----------------------
+private:
+	float LastDistance = 0.f;
+	
+	float CompletionDistance = 500.f;
+	float CompletionReward = 10.0f;
+
+	static float GetDistanceToTarget(AGuardianSimulator* GuardianSimulator);
 };
 
