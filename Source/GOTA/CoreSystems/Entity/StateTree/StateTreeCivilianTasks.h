@@ -18,6 +18,20 @@ struct GOTA_API FCivilianInstanceData
 	TObjectPtr<ACivilian> CivilianRef = nullptr;
 };
 
+USTRUCT()
+struct GOTA_API FCivilianFindPathInstanceData
+{
+	GENERATED_BODY()
+
+	// automatically takes from the context
+	UPROPERTY(EditAnywhere, Category=Context)
+	TObjectPtr<ACivilian> CivilianRef = nullptr;
+
+
+	UPROPERTY(EditAnywhere, Category=Parameter)
+	bool bOverridePathIn = true;
+};
+
 USTRUCT(DisplayName="Civilian move to next Tile")
 struct GOTA_API FSTT_CivilianMoveToNextTile : public FStateTreeTaskCommonBase
 {
@@ -51,7 +65,7 @@ struct GOTA_API FSTT_FindPathToBestWorkTile : public FStateTreeTaskCommonBase
 {
 	GENERATED_BODY()
 
-	using FInstanceDataType = FCivilianInstanceData;
+	using FInstanceDataType = FCivilianFindPathInstanceData;
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
@@ -62,8 +76,31 @@ struct GOTA_API FSTT_FindPathToPriorityTile : public FStateTreeTaskCommonBase
 {
 	GENERATED_BODY()
 
-	using FInstanceDataType = FCivilianInstanceData;
+	using FInstanceDataType = FCivilianFindPathInstanceData;
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+};
+
+USTRUCT(DisplayName="Find path to origin building")
+struct GOTA_API FSTT_FindPathToOriginBuilding : public FStateTreeTaskCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FCivilianFindPathInstanceData;
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+
+	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+};
+
+USTRUCT(DisplayName="Unload Resources")
+struct GOTA_API FSTT_UnloadResources : public FStateTreeTaskCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FCivilianInstanceData;
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+
+	virtual EStateTreeRunStatus EnterState(FStateTreeExecutionContext& Context,
+	                                       const FStateTreeTransitionResult& Transition) const override;
 };

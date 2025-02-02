@@ -1,16 +1,9 @@
 ﻿#include "Builder.h"
 
-#include "CivilianSettings.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
-
-ABuilder::ABuilder()
-{
-	if (GetSettings())
-		GetMeshComponent()->SetStaticMesh(GetSettings()->BuilderMesh);
-}
 
 void ABuilder::S_Work()
 {
@@ -22,7 +15,7 @@ void ABuilder::S_Work()
 	if (FoodNeeded > 0 && WorkAmountLeft > 0)
 	{
 		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, FoodNeeded),
-		                                  GetBuilding()->GetSettlement()->GetResources().Food);
+		                                  GetOriginBuilding()->GetSettlement()->GetResources().Food);
 		ResourcesProgressToAdd.Food = DoneWork;
 		WorkAmountLeft -= DoneWork;
 	}
@@ -31,7 +24,7 @@ void ABuilder::S_Work()
 	if (WoodNeeded > 0 && WorkAmountLeft > 0)
 	{
 		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, WoodNeeded),
-		                                  GetBuilding()->GetSettlement()->GetResources().Wood);
+		                                  GetOriginBuilding()->GetSettlement()->GetResources().Wood);
 		ResourcesProgressToAdd.Wood = DoneWork;
 		WorkAmountLeft -= DoneWork;
 	}
@@ -40,19 +33,19 @@ void ABuilder::S_Work()
 	if (StoneNeeded > 0 && WorkAmountLeft > 0)
 	{
 		const int32 DoneWork = FMath::Min(FMath::Min(WorkAmountLeft, StoneNeeded),
-		                                  GetBuilding()->GetSettlement()->GetResources().Stone);
+		                                  GetOriginBuilding()->GetSettlement()->GetResources().Stone);
 		ResourcesProgressToAdd.Stone = DoneWork;
 		WorkAmountLeft -= DoneWork;
 	}
 	GetCurrentTile()->GetBuilding()->SetConstructionProgress(ResourcesProgress + ResourcesProgressToAdd);
-	GetBuilding()->GetSettlement()->S_RemoveResources(ResourcesProgressToAdd);
+	GetOriginBuilding()->GetSettlement()->S_RemoveResources(ResourcesProgressToAdd);
 }
 
 bool ABuilder::IsTileValidForWork(const ATile* Tile) const
 {
 	if (!Tile->GetBuilding())
 		return false;
-	if (Tile->GetClaimant() != GetBuilding()->GetSettlement())
+	if (Tile->GetClaimant() != GetOriginBuilding()->GetSettlement())
 		return false;
 	if (!Tile->GetBuilding()->GetIsUnderConstruction())
 		return false;

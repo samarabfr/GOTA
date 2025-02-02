@@ -65,3 +65,27 @@ void USettlementPopulation::UpdateFear(int16 ChangedBy)
 {
 	Fear += ChangedBy;
 }
+
+void USettlementPopulation::S_SetStarving(bool IsStarving)
+{
+	for (UPopulation* Pop : Populations)
+	{
+		Pop->S_SetIsStarving(IsStarving);
+	}
+}
+
+void USettlementPopulation::S_SetGrowthPerOwnPop(float NewGrowthPerOwnPop)
+{
+	for (UPopulation* Pop : Populations)
+	{
+		Pop->S_SetGrowthPerOwnPop(NewGrowthPerOwnPop);
+	}
+}
+
+void USettlementPopulation::S_SetGrowthPerNeighborPop(float NewGrowthPerNeighborPop)
+{
+	for (UPopulation* Pop : Populations)
+	{
+		Pop->S_SetGrowthPerNeighborPop(NewGrowthPerNeighborPop);
+	}
+}

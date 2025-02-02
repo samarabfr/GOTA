@@ -36,7 +36,7 @@ void AGM_GOTARL_Ingame::CreateGuardians()
 		}
 		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(
 			GuardianClass, SpawnLocation, FRotator::ZeroRotator);
-		Guardian->Init(GuardianSettings);
+		Guardian->S_Init(GuardianSettings);
 		AGuardianSimulator* GuardianSimulator = GetWorld()->SpawnActor<AGuardianSimulator>(
 			AGuardianSimulator::StaticClass(), SpawnLocation, FRotator::ZeroRotator);
 		GuardianSimulator->Possess(Guardian);

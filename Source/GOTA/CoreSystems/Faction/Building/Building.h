@@ -34,13 +34,11 @@ public:
 	virtual void S_Tick(float DeltaSeconds);
 	virtual void C_Tick(const float DeltaSeconds);
 
-	virtual void Destroy();
+	virtual void S_PrepareDestroy();
+	void C_PrepareDestroy();
 
 	// ---------------------------------------- Utility ----------------------------------------
 private:
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	ASettlement* Settlement;
-	
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UBuildingSettings* Settings;
 
@@ -48,21 +46,32 @@ private:
 	ATile* Tile;
 
 public:
-	ASettlement* GetSettlement() const {return Settlement; }
-	UBuildingSettings* GetSettings() const{return Settings; }
-	ATile* GetTile() const{return Tile; }
-	
+	UBuildingSettings* GetSettings() const { return Settings; }
+	ATile* GetTile() const { return Tile; }
+
+	// --------------------------------------- Settlement ---------------------------------------
+private:
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Settlement)
+	ASettlement* Settlement;
+
+	UFUNCTION()
+	void OnRep_Settlement();
+
+	void S_SetSettlement(ASettlement* InSettlement);
+
+public:
+	ASettlement* GetSettlement() const { return Settlement; }
 
 	// --------------------------------------- Population ---------------------------------------
-public:
-	UPopulation* GetPopulation() const { return Population; }
-
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UPopulation* Population;
 
 	UFUNCTION()
 	void PopulationChanged(int16 Change);
+
+public:
+	UPopulation* GetPopulation() const { return Population; }
 
 	// --------------------------------------- Efficiency ---------------------------------------
 	// When a Building Pop is not influenced by any modifiers and has exactly the pop as the default
@@ -120,20 +129,20 @@ public:
 private:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	bool bIsUnderConstruction = true;
-	
+
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	FGameResources ConstructionProgress;
 
 public:
 	bool GetIsUnderConstruction() const { return bIsUnderConstruction; }
-	
+
 	FGameResources GetConstructionProgress() const;
 	void SetConstructionProgress(const FGameResources NewConstructionProgress);
 
 	virtual void FinishConstruction();
 
 	// --------------------- Protection ---------------------
-	
+
 public:
 	bool IsProtected() const;
 
@@ -142,7 +151,9 @@ public:
 	virtual AArmy* GetArmy() const { return nullptr; }
 
 	// --------------------- Defense building ---------------------
-	
+
 public:
-	virtual void S_BuildingDefenseTakeDamage(int32 Damage) {}
+	virtual void S_BuildingDefenseTakeDamage(int32 Damage)
+	{
+	}
 };

@@ -17,7 +17,7 @@ public:
 	virtual void S_Tick(float DeltaSeconds) override;
 	virtual void C_Tick(const float DeltaSeconds) override;
 protected:
-	virtual void Destroy() override;
+	virtual void S_PrepareDestroy() override;
 
 	
 	// ---------------- Civilian Entity ----------------

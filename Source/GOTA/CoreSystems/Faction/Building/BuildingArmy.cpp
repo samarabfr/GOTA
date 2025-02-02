@@ -44,7 +44,7 @@ void UBuildingArmy::S_Tick(float DeltaSeconds)
 		else if (GetTile()->AcceptsArmy())
 		{
 			ArmyRespawnTimer = 0.0f;
-			AArmy* NewArmy = GetTile()->GetWorld()->SpawnActor<AArmy>();
+			AArmy* NewArmy = GetTile()->GetWorld()->SpawnActor<AArmy>(GetSettings()->ArmyClass);
 			NewArmy->S_Init(this, GetTile());
 			SetArmy(NewArmy);
 		}
@@ -56,9 +56,9 @@ void UBuildingArmy::C_Tick(const float DeltaSeconds)
 	Super::C_Tick(DeltaSeconds);
 }
 
-void UBuildingArmy::Destroy()
+void UBuildingArmy::S_PrepareDestroy()
 {
-	Super::Destroy();
+	Super::S_PrepareDestroy();
 	if(Army)
 		Army->S_HandleDeath();
 }

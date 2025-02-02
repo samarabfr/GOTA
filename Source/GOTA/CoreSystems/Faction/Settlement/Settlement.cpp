@@ -3,10 +3,7 @@
 #include "Settlement.h"
 
 #include "SettlementPopulation.h"
-#include "SettlementSettings.h"
-#include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
-#include "GOTA/CoreSystems/Faction/Building/PopulationSettings.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
@@ -22,11 +19,14 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 	Params.Condition = COND_InitialOnly;
 	Params.RepNotifyCondition = REPNOTIFY_Always;
-	DOREPLIFETIME_WITH_PARAMS(ASettlement, Settings, Params);
 
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
 	DOREPLIFETIME_WITH_PARAMS(ASettlement, Resources, Params);
+	DOREPLIFETIME_WITH_PARAMS(ASettlement, PopEatingPerSecond, Params)
+	DOREPLIFETIME_WITH_PARAMS(ASettlement, StarvingThreshold, Params)
+	DOREPLIFETIME_WITH_PARAMS(ASettlement, GrowthPerOwnPop, Params)
+	DOREPLIFETIME_WITH_PARAMS(ASettlement, GrowthPerNeighborPop, Params)
 }
 
 // --------------------------- LifeCycle ---------------------------
@@ -51,24 +51,17 @@ void ASettlement::BeginPlay()
 	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
 }
 
-void ASettlement::S_Init(ATile* SpawnTile,
-                         USettlementSettings* InSettlementSettings,
-                         UPopulationSettings* InPopulationSettings)
+void ASettlement::S_Init(ATile* SpawnTile)
 {
-	PopulationSettings = InPopulationSettings;
-	Settings = InSettlementSettings;
+	S_AddResources(StartingResources);
 
-	S_AddResources(Settings->GetStartingResources());
-
-	const TArray<UBuildingSettings*>& StartingBuildings = Settings->GetStartingBuildings();
-
-	SpawnTile->TryBuild(StartingBuildings[0], this);
+	SpawnTile->S_TryBuild(StartingBuildings[0], this);
 	SpawnTile->GetBuilding()->FinishConstruction();
 	for (int32 i = 1; i < StartingBuildings.Num(); ++i)
 	{
 		if (BorderingUnclaimedTiles.Num() <= 0) break;
 		ATile* Tile = BorderingUnclaimedTiles[FMath::RandRange(0, BorderingUnclaimedTiles.Num() - 1)];
-		Tile->TryBuild(StartingBuildings[i], this);
+		Tile->S_TryBuild(StartingBuildings[i], this);
 		Tile->GetBuilding()->FinishConstruction();
 	}
 	for (ATile* Tile : ClaimedTiles)
@@ -86,16 +79,16 @@ void ASettlement::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	Resources.Food -= GetPopulation()->GetSize() * Settings->GetPopEatingPerSecond() * DeltaSeconds;
+	Resources.Food -= GetPopulation()->GetSize() * GetPopEatingPerSecond() * DeltaSeconds;
 
 	if (Resources.Food < 0)
-		PopulationSettings->IsStarving = true;
+		Population->S_SetStarving(true);
 	else
-		PopulationSettings->IsStarving = false;
+		Population->S_SetStarving(false);
 
 	if (HasAuthority())
 	{
-		const float Threshold = Settings->GetStarvingThreshold();
+		const float Threshold = GetStarvingThreshold();
 		if (Resources.Food < Threshold)
 		{
 			int32 Count = Resources.Food / Threshold;
@@ -111,6 +104,26 @@ void ASettlement::Tick(float DeltaSeconds)
 // --------------------------- Utility ---------------------------
 
 // --------------------------- Population ---------------------------
+
+
+void ASettlement::OnRep_PopEatingPerSecond(const float OldValue)
+{
+	OnPopEatingPerSecondChanged.Broadcast(PopEatingPerSecond - OldValue);
+}
+
+void ASettlement::S_SetPopEatingPerSecond(float NewValue)
+{
+	const float Change = NewValue - PopEatingPerSecond;
+	PopEatingPerSecond = NewValue;
+	OnPopEatingPerSecondChanged.Broadcast(Change);
+	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, PopEatingPerSecond, this)
+}
+
+void ASettlement::S_SetStarvingThreshold(float NewValue)
+{
+	StarvingThreshold = NewValue;
+	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, StarvingThreshold, this)
+}
 
 // --------------------------- Claims ---------------------------
 
@@ -136,20 +149,26 @@ bool ASettlement::IsBorderingUnclaimedTile(const ATile* Tile) const
 
 // --------------------------- Building ---------------------------
 
-void ASettlement::OnBuildingAdded(UBuilding* Building, ATile* Tile)
+void ASettlement::S_RegisterTile(ATile* Tile)
 {
-	GetPopulation()->RegisterPop(Building->GetPopulation());
-	RegisterBuildingForResourcePrediction(Building);
 	ClaimedTiles.Add(Tile);
 	RefreshBorderingUnclaimedTiles();
 }
 
-void ASettlement::OnBuildingRemoved(UBuilding* Building, ATile* Tile)
+void ASettlement::RegisterPopulation(UPopulation* InPopulation)
 {
-	GetPopulation()->UnregisterPop(Building->GetPopulation());
-	UnregisterBuildingForResourcePrediction(Building);
+	GetPopulation()->RegisterPop(InPopulation);
+}
+
+void ASettlement::S_UnregisterTile(ATile* Tile)
+{
 	ClaimedTiles.Remove(Tile);
 	RefreshBorderingUnclaimedTiles();
+}
+
+void ASettlement::UnregisterPopulation(UPopulation* InPopulation)
+{
+	GetPopulation()->UnregisterPop(InPopulation);
 }
 
 // --------------------------- Resources ---------------------------
@@ -188,7 +207,7 @@ void ASettlement::RegisterBuildingForResourcePrediction(UBuilding* Building)
 		Building->OnPredictedConsumptionChanged.AddDynamic(this, &ASettlement::UpdatePredictedConsumption);
 	}
 	PredictedConsumption.AddConsumption(
-		Building->GetPopulation()->GetSize() * Settings->GetPopEatingPerSecond(), EConsumptionType::Food);
+		Building->GetPopulation()->GetSize() * GetPopEatingPerSecond(), EConsumptionType::Food);
 	Building->GetPopulation()->OnSizeChanged.AddDynamic(this, &ASettlement::UpdatePredictionFromPopulation);
 }
 
@@ -211,7 +230,7 @@ void ASettlement::UnregisterBuildingForResourcePrediction(UBuilding* Building)
 		Building->OnPredictedConsumptionChanged.RemoveDynamic(this, &ASettlement::UpdatePredictedConsumption);
 	}
 	PredictedConsumption.RemoveConsumption(
-		Building->GetPopulation()->GetSize() * Settings->GetPopEatingPerSecond(), EConsumptionType::Food);
+		Building->GetPopulation()->GetSize() * GetPopEatingPerSecond(), EConsumptionType::Food);
 	Building->GetPopulation()->OnSizeChanged.RemoveDynamic(this, &ASettlement::UpdatePredictionFromPopulation);
 }
 
@@ -227,5 +246,5 @@ void ASettlement::UpdatePredictedConsumption(const float Change, const EConsumpt
 
 void ASettlement::UpdatePredictionFromPopulation(int16 Change)
 {
-	PredictedConsumption.AddConsumption(Change * Settings->GetPopEatingPerSecond(), EConsumptionType::Food);
+	PredictedConsumption.AddConsumption(Change * GetPopEatingPerSecond(), EConsumptionType::Food);
 }

@@ -29,7 +29,10 @@ public:
 	TSubclassOf<ATileMap> TileMapClass;
 	
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
-	TSubclassOf<AMouseUtils> MouseUtilsClass;
+	TSubclassOf<AColony> ColonyClass;
+	
+	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
+	TSubclassOf<ATribe> TribeClass;
 	
 	// ---------------------------------------------------------
 	// Control the Flow of the Game
@@ -72,7 +75,7 @@ public:
 
 	virtual void CreateGuardians();
 
-	void CreateUtilActors();
+	void InitPlayerControllers();
 
 	void InitialPossession();
 };

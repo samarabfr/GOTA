@@ -40,7 +40,8 @@ protected:
 	UPROPERTY(Transient, meta = (BindWidgetAnim ))
 	UWidgetAnimation* Anim_SwipeIn;
 	
-	UFUNCTION(BlueprintCallable)
+public:
+	UFUNCTION()
 	void Toggle();
 	
 	UFUNCTION()

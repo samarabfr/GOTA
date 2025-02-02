@@ -3,8 +3,11 @@
 
 #include "MouseUtils.h"
 
+#include "GOTA/CoreSystems/Entity/Army.h"
+#include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
 #include "GOTA/CoreSystems/GameplayFramework/PC_Ingame.h"
+#include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -39,11 +42,16 @@ AMouseUtils::AMouseUtils()
 	MouseLocation->SetupAttachment(RootComponent);
 	MouseTileLocation = CreateDefaultSubobject<USceneComponent>("Mouse Tile Location");
 	MouseTileLocation->SetupAttachment(RootComponent);
+
+	TestCube = CreateDefaultSubobject<UStaticMeshComponent>("TestCube");
+	TestCube->SetupAttachment(MouseLocation);
+	TestCube->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 }
 
 void AMouseUtils::BeginPlay()
 {
 	Super::BeginPlay();
+	TestCube->SetStaticMesh(TestCubeMesh);
 	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
 
 	if (IsOwnedBy(GetWorld()->GetFirstPlayerController()))
@@ -129,7 +137,7 @@ void AMouseUtils::OnRep_HoverTile()
 
 void AMouseUtils::HoverTileChanged()
 {
-	if(HoverTile)
+	if (HoverTile)
 	{
 		MouseTileLocation->SetRelativeLocation(HoverTile->GetActorLocation());
 	}
@@ -141,6 +149,14 @@ void AMouseUtils::AttachActorToTilePosition(AActor* Actor)
 	Actor->AttachToComponent(MouseTileLocation, FAttachmentTransformRules::SnapToTargetIncludingScale);
 }
 
+FAbilityTarget AMouseUtils::GetHoverAbilityTarget() const
+{
+	FAbilityTarget AbilityTarget;
+	AbilityTarget.Tile = Cast<ATile>(HoverActor);
+	AbilityTarget.Guardian = Cast<AGuardian>(HoverActor);
+	AbilityTarget.Civilian = Cast<ACivilian>(HoverActor);
+	AbilityTarget.Army = Cast<AArmy>(HoverActor);
+	return AbilityTarget;
+}
+
 // ------------------ Hover Actor ------------------
-
-

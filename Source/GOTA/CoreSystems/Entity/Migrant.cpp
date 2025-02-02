@@ -1,16 +1,9 @@
 ﻿#include "Migrant.h"
 
-#include "CivilianSettings.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
-
-AMigrant::AMigrant()
-{
-	if (GetSettings())
-		GetMeshComponent()->SetStaticMesh(GetSettings()->MigrantMesh);
-}
 
 void AMigrant::S_Work()
 {
@@ -23,7 +16,7 @@ bool AMigrant::IsTileValidForWork(const ATile* Tile) const
 	return Tile->GetBuilding()
 		&& Tile->GetBuilding()->GetPopulation()->GetSize() < Tile->GetBuilding()->GetPopulation()->GetMaxSize()
 		&& Tile->GetClaimant()
-		&& Tile->GetClaimant() == GetBuilding()->GetSettlement();
+		&& Tile->GetClaimant() == GetOriginBuilding()->GetSettlement();
 }
 
 void AMigrant::SetSize(const int32 NewSize)

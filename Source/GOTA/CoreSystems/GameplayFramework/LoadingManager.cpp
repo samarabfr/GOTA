@@ -84,7 +84,7 @@ void ALoadingManager::ServerTick()
 			GameMode->CreateWorld();
 			GameMode->CreateSettlements();
 			GameMode->CreateGuardians();
-			GameMode->CreateUtilActors();
+			GameMode->InitPlayerControllers();
 			GameState->CountIslandMaxEcoValues();
 			LoadingStatus->SetNetRepCount(LoadingStatus->RepCount);
 			LoadingStatus->SetCurrentStatus(ELoadingStatus::WaitForReplication);
@@ -140,6 +140,8 @@ void ALoadingManager::ClientTick()
 		GOTAPlayerID = LocalPlayerController->GetPlayerState<APS_Ingame>()->GOTAPlayerID;
 	if (GOTAPlayerID < 0)
 		return;
+	// Check for Server LoadingStatus
+	if (!LoadingStatuses[0]) return;
 	// Check for LoadingStatus
 	if (!LoadingStatus)
 	{

@@ -120,3 +120,87 @@ struct GOTA_API FSTC_IsCurrentTileTheTarget : public FStateTreeConditionCommonBa
 	UPROPERTY(EditAnywhere, Category = "Parameter")
 	bool bInvert = false;
 };
+
+USTRUCT()
+struct GOTA_API FSTC_HasResourcesInInventoryInstanceData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category=Context)
+	TObjectPtr<ACivilian> CivilianRef = nullptr;
+};
+
+/**
+ * Condition checking if civilian has resources in its inventory
+ */
+USTRUCT(DisplayName = "Has resources in inventory")
+struct GOTA_API FSTC_HasResourcesInInventory : public FStateTreeConditionCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FSTC_HasResourcesInInventoryInstanceData;
+
+	FSTC_HasResourcesInInventory() = default;
+
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
+
+	UPROPERTY(EditAnywhere, Category = "Parameter")
+	bool bInvert = false;
+};
+
+USTRUCT()
+struct GOTA_API FSTC_IsInventoryFulInstanceData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category=Context)
+	TObjectPtr<ACivilian> CivilianRef = nullptr;
+};
+
+/**
+ * Condition checking if civilian has a full inventory
+ */
+USTRUCT(DisplayName = "Is inventory full")
+struct GOTA_API FSTC_IsInventoryFull : public FStateTreeConditionCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FSTC_IsInventoryFulInstanceData;
+
+	FSTC_IsInventoryFull() = default;
+
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
+
+	UPROPERTY(EditAnywhere, Category = "Parameter")
+	bool bInvert = false;
+};
+
+USTRUCT()
+struct GOTA_API FSTC_IsCurrentTileTheOriginBuildingInstanceData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category=Context)
+	TObjectPtr<ACivilian> CivilianRef = nullptr;
+};
+
+/**
+ * Condition checking if the current tile is the origin building
+ */
+USTRUCT(DisplayName = "Is current tile the origin building")
+struct GOTA_API FSTC_IsCurrentTileTheOriginBuilding : public FStateTreeConditionCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FSTC_IsCurrentTileTheOriginBuildingInstanceData;
+
+	FSTC_IsCurrentTileTheOriginBuilding() = default;
+
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
+
+	UPROPERTY(EditAnywhere, Category = "Parameter")
+	bool bInvert = false;
+};

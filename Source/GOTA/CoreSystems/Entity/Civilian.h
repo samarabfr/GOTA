@@ -5,7 +5,7 @@
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Civilian.generated.h"
 
-class UStateTreeCivilianComponent;
+class UStateTreeComponent;
 class AGS_Ingame;
 class ATile;
 class ASettlement;
@@ -40,29 +40,20 @@ public:
 
 private:
 	UPROPERTY(Replicated)
-	TWeakObjectPtr<UBuilding> Building;
-
-	UPROPERTY(Replicated)
-	UCivilianSettings* Settings;
+	TWeakObjectPtr<UBuilding> OriginBuilding;
 
 	UPROPERTY()
 	AGS_Ingame* GameState;
 
-	UPROPERTY()
-	UStaticMeshComponent* MeshComponent;
-
-	UPROPERTY(VisibleInstanceOnly)
-	UStateTreeCivilianComponent* StateTree;
-
 protected:
-	UBuilding* GetBuilding() const { return Building.Get(); }
-	UCivilianSettings* GetSettings() const { return Settings; }
-	AGS_Ingame* GetGameState()const { return GameState; }
-	UStaticMeshComponent* GetMeshComponent() const { return MeshComponent; }
-	UStateTreeCivilianComponent* GetStateTree() const { return StateTree; }
-
+	UPROPERTY(EditDefaultsOnly)
+	UStateTreeComponent* StateTree;
+	
+	UBuilding* GetOriginBuilding() const { return OriginBuilding.Get(); }
+	AGS_Ingame* GetGameState() const { return GameState; }
 
 	// ----------------- Progresser ------------------------
+protected:
 	// Progress of current Action in percent
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float Progress;
@@ -88,12 +79,21 @@ private:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	int32 WorkAmount;
 
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	FGameResources ResourceInventoryLimit;
+
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	FGameResources ResourceInventory;
+
 	UPROPERTY(EditAnywhere, Replicated)
 	TWeakObjectPtr<ATile> PriorityTile;
 
 protected:
 	virtual bool IsTileValidForWork(const ATile* Tile) const;
 	int32 GetWorkAmount() const { return WorkAmount; }
+	FGameResources GetResourceInventoryLimit() const { return ResourceInventoryLimit; }
+	FGameResources GetResourceInventory() const { return ResourceInventory; }
+	void S_AddResources(FGameResources Resources);
 	bool S_TryFindPathToClosestWorkTile();
 	bool S_TryFindPathToWorkTileClosestToSettlement();
 
@@ -101,11 +101,16 @@ public:
 	virtual void S_Work();
 	virtual bool S_TryFindPathToBestWorkTile();
 	bool S_TryFindPathToPriorityTile();
+	bool S_TryFindPathToOriginBuilding();
 	virtual bool IsCurrentTileAmongBestWorkTiles();
 	bool IsCurrentTilePriorityTile() const;
 	float GetWorkRate() const;
 	ATile* GetPriorityTile() const { return PriorityTile.Get(); }
 	void S_SetPriorityTile(ATile* NewPriorityTile) { PriorityTile = NewPriorityTile; }
+	bool HasResourcesInInventory() const;
+	bool IsInventoryFull() const;
+	bool IsCurrentTileOriginBuilding() const;
+	void S_UnloadResources();
 
 	// ----------------- Moving ------------------------
 private:

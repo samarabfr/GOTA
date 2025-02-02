@@ -2,7 +2,7 @@
 
 #include "Army.h"
 
-#include "ArmySettings.h"
+#include "Components/StateTreeComponent.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
@@ -11,7 +11,6 @@
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
-#include "StateTree/StateTreeArmyComponent.h"
 
 void AArmy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -22,7 +21,6 @@ void AArmy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 	Params.Condition = COND_InitialOnly;
 	Params.RepNotifyCondition = REPNOTIFY_Always;
 	DOREPLIFETIME_WITH_PARAMS(AArmy, Building, Params);
-	DOREPLIFETIME_WITH_PARAMS(AArmy, Settings, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, MovementRate, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, RecruitRate, Params);
 	DOREPLIFETIME_WITH_PARAMS(AArmy, Affiliation, Params);
@@ -44,10 +42,6 @@ void AArmy::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePro
 
 AArmy::AArmy()
 {
-	ConstructorHelpers::FObjectFinder<UArmySettings> SettingsFinder(
-		TEXT("/Game/CoreSystems/Entity/DA_Army"));
-	Settings = SettingsFinder.Object;
-
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
@@ -55,7 +49,6 @@ AArmy::AArmy()
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Static Mesh");
-	CombatValues = CreateDefaultSubobject<UCombatValues>("Combat Values");
 	MeshComponent->SetupAttachment(RootComponent);
 	MeshComponent->SetRelativeScale3D(FVector(1, 1, 4));
 	// I still don't understand why i need to set both: the ResponseChannel and CollisionEnabled
@@ -64,8 +57,8 @@ AArmy::AArmy()
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	MeshComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
 	MeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
-	StateTree = CreateDefaultSubobject<UStateTreeArmyComponent>("StateTree");
-	StateTree->SetStartLogicAutomatically(false);
+	CombatValues = CreateDefaultSubobject<UCombatValues>("Combat Values");
+	StateTree = CreateDefaultSubobject<UStateTreeComponent>("StateTree");
 }
 
 
@@ -89,9 +82,9 @@ void AArmy::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	CombatValues->OnDeath.AddDynamic(this, &AArmy::S_HandleDeath);
 	Affiliation = Building->GetSettlement()->GetAffiliation();
 	if (Affiliation == EAffiliation::Enemy)
-		MeshComponent->SetStaticMesh(Settings->ColonyArmyMesh);
+		MeshComponent->SetStaticMesh(ColonyArmyMesh);
 	else
-		MeshComponent->SetStaticMesh(Settings->NativeArmyMesh);
+		MeshComponent->SetStaticMesh(NativeArmyMesh);
 
 	StateTree->StartLogic();
 }
@@ -111,7 +104,7 @@ void AArmy::S_Tick(const float DeltaSeconds)
 			S_RavageEnemyBuilding();
 		SetStatus(EArmyStatus::Idling);
 		Progress = 0.0f;
-		StateTree->SendStateTreeEvent(Settings->StateTreeCompletedTaskEventTag, FConstStructView(), FName(GetName()));
+		StateTree->SendStateTreeEvent(StateTreeCompletedTaskEventTag, FConstStructView(), FName(GetName()));
 		MARK_PROPERTY_DIRTY_FROM_NAME(AArmy, Progress, this)
 	}
 }
@@ -164,9 +157,9 @@ void AArmy::SetMode(EArmyMode NewMode)
 void AArmy::OnRep_Affiliation()
 {
 	if (Affiliation == EAffiliation::Enemy)
-		MeshComponent->SetStaticMesh(Settings->ColonyArmyMesh);
+		MeshComponent->SetStaticMesh(ColonyArmyMesh);
 	else
-		MeshComponent->SetStaticMesh(Settings->NativeArmyMesh);
+		MeshComponent->SetStaticMesh(NativeArmyMesh);
 }
 
 // ----------------------- Status -----------------------
@@ -329,7 +322,7 @@ bool AArmy::TryFindPathToNearestEnemyDefenseBuilding()
 bool AArmy::HasEnemyInGarrisonModeRange() const
 {
 	ATile* EnemyOnTile = GameState->GetTileMap()->FindNearestTileInRange(
-		CurrentTile, Settings->GarrisonModeInterceptingRange,
+		CurrentTile, GarrisonModeInterceptingRange,
 		[this](const ATile* Tile)
 		{
 			return Tile && Tile->GetArmy() && Tile->GetArmy()
@@ -443,7 +436,7 @@ void AArmy::S_RavageEnemyBuilding()
 	}
 	else
 	{
-		CurrentTile->Unbuild();
+		CurrentTile->S_Unbuild();
 	}
 }
 
@@ -476,7 +469,7 @@ bool AArmy::TryFindPathToNearestEnemyToGuardTile()
 bool AArmy::HasEnemyInGuardTileRange()
 {
 	ATile* EnemyOnTile = GameState->GetTileMap()->FindNearestTileInRange(
-		GuardTile, Settings->GuardModeInterceptingRange,
+		GuardTile, GuardModeInterceptingRange,
 		[this](const ATile* Tile)
 		{
 			return Tile && Tile->GetArmy() && Tile->GetArmy()->GetAffiliation() != Affiliation;

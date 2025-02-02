@@ -12,20 +12,20 @@ UCLASS()
 class GOTA_API ADaytimeManager : public AActor
 {
 	GENERATED_BODY()
-	
+
 	// ------------------------ Replication Setup ------------------------
-	
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-	
+
 	// ------------------------ LifeCycle ------------------------
 public:
 	ADaytimeManager();
-	
+
 protected:
 	virtual void BeginPlay() override;
 
 	virtual void Tick(float DeltaSeconds) override;
-	
+
 	// ------------------------ Time ------------------------
 public:
 	float GetTime() const { return CurrentTime; }
@@ -37,17 +37,21 @@ public:
 
 	// returns -1 on midnight, 1 on midday and 0 on Dawn/Dusk
 	float GetDaytimeNormalized() const;
+	void SetDaytimeSpeed(const float InSpeed);
+	float GetDayTimeSpeed() const { return DayTimeSpeed; }
 
 private:
 	UPROPERTY(EditAnywhere, Category="Daytime Settings", Replicated)
 	float CurrentTime;
-	
+
 	void StartDay();
 	void StartNight();
-	
+
 	void RefreshSunHeight();
 	void RefreshMaterial();
 	void RefreshLightSetup();
+	void RefreshLightIntensity(float DaytimeNormalized);
+	void RefreshLightColors(float DaytimeNormalized);
 
 	// ------------------------ Settings ------------------------
 
@@ -113,6 +117,15 @@ private:
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	UCurveLinearColor* LightsIntensityCurve;
+
+	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
+	UCurveLinearColor* SunLightColorCurve;
+
+	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
+	UCurveLinearColor* SkylightColorCurve;
+
+	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
+	UCurveLinearColor* MoonLightColorCurve;
 
 	UPROPERTY(EditAnywhere, Category="DaytimeManager Setup")
 	UCurveLinearColor* HorizonColorCurve;

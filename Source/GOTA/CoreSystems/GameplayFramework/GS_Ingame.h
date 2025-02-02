@@ -58,16 +58,6 @@ public:
 
 	void SetTileMap(ATileMap* NewTileMap);
 
-	// ------------------- GameSettings -------------------
-private:
-	UPROPERTY(Replicated)
-	AGameSettings* GameSettings;
-
-	void SpawnGameSettingsActor();
-
-public:
-	AGameSettings* GetGameSettings() { return GameSettings; }
-
 	// ------------------- LoadingManager -------------------
 private:
 	UPROPERTY()

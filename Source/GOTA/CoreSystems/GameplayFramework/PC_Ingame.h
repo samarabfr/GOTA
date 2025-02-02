@@ -5,10 +5,13 @@
 
 #include "GameFramework/PlayerController.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingPlacer.h"
+#include "GOTA/CoreSystems/Guardian/AbilitySettings.h"
 #include "PC_Ingame.generated.h"
 
-class AGS_Ingame;
-class ASimplifiedAbility;
+class UInputDataAsset;
+class UAbilitySlot;
+class AAbility;
+class AAbilityIndicator;
 class UBuildingSettings;
 struct FInputActionInstance;
 class AMouseUtils;
@@ -20,14 +23,31 @@ UCLASS()
 class GOTA_API APC_Ingame : public APlayerController
 {
 	GENERATED_BODY()
+
+	// ----------------------------------------- Replication Setup -----------------------------------------
+
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	// -------------------------------------------- Lifecycle --------------------------------------------
+public:
+	virtual void BeginPlay() override;
+
+	void S_Init();
+
+	void C_Init();
+
+	// -------------------------------------------- Utility --------------------------------------------
+private:
 	UPROPERTY()
 	ADistanceUtils* DistanceUtils;
 
-	// ---------------------------------------------------------
-	// Setup
-	virtual void BeginPlay() override;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AAbilityIndicator> AbilityIndicatorClass;
+
+	UPROPERTY(Replicated)
+	TWeakObjectPtr<AAbilityIndicator> AbilityIndicator;
+
+	void S_SetAbilityIndicator(AAbilityIndicator* NewAbilityIndicator);
 
 	// -------------------------UI Stuff------------------------
 
@@ -41,7 +61,7 @@ public:
 
 	UFUNCTION(BlueprintSetter)
 	void SetIngameUI(UIngameUI* InIngameUI) { IngameUI = InIngameUI; }
-	
+
 	UFUNCTION(BlueprintImplementableEvent, Category="PlayerController")
 	void CreateLobbyUI();
 
@@ -57,58 +77,83 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category="PlayerController")
 	void CreateIngameUI();
 
-	// ------------------------ Guardian ------------------------
-public:
-	virtual void OnPossess(APawn* InPawn) override;
-
+	// -------------------------------------------- Guardian --------------------------------------------
 private:
-	UPROPERTY(ReplicatedUsing=GuardianChanged)
+	UPROPERTY(ReplicatedUsing=OnRep_Guardian)
 	AGuardian* Guardian;
 
-public:
-	AGuardian* GetGuardian() { return Guardian; }
-
-private:
 	void SetGuardian(AGuardian* NewGuardian);
 
 	UFUNCTION()
-	void GuardianChanged();
+	void OnRep_Guardian();
+
+	void OnGuardianChanged();
+
+public:
+	virtual void OnPossess(APawn* InPawn) override;
+
+	AGuardian* GetGuardian() { return Guardian; }
 
 	// ---------------------- InteractionMode ----------------------
+private:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ABuildingPlacer> BuildingPlacerClass;
 
+public:
 	void ClickActor();
 
 	UPROPERTY(Replicated)
 	ABuildingPlacer* BuildingPlacer;
 
 public:
-	void SetBuildingPlacer(ABuildingPlacer* NewBuildingPlacer);
+	void S_SetBuildingPlacer(ABuildingPlacer* NewBuildingPlacer);
 
 	void StartPlacingBuilding(UBuildingSettings* Building);
 
 	void StopPlacingBuilding();
-	
+
 private:
 	void PlaceBuilding();
 
-	// ----------------------- Input -----------------------
+	// ---------------------------------------- Ability ----------------------------------------
+private:
+	UPROPERTY()
+	TWeakObjectPtr<AAbility> CurrentlyTargeting;
+
+	void ActivateCurrentlyTargetingAbility();
+
+	void StartTargeting(AAbility* Ability);
+	void CancelTargeting();
+
 public:
-	void InitInput();
+	void ActivateAbility(FName SlotName);
+	void ActivateAbility(UAbilitySlot* Slot);
 
-	UPROPERTY(ReplicatedUsing=MouseUtilsChanged)
-	AMouseUtils* MouseUtils;
+	void LearnAbility(UAbilitySettings* AbilitySettings);
 
-	AMouseUtils* GetMouseUtils() const { return MouseUtils; }
+	// ------------------------------------------- MouseUtils -------------------------------------------
+private:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AMouseUtils> MouseUtilsClass;
 
-	void SetMouseUtils(AMouseUtils* NewMouseUtils);
+	UPROPERTY(ReplicatedUsing=OnRep_MouseUtils)
+	TWeakObjectPtr<AMouseUtils> MouseUtils;
 
 	UFUNCTION()
+	void OnRep_MouseUtils();
+
+	void S_SetMouseUtils(AMouseUtils* NewMouseUtils);
+
 	void MouseUtilsChanged();
 
 	UFUNCTION()
-	void OnHoverActorChanged(AActor* Actor);
+	void HoverActorChanged(AActor* Actor);
 
+	// ------------------------------------------- Input -------------------------------------------
 private:
+	UPROPERTY(EditDefaultsOnly)
+	UInputDataAsset* InputDataAsset;
+
 	void LeftClick(const FInputActionInstance& Instance);
 
 	void StartJump(const FInputActionInstance& Instance);
@@ -120,17 +165,19 @@ private:
 	void StartLookingAround(const FInputActionInstance& Instance);
 	void StopLookingAround(const FInputActionInstance& Instance);
 
+	void HandleEscapePressed();
 	void ToggleBuildMenu();
-	
-	// ----------------------- Simplified ability -----------------------
-private:
-	TObjectPtr<AGS_Ingame> GameState;
-	TObjectPtr<ASimplifiedAbility> Ability1;
-	TObjectPtr<ASimplifiedAbility> Ability2;
-	TObjectPtr<ASimplifiedAbility> Ability3;
+	void ToggleDebugMenu();
 
-	void UseAbility(ASimplifiedAbility* Ability);
-	void UseAbility1();
-	void UseAbility2();
-	void UseAbility3();
+	void ActivateAbility1();
+	void ActivateAbility2();
+	void ActivateAbility3();
+	void ActivateAbility4();
+	void ActivateAbility5();
+	void ActivateAbility6();
+	void ActivateAbility7();
+	void ActivateAbility8();
+
+public:
+	void InitInput();
 };

@@ -1,6 +1,8 @@
 ﻿#include "TileContent.h"
 #include "Tile.h"
+#include "TileAssetProvider.h"
 #include "Algo/RandomShuffle.h"
+#include "GOTA/CoreSystems/GameplayFramework/GOTAGameInstance.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Utility/StaticMeshBatcher.h"
 
@@ -11,6 +13,10 @@ void UTileContent::Init(ATile* InTile, AGS_Ingame* InGameState)
 	Tile->OnGameplayTagsChanged.AddDynamic(this, &UTileContent::ValidateEverything);
 	Tile->EcoValues->OnTreesChanged.AddDynamic(this, &UTileContent::UpdateTrees);
 	Tile->EcoValues->OnForageChanged.AddDynamic(this, &UTileContent::UpdateForage);
+	if (UGameInstance* GameInstance = Tile->GetGameInstance())
+	{
+		TileAssetProvider = GameInstance->GetSubsystem<UTileAssetProvider>();
+	}
 	OnSpawnPointLayoutChanged();
 }
 
@@ -203,14 +209,19 @@ void UTileContent::SetSpawnPointOnTileAssetSpawn(FTileAssetSpawn& TileAssetSpawn
 
 void UTileContent::ValidateEverything()
 {
-	ValidateTileAssets(TreeTileAssetSpawns, Tile->Settings->TreeTileAssets);
+	if (!TileAssetProvider.IsValid()) return;
+
+	ValidateTileAssets(TreeTileAssetSpawns, TileAssetProvider->GetAllTreeAssets());
 	UpdateTrees(0);
-	ValidateTileAssets(PropTileAssetSpawns, Tile->Settings->PropTileAssets);
+
+	ValidateTileAssets(PropTileAssetSpawns, TileAssetProvider->GetAllPropAssets());
 	UpdateProps();
-	ValidateTileAssets(BuildingTileAssetSpawns, Tile->Settings->BuildingTileAssets);
+
+	ValidateTileAssets(BuildingTileAssetSpawns, TileAssetProvider->GetAllBuildingAssets());
 	ValidateMainBuildingAsset();
 	UpdateBuildings();
-	ValidateTileAssets(ForageTileAssetSpawns, Tile->Settings->ForageTileAssets);
+
+	ValidateTileAssets(ForageTileAssetSpawns, TileAssetProvider->GetAllForageAssets());
 	UpdateForage(0);
 }
 
@@ -292,15 +303,17 @@ void UTileContent::ValidateTileAssets(TArray<FTileAssetSpawn>& Array, const TArr
 
 void UTileContent::ValidateMainBuildingAsset()
 {
+	if (!TileAssetProvider.IsValid()) return;
+
 	// Current MainBuilding is valid, so we don't need a new one
 	if (MainBuilding.TileAsset
 		&& MainBuilding.TileAsset->IsValidFor(Tile->GameplayTags)
-		&& MainBuilding.TileAsset != Tile->Settings->DefaultTileAsset)
+		&& MainBuilding.TileAsset != TileAssetProvider->GetDefaultTileAsset())
 	{
 		return;
 	}
 
-	if(MainBuilding.TileAsset
+	if (MainBuilding.TileAsset
 		&& !MainBuilding.TileAsset->IsValidFor(Tile->GameplayTags))
 	{
 		DespawnTileAsset(MainBuilding);
@@ -308,7 +321,7 @@ void UTileContent::ValidateMainBuildingAsset()
 	}
 
 	// search for an MainBuildingAsset that is allowed to Spawn on this Tile
-	for (UTileAsset* PotentialAsset : Tile->Settings->MainBuildingTileAssets)
+	for (UTileAsset* PotentialAsset : TileAssetProvider->GetAllMainBuildingAssets())
 	{
 		if (PotentialAsset->IsValidFor(Tile->GameplayTags))
 		{
@@ -319,7 +332,7 @@ void UTileContent::ValidateMainBuildingAsset()
 	}
 
 	// if no TileAsset could be found we take a Default
-	MainBuilding.TileAsset = Tile->Settings->DefaultTileAsset;
+	MainBuilding.TileAsset = TileAssetProvider->GetDefaultTileAsset();
 	MainBuilding.ApplyAssetRotation();
 }
 
@@ -381,7 +394,7 @@ void UTileContent::FindRandomValidAssets(const int32 Amount, const TArray<UTileA
 	}
 	// Use Default if no Possible Assets could be found
 	if (PossibleAssets.IsEmpty())
-		PossibleAssets.Add(Tile->Settings->DefaultTileAsset);
+		PossibleAssets.Add(TileAssetProvider->GetDefaultTileAsset());
 	// Calculate TotalBias for the weighted random selection
 	int32 TotalBias = 0;
 	for (UTileAsset* Asset : PossibleAssets)

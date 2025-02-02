@@ -41,3 +41,30 @@ bool FSTC_IsCurrentTileTheTarget::TestCondition(FStateTreeExecutionContext& Cont
 		Civilian->GetPriorityTile() == nullptr && Civilian->IsCurrentTileAmongBestWorkTiles();
 	return bResult ^ bInvert;
 }
+
+bool FSTC_HasResourcesInInventory::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return false;
+
+	const bool bResult = Civilian->HasResourcesInInventory();
+	return bResult ^ bInvert;
+}
+
+bool FSTC_IsInventoryFull::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return false;
+
+	const bool bResult = Civilian->IsInventoryFull();
+	return bResult ^ bInvert;
+}
+
+bool FSTC_IsCurrentTileTheOriginBuilding::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	ACivilian* Civilian = Context.GetInstanceData(*this).CivilianRef.Get();
+	if (!Civilian) return false;
+
+	const bool bResult = Civilian->IsCurrentTileOriginBuilding();
+	return bResult ^ bInvert;
+}

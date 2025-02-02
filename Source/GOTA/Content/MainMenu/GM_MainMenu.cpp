@@ -10,6 +10,6 @@ void AGM_MainMenu::StartGame(const bool StartAsListenServer)
 }
 
 void AGM_MainMenu::JoinGame(const FString IP)
-{
+{	
 	GetWorld()->GetFirstPlayerController()->ClientTravel(IP + IslandPath, TRAVEL_Absolute);
 }

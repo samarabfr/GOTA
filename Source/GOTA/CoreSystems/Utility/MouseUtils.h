@@ -1,7 +1,7 @@
 #pragma once
 
-#include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "GOTA/CoreSystems/Guardian/AbilityTarget.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "MouseUtils.generated.h"
 
@@ -26,6 +26,14 @@ class GOTA_API AMouseUtils : public AActor
 
 public:
 	void SetPlayerController(APC_Ingame* PC);
+	
+	// ---------------------------------------- Utility ----------------------------------------
+private:
+	UPROPERTY()
+	UStaticMeshComponent* TestCube;
+
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* TestCubeMesh;
 	
 	// ------------------ Mouse Location ------------------
 
@@ -86,5 +94,7 @@ private:
 public:
 	FHoverActorChangedSig OnHoverActorChanged;
 
-	AActor* GetHoverActor() const { return HoverActor; }	
+	AActor* GetHoverActor() const { return HoverActor; }
+
+	FAbilityTarget GetHoverAbilityTarget() const;
 };

@@ -129,7 +129,7 @@ void UBuildingDefense::S_AttackEnemy()
 
 void UBuildingDefense::S_HandleDeath()
 {
-	GetTile()->Unbuild();
+	GetTile()->S_Unbuild();
 }
 
 void UBuildingDefense::S_HandlePopSizeChanged(int16 ChangedBy)
