@@ -46,6 +46,14 @@ void ASimulatedGuardianManager::Tick(float DeltaSeconds)
 void ASimulatedGuardianManager::Init()
 {
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGuardianSimulator::StaticClass(), GuardianSimulatorActors);
+	// make the manager tick before the simulators
+	for (AActor* GuardianSimulatorActor : GuardianSimulatorActors)
+	{
+		if (AGuardianSimulator* GuardianSimulator = Cast<AGuardianSimulator>(GuardianSimulatorActor))
+		{
+			GuardianSimulator->AddTickPrerequisiteActor(this);
+		}
+	}
 	// Interactor
 	Interactor = ULearningAgentsInteractor::MakeInteractor(
 		ManagerComponent, USimulatedGuardianInteractor::StaticClass(), FName("SimulatedGuardianInteractor"));
