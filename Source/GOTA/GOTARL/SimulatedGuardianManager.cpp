@@ -19,7 +19,7 @@ ASimulatedGuardianManager::ASimulatedGuardianManager()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
-	SetActorTickInterval(0.1f);
+	SetActorTickInterval(0.05f);
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	ManagerComponent = CreateDefaultSubobject<ULearningAgentsManager>("LearningAgentsManager");
