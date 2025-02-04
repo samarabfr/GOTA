@@ -4,6 +4,7 @@
 #include "SimulatedGuardianInteractor.h"
 
 #include "GuardianSimulator.h"
+#include "GOTA/CoreSystems/Tile/Tile.h"
 
 USimulatedGuardianInteractor::USimulatedGuardianInteractor()
 {
@@ -29,13 +30,28 @@ void USimulatedGuardianInteractor::GatherAgentObservation_Implementation(
 		if (GuardianSimulator->GetTargetTile())
 		{
 			OutObservationObjectElement = ULearningAgentsObservations::MakeLocationObservation(
-				InObservationObject, GuardianSimulator->GetTargetTile()->GetActorTransform().GetLocation(),
-				GuardianSimulator->GetPawn()->GetActorTransform());
+				InObservationObject,
+				GuardianSimulator->GetTargetTile()->GetActorTransform().GetLocation(),
+				GuardianSimulator->GetPawn()->GetActorTransform(),
+				L"LocationObservation",
+				true,
+				this,
+				AgentId,
+				GuardianSimulator->GetTargetTile()->GetActorTransform().GetLocation(),
+				FLinearColor::Blue);
 		}
 		else
 		{
 			OutObservationObjectElement = ULearningAgentsObservations::MakeLocationObservation(
-			InObservationObject, FVector::ZeroVector, GuardianSimulator->GetPawn()->GetActorTransform());
+				InObservationObject,
+				FVector::ZeroVector,
+				GuardianSimulator->GetPawn()->GetActorTransform(),
+				L"LocationObservation",
+				true,
+				this,
+				AgentId,
+				FVector::ZeroVector,
+				FLinearColor::Yellow);
 		}
 	}
 }
@@ -61,12 +77,29 @@ void USimulatedGuardianInteractor::PerformAgentAction_Implementation(const ULear
 		ULearningAgentsActions::GetStructAction(ActionElements, InActionObject, InActionObjectElement);
 		// moving
 		bool bIsMoving;
-		ULearningAgentsActions::GetBoolAction(bIsMoving, InActionObject, *ActionElements.Find(FName("Moving")));
+		ULearningAgentsActions::GetBoolAction(bIsMoving,
+			InActionObject,
+			*ActionElements.Find(FName("Moving")),
+			L"BoolAction",
+			true,
+			this,
+			AgentId,
+			GuardianSimulator->GetPawn()->GetActorTransform().GetLocation(),
+			FLinearColor::Yellow);
 		GuardianSimulator->SetIsMoving(bIsMoving);
 		// steering
 		float SteeringAngle;
-		ULearningAgentsActions::GetAngleAction(SteeringAngle, InActionObject, *ActionElements.Find(FName("Steering")));
-		FRotator Rotation = FRotator(0.f, SteeringAngle, 0.f);
-		GuardianSimulator->SetMoveDirection(Rotation.Vector());
+		ULearningAgentsActions::GetAngleAction(SteeringAngle,
+			InActionObject,
+			*ActionElements.Find(FName("Steering")),
+			0,
+			L"AngleAction",
+			true,
+			this,
+			AgentId,
+			GuardianSimulator->GetPawn()->GetActorTransform().GetLocation(),
+			GuardianSimulator->GetPawn()->GetActorTransform().GetLocation(),
+			FLinearColor::Blue);
+		GuardianSimulator->SteerPawn(SteeringAngle);
 	}
 }

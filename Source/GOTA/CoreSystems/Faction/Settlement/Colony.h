@@ -23,13 +23,11 @@ private:
 
 	virtual void Tick(float DeltaSeconds) override;
 
-	UPROPERTY()
-	UColonyBrainSettings* ColonyBrainSettings;
-
-	void InitColonyBrainSettings();
-	
 	// --------------------Building----------------------
 private:
+	UPROPERTY(EditDefaultsOnly)
+	TArray<UBuildingSettings*> PossibleBuildings;
+
 	void FigureOutBuilding();
 
 	bool ShouldBuild() const;
@@ -45,10 +43,33 @@ private:
 	void CalculateScores(FNewBuildingImportanceRatings ImportanceRatings);
 
 	// --------------------Army----------------------
-private:	
+private:
 	UPROPERTY(VisibleInstanceOnly)
 	float SendArmiesIntervalTimeLeft = 0.0f;
 
+	UPROPERTY(EditDefaultsOnly)
+	float SendArmiesIntervalTime = 60.0f;
+
 	void SendArmies();
 	TArray<AArmy*> GetAllColonyArmies();
+
+	// --------------------Importances----------------------
+private:
+	UPROPERTY(EditDefaultsOnly)
+	float FoodImportance = 1;
+
+	UPROPERTY(EditDefaultsOnly)
+	float FoodImportanceDescent = 0.1;
+
+	UPROPERTY(EditDefaultsOnly)
+	float WoodImportance = 1;
+
+	UPROPERTY(EditDefaultsOnly)
+	float WoodImportanceDescent = 0.1;
+
+	UPROPERTY(EditDefaultsOnly)
+	float StoneImportance = 1;
+
+	UPROPERTY(EditDefaultsOnly)
+	float StoneImportanceDescent = 0.1;
 };

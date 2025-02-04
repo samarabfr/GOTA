@@ -1,6 +1,5 @@
 ﻿#include "Civilian.h"
-#include "CivilianSettings.h"
-#include "StateTree.h"
+#include "Components/StateTreeComponent.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
@@ -9,7 +8,6 @@
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
-#include "StateTree/StateTreeCivilianComponent.h"
 
 void ACivilian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -20,7 +18,6 @@ void ACivilian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Params.Condition = COND_InitialOnly;
 	Params.RepNotifyCondition = REPNOTIFY_Always;
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, OriginBuilding, Params);
-	DOREPLIFETIME_WITH_PARAMS(ACivilian, Settings, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, WorkAmount, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, MovementRate, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, ResourceInventoryLimit, Params);
@@ -40,28 +37,13 @@ void ACivilian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 
 ACivilian::ACivilian()
 {
-	static ConstructorHelpers::FObjectFinder<UCivilianSettings> SettingsFinder(
-		TEXT("/Game/CoreSystems/Entity/DA_Civilian"));
-	Settings = SettingsFinder.Object;
-
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
 	SetNetUpdateFrequency(0.1f);
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
-	MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Static Mesh");
-	MeshComponent->SetupAttachment(RootComponent);
-	MeshComponent->SetRelativeScale3D(FVector(1, 1, 1));
-	// I still don't understand why i need to set both: the ResponseChannel and CollisionEnabled
-	// but this way it will only collide with ray casts, as intended
-	MeshComponent->SetSimulatePhysics(false);
-	MeshComponent->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	MeshComponent->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
-	MeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Block);
-
-	StateTree = CreateDefaultSubobject<UStateTreeCivilianComponent>("StateTree");
-	StateTree->SetStartLogicAutomatically(false);
+	StateTree = CreateDefaultSubobject<UStateTreeComponent>("StateTree");
 }
 
 void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
@@ -77,10 +59,7 @@ void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	WorkAmount = BuildingSettings->CivilianProductionAmount;
 	MovementRate = 100 / BuildingSettings->CivilianMoveTime;
 	ResourceInventoryLimit = BuildingSettings->CivilianInventoryLimit;
-
-	const FSoftObjectPath StateTreePath(TEXT("/Game/CoreSystems/Entity/ST_Civilian"));
-	UStateTree* LoadedStateTree = Cast<UStateTree>(StateTreePath.TryLoad());
-	if (LoadedStateTree) StateTree->SetStateTree(LoadedStateTree);
+	
 	StateTree->StartLogic();
 }
 

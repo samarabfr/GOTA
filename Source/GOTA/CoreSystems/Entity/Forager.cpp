@@ -1,14 +1,7 @@
 ﻿#include "Forager.h"
 
-#include "CivilianSettings.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
-
-AForager::AForager()
-{
-	if (GetSettings())
-		GetMeshComponent()->SetStaticMesh(GetSettings()->ForagerMesh);
-}
 
 void AForager::S_Work()
 {

@@ -3,7 +3,6 @@
 
 #include "BuildingPlacer.h"
 
-#include "BuildingPlacerSettings.h"
 #include "BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
@@ -36,11 +35,6 @@ bool ABuildingPlacer::IsSupportedForNetworking() const
 
 ABuildingPlacer::ABuildingPlacer()
 {
-	static ConstructorHelpers::FObjectFinder<UBuildingPlacerSettings> SettingsFinder(
-		TEXT("/Game/CoreSystems/Faction/DA_BuildingPlacer"));
-	if (SettingsFinder.Succeeded())
-		Settings = SettingsFinder.Object;
-
 	bReplicates = true;
 	bAlwaysRelevant = true;
 	bReplicateUsingRegisteredSubObjectList = true;
@@ -55,17 +49,14 @@ ABuildingPlacer::ABuildingPlacer()
 	MeshComponent->SetupAttachment(RootComponent);
 	MeshComponent->SetVisibility(false);
 	MeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	if (Settings)
-	{
-		MeshComponent->SetStaticMesh(Settings->Mesh);
-		MeshComponent->SetMaterial(0, Settings->PlacingPossibleMaterial);
-	}
 }
 
 void ABuildingPlacer::BeginPlay()
 {
 	Super::BeginPlay();
 	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
+	MeshComponent->SetStaticMesh(Mesh);
+	MeshComponent->SetMaterial(0, PlacingPossibleMaterial);
 }
 
 void ABuildingPlacer::S_Init(AMouseUtils* InMouseUtils)
@@ -120,11 +111,11 @@ void ABuildingPlacer::RefreshPlaceability(ATile* NewTile)
 {
 	if (CanPlace(MouseUtils->GetHoverTile()))
 	{
-		MeshComponent->SetMaterial(0, Settings->PlacingPossibleMaterial);
+		MeshComponent->SetMaterial(0, PlacingPossibleMaterial);
 	}
 	else
 	{
-		MeshComponent->SetMaterial(0, Settings->PlacingImpossibleMaterial);
+		MeshComponent->SetMaterial(0, PlacingImpossibleMaterial);
 	}
 }
 

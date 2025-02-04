@@ -47,12 +47,15 @@ private:
 	UPROPERTY(Replicated)
 	TArray<ATile*> Tiles;
 
+	TWeakObjectPtr<ATile> VolcanoTile;
+
 	// Array for fast access on server
 	ATile** TilesArray;
 
 	bool TryAddTile(FHexCoords HexCoords, ATile* Tile);
 
 public:
+	ATile* GetVolcanoTile();
 	void InitializeBothArrays(FHexCoords SizeInit);
 
 	ATile* SpawnNewTile(FHexCoords Coords, float Height);
@@ -68,6 +71,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category="TileMap")
 	ATile* GetRandomTile();
+
+	ATile* GetRandomTileInRange(ATile* Origin, int32 Range);
 
 	ATile* FindNearestTileInRange(ATile* Origin, int32 Range,
 	                              const std::function<bool(const ATile*)>& Condition) const;

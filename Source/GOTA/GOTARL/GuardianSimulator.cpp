@@ -14,16 +14,15 @@ AGuardianSimulator::AGuardianSimulator()
 void AGuardianSimulator::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if (bWantsToMove && !MoveDirection.IsZero())
+	if (bWantsToMove)
 	{
-		GetPawn()->AddMovementInput(FVector(MoveDirection.X, MoveDirection.Y, 0.0f));
+		GetPawn()->AddMovementInput(GetPawn()->GetActorForwardVector());
 	}
 	if (!TargetTile.IsValid() &&
 		GameState.IsValid() &&
-		GameState->GetColony() &&
-		GameState->GetColony()->ClaimedTiles.Num() > 0)
+		GameState->GetTileMap())
 	{
-		TargetTile = GameState->GetColony()->ClaimedTiles[0];
+		TargetTile = GameState->GetTileMap()->GetVolcanoTile();
 	}
 }
 
@@ -31,16 +30,6 @@ void AGuardianSimulator::BeginPlay()
 {
 	Super::BeginPlay();
 	GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
-}
-
-void AGuardianSimulator::SetMoveDirection(const FVector NewDirection)
-{
-	MoveDirection = NewDirection;
-}
-
-FVector AGuardianSimulator::GetMoveDirection()
-{
-	return MoveDirection;
 }
 
 bool AGuardianSimulator::GetIsMoving()
@@ -60,10 +49,23 @@ ATile* AGuardianSimulator::GetTargetTile()
 
 void AGuardianSimulator::ResetToRandomTile()
 {
-	if (GameState.IsValid() && GameState->GetTileMap())
-	{
-		const ATile* RandomTile = GameState->GetTileMap()->GetRandomTile();
-		GetPawn()->TeleportTo(RandomTile->GetActorTransform().GetLocation(),
-		           RandomTile->GetActorTransform().GetRotation().Rotator());
-	}
+	if (!GameState.IsValid() || !GameState->GetTileMap()) return;
+	const ATile* RandomTile = GameState->GetTileMap()->GetRandomTile();
+	GetPawn()->TeleportTo(RandomTile->GetActorTransform().GetLocation(),
+	                      RandomTile->GetActorTransform().GetRotation().Rotator());
+}
+
+void AGuardianSimulator::ResetToRandomTileInRangeToTarget(int32 Range)
+{
+	if (!GameState.IsValid() || !GameState->GetTileMap()) return;
+	const ATile* RandomTile = GameState->GetTileMap()->GetRandomTileInRange(TargetTile.Get(), Range);
+	if (RandomTile == nullptr) RandomTile = GameState->GetTileMap()->GetRandomTile();
+	GetPawn()->TeleportTo(RandomTile->GetActorTransform().GetLocation(),
+	                      RandomTile->GetActorTransform().GetRotation().Rotator());
+}
+
+void AGuardianSimulator::SteerPawn(float SteeringAngle)
+{
+	if (SteeringAngle == 0.f) return;
+	GetPawn()->AddActorLocalRotation(FRotator(0.f, SteeringAngle, 0.f));
 }

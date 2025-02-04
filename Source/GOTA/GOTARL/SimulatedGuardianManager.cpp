@@ -37,6 +37,7 @@ void ASimulatedGuardianManager::Tick(float DeltaSeconds)
 	else
 	{
 		FLearningAgentsPPOTrainingSettings TrainingSettings = FLearningAgentsPPOTrainingSettings();
+		TrainingSettings.bUseTensorboard = true;
 		FLearningAgentsTrainingGameSettings TrainingGameSettings = FLearningAgentsTrainingGameSettings();
 		PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings);
 	}
@@ -45,6 +46,14 @@ void ASimulatedGuardianManager::Tick(float DeltaSeconds)
 void ASimulatedGuardianManager::Init()
 {
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGuardianSimulator::StaticClass(), GuardianSimulatorActors);
+	// make the manager tick before the simulators
+	for (AActor* GuardianSimulatorActor : GuardianSimulatorActors)
+	{
+		if (AGuardianSimulator* GuardianSimulator = Cast<AGuardianSimulator>(GuardianSimulatorActor))
+		{
+			GuardianSimulator->AddTickPrerequisiteActor(this);
+		}
+	}
 	// Interactor
 	Interactor = ULearningAgentsInteractor::MakeInteractor(
 		ManagerComponent, USimulatedGuardianInteractor::StaticClass(), FName("SimulatedGuardianInteractor"));
@@ -65,9 +74,9 @@ void ASimulatedGuardianManager::Init()
 	                                           NN_Encoder,
 	                                           NN_Policy,
 	                                           NN_Decoder,
-	                                           !bRunInference,
-	                                           !bRunInference,
-	                                           !bRunInference,
+	                                           !bRunInference && bResetNNsWhenStartingTraining,
+	                                           !bRunInference && bResetNNsWhenStartingTraining,
+	                                           !bRunInference && bResetNNsWhenStartingTraining,
 	                                           PolicySettings,
 	                                           PolicySeed);
 	// Critic
@@ -77,7 +86,7 @@ void ASimulatedGuardianManager::Init()
 	                                           ULearningAgentsCritic::StaticClass(),
 	                                           FName("SimulatedGuardianCritic"),
 	                                           NN_Critic,
-	                                           !bRunInference,
+	                                           !bRunInference && bResetNNsWhenStartingTraining,
 	                                           CriticSettings,
 	                                           CriticSeed);
 	// Training Environment

@@ -28,6 +28,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<ATileMap> TileMapClass;
 	
+	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
+	TSubclassOf<AColony> ColonyClass;
+	
+	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
+	TSubclassOf<ATribe> TribeClass;
+	
 	// ---------------------------------------------------------
 	// Control the Flow of the Game
 private:

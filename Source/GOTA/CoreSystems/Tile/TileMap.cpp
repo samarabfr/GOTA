@@ -7,6 +7,7 @@
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "Misc/LowLevelTestAdapter.h"
 #include "Net/UnrealNetwork.h"
+#include "Tile.h"
 
 void ATileMap::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -134,6 +135,22 @@ bool ATileMap::TryAddTile(FHexCoords HexCoords, ATile* Tile)
 	return true;
 }
 
+ATile* ATileMap::GetVolcanoTile()
+{
+	if (!VolcanoTile.IsValid())
+	{
+		for (ATile* Tile : Tiles)
+		{
+			if (Tile && Tile->GetTerrain().Biome == EBiome::Volcano)
+			{
+				VolcanoTile = Tile;
+				return Tile;
+			}
+		}
+	}
+	return VolcanoTile.Get();
+}
+
 ATile* ATileMap::GetTile(FHexCoords HexCoords)
 {
 	// Check for out of bounds
@@ -186,6 +203,41 @@ ATile* ATileMap::GetRandomTile()
 		}
 	}
 	return nullptr;
+}
+
+ATile* ATileMap::GetRandomTileInRange(ATile* Origin, int32 Range)
+{
+	if (!Origin || Range < 0) return nullptr;
+	if (Range == 0) return Origin;
+
+	TArray<ATile*> Frontier;
+	Frontier.Add(Origin);
+
+	TArray<int8> DistanceMap;
+	DistanceMap.SetNumZeroed(Tiles.Num());
+	DistanceMap[Origin->HexCoords.Q * Size.R + Origin->HexCoords.R] = 1;
+	TArray<ATile*> FoundTargets;
+	int8 Distance = 1;
+	while (!Frontier.IsEmpty() && Distance - 1 <= Range)
+	{
+		TArray<ATile*> NewFrontier;
+		for (ATile* Current : Frontier)
+		{
+			FoundTargets.Add(Current);
+			for (ATile* Neighbor : Current->Neighbors)
+			{
+				if (Neighbor && DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] == 0)
+				{
+					NewFrontier.Add(Neighbor);
+					DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] = Distance;
+				}
+			}
+		}
+		++Distance;
+		Frontier = NewFrontier;
+	}
+	if (FoundTargets.IsEmpty()) return nullptr;
+	return FoundTargets[FMath::RandRange(0, FoundTargets.Num() - 1)];
 }
 
 ATile* ATileMap::FindNearestTileInRange(ATile* Origin, int32 Range,

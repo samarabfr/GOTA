@@ -24,7 +24,7 @@ public:
 	void RegisterPop(UPopulation* Pop);
 
 	void UnregisterPop(UPopulation* Pop);
-	
+
 	void StarveRandomPop();
 
 private:
@@ -63,4 +63,8 @@ public:
 	int16 GetAngry() const { return Angry; }
 
 	int16 GetFear() const { return Fear; }
+
+	void S_SetStarving(bool IsStarving);
+	void S_SetGrowthPerOwnPop(float NewGrowthPerOwnPop);
+	void S_SetGrowthPerNeighborPop(float NewGrowthPerNeighborPop);
 };

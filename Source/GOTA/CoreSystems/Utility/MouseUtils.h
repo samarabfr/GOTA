@@ -31,6 +31,9 @@ public:
 private:
 	UPROPERTY()
 	UStaticMeshComponent* TestCube;
+
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMesh* TestCubeMesh;
 	
 	// ------------------ Mouse Location ------------------
 
