@@ -25,6 +25,7 @@ enum class ETileAssetCategory : uint8
 	Prop UMETA(DisplayName = "Prop"),
 	MainBuilding UMETA(DisplayName = "Main Building"),
 	Building UMETA(DisplayName = "Building"),
+	Foliage UMETA(DisplayName = "Foliage"),
 };
 
 UCLASS(BlueprintType)
@@ -48,6 +49,9 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	ERotationMode RotationMode = ERotationMode::Default;
 
+	UPROPERTY(EditDefaultsOnly)
+	bool bCastShadow = true;
+	
 	UPROPERTY(EditDefaultsOnly)
 	FSpawnBias SpawnBias;
 	

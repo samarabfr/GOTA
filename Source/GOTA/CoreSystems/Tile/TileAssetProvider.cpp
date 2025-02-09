@@ -47,6 +47,10 @@ void UTileAssetProvider::Initialize(FSubsystemCollectionBase& Collection)
 					ForageAssets.Add(RowData.TileAsset);
 					break;
 
+				case ETileAssetCategory::Foliage:
+					FoliageAssets.Add(RowData.TileAsset);
+					break;
+
 				default:
 					--LoadedCounter;
 					break;
