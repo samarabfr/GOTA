@@ -400,11 +400,11 @@ void ATile::SpawnOceanLineMeshes()
 
 		if (Terrain.RiverConnections[i])
 		{
-			GameState->GetStaticMeshBatcher()->AddStaticMeshInstance(Settings->OceanLinesAtRiverDeltaMesh, T);
+			GameState->GetStaticMeshBatcher()->AddStaticMeshInstance(Settings->OceanLinesAtRiverDeltaMesh, T, false);
 		}
 		else
 		{
-			GameState->GetStaticMeshBatcher()->AddStaticMeshInstance(Settings->OceanLinesMesh, T);
+			GameState->GetStaticMeshBatcher()->AddStaticMeshInstance(Settings->OceanLinesMesh, T, false);
 		}
 	}
 }

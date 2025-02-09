@@ -14,7 +14,7 @@ class GOTA_API AStaticMeshBatcher : public AActor
 	TMap<UStaticMesh*, UInstancedStaticMeshComponent*> ISMC_Map;
 
 public:
-	FPrimitiveInstanceId AddStaticMeshInstance(UStaticMesh* StaticMesh, const FTransform& Transform);
+	FPrimitiveInstanceId AddStaticMeshInstance(UStaticMesh* StaticMesh, const FTransform& Transform, bool bCastShadow);
 	void RemoveStaticMeshInstance(const UStaticMesh* StaticMesh, const FPrimitiveInstanceId& InstanceId);
 	void UpdateStaticMeshTransform(const UStaticMesh* StaticMesh, const FPrimitiveInstanceId& InstanceId, const FTransform& Transform);
 };

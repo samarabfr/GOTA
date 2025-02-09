@@ -386,7 +386,7 @@ void UTileContent::SpawnTileAsset(FTileAssetSpawn& TileAssetSpawn, const ESpawnS
 	CalculateTransform(TileAssetSpawn.SpawnPoint, T);
 
 	TileAssetSpawn.InstanceId = GameState->GetStaticMeshBatcher()->AddStaticMeshInstance(
-		SelectedMesh, T);
+		SelectedMesh, T, TileAssetSpawn.TileAsset->bCastShadow);
 	TileAssetSpawn.bIsSpawned = true;
 	TileAssetSpawn.SpawnState = SelectedSpawnState;
 }

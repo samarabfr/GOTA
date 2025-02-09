@@ -8,7 +8,7 @@ AStaticMeshBatcher::AStaticMeshBatcher()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ROOT"));
 }
 
-FPrimitiveInstanceId AStaticMeshBatcher::AddStaticMeshInstance(UStaticMesh* StaticMesh, const FTransform& Transform)
+FPrimitiveInstanceId AStaticMeshBatcher::AddStaticMeshInstance(UStaticMesh* StaticMesh, const FTransform& Transform, const bool bCastShadow)
 {
 	UInstancedStaticMeshComponent* ISMC = nullptr;
 	if (!ISMC_Map.Contains(StaticMesh))
@@ -22,6 +22,7 @@ FPrimitiveInstanceId AStaticMeshBatcher::AddStaticMeshInstance(UStaticMesh* Stat
 		AddInstanceComponent(ISMC);
 		ISMC->SetStaticMesh(StaticMesh);
 		ISMC->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		ISMC->SetCastShadow((bCastShadow));
 		if (StaticMesh->GetMaterial(0)) ISMC->SetMaterial(0, StaticMesh->GetMaterial(0));
 		ISMC_Map.Add(StaticMesh, ISMC);
 	}

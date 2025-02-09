@@ -50,6 +50,9 @@ public:
 	ERotationMode RotationMode = ERotationMode::Default;
 
 	UPROPERTY(EditDefaultsOnly)
+	bool bCastShadow = true;
+	
+	UPROPERTY(EditDefaultsOnly)
 	FSpawnBias SpawnBias;
 	
 	UPROPERTY(EditDefaultsOnly)
