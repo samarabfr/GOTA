@@ -41,6 +41,8 @@ private:
 
 	void UpdateProps();
 
+	void UpdateFoliage();
+
 	UPROPERTY()
 	ATile* Tile;
 
@@ -53,6 +55,8 @@ private:
 	TArray<FTileAssetSpawn> BuildingTileAssetSpawns;
 
 	TArray<FTileAssetSpawn> ForageTileAssetSpawns;
+
+	TArray<FTileAssetSpawn> FoliageTileAssetSpawns;
 
 	FTileAssetSpawn MainBuilding;
 

@@ -53,6 +53,10 @@ void UTileContent::DespawnEveryTileAsset()
 	{
 		DespawnTileAsset(TileAsset);
 	}
+	for (FTileAssetSpawn& TileAsset : FoliageTileAssetSpawns)
+	{
+		DespawnTileAsset(TileAsset);
+	}
 	DespawnTileAsset(MainBuilding);
 }
 
@@ -109,6 +113,10 @@ void UTileContent::NullEveryTileAsset()
 	{
 		TileAssetSpawn.TileAsset = nullptr;
 	}
+	for (FTileAssetSpawn& TileAssetSpawn : FoliageTileAssetSpawns)
+	{
+		TileAssetSpawn.TileAsset = nullptr;
+	}
 	MainBuilding.TileAsset = nullptr;
 }
 
@@ -160,6 +168,9 @@ void UTileContent::OnSpawnPointLayoutChanged()
 
 	BringArrayToCorrectSize(BuildingTileAssetSpawns, Tile->SpawnLayout.Buildings.Num());
 	SetSpawnPointsOnArray(BuildingTileAssetSpawns, Tile->SpawnLayout.Buildings);
+
+	BringArrayToCorrectSize(FoliageTileAssetSpawns, Tile->SpawnLayout.Foliage.Num());
+	SetSpawnPointsOnArray(FoliageTileAssetSpawns, Tile->SpawnLayout.Foliage);
 
 	SetSpawnPointOnTileAssetSpawn(MainBuilding, Tile->SpawnLayout.MainBuilding);
 
@@ -223,11 +234,22 @@ void UTileContent::ValidateEverything()
 
 	ValidateTileAssets(ForageTileAssetSpawns, TileAssetProvider->GetAllForageAssets());
 	UpdateForage(0);
+
+	ValidateTileAssets(FoliageTileAssetSpawns, TileAssetProvider->GetAllFoliageAssets());
+	UpdateFoliage();
 }
 
 void UTileContent::UpdateProps()
 {
 	for (FTileAssetSpawn& TileAssetSpawn : PropTileAssetSpawns)
+	{
+		SpawnTileAsset(TileAssetSpawn);
+	}
+}
+
+void UTileContent::UpdateFoliage()
+{
+	for (FTileAssetSpawn& TileAssetSpawn : FoliageTileAssetSpawns)
 	{
 		SpawnTileAsset(TileAssetSpawn);
 	}
