@@ -23,18 +23,17 @@ protected:
 	ASimulatedGuardianManager();
 
 	virtual void Tick(float DeltaSeconds) override;
-	
+
 	// ----------------------- Learning Agents plugin -----------------------
 private:
-
-	bool bRunInference = false;
+	bool bRunInference = true;
 	bool bResetNNsWhenStartingTraining = false;
-	
+
 	UPROPERTY()
 	ULearningAgentsManager* ManagerComponent;
 	UPROPERTY()
 	TArray<AActor*> GuardianSimulatorActors;
-	
+
 	UPROPERTY()
 	ULearningAgentsNeuralNetwork* NN_Critic;
 	UPROPERTY()
@@ -46,7 +45,7 @@ private:
 
 	UPROPERTY()
 	ULearningAgentsInteractor* Interactor;
-	
+
 	UPROPERTY()
 	ULearningAgentsPolicy* Policy;
 	int32 PolicySeed = 1234;
@@ -68,4 +67,7 @@ private:
 
 public:
 	void RegisterAgent(UObject* Agent);
+
+	void SaveModel(FFilePath& FilePath, FString ModelName);
+	void LoadModel(FFilePath& FilePath, FString ModelName);
 };
