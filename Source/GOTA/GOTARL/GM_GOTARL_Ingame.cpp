@@ -3,6 +3,7 @@
 
 #include "GM_GOTARL_Ingame.h"
 
+#include "GS_GotaRL_Ingame.h"
 #include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
 #include "GuardianSimulator.h"
 #include "SimulatedGuardianManager.h"
@@ -22,7 +23,7 @@ AGM_GOTARL_Ingame::AGM_GOTARL_Ingame()
 void AGM_GOTARL_Ingame::CreateGuardians()
 {
 	ATile* TribeStartingTile = GOTAGameState->GetTileMap()->GetNativesStart().Get();
-	LearningManager = GetWorld()->SpawnActor<ASimulatedGuardianManager>();
+	GotaRLGameState->SetLearningManager(GetWorld()->SpawnActor<ASimulatedGuardianManager>());
 	for (int32 i = 0; i < 1; ++i)
 	{
 		FVector SpawnLocation = FVector(0, 0, 1000);
@@ -40,8 +41,14 @@ void AGM_GOTARL_Ingame::CreateGuardians()
 		AGuardianSimulator* GuardianSimulator = GetWorld()->SpawnActor<AGuardianSimulator>(
 			AGuardianSimulator::StaticClass(), SpawnLocation, FRotator::ZeroRotator);
 		GuardianSimulator->Possess(Guardian);
-		LearningManager->RegisterAgent(GuardianSimulator);
+		GotaRLGameState->GetLearningManager()->RegisterAgent(GuardianSimulator);
 	}
+}
+
+void AGM_GOTARL_Ingame::LoadGame()
+{
+	Super::LoadGame();
+	GotaRLGameState = GetGameState<AGS_GotaRL_Ingame>();
 }
 
 void AGM_GOTARL_Ingame::BeginPlay()

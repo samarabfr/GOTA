@@ -12,6 +12,7 @@ void UDebugMenu::NativeConstruct()
 
 	BTN_OpenTimeControls->OnClicked.AddDynamic(this, &UDebugMenu::OpenTimeControls);
 	BTN_OpenAbilityGranter->OnClicked.AddDynamic(this, &UDebugMenu::OpenAbilityGranter);
+	BTN_OpenGotaRLMenu->OnClicked.AddDynamic(this, &UDebugMenu::OpenGotaRLMenu);
 }
 
 // ---------------------------------------- Utility ----------------------------------------
@@ -24,6 +25,11 @@ void UDebugMenu::OpenTimeControls()
 void UDebugMenu::OpenAbilityGranter()
 {
 	WidgetSwitcher->SetActiveWidgetIndex(1);
+}
+
+void UDebugMenu::OpenGotaRLMenu()
+{
+	WidgetSwitcher->SetActiveWidgetIndex(2);
 }
 
 // ------------------------------------ Prevent Clicking Through ------------------------------------

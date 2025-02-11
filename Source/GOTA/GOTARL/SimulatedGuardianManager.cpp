@@ -126,3 +126,29 @@ void ASimulatedGuardianManager::RegisterAgent(UObject* Agent)
 	ManagerComponent->AddAgent(Agent);
 	Init();
 }
+
+void ASimulatedGuardianManager::SaveModel(FFilePath& FilePath, FString ModelName)
+{
+	FFilePath FullSnapshotPath;
+	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Critic";
+	NN_Critic->SaveNetworkToSnapshot(FullSnapshotPath);
+	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Encoder";
+	NN_Encoder->SaveNetworkToSnapshot(FullSnapshotPath);
+	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Policy";
+	NN_Policy->SaveNetworkToSnapshot(FullSnapshotPath);
+	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Decoder";
+	NN_Decoder->SaveNetworkToSnapshot(FullSnapshotPath);
+}
+
+void ASimulatedGuardianManager::LoadModel(FFilePath& FilePath, FString ModelName)
+{
+	FFilePath FullSnapshotPath;
+	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Critic";
+	NN_Critic->LoadNetworkFromSnapshot(FullSnapshotPath);
+	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Encoder";
+	NN_Encoder->LoadNetworkFromSnapshot(FullSnapshotPath);
+	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Policy";
+	NN_Policy->LoadNetworkFromSnapshot(FullSnapshotPath);
+	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Decoder";
+	NN_Decoder->LoadNetworkFromSnapshot(FullSnapshotPath);
+}

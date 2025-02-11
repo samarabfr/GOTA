@@ -46,7 +46,7 @@ private:
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
-	void LoadGame();
+	virtual void LoadGame();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void StartGame();

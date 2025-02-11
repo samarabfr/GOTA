@@ -26,11 +26,17 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	UButton* BTN_OpenAbilityGranter;
 
+	UPROPERTY(meta = (BindWidget))
+	UButton* BTN_OpenGotaRLMenu;
+
 	UFUNCTION()
 	void OpenTimeControls();
 
 	UFUNCTION()
 	void OpenAbilityGranter();
+
+	UFUNCTION()
+	void OpenGotaRLMenu();
 
 	// ------------------------------------ Prevent Clicking Through ------------------------------------
 

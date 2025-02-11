@@ -32,13 +32,15 @@ class GOTA_API AGS_Ingame : public AGameState
 
 	// ------------------- LifeCycle -------------------
 
-	AGS_Ingame();
 
 	virtual void BeginPlay() override;
 
 	void S_Init();
 
 	void C_Init();
+
+protected:
+	AGS_Ingame();
 
 	// ------------------- Utility -------------------
 public:
