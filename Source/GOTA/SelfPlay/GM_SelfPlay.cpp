@@ -3,10 +3,10 @@
 
 #include "GM_SelfPlay.h"
 
+#include "AIController.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
-#include "GOTA/GOTARL/GuardianSimulator.h"
 
 AGM_SelfPlay::AGM_SelfPlay()
 {
