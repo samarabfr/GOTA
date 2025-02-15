@@ -18,9 +18,10 @@ void AGM_SelfPlay::CreateGuardians()
 	for (int32 i = 0; i < GuardianSettings.Num(); ++i)
 	{
 		FVector SpawnLocation = FVector(0, 0, 1000);
-		if (TribeStartingTile->Neighbors[i])
+		int32 TileIndex = i % TribeStartingTile->Neighbors.Num();
+		if (TribeStartingTile->Neighbors[TileIndex])
 		{
-			SpawnLocation = TribeStartingTile->Neighbors[i]->GetActorLocation() + FVector(0, 0, 100);
+			SpawnLocation = TribeStartingTile->Neighbors[TileIndex]->GetActorLocation() + FVector(0, 0, 100);
 		}
 		else
 		{
