@@ -653,6 +653,7 @@ void UWorldGenerator::SpawnTiles()
 			// round to height steps
 			float Height = FMath::TruncToFloat(Tile.Height / TerrainGenData->HeightStep) * TerrainGenData->HeightStep;
 			Height += TerrainGenData->HeightOffset;
+			Height = 10;
 			ATile* NewTile = TileMap->SpawnNewTile(Tile.HexCoords, Height);
 			FTerrain Terrain = FTerrain();
 			Terrain.NormalizedOceanDistance = static_cast<float>(Tile.OceanDistance) / MaxOceanDistance;
