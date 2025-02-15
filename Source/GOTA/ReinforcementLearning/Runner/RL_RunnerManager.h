@@ -30,23 +30,25 @@ protected:
 
 	// ----------------------- Learning Agents plugin -----------------------
 private:
+	UPROPERTY(EditDefaultsOnly)
 	bool bRunInference = false;
+	UPROPERTY(EditDefaultsOnly)
 	bool bResetNNsWhenStartingTraining = false;
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	ULearningAgentsManager* ManagerComponent;
-	UPROPERTY()
-	TArray<AActor*> GuardianSimulatorActors;
 
 	UPROPERTY()
 	ULearningAgentsInteractor* Interactor;
 
 	UPROPERTY()
 	ULearningAgentsPolicy* Policy;
+	UPROPERTY(EditDefaultsOnly)
 	int32 PolicySeed = 1234;
 
 	UPROPERTY()
 	ULearningAgentsCritic* Critic;
+	UPROPERTY(EditDefaultsOnly)
 	int32 CriticSeed = 1234;
 
 	UPROPERTY()
@@ -58,14 +60,10 @@ private:
 	UPROPERTY()
 	ULearningAgentsPPOTrainer* PPOTrainer;
 
-	void InitObject(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
-	                ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic);
-	void RegisterAgentOnObject(UObject* Agent);
-
 public:
-	static void RegisterAgent(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
-	                          ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic,
-	                          TScriptInterface<IRL_RunnerAgent> RunnerAgent);
+	void S_RegisterAgent(UObject* Agent);
+	void S_Init(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
+	          ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic);
 
 
 	// TODO: Let the Agents manage the NNs and snapshots themselves

@@ -6,6 +6,8 @@
 
 #include "GuardianAI_Runner.generated.h"
 
+class ULearningAgentsManager;
+class ARL_RunnerManager;
 class AGS_Ingame;
 class ULearningAgentsNeuralNetwork;
 class ATile;
@@ -39,6 +41,8 @@ private:
 	ULearningAgentsNeuralNetwork* NN_Decoder;
 	UPROPERTY(EditDefaultsOnly)
 	ULearningAgentsNeuralNetwork* NN_Critic;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ARL_RunnerManager> ManagerClass;
 
 	bool bWantsToMove = false;
 
@@ -46,9 +50,9 @@ private:
 	TWeakObjectPtr<ATile> TargetTile;
 
 public:
-	virtual FTransform GetAgentTransform() const override;
-	virtual void SetIsMoving(bool NewIsMoving) override;
-	virtual ATile* GetTargetTile() const override;
-	virtual void ResetToRandomTile() override;
-	virtual void Steer(float SteeringAngle) override;
+	virtual FTransform S_GetAgentTransform() const override;
+	virtual void S_SetIsMoving(bool NewIsMoving) override;
+	virtual ATile* S_GetTargetTile() const override;
+	virtual void S_ResetToRandomTile() override;
+	virtual void S_Steer(float SteeringAngle) override;
 };

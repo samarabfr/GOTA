@@ -6,6 +6,8 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "GS_Ingame.generated.h"
 
+class ULearningAgentsManager;
+class ULearningAgentsNeuralNetwork;
 class ATile;
 class UGOTAAttribute;
 class AEntity;
@@ -159,24 +161,15 @@ public:
 
 	// ------------------- Reinforcement Learning Manager -------------------
 private:
-	TArray<TWeakObjectPtr<AActor>> RL_Managers;
+	TMap<TSubclassOf<AActor>, TWeakObjectPtr<AActor>> RL_Managers;
 
 public:
-	template <typename T>
-	T* GetRLManager()
+	template <typename T = ULearningAgentsManager>
+	T* S_GetRLManager(TSubclassOf<AActor> ManagerClass)
 	{
-		for (TWeakObjectPtr<AActor> RL_Manager : RL_Managers)
-		{
-			if (T* Manager = Cast<T>(RL_Manager.Get())) return Manager;
-		}
-		return nullptr;
+		if (!RL_Managers.Contains(ManagerClass)) return nullptr;
+		return Cast<T>(RL_Managers[ManagerClass].Get());
 	}
 
-	template <typename T>
-	T* MakeRLManager()
-	{
-		T* Manager = GetWorld()->SpawnActor<T>();
-		RL_Managers.Add(Manager);
-		return Manager;
-	}
+	void S_AddManager(TSubclassOf<AActor> ManagerClass, AActor* Manager);
 };

@@ -15,7 +15,7 @@ AGM_SelfPlay::AGM_SelfPlay()
 void AGM_SelfPlay::CreateGuardians()
 {
 	ATile* TribeStartingTile = GOTAGameState->GetTileMap()->GetNativesStart().Get();
-	for (int32 i = 0; i < 1; ++i)
+	for (int32 i = 0; i < GuardianSettings.Num(); ++i)
 	{
 		FVector SpawnLocation = FVector(0, 0, 1000);
 		if (TribeStartingTile->Neighbors[i])
@@ -26,9 +26,11 @@ void AGM_SelfPlay::CreateGuardians()
 		{
 			SpawnLocation = TribeStartingTile->GetActorLocation() + FVector(0, 0, 100);
 		}
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(
-			GuardianSettings->GuardianBlueprint, SpawnLocation, FRotator::ZeroRotator);
-		Guardian->S_Init(GuardianSettings);
+			GuardianSettings[i]->GuardianBlueprint, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
+		Guardian->S_Init(GuardianSettings[i]);
 		AAIController* GuardianAI = GetWorld()->SpawnActor<AAIController>(
 			GuardianAIClass, SpawnLocation, FRotator::ZeroRotator);
 		GuardianAI->Possess(Guardian);

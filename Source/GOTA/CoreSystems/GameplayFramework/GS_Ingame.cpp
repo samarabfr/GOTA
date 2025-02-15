@@ -177,3 +177,8 @@ void AGS_Ingame::S_EndGame_Implementation(::EGameEnding Ending, const FString& E
 
 // ------------------- Reinforcement Learning Manager -------------------
 
+void AGS_Ingame::S_AddManager(TSubclassOf<AActor> ManagerClass, AActor* Manager)
+{
+	if (RL_Managers.Contains(ManagerClass)) return;
+	RL_Managers.Add(ManagerClass, Manager);
+}

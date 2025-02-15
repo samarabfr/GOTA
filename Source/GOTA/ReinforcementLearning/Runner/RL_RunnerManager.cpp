@@ -44,7 +44,7 @@ void ARL_RunnerManager::Tick(float DeltaSeconds)
 	}
 }
 
-void ARL_RunnerManager::InitObject(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
+void ARL_RunnerManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
                                    ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic)
 {
 	// Interactor
@@ -94,25 +94,7 @@ void ARL_RunnerManager::InitObject(ULearningAgentsNeuralNetwork* NN_Encoder, ULe
 		ULearningAgentsPPOTrainer::StaticClass(), FName("PPOTrainer"), TrainerSettings);
 }
 
-void ARL_RunnerManager::RegisterAgent(ULearningAgentsNeuralNetwork* NN_Encoder,
-                                      ULearningAgentsNeuralNetwork* NN_Policy,
-                                      ULearningAgentsNeuralNetwork* NN_Decoder,
-                                      ULearningAgentsNeuralNetwork* NN_Critic,
-                                      TScriptInterface<IRL_RunnerAgent> RunnerAgent)
-{
-	UObject* RunnerAgentObject = RunnerAgent.GetObject();
-	AGS_Ingame* GameState = Cast<AGS_Ingame>(UGameplayStatics::GetGameState(RunnerAgentObject));
-	if (!GameState) return;
-	ARL_RunnerManager* Manager = GameState->GetRLManager<ARL_RunnerManager>();
-	if (!Manager)
-	{
-		Manager = GameState->MakeRLManager<ARL_RunnerManager>();
-		Manager->InitObject(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic);
-	}
-	Manager->RegisterAgentOnObject(RunnerAgentObject);
-}
-
-void ARL_RunnerManager::RegisterAgentOnObject(UObject* Agent)
+void ARL_RunnerManager::S_RegisterAgent(UObject* Agent)
 {
 	if (!ManagerComponent || !Agent) return;
 	ManagerComponent->AddAgent(Agent);

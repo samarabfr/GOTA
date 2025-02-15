@@ -23,10 +23,10 @@ class GOTA_API IRL_RunnerAgent
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual FTransform GetAgentTransform() const;
-	virtual ATile* GetTargetTile() const;
+	virtual FTransform S_GetAgentTransform() const;
+	virtual ATile* S_GetTargetTile() const;
 
-	virtual void ResetToRandomTile();
-	virtual void SetIsMoving(bool InIsMoving);
-	virtual void Steer(float SteeringAngle);
+	virtual void S_ResetToRandomTile();
+	virtual void S_SetIsMoving(bool InIsMoving);
+	virtual void S_Steer(float SteeringAngle);
 };

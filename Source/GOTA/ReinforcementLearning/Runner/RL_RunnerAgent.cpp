@@ -3,24 +3,24 @@
 
 #include "RL_RunnerAgent.h"
 
-FTransform IRL_RunnerAgent::GetAgentTransform() const
+FTransform IRL_RunnerAgent::S_GetAgentTransform() const
 {
 	return FTransform();
 }
 
-ATile* IRL_RunnerAgent::GetTargetTile() const
+ATile* IRL_RunnerAgent::S_GetTargetTile() const
 {
 	return nullptr;
 }
 
-void IRL_RunnerAgent::ResetToRandomTile()
+void IRL_RunnerAgent::S_ResetToRandomTile()
 {
 }
 
-void IRL_RunnerAgent::SetIsMoving(bool InIsMoving)
+void IRL_RunnerAgent::S_SetIsMoving(bool InIsMoving)
 {
 }
 
-void IRL_RunnerAgent::Steer(float SteeringAngle)
+void IRL_RunnerAgent::S_Steer(float SteeringAngle)
 {
 }

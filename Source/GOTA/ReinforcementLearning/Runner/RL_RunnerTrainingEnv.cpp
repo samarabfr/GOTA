@@ -21,8 +21,8 @@ void URL_RunnerTrainingEnv::GatherAgentReward_Implementation(float& OutReward, c
 	Reward += LastDistance - GetDistanceToTarget(Agent);
 	LastDistance = GetDistanceToTarget(Agent);
 	// completion reward
-	const FVector GuardianLocation = Agent->GetAgentTransform().GetLocation();
-	const FVector TargetLocation = Agent->GetTargetTile()->GetActorTransform().GetLocation();
+	const FVector GuardianLocation = Agent->S_GetAgentTransform().GetLocation();
+	const FVector TargetLocation = Agent->S_GetTargetTile()->GetActorTransform().GetLocation();
 	Reward += ULearningAgentsRewards::MakeRewardOnLocationDifferenceBelowThreshold(
 		GuardianLocation, TargetLocation, CompletionDistance, CompletionReward,
 		L"LocationDifferenceBelowThreshold", true, this, AgentId,
@@ -35,8 +35,8 @@ void URL_RunnerTrainingEnv::GatherAgentCompletion_Implementation(ELearningAgents
 {
 	IRL_RunnerAgent* Agent = Cast<IRL_RunnerAgent>(GetAgent(AgentId));
 	if (!Agent) return;
-	const FVector GuardianLocation = Agent->GetAgentTransform().GetLocation();
-	const FVector TargetLocation = Agent->GetTargetTile()->GetActorTransform().GetLocation();
+	const FVector GuardianLocation = Agent->S_GetAgentTransform().GetLocation();
+	const FVector TargetLocation = Agent->S_GetTargetTile()->GetActorTransform().GetLocation();
 	const ELearningAgentsCompletion SuccessfulCompletion =
 		ULearningAgentsCompletions::MakeCompletionOnLocationDifferenceBelowThreshold(
 			GuardianLocation, TargetLocation, CompletionDistance);
@@ -48,14 +48,14 @@ void URL_RunnerTrainingEnv::ResetAgentEpisode_Implementation(const int32 AgentId
 	// return to starting conditions
 	IRL_RunnerAgent* Agent = Cast<IRL_RunnerAgent>(GetAgent(AgentId));
 	if (!Agent) return;
-	Agent->ResetToRandomTile();
+	Agent->S_ResetToRandomTile();
 	LastDistance = GetDistanceToTarget(Agent);
 }
 
 float URL_RunnerTrainingEnv::GetDistanceToTarget(IRL_RunnerAgent* Agent)
 {
-	if (!Agent || !Agent->GetTargetTile()) return 0;
-	const FVector GuardianLocation = Agent->GetAgentTransform().GetLocation();
-	const FVector TargetLocation = Agent->GetTargetTile()->GetActorTransform().GetLocation();
+	if (!Agent || !Agent->S_GetTargetTile()) return 0;
+	const FVector GuardianLocation = Agent->S_GetAgentTransform().GetLocation();
+	const FVector TargetLocation = Agent->S_GetTargetTile()->GetActorTransform().GetLocation();
 	return FVector::Dist(GuardianLocation, TargetLocation);
 }

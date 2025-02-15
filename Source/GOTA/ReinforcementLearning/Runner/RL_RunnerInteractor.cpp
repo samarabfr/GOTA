@@ -26,17 +26,17 @@ void URL_RunnerInteractor::GatherAgentObservation_Implementation(
 	// how the observations are gathered from the game state
 	IRL_RunnerAgent* Agent = Cast<IRL_RunnerAgent>(GetAgent(AgentId));
 	if (!Agent) return;
-	if (Agent->GetTargetTile())
+	if (Agent->S_GetTargetTile())
 	{
 		OutObservationObjectElement = ULearningAgentsObservations::MakeLocationObservation(
 			InObservationObject,
-			Agent->GetTargetTile()->GetActorTransform().GetLocation(),
-			Agent->GetAgentTransform(),
+			Agent->S_GetTargetTile()->GetActorTransform().GetLocation(),
+			Agent->S_GetAgentTransform(),
 			L"LocationObservation",
 			true,
 			this,
 			AgentId,
-			Agent->GetTargetTile()->GetActorTransform().GetLocation(),
+			Agent->S_GetTargetTile()->GetActorTransform().GetLocation(),
 			FLinearColor::Blue);
 	}
 	else
@@ -44,7 +44,7 @@ void URL_RunnerInteractor::GatherAgentObservation_Implementation(
 		OutObservationObjectElement = ULearningAgentsObservations::MakeLocationObservation(
 			InObservationObject,
 			FVector::ZeroVector,
-			Agent->GetAgentTransform(),
+			Agent->S_GetAgentTransform(),
 			L"LocationObservation",
 			true,
 			this,
@@ -82,9 +82,9 @@ void URL_RunnerInteractor::PerformAgentAction_Implementation(const ULearningAgen
 	                                      true,
 	                                      this,
 	                                      AgentId,
-	                                      Agent->GetAgentTransform().GetLocation(),
+	                                      Agent->S_GetAgentTransform().GetLocation(),
 	                                      FLinearColor::Yellow);
-	Agent->SetIsMoving(bIsMoving);
+	Agent->S_SetIsMoving(bIsMoving);
 	// steering
 	float SteeringAngle;
 	ULearningAgentsActions::GetAngleAction(SteeringAngle,
@@ -95,8 +95,8 @@ void URL_RunnerInteractor::PerformAgentAction_Implementation(const ULearningAgen
 	                                       true,
 	                                       this,
 	                                       AgentId,
-	                                       Agent->GetAgentTransform().GetLocation(),
-	                                       Agent->GetAgentTransform().GetLocation(),
+	                                       Agent->S_GetAgentTransform().GetLocation(),
+	                                       Agent->S_GetAgentTransform().GetLocation(),
 	                                       FLinearColor::Blue);
-	Agent->Steer(SteeringAngle);
+	Agent->S_Steer(SteeringAngle);
 }
