@@ -5,10 +5,12 @@
 
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
+#include "GOTA/ReinforcementLearning/Runner/RL_RunnerManager.h"
 
 AGuardianAI_Runner::AGuardianAI_Runner()
 {
 }
+
 
 void AGuardianAI_Runner::Tick(float DeltaSeconds)
 {
@@ -29,11 +31,14 @@ void AGuardianAI_Runner::BeginPlay()
 {
 	Super::BeginPlay();
 	GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
+	ARL_RunnerManager::RegisterAgent(NN_Encoder.Get(), NN_Policy.Get(),
+									 NN_Decoder.Get(), NN_Critic.Get(),
+									 this);
 }
 
-bool AGuardianAI_Runner::GetIsMoving()
+FTransform AGuardianAI_Runner::GetAgentTransform() const
 {
-	return bWantsToMove;
+	return GetPawn()->GetActorTransform();
 }
 
 void AGuardianAI_Runner::SetIsMoving(bool NewIsMoving)
@@ -41,7 +46,7 @@ void AGuardianAI_Runner::SetIsMoving(bool NewIsMoving)
 	bWantsToMove = NewIsMoving;
 }
 
-ATile* AGuardianAI_Runner::GetTargetTile()
+ATile* AGuardianAI_Runner::GetTargetTile() const
 {
 	return TargetTile.Get();
 }
@@ -54,16 +59,7 @@ void AGuardianAI_Runner::ResetToRandomTile()
 	                      RandomTile->GetActorTransform().GetRotation().Rotator());
 }
 
-void AGuardianAI_Runner::ResetToRandomTileInRangeToTarget(int32 Range)
-{
-	if (!GameState.IsValid() || !GameState->GetTileMap()) return;
-	const ATile* RandomTile = GameState->GetTileMap()->GetRandomTileInRange(TargetTile.Get(), Range);
-	if (RandomTile == nullptr) RandomTile = GameState->GetTileMap()->GetRandomTile();
-	GetPawn()->TeleportTo(RandomTile->GetActorTransform().GetLocation(),
-	                      RandomTile->GetActorTransform().GetRotation().Rotator());
-}
-
-void AGuardianAI_Runner::SteerPawn(float SteeringAngle)
+void AGuardianAI_Runner::Steer(float SteeringAngle)
 {
 	if (SteeringAngle == 0.f) return;
 	GetPawn()->AddActorLocalRotation(FRotator(0.f, SteeringAngle, 0.f));

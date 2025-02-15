@@ -2,34 +2,53 @@
 
 #pragma once
 #include "AIController.h"
+#include "GOTA/ReinforcementLearning/Runner/RL_RunnerAgent.h"
 
 #include "GuardianAI_Runner.generated.h"
 
-class ATile;
 class AGS_Ingame;
+class ULearningAgentsNeuralNetwork;
+class ATile;
 
 UCLASS(Blueprintable)
-class GOTA_API AGuardianAI_Runner : public AAIController
+class GOTA_API AGuardianAI_Runner : public AAIController, public IRL_RunnerAgent
 {
 	GENERATED_BODY()
 
-	AGuardianAI_Runner();
+	// ----------------------- LifeCycle -----------------------
 
+private:
 	virtual void Tick(float DeltaSeconds) override;
 	virtual void BeginPlay() override;
 
+protected:
+	AGuardianAI_Runner();
+
+	
+	// ----------------------- Utility -----------------------
 private:
-	bool bWantsToMove = false;
 	TWeakObjectPtr<AGS_Ingame> GameState;
+
+	// ----------------------- Movement control -----------------------
+private:
+	UPROPERTY(EditDefaultsOnly)
+	TWeakObjectPtr<ULearningAgentsNeuralNetwork> NN_Encoder;
+	UPROPERTY(EditDefaultsOnly)
+	TWeakObjectPtr<ULearningAgentsNeuralNetwork> NN_Policy;
+	UPROPERTY(EditDefaultsOnly)
+	TWeakObjectPtr<ULearningAgentsNeuralNetwork> NN_Decoder;
+	UPROPERTY(EditDefaultsOnly)
+	TWeakObjectPtr<ULearningAgentsNeuralNetwork> NN_Critic;
+
+	bool bWantsToMove = false;
 
 	UPROPERTY(EditInstanceOnly)
 	TWeakObjectPtr<ATile> TargetTile;
 
 public:
-	bool GetIsMoving();
-	void SetIsMoving(bool NewIsMoving);
-	ATile* GetTargetTile();
-	void ResetToRandomTile();
-	void ResetToRandomTileInRangeToTarget(int32 Range);
-	void SteerPawn(float SteeringAngle);
+	virtual FTransform GetAgentTransform() const override;
+	virtual void SetIsMoving(bool NewIsMoving) override;
+	virtual ATile* GetTargetTile() const override;
+	virtual void ResetToRandomTile() override;
+	virtual void Steer(float SteeringAngle) override;
 };

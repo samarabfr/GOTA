@@ -3,8 +3,9 @@
 #pragma once
 #include "LearningAgentsCommunicator.h"
 
-#include "RunnerManager.generated.h"
+#include "RL_RunnerManager.generated.h"
 
+class IRL_RunnerAgent;
 class ULearningAgentsPPOTrainer;
 class ULearningAgentsTrainingEnvironment;
 class ULearningAgentsCritic;
@@ -13,14 +14,17 @@ class ULearningAgentsPolicy;
 class ULearningAgentsNeuralNetwork;
 class ULearningAgentsManager;
 
+// Exists for every AI type.
+// Manages all agents of this AI type.
+
 UCLASS(Blueprintable)
-class GOTA_API ARunnerManager : public AActor
+class GOTA_API ARL_RunnerManager : public AActor
 {
 	GENERATED_BODY()
 
 	// ----------------------- LifeCycle -----------------------
 protected:
-	ARunnerManager();
+	ARL_RunnerManager();
 
 	virtual void Tick(float DeltaSeconds) override;
 
@@ -33,15 +37,6 @@ private:
 	ULearningAgentsManager* ManagerComponent;
 	UPROPERTY()
 	TArray<AActor*> GuardianSimulatorActors;
-
-	UPROPERTY()
-	ULearningAgentsNeuralNetwork* NN_Critic;
-	UPROPERTY()
-	ULearningAgentsNeuralNetwork* NN_Encoder;
-	UPROPERTY()
-	ULearningAgentsNeuralNetwork* NN_Policy;
-	UPROPERTY()
-	ULearningAgentsNeuralNetwork* NN_Decoder;
 
 	UPROPERTY()
 	ULearningAgentsInteractor* Interactor;
@@ -63,11 +58,19 @@ private:
 	UPROPERTY()
 	ULearningAgentsPPOTrainer* PPOTrainer;
 
-	void Init();
+	void InitObject(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
+	                ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic);
+	void RegisterAgentOnObject(UObject* Agent);
 
 public:
-	void RegisterAgent(UObject* Agent);
+	static void RegisterAgent(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
+	                          ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic,
+	                          TScriptInterface<IRL_RunnerAgent> RunnerAgent);
 
+
+	// TODO: Let the Agents manage the NNs and snapshots themselves
+	/*
 	void SaveModel(FFilePath& FilePath, FString ModelName);
 	void LoadModel(FFilePath& FilePath, FString ModelName);
+	*/
 };

@@ -3,18 +3,19 @@
 #pragma once
 #include "LearningAgentsTrainingEnvironment.h"
 
-#include "RunnerTrainingEnv.generated.h"
+#include "RL_RunnerTrainingEnv.generated.h"
 
-class AGuardianSimulator;
+class IRL_RunnerAgent;
+class URL_Runner;
 
 UCLASS(Blueprintable)
-class GOTA_API URunnerTrainingEnv : public ULearningAgentsTrainingEnvironment 
+class GOTA_API URL_RunnerTrainingEnv : public ULearningAgentsTrainingEnvironment
 {
 	GENERATED_BODY()
-	
+
 	// ----------------------- LifeCycle -----------------------
 protected:
-	URunnerTrainingEnv();
+	URL_RunnerTrainingEnv();
 
 	// ----------------------- Learning Agents plugin -----------------------
 public:
@@ -28,10 +29,9 @@ public:
 	// ----------------------- Learning  -----------------------
 private:
 	float LastDistance = 0.f;
-	
+
 	float CompletionDistance = 500.f;
 	float CompletionReward = 10.0f;
 
-	static float GetDistanceToTarget(AGuardianSimulator* GuardianSimulator);
+	static float GetDistanceToTarget(IRL_RunnerAgent* Agent);
 };
-

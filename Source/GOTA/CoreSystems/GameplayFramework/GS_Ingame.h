@@ -156,4 +156,27 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void S_EndGame(EGameEnding Ending, const FString& EndingMessage);
+
+	// ------------------- Reinforcement Learning Manager -------------------
+private:
+	TArray<TWeakObjectPtr<AActor>> RL_Managers;
+
+public:
+	template <typename T>
+	T* GetRLManager()
+	{
+		for (TWeakObjectPtr<AActor> RL_Manager : RL_Managers)
+		{
+			if (T* Manager = Cast<T>(RL_Manager.Get())) return Manager;
+		}
+		return nullptr;
+	}
+
+	template <typename T>
+	T* MakeRLManager()
+	{
+		T* Manager = GetWorld()->SpawnActor<T>();
+		RL_Managers.Add(Manager);
+		return Manager;
+	}
 };

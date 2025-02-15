@@ -8,6 +8,7 @@
 #include "GM_SelfPlay.generated.h"
 
 
+class AAIController;
 class AGS_SelfPlay;
 class AGuardianSimulator;
 class ASimulatedGuardianManager;
@@ -21,15 +22,14 @@ class GOTA_API AGM_SelfPlay : public AGM_Ingame
 
 	virtual void CreateGuardians() override;
 
-	UPROPERTY()
-	UGuardianSettings* GuardianSettings;
-	
-	TWeakObjectPtr<AGS_SelfPlay> SelfPlayGameState;
-
-	virtual void LoadGame() override;
+	UPROPERTY(EditDefaultsOnly)
+	TWeakObjectPtr<UGuardianSettings> GuardianSettings;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AGuardian> GuardianClass;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AAIController> GuardianAIClass;
 
 	virtual void BeginPlay() override;
 };

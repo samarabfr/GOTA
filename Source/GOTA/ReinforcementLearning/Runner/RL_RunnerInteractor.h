@@ -3,19 +3,19 @@
 #pragma once
 #include "LearningAgentsInteractor.h"
 
-#include "RunnerInteractor.generated.h"
+#include "RL_RunnerInteractor.generated.h"
 
 UCLASS(Blueprintable)
-class GOTA_API URunnerInteractor : public ULearningAgentsInteractor
+class GOTA_API URL_RunnerInteractor : public ULearningAgentsInteractor
 {
 	GENERATED_BODY()
 
 	// ----------------------- LifeCycle -----------------------
 protected:
-	URunnerInteractor();
+	URL_RunnerInteractor();
 
 	// ----------------------- Learning Agents plugin -----------------------
-public:	
+public:
 	virtual void SpecifyAgentObservation_Implementation(
 		FLearningAgentsObservationSchemaElement& OutObservationSchemaElement,
 		ULearningAgentsObservationSchema* InObservationSchema) override;

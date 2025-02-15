@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "RunnerManager.h"
+#include "RL_RunnerManager.h"
 
 #include "LearningAgentsCommunicator.h"
 #include "LearningAgentsCritic.h"
@@ -10,11 +10,13 @@
 #include "LearningAgentsPolicy.h"
 #include "LearningAgentsPPOTrainer.h"
 #include "LearningAgentsTrainingEnvironment.h"
-#include "RunnerInteractor.h"
-#include "RunnerTrainingEnv.h"
+#include "RL_RunnerAgent.h"
+#include "RL_RunnerInteractor.h"
+#include "RL_RunnerTrainingEnv.h"
+#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "Kismet/GameplayStatics.h"
 
-ARunnerManager::ARunnerManager()
+ARL_RunnerManager::ARL_RunnerManager()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
@@ -26,7 +28,7 @@ ARunnerManager::ARunnerManager()
 	Tags.Add("LearningAgentsManager");
 }
 
-void ARunnerManager::Tick(float DeltaSeconds)
+void ARL_RunnerManager::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	if (bRunInference)
@@ -42,34 +44,18 @@ void ARunnerManager::Tick(float DeltaSeconds)
 	}
 }
 
-void ARunnerManager::Init()
+void ARL_RunnerManager::InitObject(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
+                                   ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic)
 {
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AGuardianSimulator::StaticClass(), GuardianSimulatorActors);
-	// make the manager tick before the simulators
-	for (AActor* GuardianSimulatorActor : GuardianSimulatorActors)
-	{
-		if (AGuardianSimulator* GuardianSimulator = Cast<AGuardianSimulator>(GuardianSimulatorActor))
-		{
-			GuardianSimulator->AddTickPrerequisiteActor(this);
-		}
-	}
 	// Interactor
 	Interactor = ULearningAgentsInteractor::MakeInteractor(
-		ManagerComponent, USimulatedGuardianInteractor::StaticClass(), FName("SimulatedGuardianInteractor"));
-	const FSoftObjectPath PathEncoder(TEXT("/Game/GOTARL/DA_SimulatedGuardianEncoder.DA_SimulatedGuardianEncoder"));
-	const FSoftObjectPath PathPolicy(TEXT("/Game/GOTARL/DA_SimulatedGuardianPolicy.DA_SimulatedGuardianPolicy"));
-	const FSoftObjectPath PathDecoder(TEXT("/Game/GOTARL/DA_SimulatedGuardianDecoder.DA_SimulatedGuardianDecoder"));
-	const FSoftObjectPath PathCritic(TEXT("/Game/GOTARL/DA_SimulatedGuardianCritic.DA_SimulatedGuardianCritic"));
-	NN_Encoder = Cast<ULearningAgentsNeuralNetwork>(PathEncoder.TryLoad());
-	NN_Policy = Cast<ULearningAgentsNeuralNetwork>(PathPolicy.TryLoad());
-	NN_Decoder = Cast<ULearningAgentsNeuralNetwork>(PathDecoder.TryLoad());
-	NN_Critic = Cast<ULearningAgentsNeuralNetwork>(PathCritic.TryLoad());
+		ManagerComponent, URL_RunnerInteractor::StaticClass(), FName("RunnerInteractor"));
 	// Policy
 	FLearningAgentsPolicySettings PolicySettings = FLearningAgentsPolicySettings();
 	PolicySeed = 1234;
 	Policy = ULearningAgentsPolicy::MakePolicy(ManagerComponent, Interactor,
 	                                           ULearningAgentsPolicy::StaticClass(),
-	                                           FName("SimulatedGuardianPolicy"),
+	                                           FName("RunnerPolicy"),
 	                                           NN_Encoder,
 	                                           NN_Policy,
 	                                           NN_Decoder,
@@ -83,7 +69,7 @@ void ARunnerManager::Init()
 	CriticSeed = 1234;
 	Critic = ULearningAgentsCritic::MakeCritic(ManagerComponent, Interactor, Policy,
 	                                           ULearningAgentsCritic::StaticClass(),
-	                                           FName("SimulatedGuardianCritic"),
+	                                           FName("RunnerCritic"),
 	                                           NN_Critic,
 	                                           !bRunInference && bResetNNsWhenStartingTraining,
 	                                           CriticSettings,
@@ -91,8 +77,8 @@ void ARunnerManager::Init()
 	// Training Environment
 	TrainingEnv = ULearningAgentsTrainingEnvironment::MakeTrainingEnvironment(
 		ManagerComponent,
-		USimulatedGuardianTrainingEnv::StaticClass(),
-		FName("SimulatedGuardianTrainingEnvironment"));
+		URL_RunnerTrainingEnv::StaticClass(),
+		FName("RunnerTrainingEnvironment"));
 	// Shared Memory
 	FLearningAgentsTrainerProcessSettings TrainerProcessSettings = FLearningAgentsTrainerProcessSettings();
 	FLearningAgentsSharedMemoryCommunicatorSettings SharedMemorySettings =
@@ -106,27 +92,34 @@ void ARunnerManager::Init()
 	PPOTrainer = ULearningAgentsPPOTrainer::MakePPOTrainer(
 		ManagerComponent, Interactor, TrainingEnv, Policy, Critic, Communicator,
 		ULearningAgentsPPOTrainer::StaticClass(), FName("PPOTrainer"), TrainerSettings);
-	// Run Inference Reset
-	if (bRunInference)
-	{
-		for (AActor* GuardianSimulatorActor : GuardianSimulatorActors)
-		{
-			if (AGuardianSimulator* GuardianSimulator = Cast<AGuardianSimulator>(GuardianSimulatorActor))
-			{
-				GuardianSimulator->ResetToRandomTile();
-			}
-		}
-	}
 }
 
-void ARunnerManager::RegisterAgent(UObject* Agent)
+void ARL_RunnerManager::RegisterAgent(ULearningAgentsNeuralNetwork* NN_Encoder,
+                                      ULearningAgentsNeuralNetwork* NN_Policy,
+                                      ULearningAgentsNeuralNetwork* NN_Decoder,
+                                      ULearningAgentsNeuralNetwork* NN_Critic,
+                                      TScriptInterface<IRL_RunnerAgent> RunnerAgent)
+{
+	UObject* RunnerAgentObject = RunnerAgent.GetObject();
+	AGS_Ingame* GameState = Cast<AGS_Ingame>(UGameplayStatics::GetGameState(RunnerAgentObject));
+	if (!GameState) return;
+	ARL_RunnerManager* Manager = GameState->GetRLManager<ARL_RunnerManager>();
+	if (!Manager)
+	{
+		Manager = GameState->MakeRLManager<ARL_RunnerManager>();
+		Manager->InitObject(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic);
+	}
+	Manager->RegisterAgentOnObject(RunnerAgentObject);
+}
+
+void ARL_RunnerManager::RegisterAgentOnObject(UObject* Agent)
 {
 	if (!ManagerComponent || !Agent) return;
 	ManagerComponent->AddAgent(Agent);
-	Init();
 }
 
-void ARunnerManager::SaveModel(FFilePath& FilePath, FString ModelName)
+/*
+void ARL_RunnerManager::SaveModel(FFilePath& FilePath, FString ModelName)
 {
 	FFilePath FullSnapshotPath;
 	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Critic";
@@ -139,7 +132,7 @@ void ARunnerManager::SaveModel(FFilePath& FilePath, FString ModelName)
 	NN_Decoder->SaveNetworkToSnapshot(FullSnapshotPath);
 }
 
-void ARunnerManager::LoadModel(FFilePath& FilePath, FString ModelName)
+void ARL_RunnerManager::LoadModel(FFilePath& FilePath, FString ModelName)
 {
 	FFilePath FullSnapshotPath;
 	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Critic";
@@ -151,3 +144,4 @@ void ARunnerManager::LoadModel(FFilePath& FilePath, FString ModelName)
 	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Decoder";
 	NN_Decoder->LoadNetworkFromSnapshot(FullSnapshotPath);
 }
+*/
