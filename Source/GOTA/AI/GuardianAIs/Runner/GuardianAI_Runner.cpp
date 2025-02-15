@@ -40,6 +40,7 @@ void AGuardianAI_Runner::BeginPlay()
 			Manager = GetWorld()->SpawnActor<ARL_RunnerManager>(ManagerClass,
 				FVector::Zero(), FRotator::ZeroRotator);
 			Manager->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic);
+			AddTickPrerequisiteActor(Manager); // make the manager tick before this
 			GameState->S_AddManager(ManagerClass, Manager);
 		}
 		Manager->S_RegisterAgent(this);
