@@ -32,13 +32,13 @@ private:
 	// ----------------------- Movement control -----------------------
 private:
 	UPROPERTY(EditDefaultsOnly)
-	TWeakObjectPtr<ULearningAgentsNeuralNetwork> NN_Encoder;
+	ULearningAgentsNeuralNetwork* NN_Encoder;
 	UPROPERTY(EditDefaultsOnly)
-	TWeakObjectPtr<ULearningAgentsNeuralNetwork> NN_Policy;
+	ULearningAgentsNeuralNetwork* NN_Policy;
 	UPROPERTY(EditDefaultsOnly)
-	TWeakObjectPtr<ULearningAgentsNeuralNetwork> NN_Decoder;
+	ULearningAgentsNeuralNetwork* NN_Decoder;
 	UPROPERTY(EditDefaultsOnly)
-	TWeakObjectPtr<ULearningAgentsNeuralNetwork> NN_Critic;
+	ULearningAgentsNeuralNetwork* NN_Critic;
 
 	bool bWantsToMove = false;
 

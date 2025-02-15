@@ -31,9 +31,7 @@ void AGuardianAI_Runner::BeginPlay()
 {
 	Super::BeginPlay();
 	GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
-	ARL_RunnerManager::RegisterAgent(NN_Encoder.Get(), NN_Policy.Get(),
-									 NN_Decoder.Get(), NN_Critic.Get(),
-									 this);
+	ARL_RunnerManager::RegisterAgent(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic, this);
 }
 
 FTransform AGuardianAI_Runner::GetAgentTransform() const

@@ -23,10 +23,7 @@ class GOTA_API AGM_SelfPlay : public AGM_Ingame
 	virtual void CreateGuardians() override;
 
 	UPROPERTY(EditDefaultsOnly)
-	TWeakObjectPtr<UGuardianSettings> GuardianSettings;
-
-	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AGuardian> GuardianClass;
+	UGuardianSettings* GuardianSettings;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AAIController> GuardianAIClass;

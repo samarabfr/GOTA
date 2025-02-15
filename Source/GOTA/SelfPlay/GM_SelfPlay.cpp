@@ -4,6 +4,7 @@
 #include "GM_SelfPlay.h"
 
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
+#include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "GOTA/GOTARL/GuardianSimulator.h"
 
@@ -26,8 +27,8 @@ void AGM_SelfPlay::CreateGuardians()
 			SpawnLocation = TribeStartingTile->GetActorLocation() + FVector(0, 0, 100);
 		}
 		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(
-			GuardianClass, SpawnLocation, FRotator::ZeroRotator);
-		Guardian->S_Init(GuardianSettings.Get());
+			GuardianSettings->GuardianBlueprint, SpawnLocation, FRotator::ZeroRotator);
+		Guardian->S_Init(GuardianSettings);
 		AAIController* GuardianAI = GetWorld()->SpawnActor<AAIController>(
 			GuardianAIClass, SpawnLocation, FRotator::ZeroRotator);
 		GuardianAI->Possess(Guardian);
