@@ -28,7 +28,7 @@ public:
 
 	// ----------------------- Learning  -----------------------
 private:
-	float LastDistance = 0.f;
+	TArray<float> LastDistances;
 
 	float CompletionDistance = 500.f;
 	float CompletionReward = 10.0f;

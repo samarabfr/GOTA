@@ -18,8 +18,8 @@ void URL_RunnerTrainingEnv::GatherAgentReward_Implementation(float& OutReward, c
 	if (!Agent) return;
 	float Reward = 0;
 	// progress reward
-	Reward += LastDistance - GetDistanceToTarget(Agent);
-	LastDistance = GetDistanceToTarget(Agent);
+	Reward += LastDistances[AgentId] - GetDistanceToTarget(Agent);
+	LastDistances[AgentId] = GetDistanceToTarget(Agent);
 	// completion reward
 	const FVector GuardianLocation = Agent->S_GetAgentTransform().GetLocation();
 	const FVector TargetLocation = Agent->S_GetTargetTile()->GetActorTransform().GetLocation();
@@ -49,7 +49,8 @@ void URL_RunnerTrainingEnv::ResetAgentEpisode_Implementation(const int32 AgentId
 	IRL_RunnerAgent* Agent = Cast<IRL_RunnerAgent>(GetAgent(AgentId));
 	if (!Agent) return;
 	Agent->S_ResetToRandomTile();
-	LastDistance = GetDistanceToTarget(Agent);
+	while (LastDistances.Num() <= AgentId) { LastDistances.Add(0.f); }
+	LastDistances[AgentId] = GetDistanceToTarget(Agent);
 }
 
 float URL_RunnerTrainingEnv::GetDistanceToTarget(IRL_RunnerAgent* Agent)
