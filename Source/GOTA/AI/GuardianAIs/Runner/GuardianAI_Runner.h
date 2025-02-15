@@ -43,7 +43,9 @@ private:
 	ULearningAgentsNeuralNetwork* NN_Critic;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ARL_RunnerManager> ManagerClass;
-
+	UPROPERTY(EditDefaultsOnly)
+	FVector ResetOffset = FVector(0, 0, 50);
+	
 	bool bWantsToMove = false;
 
 	UPROPERTY(EditInstanceOnly)

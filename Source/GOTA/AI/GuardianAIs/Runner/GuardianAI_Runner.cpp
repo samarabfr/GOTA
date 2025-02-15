@@ -65,7 +65,7 @@ void AGuardianAI_Runner::S_ResetToRandomTile()
 {
 	if (!GameState.IsValid() || !GameState->GetTileMap()) return;
 	const ATile* RandomTile = GameState->GetTileMap()->GetRandomTile();
-	GetPawn()->TeleportTo(RandomTile->GetActorTransform().GetLocation(),
+	GetPawn()->TeleportTo(RandomTile->GetActorTransform().GetLocation() + ResetOffset,
 						  RandomTile->GetActorTransform().GetRotation().Rotator());
 }
 
