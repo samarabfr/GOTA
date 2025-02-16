@@ -64,11 +64,4 @@ public:
 	void S_RegisterAgent(UObject* Agent);
 	void S_Init(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
 	          ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic);
-
-
-	// TODO: Let the Agents manage the NNs and snapshots themselves
-	/*
-	void SaveModel(FFilePath& FilePath, FString ModelName);
-	void LoadModel(FFilePath& FilePath, FString ModelName);
-	*/
 };

@@ -99,31 +99,3 @@ void ARL_RunnerManager::S_RegisterAgent(UObject* Agent)
 	if (!ManagerComponent || !Agent) return;
 	ManagerComponent->AddAgent(Agent);
 }
-
-/*
-void ARL_RunnerManager::SaveModel(FFilePath& FilePath, FString ModelName)
-{
-	FFilePath FullSnapshotPath;
-	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Critic";
-	NN_Critic->SaveNetworkToSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Encoder";
-	NN_Encoder->SaveNetworkToSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Policy";
-	NN_Policy->SaveNetworkToSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Decoder";
-	NN_Decoder->SaveNetworkToSnapshot(FullSnapshotPath);
-}
-
-void ARL_RunnerManager::LoadModel(FFilePath& FilePath, FString ModelName)
-{
-	FFilePath FullSnapshotPath;
-	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Critic";
-	NN_Critic->LoadNetworkFromSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Encoder";
-	NN_Encoder->LoadNetworkFromSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Policy";
-	NN_Policy->LoadNetworkFromSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = FilePath.FilePath / ModelName + "Decoder";
-	NN_Decoder->LoadNetworkFromSnapshot(FullSnapshotPath);
-}
-*/
