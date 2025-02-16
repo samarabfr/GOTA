@@ -20,6 +20,7 @@ void UDebugMenuGotaRL::NativeConstruct()
 	{
 		CB_AgentSelection->AddOption(AgentName);
 	}
+	CB_AgentSelection->SetSelectedOption(CB_AgentSelection->GetOptionAtIndex(0));
 }
 
 // -------------------------------------------- Utility --------------------------------------------
@@ -82,4 +83,5 @@ void UDebugMenuGotaRL::RefreshNeuralNetworkOptions(FString AgentName, ESelectInf
 	{
 		CB_NeuralNetworkSelection->AddOption(NeuralNetworkName);
 	}
+	CB_NeuralNetworkSelection->SetSelectedOption(CB_NeuralNetworkSelection->GetOptionAtIndex(0));
 }
