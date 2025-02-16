@@ -31,18 +31,22 @@ void UDebugMenuGotaRL::SaveModel()
 	if (SnapshotAgents == nullptr) return;
 	USnapshotAgentData* Agent = SnapshotAgents->GetAgentByName(CB_AgentSelection->GetSelectedOption());
 	if (Agent == nullptr) return;
-	FFilePath FullSnapshotPath;
 	const FString ModelName = TB_ModelName->GetText().ToString();
 	const FString NeuralNetworkName = CB_NeuralNetworkSelection->GetSelectedOption();
 	const FSnapshotNeuralNetworkData NeuralNetwork = Agent->GetNeuralNetworkByName(NeuralNetworkName);
 	if (NeuralNetwork.Name == "Unnamed") return;
-	FullSnapshotPath.FilePath = SnapshotAgents->GetSnapshotsFolderFilePath().FilePath / ModelName + "Critic";
+	FFilePath ModelPath;
+	ModelPath.FilePath = FPaths::ProjectContentDir() /
+		SnapshotAgents->GetSnapshotsFolderFilePath().FilePath /
+		ModelName;
+	FFilePath FullSnapshotPath;
+	FullSnapshotPath.FilePath = ModelPath.FilePath + "Critic";
 	NeuralNetwork.Critic->SaveNetworkToSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = SnapshotAgents->GetSnapshotsFolderFilePath().FilePath / ModelName + "Encoder";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + "Encoder";
 	NeuralNetwork.Encoder->SaveNetworkToSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = SnapshotAgents->GetSnapshotsFolderFilePath().FilePath / ModelName + "Policy";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + "Policy";
 	NeuralNetwork.Policy->SaveNetworkToSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = SnapshotAgents->GetSnapshotsFolderFilePath().FilePath / ModelName + "Decoder";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + "Decoder";
 	NeuralNetwork.Decoder->SaveNetworkToSnapshot(FullSnapshotPath);
 }
 
@@ -51,18 +55,22 @@ void UDebugMenuGotaRL::LoadModel()
 	if (SnapshotAgents == nullptr) return;
 	USnapshotAgentData* Agent = SnapshotAgents->GetAgentByName(CB_AgentSelection->GetSelectedOption());
 	if (Agent == nullptr) return;
-	FFilePath FullSnapshotPath;
 	const FString ModelName = TB_ModelName->GetText().ToString();
 	const FString NeuralNetworkName = CB_NeuralNetworkSelection->GetSelectedOption();
 	const FSnapshotNeuralNetworkData NeuralNetwork = Agent->GetNeuralNetworkByName(NeuralNetworkName);
 	if (NeuralNetwork.Name == "Unnamed") return;
-	FullSnapshotPath.FilePath = SnapshotAgents->GetSnapshotsFolderFilePath().FilePath / ModelName + "Critic";
+	FFilePath ModelPath;
+	ModelPath.FilePath = FPaths::ProjectContentDir() /
+		SnapshotAgents->GetSnapshotsFolderFilePath().FilePath /
+		ModelName;
+	FFilePath FullSnapshotPath;
+	FullSnapshotPath.FilePath = ModelPath.FilePath + "Critic";
 	NeuralNetwork.Critic->LoadNetworkFromSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = SnapshotAgents->GetSnapshotsFolderFilePath().FilePath / ModelName + "Encoder";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + "Encoder";
 	NeuralNetwork.Encoder->LoadNetworkFromSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = SnapshotAgents->GetSnapshotsFolderFilePath().FilePath / ModelName + "Policy";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + "Policy";
 	NeuralNetwork.Policy->LoadNetworkFromSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = SnapshotAgents->GetSnapshotsFolderFilePath().FilePath / ModelName + "Decoder";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + "Decoder";
 	NeuralNetwork.Decoder->LoadNetworkFromSnapshot(FullSnapshotPath);
 }
 
