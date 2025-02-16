@@ -32,7 +32,7 @@ void AGS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	DOREPLIFETIME(AGS_Ingame, TotalForage);
 	DOREPLIFETIME(AGS_Ingame, IslandMaxTrees);
 	DOREPLIFETIME(AGS_Ingame, IslandMaxForage);
-	
+
 	DOREPLIFETIME(AGS_Ingame, StartParameter);
 }
 
@@ -173,4 +173,12 @@ void AGS_Ingame::S_EndGame_Implementation(::EGameEnding Ending, const FString& E
 	if (GameEnded) return;
 	GameEnded = true;
 	OnGameEnding.Broadcast(Ending, EndingMessage);
+}
+
+// ------------------- Reinforcement Learning Manager -------------------
+
+void AGS_Ingame::S_AddManager(TSubclassOf<AActor> ManagerClass, AActor* Manager)
+{
+	if (RL_Managers.Contains(ManagerClass)) return;
+	RL_Managers.Add(ManagerClass, Manager);
 }
