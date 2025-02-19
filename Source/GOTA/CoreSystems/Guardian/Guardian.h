@@ -5,6 +5,7 @@
 #include "GameFramework/Character.h"
 #include "Guardian.generated.h"
 
+class UBuildingSettings;
 class UAbilitySettings;
 class APC_Ingame;
 class AAbility;
@@ -23,7 +24,7 @@ class GOTA_API AGuardian : public ACharacter
 public:
 	AGuardian();
 
-	void S_Init(UGuardianSettings* InSettings);
+	void S_Init(UGuardianSettings* InSettings, TArray<UBuildingSettings*> InPossibleBuildings);
 
 	virtual void BeginPlay() override;
 
@@ -31,7 +32,7 @@ public:
 private:
 	UPROPERTY(Replicated)
 	TWeakObjectPtr<UGuardianSettings> Settings;
-	
+
 public:
 	UGuardianSettings* GetSettings() const { return Settings.Get(); }
 
@@ -45,7 +46,14 @@ private:
 
 	UFUNCTION()
 	void HandleAbilityDestruction(AActor* DestroyedAbility);
-	
+
 public:
 	void LearnAbility(UAbilitySettings* AbilitySettings, FName AbilitySlotName);
+
+	// ---------------------------------------- Building ----------------------------------------
+private:
+	TArray<UBuildingSettings*> PossibleBuildings;
+
+public:
+	TArray<UBuildingSettings*> GetPossibleBuildings() const { return PossibleBuildings; }
 };
