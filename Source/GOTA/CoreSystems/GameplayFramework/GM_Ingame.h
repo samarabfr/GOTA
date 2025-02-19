@@ -8,6 +8,7 @@
 #include "GameFramework/GameMode.h"
 #include "GM_Ingame.generated.h"
 
+class UBuildingSettings;
 class AMouseUtils;
 
 UCLASS()
@@ -33,6 +34,9 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<ATribe> TribeClass;
+	
+	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
+	TArray<UBuildingSettings*> PossibleBuildingsForPlayers;
 	
 	// ---------------------------------------------------------
 	// Control the Flow of the Game

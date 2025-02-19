@@ -70,6 +70,9 @@ void APC_Ingame::S_Init()
 	NewBuildingPlacer->S_Init(NewMouseUtils);
 	S_SetBuildingPlacer(NewBuildingPlacer);
 
+	// DistanceUtils
+	OnGuardianChanged.AddDynamic(this, &APC_Ingame::InitDistanceUtils);
+
 	ForceNetUpdate();
 }
 
@@ -94,10 +97,10 @@ void APC_Ingame::S_SetAbilityIndicator(AAbilityIndicator* NewAbilityIndicator)
 
 void APC_Ingame::OnRep_Guardian()
 {
-	OnGuardianChanged();
+	OnGuardianChanged.Broadcast(Guardian);
 }
 
-void APC_Ingame::OnGuardianChanged()
+void APC_Ingame::InitDistanceUtils(AGuardian* _)
 {
 	if (!Guardian)
 		return;
@@ -111,16 +114,16 @@ void APC_Ingame::OnGuardianChanged()
 void APC_Ingame::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	SetGuardian(Cast<AGuardian>(InPawn));
+	S_SetGuardian(Cast<AGuardian>(InPawn));
 
 	FRotator InitialRotation = FRotator(-30.0f, 0.0f, 0.0f); // Adjust these values
 	SetControlRotation(InitialRotation);
 }
 
-void APC_Ingame::SetGuardian(AGuardian* NewGuardian)
+void APC_Ingame::S_SetGuardian(AGuardian* NewGuardian)
 {
 	Guardian = NewGuardian;
-	OnGuardianChanged();
+	OnGuardianChanged.Broadcast(Guardian);
 	MARK_PROPERTY_DIRTY_FROM_NAME(APC_Ingame, Guardian, this)
 }
 
