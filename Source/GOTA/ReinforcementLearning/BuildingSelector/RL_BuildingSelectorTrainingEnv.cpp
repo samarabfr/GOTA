@@ -17,7 +17,8 @@ void URL_BuildingSelectorTrainingEnv::GatherAgentReward_Implementation(float& Ou
 	if (!Agent) return;
 	float Reward = 0;
 	// progress reward
-	
+	// TODO: completion Reward für gewinnen, punish für verlieren
+	// TODO: heuristics: 
 }
 
 void URL_BuildingSelectorTrainingEnv::GatherAgentCompletion_Implementation(ELearningAgentsCompletion& OutCompletion,
@@ -25,7 +26,6 @@ void URL_BuildingSelectorTrainingEnv::GatherAgentCompletion_Implementation(ELear
 {
 	IRL_BuildingSelectorAgent* Agent = Cast<IRL_BuildingSelectorAgent>(GetAgent(AgentId));
 	if (!Agent) return;
-	
 }
 
 void URL_BuildingSelectorTrainingEnv::ResetAgentEpisode_Implementation(const int32 AgentId)
@@ -33,5 +33,4 @@ void URL_BuildingSelectorTrainingEnv::ResetAgentEpisode_Implementation(const int
 	// return to starting conditions
 	IRL_BuildingSelectorAgent* Agent = Cast<IRL_BuildingSelectorAgent>(GetAgent(AgentId));
 	if (!Agent) return;
-	
 }

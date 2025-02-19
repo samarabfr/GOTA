@@ -14,7 +14,7 @@ void URL_BuildingSelectorInteractor::SpecifyAgentObservation_Implementation(
 	ULearningAgentsObservationSchema* InObservationSchema)
 {
 	// which observations the agents can do
-	
+	// TODO: Incomes, current Resources
 }
 
 void URL_BuildingSelectorInteractor::GatherAgentObservation_Implementation(
@@ -24,14 +24,14 @@ void URL_BuildingSelectorInteractor::GatherAgentObservation_Implementation(
 	// how the observations are gathered from the game state
 	IRL_BuildingSelectorAgent* Agent = Cast<IRL_BuildingSelectorAgent>(GetAgent(AgentId));
 	if (!Agent) return;
-	
+	ULearningAgentsObservations::
 }
 
 void URL_BuildingSelectorInteractor::SpecifyAgentAction_Implementation(
 	FLearningAgentsActionSchemaElement& OutActionSchemaElement, ULearningAgentsActionSchema* InActionSchema)
 {
 	// which actions the agents can do
-	
+	// TODO: select building
 }
 
 void URL_BuildingSelectorInteractor::PerformAgentAction_Implementation(const ULearningAgentsActionObject* InActionObject,

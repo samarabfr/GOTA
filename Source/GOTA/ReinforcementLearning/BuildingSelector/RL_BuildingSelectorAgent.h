@@ -3,9 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GOTA/CoreSystems/Faction/Settlement/GameResources.h"
 #include "UObject/Interface.h"
 #include "RL_BuildingSelectorAgent.generated.h"
 
+class UBuildingSettings;
 class ATile;
 // This class does not need to be modified.
 UINTERFACE()
@@ -22,5 +24,9 @@ class GOTA_API IRL_BuildingSelectorAgent
 	GENERATED_BODY()
 
 public:
-	
+	virtual FGameResources GetSettlementResources();
+	virtual FGameResources GetSettlementIncomes();
+
+	virtual TArray<UBuildingSettings*> GetAvailableBuildings();
+	virtual void SelectBuilding(UBuildingSettings* Building);
 };

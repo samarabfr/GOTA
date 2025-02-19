@@ -6,6 +6,8 @@
 
 #include "GuardianAI_BuildingSelector.generated.h"
 
+class ASettlement;
+class AGuardian;
 class ULearningAgentsManager;
 class ARL_BuildingSelectorManager;
 class AGS_Ingame;
@@ -26,12 +28,15 @@ private:
 protected:
 	AGuardianAI_BuildingSelector();
 
-	
+
 	// ----------------------- Utility -----------------------
 private:
 	TWeakObjectPtr<AGS_Ingame> GameState;
+	TWeakObjectPtr<AGuardian> PossessedGuardian;
+	TWeakObjectPtr<ASettlement> Settlement;
+	virtual void OnPossess(APawn* InPawn) override;
 
-	// ----------------------- Movement control -----------------------
+	// ----------------------- Reinforcement Learning -----------------------
 private:
 	UPROPERTY(EditDefaultsOnly)
 	ULearningAgentsNeuralNetwork* NN_Encoder;
@@ -44,5 +49,12 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ARL_BuildingSelectorManager> ManagerClass;
 
-	public:
+	void RandomlyPlaceBuilding(UBuildingSettings* Building);
+
+public:
+	virtual FGameResources GetSettlementResources() override;
+	virtual FGameResources GetSettlementIncomes() override;
+
+	virtual TArray<UBuildingSettings*> GetAvailableBuildings() override;
+	virtual void SelectBuilding(UBuildingSettings* Building) override;
 };
