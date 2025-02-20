@@ -7,6 +7,7 @@
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
+#include "Kismet/GameplayStatics.h"
 
 AGM_SelfPlay::AGM_SelfPlay()
 {
@@ -42,4 +43,19 @@ void AGM_SelfPlay::BeginPlay()
 {
 	Super::BeginPlay();
 	LoadGame();
+}
+
+void AGM_SelfPlay::EndGame(EGameEnding Ending, const FString& EndingMessage)
+{
+	Super::EndGame(Ending, EndingMessage);
+	RestartSelfPlay();
+}
+
+void AGM_SelfPlay::RestartSelfPlay()
+{
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	FName CurrentLevelName = *World->GetMapName();
+	UGameplayStatics::OpenLevel(this, CurrentLevelName);
 }

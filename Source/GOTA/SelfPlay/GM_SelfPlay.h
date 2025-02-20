@@ -29,4 +29,7 @@ class GOTA_API AGM_SelfPlay : public AGM_Ingame
 	TSubclassOf<AAIController> GuardianAIClass;
 
 	virtual void BeginPlay() override;
+	virtual void EndGame(EGameEnding Ending, const FString& EndingMessage) override;
+
+	void RestartSelfPlay();
 };

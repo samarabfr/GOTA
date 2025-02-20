@@ -63,9 +63,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void UnpauseGame();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
-	void EndGame(EGameEnding Ending, const FString& EndingMessage);
+	
+	virtual void EndGame(EGameEnding Ending, const FString& EndingMessage);
 
 private:
 	void CheckGameEndingConditions();
