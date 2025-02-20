@@ -4,26 +4,25 @@
 #include "RL_BuildingSelectorInteractor.h"
 
 #include "RL_BuildingSelectorAgent.h"
+#include "LearningAgentsObservations.h"
 
 URL_BuildingSelectorInteractor::URL_BuildingSelectorInteractor()
 {
 }
 
-void URL_BuildingSelectorInteractor::SpecifyAgentObservation_Implementation(
-	FLearningAgentsObservationSchemaElement& OutObservationSchemaElement,
+FLearningAgentsObservationSchemaElement URL_BuildingSelectorInteractor::SpecifyResourceObservation(
 	ULearningAgentsObservationSchema* InObservationSchema)
 {
-	// which observations the agents can do
-	// Resources observation
 	TMap<FName, FLearningAgentsObservationSchemaElement> ResourceMap;
 	ResourceMap.Add("Food", ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema));
 	ResourceMap.Add("Wood", ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema));
 	ResourceMap.Add("Stone", ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema));
-	FLearningAgentsObservationSchemaElement ResourcesObservation =
-		ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, ResourceMap);
-	// single Building: cost, Housing, ProductionType, Civilian enabled, army enabled, Defense enabled
-	// if civilian, army or defense enabled then all its values also
-	// Direct production
+	return ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, ResourceMap);
+}
+
+FLearningAgentsObservationSchemaElement URL_BuildingSelectorInteractor::SpecifyDirectProductionObservation(
+	ULearningAgentsObservationSchema* InObservationSchema)
+{
 	TMap<FName, FLearningAgentsObservationSchemaElement> BuildingDirectProductionMap;
 	BuildingDirectProductionMap.Add("DirectProductionTime",
 	                                ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema));
@@ -33,9 +32,12 @@ void URL_BuildingSelectorInteractor::SpecifyAgentObservation_Implementation(
 	                                ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema));
 	FLearningAgentsObservationSchemaElement BuildingDirectProductionStruct =
 		ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, BuildingDirectProductionMap);
-	FLearningAgentsObservationSchemaElement BuildingDirectProductionObservation =
-		ULearningAgentsObservations::SpecifyOptionalObservation(InObservationSchema, BuildingDirectProductionStruct);
-	// Civilian
+	return ULearningAgentsObservations::SpecifyOptionalObservation(InObservationSchema, BuildingDirectProductionStruct);
+}
+
+FLearningAgentsObservationSchemaElement URL_BuildingSelectorInteractor::SpecifyCivilianObservation(
+	ULearningAgentsObservationSchema* InObservationSchema)
+{
 	TMap<FName, FLearningAgentsObservationSchemaElement> BuildingCivilianMap;
 	BuildingCivilianMap.Add("CivilianProductionTime",
 	                        ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema));
@@ -44,16 +46,19 @@ void URL_BuildingSelectorInteractor::SpecifyAgentObservation_Implementation(
 	BuildingCivilianMap.Add("CivilianConsumptionAmount",
 	                        ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema));
 	BuildingCivilianMap.Add("CivilianInventoryLimit",
-	                        ResourcesObservation);
+	                        SpecifyResourceObservation(InObservationSchema));
 	BuildingCivilianMap.Add("CivilianMoveTime",
 	                        ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema));
 	BuildingCivilianMap.Add("CivilianRespawnTime",
 	                        ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema));
 	FLearningAgentsObservationSchemaElement BuildingCivilianStruct =
 		ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, BuildingCivilianMap);
-	FLearningAgentsObservationSchemaElement BuildingCivilianObservation =
-		ULearningAgentsObservations::SpecifyOptionalObservation(InObservationSchema, BuildingCivilianStruct);
-	// Army
+	return ULearningAgentsObservations::SpecifyOptionalObservation(InObservationSchema, BuildingCivilianStruct);
+}
+
+FLearningAgentsObservationSchemaElement URL_BuildingSelectorInteractor::SpecifyArmyObservation(
+	ULearningAgentsObservationSchema* InObservationSchema)
+{
 	TMap<FName, FLearningAgentsObservationSchemaElement> BuildingArmyMap;
 	BuildingArmyMap.Add("SecondsPerRecruitCycle",
 	                    ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema));
@@ -73,9 +78,12 @@ void URL_BuildingSelectorInteractor::SpecifyAgentObservation_Implementation(
 	                    ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema));
 	FLearningAgentsObservationSchemaElement BuildingArmyStruct =
 		ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, BuildingArmyMap);
-	FLearningAgentsObservationSchemaElement BuildingArmyObservation =
-		ULearningAgentsObservations::SpecifyOptionalObservation(InObservationSchema, BuildingArmyStruct);
-	// Defense
+	return ULearningAgentsObservations::SpecifyOptionalObservation(InObservationSchema, BuildingArmyStruct);
+}
+
+FLearningAgentsObservationSchemaElement URL_BuildingSelectorInteractor::SpecifyDefenseObservation(
+	ULearningAgentsObservationSchema* InObservationSchema)
+{
 	TMap<FName, FLearningAgentsObservationSchemaElement> BuildingDefenseMap;
 	BuildingDefenseMap.Add("RavageProtectionRange",
 	                       ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema));
@@ -89,34 +97,46 @@ void URL_BuildingSelectorInteractor::SpecifyAgentObservation_Implementation(
 	                       ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema));
 	FLearningAgentsObservationSchemaElement BuildingDefenseStruct =
 		ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, BuildingDefenseMap);
-	FLearningAgentsObservationSchemaElement BuildingDefenseObservation =
-		ULearningAgentsObservations::SpecifyOptionalObservation(InObservationSchema, BuildingDefenseStruct);
-	// Building overall
+	return ULearningAgentsObservations::SpecifyOptionalObservation(InObservationSchema, BuildingDefenseStruct);
+}
+
+FLearningAgentsObservationSchemaElement URL_BuildingSelectorInteractor::SpecifyBuildingObservation(
+	ULearningAgentsObservationSchema* InObservationSchema)
+{
 	TMap<FName, FLearningAgentsObservationSchemaElement> BuildingMap;
-	BuildingMap.Add("Cost", ResourcesObservation);
+	BuildingMap.Add("Cost", SpecifyResourceObservation(InObservationSchema));
 	BuildingMap.Add("Housing", ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema));
 	BuildingMap.Add("ProductionType", ULearningAgentsObservations::SpecifyEnumObservation(
 		                InObservationSchema, StaticEnum<EProductionType>()));
 	BuildingMap.Add("ConsumptionType", ULearningAgentsObservations::SpecifyEnumObservation(
 		                InObservationSchema, StaticEnum<EConsumptionType>()));
-	BuildingMap.Add("DirectProduction", BuildingDirectProductionObservation);
-	BuildingMap.Add("Civilian", BuildingCivilianObservation);
-	BuildingMap.Add("Army", BuildingArmyObservation);
-	BuildingMap.Add("Defense", BuildingDefenseObservation);
-	FLearningAgentsObservationSchemaElement BuildingObservation = ULearningAgentsObservations::SpecifyStructObservation(
-		InObservationSchema, BuildingMap);
-	// All available buildings
+	BuildingMap.Add("DirectProduction", SpecifyDirectProductionObservation(InObservationSchema));
+	BuildingMap.Add("Civilian", SpecifyCivilianObservation(InObservationSchema));
+	BuildingMap.Add("Army", SpecifyArmyObservation(InObservationSchema));
+	BuildingMap.Add("Defense", SpecifyDefenseObservation(InObservationSchema));
+	return ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, BuildingMap);
+}
+
+FLearningAgentsObservationSchemaElement URL_BuildingSelectorInteractor::SpecifySettlementObservation(
+	ULearningAgentsObservationSchema* InObservationSchema)
+{
 	FLearningAgentsObservationSchemaElement BuildingArrayObservation =
-		ULearningAgentsObservations::SpecifyArrayObservation(InObservationSchema, BuildingObservation, 20);
-	// Settlement
+		ULearningAgentsObservations::SpecifyArrayObservation(InObservationSchema,
+		                                                     SpecifyBuildingObservation(InObservationSchema),
+		                                                     20);
 	TMap<FName, FLearningAgentsObservationSchemaElement> SettlementMap;
-	SettlementMap.Add("Income", ResourcesObservation);
-	SettlementMap.Add("CurrentResources", ResourcesObservation);
+	SettlementMap.Add("Income", SpecifyResourceObservation(InObservationSchema));
+	SettlementMap.Add("CurrentResources", SpecifyResourceObservation(InObservationSchema));
 	SettlementMap.Add("AvailableBuildings", BuildingArrayObservation);
-	FLearningAgentsObservationSchemaElement SettlementObservation =
-		ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, SettlementMap);
-	// Result
-	OutObservationSchemaElement = SettlementObservation;
+	return ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, SettlementMap);
+}
+
+void URL_BuildingSelectorInteractor::SpecifyAgentObservation_Implementation(
+	FLearningAgentsObservationSchemaElement& OutObservationSchemaElement,
+	ULearningAgentsObservationSchema* InObservationSchema)
+{
+	// which observations the agents can do
+	OutObservationSchemaElement = SpecifySettlementObservation(InObservationSchema);
 }
 
 void URL_BuildingSelectorInteractor::GatherAgentObservation_Implementation(
