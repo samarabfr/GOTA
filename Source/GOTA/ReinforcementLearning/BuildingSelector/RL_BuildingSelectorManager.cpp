@@ -25,6 +25,10 @@ ARL_BuildingSelectorManager::ARL_BuildingSelectorManager()
 	ManagerComponent = CreateDefaultSubobject<ULearningAgentsManager>("LearningAgentsManager");
 
 	Tags.Add("LearningAgentsManager");
+
+	TrainingSettings = FLearningAgentsPPOTrainingSettings();
+	TrainingSettings.bUseTensorboard = true;
+	TrainingGameSettings = FLearningAgentsTrainingGameSettings();
 }
 
 void ARL_BuildingSelectorManager::Tick(float DeltaSeconds)
@@ -36,16 +40,22 @@ void ARL_BuildingSelectorManager::Tick(float DeltaSeconds)
 	}
 	else
 	{
-		FLearningAgentsPPOTrainingSettings TrainingSettings = FLearningAgentsPPOTrainingSettings();
-		TrainingSettings.bUseTensorboard = true;
-		FLearningAgentsTrainingGameSettings TrainingGameSettings = FLearningAgentsTrainingGameSettings();
 		PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings);
 	}
 }
 
-void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
-                                   ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic)
+void ARL_BuildingSelectorManager::DoLastTrainingRound(const EGameEnding Ending, const FString& EndMessage)
 {
+	PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings);
+}
+
+void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encoder,
+                                         ULearningAgentsNeuralNetwork* NN_Policy,
+                                         ULearningAgentsNeuralNetwork* NN_Decoder,
+                                         ULearningAgentsNeuralNetwork* NN_Critic)
+{
+	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
+	if (GameState) GameState->OnGameEnding.AddDynamic(this, &ARL_BuildingSelectorManager::DoLastTrainingRound);
 	// Interactor
 	Interactor = ULearningAgentsInteractor::MakeInteractor(
 		ManagerComponent, URL_BuildingSelectorInteractor::StaticClass(), FName("BuildingSelectorInteractor"));
@@ -78,6 +88,8 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 		ManagerComponent,
 		URL_BuildingSelectorTrainingEnv::StaticClass(),
 		FName("BuildingSelectorTrainingEnvironment"));
+	Cast<URL_BuildingSelectorTrainingEnv>(TrainingEnv)->Init(GameState, VictoryReward, LooseReward,
+	                                                         IncomeRewardMilestones, ResourcesRewardMilestones);
 	// Shared Memory
 	FLearningAgentsTrainerProcessSettings TrainerProcessSettings = FLearningAgentsTrainerProcessSettings();
 	FLearningAgentsSharedMemoryCommunicatorSettings SharedMemorySettings =

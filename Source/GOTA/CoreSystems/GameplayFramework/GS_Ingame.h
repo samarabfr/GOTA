@@ -148,6 +148,9 @@ private:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
 		FGameEndingSignature, const EGameEnding, Ending, const FString&, EndMessage);
 
+	// TODO: kann man mit Affiliation ersetzen: "WinningTeam"
+	EGameEnding GameEnding = EGameEnding::ColonistsWon;
+
 public:
 	UPROPERTY()
 	EGameStatus GameStatus = EGameStatus::Lobby;
@@ -158,6 +161,8 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void S_EndGame(EGameEnding Ending, const FString& EndingMessage);
+
+	EGameEnding GetGameEnding() const { return GameEnding; }
 
 	// ------------------- Reinforcement Learning Manager -------------------
 private:

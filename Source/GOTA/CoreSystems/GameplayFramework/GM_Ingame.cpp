@@ -127,12 +127,12 @@ void AGM_Ingame::CheckGameEndingConditions()
 
 	if (ColonialPop == 0)
 	{
-		EndGame(EGameEnding::Victory, FString("Victory! :)"));
+		EndGame(EGameEnding::NativesWon, FString("Victory! :)"));
 		return;
 	}
 	if (NativePop == 0)
 	{
-		EndGame(EGameEnding::Defeat, FString("Defeat! :("));
+		EndGame(EGameEnding::ColonistsWon, FString("Defeat! :("));
 		return;
 	}
 
@@ -143,7 +143,7 @@ void AGM_Ingame::CheckGameEndingConditions()
 	if (TreeRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
 	if (ForageRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
 	if (EcoUnderRatioCount >= 2)
-		EndGame(EGameEnding::Defeat, FString("Defeat! :("));
+		EndGame(EGameEnding::ColonistsWon, FString("Defeat! :("));
 }
 
 // ---------------------------------------------------------

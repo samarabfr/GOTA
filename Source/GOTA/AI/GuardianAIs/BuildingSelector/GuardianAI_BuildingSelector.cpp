@@ -45,6 +45,7 @@ void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 	Super::OnPossess(InPawn);
 	PossessedGuardian = Cast<AGuardian>(InPawn);
 	Settlement = GameState->GetTribe();
+	MilestonesReached.SetNumZeroed(6);
 }
 
 void AGuardianAI_BuildingSelector::RandomlyPlaceBuilding(UBuildingSettings* Building)
@@ -68,4 +69,20 @@ TArray<UBuildingSettings*> AGuardianAI_BuildingSelector::GetAvailableBuildings()
 void AGuardianAI_BuildingSelector::SelectBuilding(UBuildingSettings* Building)
 {
 	RandomlyPlaceBuilding(Building);
+}
+
+EAffiliation AGuardianAI_BuildingSelector::GetAffiliation()
+{
+	return EAffiliation::Ally;
+}
+
+TArray<int32> AGuardianAI_BuildingSelector::GetMilestonesReached()
+{
+	return MilestonesReached;
+}
+
+void AGuardianAI_BuildingSelector::IncrementMilestone(int32 MilestoneIndex)
+{
+	if (MilestoneIndex >= MilestonesReached.Num()) return;
+	MilestonesReached[MilestoneIndex] += 1;
 }

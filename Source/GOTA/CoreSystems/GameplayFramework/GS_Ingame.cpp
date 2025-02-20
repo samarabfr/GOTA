@@ -172,6 +172,7 @@ void AGS_Ingame::S_EndGame_Implementation(::EGameEnding Ending, const FString& E
 {
 	if (GameEnded) return;
 	GameEnded = true;
+	GameEnding = Ending;
 	OnGameEnding.Broadcast(Ending, EndingMessage);
 }
 

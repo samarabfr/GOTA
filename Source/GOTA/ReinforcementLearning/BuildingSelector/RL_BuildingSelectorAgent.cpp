@@ -16,3 +16,17 @@ TArray<UBuildingSettings*> IRL_BuildingSelectorAgent::GetAvailableBuildings()
 void IRL_BuildingSelectorAgent::SelectBuilding(UBuildingSettings* Building)
 {
 }
+
+EAffiliation IRL_BuildingSelectorAgent::GetAffiliation()
+{
+	return EAffiliation::Enemy;
+}
+
+TArray<int32> IRL_BuildingSelectorAgent::GetMilestonesReached()
+{
+	return TArray<int32>();
+}
+
+void IRL_BuildingSelectorAgent::IncrementMilestone(int32 MilestoneIndex)
+{
+}

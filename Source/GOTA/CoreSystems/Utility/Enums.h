@@ -9,7 +9,7 @@ enum class EAffiliation : uint8
 
 inline EAffiliation operator!(EAffiliation Affiliation)
 {
-	if(Affiliation == EAffiliation::Ally)
+	if (Affiliation == EAffiliation::Ally)
 		return EAffiliation::Enemy;
 	return EAffiliation::Ally;
 }
@@ -74,8 +74,8 @@ enum class EEcoValue : uint8
 UENUM()
 enum class EGameEnding : uint8
 {
-	Victory UMETA(DisplayName = "Victory"),
-	Defeat UMETA(DisplayName = "Defeat")
+	NativesWon UMETA(DisplayName = "NativesWon"),
+	ColonistsWon UMETA(DisplayName = "ColonistsWon")
 };
 
 UENUM()
@@ -84,7 +84,7 @@ enum class EGameStatus : uint8
 	Lobby UMETA(DisplayName = "Lobby"),
 	Loading UMETA(DisplayName = "Loading"),
 	Running UMETA(DisplayName = "Running"),
-	Ended UMETA(DisplayName = "Victory")
+	Ended UMETA(DisplayName = "Ended")
 };
 
 UENUM()

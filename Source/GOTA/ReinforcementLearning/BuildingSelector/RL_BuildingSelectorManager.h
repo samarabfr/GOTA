@@ -2,9 +2,12 @@
 
 #pragma once
 #include "LearningAgentsCommunicator.h"
+#include "LearningAgentsPPOTrainer.h"
 
 #include "RL_BuildingSelectorManager.generated.h"
 
+struct FMilestone;
+enum class EGameEnding : uint8;
 class ULearningAgentsPPOTrainer;
 class ULearningAgentsTrainingEnvironment;
 class ULearningAgentsCritic;
@@ -26,6 +29,9 @@ protected:
 	ARL_BuildingSelectorManager();
 
 	virtual void Tick(float DeltaSeconds) override;
+
+	UFUNCTION()
+	void DoLastTrainingRound(const EGameEnding Ending, const FString& EndMessage);
 
 	// ----------------------- Learning Agents plugin -----------------------
 private:
@@ -52,15 +58,25 @@ private:
 
 	UPROPERTY()
 	ULearningAgentsTrainingEnvironment* TrainingEnv;
+	UPROPERTY(EditDefaultsOnly)
+	float VictoryReward = 1000;
+	UPROPERTY(EditDefaultsOnly)
+	float LooseReward = -1000;
+	UPROPERTY(EditDefaultsOnly)
+	TArray<FMilestone> IncomeRewardMilestones;
+	UPROPERTY(EditDefaultsOnly)
+	TArray<FMilestone> ResourcesRewardMilestones;
 
 	FLearningAgentsCommunicator Communicator;
 	FLearningAgentsTrainerProcess TrainerProcess;
 
 	UPROPERTY()
 	ULearningAgentsPPOTrainer* PPOTrainer;
+	FLearningAgentsPPOTrainingSettings TrainingSettings;
+	FLearningAgentsTrainingGameSettings TrainingGameSettings;
 
 public:
 	void S_RegisterAgent(UObject* Agent);
 	void S_Init(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
-	          ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic);
+	            ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic);
 };

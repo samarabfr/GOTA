@@ -50,10 +50,13 @@ private:
 	TSubclassOf<ARL_BuildingSelectorManager> ManagerClass;
 
 	void RandomlyPlaceBuilding(UBuildingSettings* Building);
+	TArray<int32> MilestonesReached;
 
 public:
 	virtual ASettlement* GetSettlement() override;
-
 	virtual TArray<UBuildingSettings*> GetAvailableBuildings() override;
 	virtual void SelectBuilding(UBuildingSettings* Building) override;
+	virtual EAffiliation GetAffiliation() override;
+	virtual TArray<int32> GetMilestonesReached() override;
+	virtual void IncrementMilestone(int32 MilestoneIndex) override;
 };
