@@ -2,8 +2,13 @@
 
 #pragma once
 #include "LearningAgentsInteractor.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 
 #include "RL_BuildingSelectorInteractor.generated.h"
+
+class ASettlement;
+struct FGameResources;
+class IRL_BuildingSelectorAgent;
 
 UCLASS(Blueprintable)
 class GOTA_API URL_BuildingSelectorInteractor : public ULearningAgentsInteractor
@@ -30,6 +35,8 @@ private:
 		ULearningAgentsObservationSchema* InObservationSchema);
 	FLearningAgentsObservationSchemaElement SpecifySettlementObservation(
 		ULearningAgentsObservationSchema* InObservationSchema);
+	FLearningAgentsObservationSchemaElement SpecifyStateObservation(
+		ULearningAgentsObservationSchema* InObservationSchema);
 
 public:
 	virtual void SpecifyAgentObservation_Implementation(
@@ -38,6 +45,30 @@ public:
 
 	// ----------------------- Make Observations -----------------------
 private:
+	static FLearningAgentsObservationObjectElement MakeResourceObservation(
+		ULearningAgentsObservationObject* InObservationObject,
+		FGameResources Resources);
+	static FLearningAgentsObservationObjectElement MakeDirectProductionObservation(
+		ULearningAgentsObservationObject* InObservationObject,
+		const UBuildingSettings* Building);
+	FLearningAgentsObservationObjectElement MakeCivilianObservation(
+		ULearningAgentsObservationObject* InObservationObject,
+		UBuildingSettings* Building);
+	FLearningAgentsObservationObjectElement MakeArmyObservation(
+		ULearningAgentsObservationObject* InObservationObject,
+		UBuildingSettings* Building);
+	FLearningAgentsObservationObjectElement MakeDefenseObservation(
+		ULearningAgentsObservationObject* InObservationObject,
+		UBuildingSettings* Building);
+	FLearningAgentsObservationObjectElement MakeBuildingObservation(
+		ULearningAgentsObservationObject* InObservationObject,
+		UBuildingSettings* Building);
+	FLearningAgentsObservationObjectElement MakeSettlementObservation(
+		ULearningAgentsObservationObject* InObservationObject,
+		const ASettlement* Settlement);
+	FLearningAgentsObservationObjectElement MakeStateObservation(
+		ULearningAgentsObservationObject* InObservationObject,
+		IRL_BuildingSelectorAgent* Agent);
 
 public:
 	virtual void GatherAgentObservation_Implementation(

@@ -55,14 +55,9 @@ void AGuardianAI_BuildingSelector::RandomlyPlaceBuilding(UBuildingSettings* Buil
 	Tile->S_TryBuild(Building, Settlement.Get());
 }
 
-FGameResources AGuardianAI_BuildingSelector::GetSettlementResources()
+ASettlement* AGuardianAI_BuildingSelector::GetSettlement()
 {
-	return Settlement->GetResources();
-}
-
-FGameResources AGuardianAI_BuildingSelector::GetSettlementIncomes()
-{
-	return Settlement->GetEffectivePredictedProduction();
+	return Settlement.Get();
 }
 
 TArray<UBuildingSettings*> AGuardianAI_BuildingSelector::GetAvailableBuildings()

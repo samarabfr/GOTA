@@ -7,6 +7,7 @@
 #include "UObject/Interface.h"
 #include "RL_BuildingSelectorAgent.generated.h"
 
+class ASettlement;
 class UBuildingSettings;
 class ATile;
 // This class does not need to be modified.
@@ -24,9 +25,7 @@ class GOTA_API IRL_BuildingSelectorAgent
 	GENERATED_BODY()
 
 public:
-	virtual FGameResources GetSettlementResources();
-	virtual FGameResources GetSettlementIncomes();
-
+	virtual ASettlement* GetSettlement();
 	virtual TArray<UBuildingSettings*> GetAvailableBuildings();
 	virtual void SelectBuilding(UBuildingSettings* Building);
 };

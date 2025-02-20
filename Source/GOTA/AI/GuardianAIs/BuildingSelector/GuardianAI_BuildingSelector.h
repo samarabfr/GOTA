@@ -52,8 +52,7 @@ private:
 	void RandomlyPlaceBuilding(UBuildingSettings* Building);
 
 public:
-	virtual FGameResources GetSettlementResources() override;
-	virtual FGameResources GetSettlementIncomes() override;
+	virtual ASettlement* GetSettlement() override;
 
 	virtual TArray<UBuildingSettings*> GetAvailableBuildings() override;
 	virtual void SelectBuilding(UBuildingSettings* Building) override;

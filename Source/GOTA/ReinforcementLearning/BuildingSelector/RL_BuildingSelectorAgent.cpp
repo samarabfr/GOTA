@@ -3,14 +3,9 @@
 
 #include "RL_BuildingSelectorAgent.h"
 
-FGameResources IRL_BuildingSelectorAgent::GetSettlementResources()
+ASettlement* IRL_BuildingSelectorAgent::GetSettlement()
 {
-	return FGameResources();
-}
-
-FGameResources IRL_BuildingSelectorAgent::GetSettlementIncomes()
-{
-	return FGameResources();
+	return nullptr;
 }
 
 TArray<UBuildingSettings*> IRL_BuildingSelectorAgent::GetAvailableBuildings()
