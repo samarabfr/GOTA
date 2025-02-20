@@ -67,8 +67,7 @@ FGameResources AGuardianAI_BuildingSelector::GetSettlementIncomes()
 
 TArray<UBuildingSettings*> AGuardianAI_BuildingSelector::GetAvailableBuildings()
 {
-	// TODO: Move available buildings from UI to guardian
-	return IRL_BuildingSelectorAgent::GetAvailableBuildings();
+	return PossessedGuardian->GetPossibleBuildings();
 }
 
 void AGuardianAI_BuildingSelector::SelectBuilding(UBuildingSettings* Building)

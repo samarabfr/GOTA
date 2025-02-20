@@ -3,12 +3,6 @@
 
 #include "RL_BuildingSelectorAgent.h"
 
-
-void IRL_BuildingSelectorAgent::RandomlyPlaceBuilding(UBuildingSettings* Building)
-{
-	
-}
-
 FGameResources IRL_BuildingSelectorAgent::GetSettlementResources()
 {
 	return FGameResources();
