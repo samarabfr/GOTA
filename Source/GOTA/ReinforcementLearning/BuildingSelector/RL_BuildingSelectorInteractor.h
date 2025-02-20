@@ -21,21 +21,11 @@ protected:
 
 	// ----------------------- Specify Observations -----------------------
 private:
-	FLearningAgentsObservationSchemaElement SpecifyResourceObservation(
+	static FLearningAgentsObservationSchemaElement SpecifyResourceObservation(
 		ULearningAgentsObservationSchema* InObservationSchema);
-	FLearningAgentsObservationSchemaElement SpecifyDirectProductionObservation(
+	static FLearningAgentsObservationSchemaElement SpecifySettlementObservation(
 		ULearningAgentsObservationSchema* InObservationSchema);
-	FLearningAgentsObservationSchemaElement SpecifyCivilianObservation(
-		ULearningAgentsObservationSchema* InObservationSchema);
-	FLearningAgentsObservationSchemaElement SpecifyArmyObservation(
-		ULearningAgentsObservationSchema* InObservationSchema);
-	FLearningAgentsObservationSchemaElement SpecifyDefenseObservation(
-		ULearningAgentsObservationSchema* InObservationSchema);
-	FLearningAgentsObservationSchemaElement SpecifyBuildingObservation(
-		ULearningAgentsObservationSchema* InObservationSchema);
-	FLearningAgentsObservationSchemaElement SpecifySettlementObservation(
-		ULearningAgentsObservationSchema* InObservationSchema);
-	FLearningAgentsObservationSchemaElement SpecifyStateObservation(
+	static FLearningAgentsObservationSchemaElement SpecifyStateObservation(
 		ULearningAgentsObservationSchema* InObservationSchema);
 
 public:
@@ -48,25 +38,10 @@ private:
 	static FLearningAgentsObservationObjectElement MakeResourceObservation(
 		ULearningAgentsObservationObject* InObservationObject,
 		FGameResources Resources);
-	static FLearningAgentsObservationObjectElement MakeDirectProductionObservation(
-		ULearningAgentsObservationObject* InObservationObject,
-		const UBuildingSettings* Building);
-	FLearningAgentsObservationObjectElement MakeCivilianObservation(
-		ULearningAgentsObservationObject* InObservationObject,
-		UBuildingSettings* Building);
-	FLearningAgentsObservationObjectElement MakeArmyObservation(
-		ULearningAgentsObservationObject* InObservationObject,
-		UBuildingSettings* Building);
-	FLearningAgentsObservationObjectElement MakeDefenseObservation(
-		ULearningAgentsObservationObject* InObservationObject,
-		UBuildingSettings* Building);
-	FLearningAgentsObservationObjectElement MakeBuildingObservation(
-		ULearningAgentsObservationObject* InObservationObject,
-		UBuildingSettings* Building);
-	FLearningAgentsObservationObjectElement MakeSettlementObservation(
+	static FLearningAgentsObservationObjectElement MakeSettlementObservation(
 		ULearningAgentsObservationObject* InObservationObject,
 		const ASettlement* Settlement);
-	FLearningAgentsObservationObjectElement MakeStateObservation(
+	static FLearningAgentsObservationObjectElement MakeStateObservation(
 		ULearningAgentsObservationObject* InObservationObject,
 		IRL_BuildingSelectorAgent* Agent);
 
