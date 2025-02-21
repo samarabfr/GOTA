@@ -53,9 +53,5 @@ void AGM_SelfPlay::EndGame(EGameEnding Ending, const FString& EndingMessage)
 
 void AGM_SelfPlay::RestartSelfPlay()
 {
-	UWorld* World = GetWorld();
-	if (!World) return;
-
-	FName CurrentLevelName = *World->GetMapName();
-	UGameplayStatics::OpenLevel(this, CurrentLevelName);
+	GetWorld()->ServerTravel(IslandPath, TRAVEL_Absolute);
 }
