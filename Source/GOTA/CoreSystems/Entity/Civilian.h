@@ -29,6 +29,8 @@ public:
 	void S_Tick(const float DeltaSeconds);
 	void C_Tick(const float DeltaSeconds);
 
+	void Delete();
+
 private:
 	virtual void BeginDestroy() override;
 
@@ -43,14 +45,14 @@ private:
 	TWeakObjectPtr<UBuilding> OriginBuilding;
 
 	UPROPERTY()
-	AGS_Ingame* GameState;
+	TWeakObjectPtr<AGS_Ingame> GameState;
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	UStateTreeComponent* StateTree;
 	
 	UBuilding* GetOriginBuilding() const { return OriginBuilding.Get(); }
-	AGS_Ingame* GetGameState() const { return GameState; }
+	AGS_Ingame* GetGameState() const { return GameState.Get(); }
 
 	// ----------------- Progresser ------------------------
 protected:

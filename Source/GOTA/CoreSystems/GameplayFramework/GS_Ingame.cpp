@@ -8,6 +8,7 @@
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "GOTA/CoreSystems/Utility/StaticMeshBatcher.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -66,7 +67,10 @@ AGS_Ingame::AGS_Ingame()
 
 void AGS_Ingame::DeleteEverything()
 {
-	TileMap->Destroy();
+	UGameplayStatics::SetGlobalTimeDilation(this, 0.f);
+	TileMap->Delete();
+	
+	UGameplayStatics::SetGlobalTimeDilation(this, 1.f);
 }
 
 void AGS_Ingame::BeginPlay()

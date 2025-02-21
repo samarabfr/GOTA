@@ -5,6 +5,7 @@
 
 #include "TileMap.h"
 #include "Algo/RandomShuffle.h"
+#include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingArmy.h"
@@ -82,6 +83,22 @@ void ATile::S_Init()
 	SpawnOceanLineMeshes();
 }
 
+void ATile::Delete()
+{
+	if (Army.IsValid())
+	{
+		Army->Delete();
+	}
+	for (ACivilian* Civilian : Civilians)
+	{
+		if (Civilian)
+		{
+			Civilian->Delete();
+		}
+	}
+	Destroy();
+}
+
 TArray<ATile*> ATile::GetPathTo(ATile* Target)
 {
 	return ATileMap::GetPath(this, Target);
@@ -113,7 +130,7 @@ bool ATile::AcceptsEntity(const EEntityType EntityType) const
 
 AArmy* ATile::GetArmy() const
 {
-	return Army;
+	return Army.Get();
 }
 
 bool ATile::AcceptsArmy() const
@@ -122,13 +139,13 @@ bool ATile::AcceptsArmy() const
 		GetBuilding() &&
 		GetBuilding()->GetSettings()->bDefenseEnabled)
 		return false;
-	return !Army;
+	return !Army.IsValid();
 }
 
 void ATile::SetArmy(AArmy* NewArmy, FVector& NewLocation)
 {
 	Army = NewArmy;
-	if (Army) NewLocation = Settings->ArmySlot + GetActorLocation();
+	if (Army.IsValid()) NewLocation = Settings->ArmySlot + GetActorLocation();
 }
 
 void ATile::RemoveArmy()
