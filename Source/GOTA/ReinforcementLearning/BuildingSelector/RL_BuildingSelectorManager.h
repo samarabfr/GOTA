@@ -78,5 +78,6 @@ private:
 public:
 	void S_RegisterAgent(UObject* Agent);
 	void S_Init(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
-	            ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic);
+	            ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic,
+	            int32 AvailableBuildingsCount);
 };

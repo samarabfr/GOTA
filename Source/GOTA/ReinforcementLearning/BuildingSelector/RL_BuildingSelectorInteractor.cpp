@@ -90,6 +90,8 @@ void URL_BuildingSelectorInteractor::GatherAgentObservation_Implementation(
 	OutObservationObjectElement = MakeStateObservation(InObservationObject, Agent);
 }
 
+// ----------------------- Actions -----------------------
+
 void URL_BuildingSelectorInteractor::SpecifyAgentAction_Implementation(
 	FLearningAgentsActionSchemaElement& OutActionSchemaElement, ULearningAgentsActionSchema* InActionSchema)
 {
@@ -101,6 +103,7 @@ void URL_BuildingSelectorInteractor::SpecifyAgentAction_Implementation(
 	FLearningAgentsActionSchemaElement ChooseBuildingOptionalAction =
 		ULearningAgentsActions::SpecifyOptionalAction(InActionSchema, ChooseBuildingAction, 0.5,
 		                                              L"ChooseBuildingOptional");
+	OutActionSchemaElement = ChooseBuildingOptionalAction;
 }
 
 void URL_BuildingSelectorInteractor::PerformAgentAction_Implementation(
@@ -114,10 +117,10 @@ void URL_BuildingSelectorInteractor::PerformAgentAction_Implementation(
 	ELearningAgentsOptionalAction ExecuteChooseBuilding;
 	FLearningAgentsActionObjectElement ChooseBuildingAction;
 	ULearningAgentsActions::GetOptionalAction(ExecuteChooseBuilding, ChooseBuildingAction, InActionObject,
-		InActionObjectElement, L"ChooseBuildingOptional");
+	                                          InActionObjectElement, L"ChooseBuildingOptional");
 	if (ExecuteChooseBuilding == ELearningAgentsOptionalAction::Null) return;
 	int32 Index = 0;
-	ULearningAgentsActions::GetExclusiveDiscreteAction(Index, InActionObject, InActionObjectElement,
+	ULearningAgentsActions::GetExclusiveDiscreteAction(Index, InActionObject, ChooseBuildingAction,
 	                                                   L"ChooseBuilding");
 	TArray<UBuildingSettings*> AvailableBuildings = Agent->GetAvailableBuildings();
 	if (AvailableBuildings.Num() <= Index) return;

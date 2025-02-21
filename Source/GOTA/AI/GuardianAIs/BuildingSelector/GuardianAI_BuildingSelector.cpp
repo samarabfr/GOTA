@@ -16,26 +16,6 @@ void AGuardianAI_BuildingSelector::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 }
 
-void AGuardianAI_BuildingSelector::BeginPlay()
-{
-	Super::BeginPlay();
-	if (HasAuthority())
-	{
-		GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
-		ARL_BuildingSelectorManager* Manager = GameState->S_GetRLManager<ARL_BuildingSelectorManager>(ManagerClass);
-		if (!Manager)
-		{
-			Manager = GetWorld()->SpawnActor<ARL_BuildingSelectorManager>(ManagerClass,
-			                                                              FVector::Zero(),
-			                                                              FRotator::ZeroRotator);
-			Manager->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic);
-			AddTickPrerequisiteActor(Manager); // make the manager tick before this
-			GameState->S_AddManager(ManagerClass, Manager);
-		}
-		Manager->S_RegisterAgent(this);
-	}
-}
-
 AGuardianAI_BuildingSelector::AGuardianAI_BuildingSelector()
 {
 }
@@ -43,9 +23,25 @@ AGuardianAI_BuildingSelector::AGuardianAI_BuildingSelector()
 void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	PossessedGuardian = Cast<AGuardian>(InPawn);
-	Settlement = GameState->GetTribe();
-	MilestonesReached.SetNumZeroed(6);
+	if (HasAuthority())
+	{
+		GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
+		ARL_BuildingSelectorManager* Manager = GameState->S_GetRLManager<ARL_BuildingSelectorManager>(ManagerClass);
+		PossessedGuardian = Cast<AGuardian>(InPawn);
+		Settlement = GameState->GetTribe();
+		MilestonesReached.SetNumZeroed(6);
+		if (!Manager)
+		{
+			Manager = GetWorld()->SpawnActor<ARL_BuildingSelectorManager>(ManagerClass,
+			                                                              FVector::Zero(),
+			                                                              FRotator::ZeroRotator);
+			Manager->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic,
+			                PossessedGuardian->GetPossibleBuildings().Num());
+			AddTickPrerequisiteActor(Manager); // make the manager tick before this
+			GameState->S_AddManager(ManagerClass, Manager);
+		}
+		Manager->S_RegisterAgent(this);
+	}
 }
 
 void AGuardianAI_BuildingSelector::RandomlyPlaceBuilding(UBuildingSettings* Building)

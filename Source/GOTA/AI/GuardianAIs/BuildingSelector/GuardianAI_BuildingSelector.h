@@ -23,7 +23,6 @@ class GOTA_API AGuardianAI_BuildingSelector : public AAIController, public IRL_B
 
 private:
 	virtual void Tick(float DeltaSeconds) override;
-	virtual void BeginPlay() override;
 
 protected:
 	AGuardianAI_BuildingSelector();

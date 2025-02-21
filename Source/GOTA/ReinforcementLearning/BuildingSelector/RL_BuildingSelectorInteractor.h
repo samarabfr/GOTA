@@ -19,9 +19,6 @@ class GOTA_API URL_BuildingSelectorInteractor : public ULearningAgentsInteractor
 protected:
 	URL_BuildingSelectorInteractor();
 
-	public:
-	void Init(int32 InPossibleBuildingsCount);
-
 	// ----------------------- Specify Observations -----------------------
 private:
 	static FLearningAgentsObservationSchemaElement SpecifyResourceObservation(
@@ -54,11 +51,10 @@ public:
 		ULearningAgentsObservationObject* InObservationObject, const int32 AgentId) override;
 
 	// ----------------------- Actions -----------------------
-	private:
-	int32 PossibleBuildingsCount = 0;
+private:
+	int32 PossibleBuildingsCount = 9;
 
 public:
-
 	virtual void SpecifyAgentAction_Implementation(FLearningAgentsActionSchemaElement& OutActionSchemaElement,
 	                                               ULearningAgentsActionSchema* InActionSchema) override;
 
