@@ -33,9 +33,13 @@ void AGM_SelfPlay::CreateGuardians()
 		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(
 			GuardianSettings[i]->GuardianBlueprint, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
 		Guardian->S_Init(GuardianSettings[i], PossibleBuildingsForPlayers);
-		AAIController* GuardianAI = GetWorld()->SpawnActor<AAIController>(
+		if (GuardianAIClass)
+		{
+			AAIController* GuardianAI = GetWorld()->SpawnActor<AAIController>(
 			GuardianAIClass, SpawnLocation, FRotator::ZeroRotator);
-		GuardianAI->Possess(Guardian);
+			GuardianAI->Possess(Guardian);
+		}
+		
 	}
 }
 
@@ -55,5 +59,7 @@ void AGM_SelfPlay::EndGame(EGameEnding Ending, const FString& EndingMessage)
 
 void AGM_SelfPlay::RestartSelfPlay()
 {
-	GetWorld()->ServerTravel(IslandPath, TRAVEL_Absolute);
+	// Delete Everything
+	GOTAGameState->DeleteEverything();
+	// Load from the beginning
 }

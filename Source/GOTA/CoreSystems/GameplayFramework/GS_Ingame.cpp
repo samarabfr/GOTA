@@ -64,6 +64,11 @@ AGS_Ingame::AGS_Ingame()
 	Guardians.SetNumZeroed(4);
 }
 
+void AGS_Ingame::DeleteEverything()
+{
+	TileMap->Destroy();
+}
+
 void AGS_Ingame::BeginPlay()
 {
 	Super::BeginPlay();

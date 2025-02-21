@@ -52,6 +52,8 @@ public:
 	UPROPERTY(Replicated)
 	UStartParameter* StartParameter;
 
+	void DeleteEverything();
+
 	// ------------------- TileMap -------------------
 private:
 	UPROPERTY(Replicated)
