@@ -70,7 +70,6 @@ AGS_Ingame::AGS_Ingame()
 
 void AGS_Ingame::DeleteEverything()
 {
-	UGameplayStatics::SetGlobalTimeDilation(this, 0.f);
 	if (TileMap) TileMap->Delete();
 	if (LoadingManager) LoadingManager->Delete();
 	if (StaticMeshBatcher) StaticMeshBatcher->Delete();
@@ -80,7 +79,6 @@ void AGS_Ingame::DeleteEverything()
 	{
 		if (Guardian) Guardian->Delete();
 	}
-	UGameplayStatics::SetGlobalTimeDilation(this, 1.f);
 }
 
 void AGS_Ingame::BeginPlay()

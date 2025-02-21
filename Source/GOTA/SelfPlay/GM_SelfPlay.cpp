@@ -32,6 +32,7 @@ void AGM_SelfPlay::CreateGuardians()
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(
 			GuardianSettings[i]->GuardianBlueprint, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
+		GOTAGameState->SetGuardian(1, Guardian);
 		Guardian->S_Init(GuardianSettings[i], PossibleBuildingsForPlayers);
 		if (GuardianAIClass)
 		{
