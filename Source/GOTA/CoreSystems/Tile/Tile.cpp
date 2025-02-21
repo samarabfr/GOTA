@@ -193,18 +193,25 @@ void ATile::BuildingChanged()
 	}
 }
 
-bool ATile::CanBuild(ASettlement* Builder)
+bool ATile::CanBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
+	// Check if the Building allows to be placed on this Tile
+	for (FGameplayTagRule PlacementRule : BuildingDataAsset->PlacementRules)
+	{
+		if (!PlacementRule.IsValid(GameplayTags))
+			return false;
+	}
 	return !Building &&
 		Terrain.Biome != EBiome::Volcano &&
 		Builder != nullptr &&
 		Builder->GetCountOfBuilders() + Settings->ExtraAllowedConstructionSites
-		> Builder->GetCountOfConstructionSites();
+		> Builder->GetCountOfConstructionSites() &&
+		Builder->IsBorderingUnclaimedTile(this);
 }
 
 bool ATile::S_TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
-	if (!CanBuild(Builder)) return false;
+	if (!CanBuild(BuildingDataAsset, Builder)) return false;
 	return S_TryForceBuild(BuildingDataAsset, Builder);
 }
 
