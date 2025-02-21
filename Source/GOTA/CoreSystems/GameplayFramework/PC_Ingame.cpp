@@ -102,10 +102,7 @@ void APC_Ingame::OnRep_Guardian()
 
 void APC_Ingame::InitDistanceUtils(AGuardian* _)
 {
-	if (!Guardian)
-		return;
-
-	if (!IsLocalController())
+	if (!Guardian || !IsLocalController() || !DistanceUtils)
 		return;
 
 	DistanceUtils->AttachToActor(Guardian, FAttachmentTransformRules::SnapToTargetIncludingScale);
@@ -143,16 +140,19 @@ void APC_Ingame::S_SetBuildingPlacer(ABuildingPlacer* NewBuildingPlacer)
 
 void APC_Ingame::StartPlacingBuilding(UBuildingSettings* Building)
 {
+	if (!BuildingPlacer) return;
 	BuildingPlacer->StartPlacingBuilding(Building);
 }
 
 void APC_Ingame::StopPlacingBuilding()
 {
+	if (!BuildingPlacer) return;
 	BuildingPlacer->StopPlacingBuilding();
 }
 
 void APC_Ingame::PlaceBuilding()
 {
+	if (!BuildingPlacer) return;
 	BuildingPlacer->PlaceBuilding();
 }
 
@@ -161,7 +161,7 @@ void APC_Ingame::PlaceBuilding()
 
 void APC_Ingame::ActivateCurrentlyTargetingAbility()
 {
-	if (!CurrentlyTargeting.IsValid()) return;
+	if (!CurrentlyTargeting.IsValid() || !MouseUtils.IsValid()) return;
 
 	CurrentlyTargeting.Get()->ActivateAbility(MouseUtils->GetHoverAbilityTarget());
 	CancelTargeting();
@@ -170,12 +170,14 @@ void APC_Ingame::ActivateCurrentlyTargetingAbility()
 void APC_Ingame::StartTargeting(AAbility* Ability)
 {
 	CurrentlyTargeting = Ability;
+	if (!AbilityIndicator.Get()) return;
 	AbilityIndicator->Activate();
 }
 
 void APC_Ingame::CancelTargeting()
 {
 	CurrentlyTargeting = nullptr;
+	if (!AbilityIndicator.Get()) return;
 	AbilityIndicator->Deactivate();
 }
 
@@ -244,15 +246,14 @@ void APC_Ingame::OnRep_MouseUtils()
 
 void APC_Ingame::MouseUtilsChanged()
 {
-	if (IsLocalController())
-	{
-		MouseUtils->SetPlayerController(this);
-		MouseUtils->OnHoverActorChanged.AddDynamic(this, &APC_Ingame::HoverActorChanged);
-	}
+	if (!IsLocalController() || !MouseUtils.IsValid()) return;
+	MouseUtils->SetPlayerController(this);
+	MouseUtils->OnHoverActorChanged.AddDynamic(this, &APC_Ingame::HoverActorChanged);
 }
 
 void APC_Ingame::HoverActorChanged(AActor* Actor)
 {
+	if (!IngameUI) return;
 	IngameUI->HoverActor(Actor);
 }
 
@@ -304,7 +305,7 @@ void APC_Ingame::LeftClick(const FInputActionInstance& Instance)
 	{
 		ActivateCurrentlyTargetingAbility();
 	}
-	else if (BuildingPlacer->IsPlacing())
+	else if (BuildingPlacer && BuildingPlacer->IsPlacing())
 	{
 		PlaceBuilding();
 	}

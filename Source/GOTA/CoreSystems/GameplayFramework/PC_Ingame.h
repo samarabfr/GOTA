@@ -32,9 +32,9 @@ class GOTA_API APC_Ingame : public APlayerController
 public:
 	virtual void BeginPlay() override;
 
-	void S_Init();
+	virtual void S_Init();
 
-	void C_Init();
+	virtual void C_Init();
 
 	// -------------------------------------------- Utility --------------------------------------------
 private:

@@ -82,6 +82,7 @@ void AGM_Ingame::LoadGame()
 {
 	GOTAGameState = GetGameState<AGS_Ingame>();
 	GOTAGameState->GameStatus = EGameStatus::Loading;
+	GOTAGameState->GameEnded = false;
 	GetWorld()->SpawnActor<ALoadingManager>();
 }
 

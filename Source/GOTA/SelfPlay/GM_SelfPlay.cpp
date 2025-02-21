@@ -63,4 +63,5 @@ void AGM_SelfPlay::RestartSelfPlay()
 	// Delete Everything
 	GOTAGameState->DeleteEverything();
 	// Load from the beginning
+	LoadGame();
 }
