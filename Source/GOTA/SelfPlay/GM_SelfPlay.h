@@ -31,6 +31,9 @@ class GOTA_API AGM_SelfPlay : public AGM_Ingame
 	UPROPERTY(EditDefaultsOnly)
 	FString IslandPath = "/Game/SelfPlay/SelfPlay_Island";
 
+	UPROPERTY(EditDefaultsOnly)
+	float TimeDilation = 20.0f;
+
 	virtual void BeginPlay() override;
 	virtual void EndGame(EGameEnding Ending, const FString& EndingMessage) override;
 

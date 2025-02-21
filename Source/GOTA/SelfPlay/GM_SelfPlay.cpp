@@ -43,6 +43,8 @@ void AGM_SelfPlay::BeginPlay()
 {
 	Super::BeginPlay();
 	LoadGame();
+	// set max time dilation
+	UGameplayStatics::SetGlobalTimeDilation(this, TimeDilation);
 }
 
 void AGM_SelfPlay::EndGame(EGameEnding Ending, const FString& EndingMessage)
