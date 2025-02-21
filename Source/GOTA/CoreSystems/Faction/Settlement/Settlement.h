@@ -75,7 +75,7 @@ private:
 	// Per Second
 	UPROPERTY(EditAnywhere, Replicated)
 	float GrowthPerNeighborPop = 0.0f;
-	
+
 public:
 	USettlementPopulation* GetPopulation() { return Population; }
 
@@ -90,9 +90,12 @@ public:
 
 	float GetGrowthPerNeighborPop() const { return GrowthPerNeighborPop; }
 
-	// --------------------------- Claims ---------------------------
+	// --------------------------- Building ---------------------------
 protected:
 	void RefreshBorderingUnclaimedTiles();
+	
+	UPROPERTY(EditDefaultsOnly)
+	TArray<UBuildingSettings*> StartingBuildings;
 
 public:
 	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
@@ -103,17 +106,12 @@ public:
 
 	bool IsBorderingUnclaimedTile(const ATile* Tile) const;
 
-	// --------------------------- Building ---------------------------
-private:
-	UPROPERTY(EditDefaultsOnly)
-	TArray<UBuildingSettings*> StartingBuildings;
-
-public:
 	void S_RegisterTile(ATile* Tile);
 	void RegisterPopulation(UPopulation* InPopulation);
 
 	void S_UnregisterTile(ATile* Tile);
 	void UnregisterPopulation(UPopulation* InPopulation);
+	int32 GetCountOfConstructionSites();
 
 	// --------------------------- Resources ---------------------------
 private:
@@ -155,4 +153,10 @@ public:
 
 	void S_AddResources(FGameResources Amount);
 	void S_RemoveResources(FGameResources Amount);
+
+
+	// --------------------------- Civilians ---------------------------
+
+public:
+	int32 GetCountOfBuilders();
 };
