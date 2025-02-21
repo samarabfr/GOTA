@@ -3,7 +3,10 @@
 #include "Settlement.h"
 
 #include "SettlementPopulation.h"
+#include "GOTA/CoreSystems/Entity/Builder.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingCivilian.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
@@ -55,13 +58,13 @@ void ASettlement::S_Init(ATile* SpawnTile)
 {
 	S_AddResources(StartingResources);
 
-	SpawnTile->S_TryBuild(StartingBuildings[0], this);
+	SpawnTile->S_TryForceBuild(StartingBuildings[0], this);
 	SpawnTile->GetBuilding()->FinishConstruction();
 	for (int32 i = 1; i < StartingBuildings.Num(); ++i)
 	{
 		if (BorderingUnclaimedTiles.Num() <= 0) break;
 		ATile* Tile = BorderingUnclaimedTiles[FMath::RandRange(0, BorderingUnclaimedTiles.Num() - 1)];
-		Tile->S_TryBuild(StartingBuildings[i], this);
+		Tile->S_TryForceBuild(StartingBuildings[i], this);
 		Tile->GetBuilding()->FinishConstruction();
 	}
 	for (ATile* Tile : ClaimedTiles)
@@ -186,6 +189,42 @@ void ASettlement::S_RemoveResources(const FGameResources Amount)
 	Resources -= Amount;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
 	ForceNetUpdate();
+}
+
+int32 ASettlement::GetCountOfBuilders()
+{
+	int32 Count = 0;
+	for (ATile* ClaimedTile : ClaimedTiles)
+	{
+		if (ClaimedTile &&
+			ClaimedTile->GetBuilding() &&
+			ClaimedTile->GetBuilding()->GetSettings()->bCivilianEnabled)
+		{
+			UBuildingCivilian* Building = Cast<UBuildingCivilian>(ClaimedTile->GetBuilding());
+			if (Building &&
+				Building->GetCivilian() &&
+				Cast<ABuilder>(Building->GetCivilian()) != nullptr)
+			{
+				++Count;
+			}
+		}		
+	}
+	return Count;
+}
+
+int32 ASettlement::GetCountOfConstructionSites()
+{
+	int32 Count = 0;
+	for (ATile* ClaimedTile : ClaimedTiles)
+	{
+		if (ClaimedTile &&
+			ClaimedTile->GetBuilding() &&
+			ClaimedTile->GetBuilding()->GetIsUnderConstruction())
+		{
+			++Count;
+		}		
+	}
+	return Count;
 }
 
 void ASettlement::RegisterBuildingForResourcePrediction(UBuilding* Building)

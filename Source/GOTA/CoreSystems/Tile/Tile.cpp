@@ -193,14 +193,31 @@ void ATile::BuildingChanged()
 	}
 }
 
-bool ATile::CanBuild()
+bool ATile::CanBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
-	return !Building && Terrain.Biome != EBiome::Volcano;
+	// Check if the Building allows to be placed on this Tile
+	for (FGameplayTagRule PlacementRule : BuildingDataAsset->PlacementRules)
+	{
+		if (!PlacementRule.IsValid(GameplayTags))
+			return false;
+	}
+	return !Building &&
+		Terrain.Biome != EBiome::Volcano &&
+		Builder != nullptr &&
+		Builder->GetCountOfBuilders() + Settings->ExtraAllowedConstructionSites
+		> Builder->GetCountOfConstructionSites() &&
+		Builder->IsBorderingUnclaimedTile(this);
 }
 
 bool ATile::S_TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
-	if (!CanBuild() || !Builder) return false;
+	if (!CanBuild(BuildingDataAsset, Builder)) return false;
+	return S_TryForceBuild(BuildingDataAsset, Builder);
+}
+
+bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
+{
+	if (!Builder) return false;
 	//check if multiple production things are on
 	int32 EnabledCount = 0;
 	EnabledCount += BuildingDataAsset->bDirectProductionEnabled;
