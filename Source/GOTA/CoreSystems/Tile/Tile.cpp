@@ -193,14 +193,24 @@ void ATile::BuildingChanged()
 	}
 }
 
-bool ATile::CanBuild()
+bool ATile::CanBuild(ASettlement* Builder)
 {
-	return !Building && Terrain.Biome != EBiome::Volcano;
+	return !Building &&
+		Terrain.Biome != EBiome::Volcano &&
+		Builder != nullptr &&
+		Builder->GetCountOfBuilders() + Settings->ExtraAllowedConstructionSites
+		> Builder->GetCountOfConstructionSites();
 }
 
 bool ATile::S_TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
-	if (!CanBuild() || !Builder) return false;
+	if (!CanBuild(Builder)) return false;
+	return S_TryForceBuild(BuildingDataAsset, Builder);
+}
+
+bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
+{
+	if (!Builder) return false;
 	//check if multiple production things are on
 	int32 EnabledCount = 0;
 	EnabledCount += BuildingDataAsset->bDirectProductionEnabled;

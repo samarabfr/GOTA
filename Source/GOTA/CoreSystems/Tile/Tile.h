@@ -126,9 +126,11 @@ public:
 
 	FOnTileChangedSignature OnBuildingChanged;
 
-	bool CanBuild();
+	bool CanBuild(ASettlement* Builder);
 
 	bool S_TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder);
+
+	bool S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder);
 
 	void S_Unbuild();
 
