@@ -6,6 +6,9 @@
 #include "LoadingManager.h"
 #include "StartParameter.h"
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
+#include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "GOTA/CoreSystems/Utility/StaticMeshBatcher.h"
 #include "Kismet/GameplayStatics.h"
@@ -68,8 +71,15 @@ AGS_Ingame::AGS_Ingame()
 void AGS_Ingame::DeleteEverything()
 {
 	UGameplayStatics::SetGlobalTimeDilation(this, 0.f);
-	TileMap->Delete();
-	
+	if (TileMap) TileMap->Delete();
+	if (LoadingManager) LoadingManager->Delete();
+	if (StaticMeshBatcher) StaticMeshBatcher->Delete();
+	if (Colony) Colony->Delete();
+	if (Tribe) Tribe->Delete();
+	for (AGuardian* Guardian : Guardians)
+	{
+		if (Guardian) Guardian->Delete();
+	}
 	UGameplayStatics::SetGlobalTimeDilation(this, 1.f);
 }
 

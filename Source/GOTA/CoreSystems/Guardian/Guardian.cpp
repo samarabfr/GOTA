@@ -46,6 +46,11 @@ void AGuardian::BeginPlay()
 	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
 }
 
+void AGuardian::Delete()
+{
+	Destroy();
+}
+
 void AGuardian::S_Init(UGuardianSettings* InSettings, TArray<UBuildingSettings*> InPossibleBuildings)
 {
 	Settings = InSettings;

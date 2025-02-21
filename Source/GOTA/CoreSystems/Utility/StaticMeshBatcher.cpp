@@ -8,6 +8,11 @@ AStaticMeshBatcher::AStaticMeshBatcher()
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ROOT"));
 }
 
+void AStaticMeshBatcher::Delete()
+{
+	Destroy();
+}
+
 FPrimitiveInstanceId AStaticMeshBatcher::AddStaticMeshInstance(UStaticMesh* StaticMesh, const FTransform& Transform, const bool bCastShadow)
 {
 	UInstancedStaticMeshComponent* ISMC = nullptr;

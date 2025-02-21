@@ -57,10 +57,10 @@ public:
 	// ------------------- TileMap -------------------
 private:
 	UPROPERTY(Replicated)
-	TWeakObjectPtr<ATileMap> TileMap;
+	ATileMap* TileMap;
 
 public:
-	ATileMap* GetTileMap() const { return TileMap.Get(); }
+	ATileMap* GetTileMap() const { return TileMap; }
 
 	void SetTileMap(ATileMap* NewTileMap);
 

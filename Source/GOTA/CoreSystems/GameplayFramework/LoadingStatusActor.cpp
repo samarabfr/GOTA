@@ -28,6 +28,11 @@ ALoadingStatusActor::ALoadingStatusActor()
 	bAlwaysRelevant = true;
 }
 
+void ALoadingStatusActor::Delete()
+{
+	Destroy();
+}
+
 void ALoadingStatusActor::IncreaseReplicationCount()
 {
 	++RepCount;

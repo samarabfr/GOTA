@@ -27,6 +27,7 @@ public:
 	void S_Init(UGuardianSettings* InSettings, TArray<UBuildingSettings*> InPossibleBuildings);
 
 	virtual void BeginPlay() override;
+	virtual void Delete();
 
 	// ---------------------------------------- Utility ----------------------------------------
 private:

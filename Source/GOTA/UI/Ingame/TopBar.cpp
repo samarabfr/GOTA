@@ -26,7 +26,7 @@ void UTopBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 		return;
 	ResourceUpdateTimeCounter = 0.0f;
 
-	if (!GameState) return;
+	if (!GameState || !GameState->GetColony() || !GameState->GetTribe()) return;
 	int16 Colonists = GameState->GetColony()->GetPopulation()->GetSize();
 	int16 Natives = GameState->GetTribe()->GetPopulation()->GetSize();
 	if (Colonists + Natives != 0)
