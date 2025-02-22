@@ -49,16 +49,17 @@ void AGuardianAI_BuildingSelector::RandomlyPlaceBuilding(UBuildingSettings* Buil
 	if (Settlement->BorderingUnclaimedTiles.Num() <= 0) return;
 	const int32 RandomIndex = FMath::RandRange(0, Settlement->BorderingUnclaimedTiles.Num() - 1);
 	ATile* Tile = Settlement->BorderingUnclaimedTiles[RandomIndex];
-	Tile->S_TryBuild(Building, Settlement.Get());
+	Tile->S_TryBuild(Building, Settlement);
 }
 
 ASettlement* AGuardianAI_BuildingSelector::GetSettlement()
 {
-	return Settlement.Get();
+	return Settlement;
 }
 
 TArray<UBuildingSettings*> AGuardianAI_BuildingSelector::GetAvailableBuildings()
 {
+	if (!PossessedGuardian) return TArray<UBuildingSettings*>();
 	return PossessedGuardian->GetPossibleBuildings();
 }
 

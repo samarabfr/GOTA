@@ -6,6 +6,7 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "GS_Ingame.generated.h"
 
+class AAIController;
 class ULearningAgentsManager;
 class ULearningAgentsNeuralNetwork;
 class ATile;
@@ -165,6 +166,18 @@ public:
 	void S_EndGame(EGameEnding Ending, const FString& EndingMessage);
 
 	EGameEnding GetGameEnding() const { return GameEnding; }
+
+
+	// ------------------- Reinforcement Learning Manager -------------------
+
+private:
+	TArray<AAIController*> GuardianAIControllers;
+
+public:
+	TArray<AAIController*> GetGuardianAIControllers() const;
+	AAIController* GetGuardianAIController(int32 GOTAPlayerID) const;
+	void SetGuardianAIController(int32 GOTAPlayerID, AAIController* GuardianAIController);
+
 
 	// ------------------- Reinforcement Learning Manager -------------------
 private:

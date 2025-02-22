@@ -30,9 +30,12 @@ protected:
 
 	// ----------------------- Utility -----------------------
 private:
-	TWeakObjectPtr<AGS_Ingame> GameState;
-	TWeakObjectPtr<AGuardian> PossessedGuardian;
-	TWeakObjectPtr<ASettlement> Settlement;
+	UPROPERTY()
+	AGS_Ingame* GameState;
+	UPROPERTY()
+	AGuardian* PossessedGuardian;
+	UPROPERTY()
+	ASettlement* Settlement;
 	virtual void OnPossess(APawn* InPawn) override;
 
 	// ----------------------- Reinforcement Learning -----------------------

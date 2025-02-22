@@ -34,9 +34,13 @@ void AGM_SelfPlay::CreateGuardians()
 			GuardianSettings[i]->GuardianBlueprint, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
 		GOTAGameState->SetGuardian(1, Guardian);
 		Guardian->S_Init(GuardianSettings[i], PossibleBuildingsForPlayers);
-		if (GuardianAIClass)
+		if (AAIController* GuardianAI = GOTAGameState->GetGuardianAIController(i))
 		{
-			AAIController* GuardianAI = GetWorld()->SpawnActor<AAIController>(
+			GuardianAI->Possess(Guardian);
+		}
+		else if (GuardianAIClass)
+		{
+			GuardianAI = GetWorld()->SpawnActor<AAIController>(
 			GuardianAIClass, SpawnLocation, FRotator::ZeroRotator);
 			GuardianAI->Possess(Guardian);
 		}
