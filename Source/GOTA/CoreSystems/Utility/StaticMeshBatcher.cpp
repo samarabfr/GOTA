@@ -16,7 +16,8 @@ void AStaticMeshBatcher::Clear()
 	}
 }
 
-FPrimitiveInstanceId AStaticMeshBatcher::AddStaticMeshInstance(UStaticMesh* StaticMesh, const FTransform& Transform, const bool bCastShadow)
+FPrimitiveInstanceId AStaticMeshBatcher::AddStaticMeshInstance(UStaticMesh* StaticMesh, const FTransform& Transform,
+                                                               const bool bCastShadow)
 {
 	UInstancedStaticMeshComponent* ISMC = nullptr;
 	if (!ISMC_Map.Contains(StaticMesh))
@@ -44,10 +45,16 @@ FPrimitiveInstanceId AStaticMeshBatcher::AddStaticMeshInstance(UStaticMesh* Stat
 void AStaticMeshBatcher::RemoveStaticMeshInstance(const UStaticMesh* StaticMesh, const FPrimitiveInstanceId& InstanceId)
 {
 	UInstancedStaticMeshComponent* ISMC = *ISMC_Map.Find(StaticMesh);
+	if (!ISMC->IsValidId(InstanceId))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("StaticMeshBatcher: Tried to remove an instance with an invalid instanceId."));
+		return;
+	}
 	ISMC->RemoveInstanceById(InstanceId);
 }
 
-void AStaticMeshBatcher::UpdateStaticMeshTransform(const UStaticMesh* StaticMesh, const FPrimitiveInstanceId& InstanceId,
+void AStaticMeshBatcher::UpdateStaticMeshTransform(const UStaticMesh* StaticMesh,
+                                                   const FPrimitiveInstanceId& InstanceId,
                                                    const FTransform& Transform)
 {
 	UInstancedStaticMeshComponent* ISMC = *ISMC_Map.Find(StaticMesh);
