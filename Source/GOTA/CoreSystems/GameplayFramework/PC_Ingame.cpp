@@ -128,7 +128,7 @@ void APC_Ingame::S_SetGuardian(AGuardian* NewGuardian)
 
 void APC_Ingame::ClickActor()
 {
-	if (!IngameUI) return;
+	if (!IngameUI || !MouseUtils.IsValid()) return;
 	IngameUI->ClickActor(MouseUtils->GetHoverActor());
 }
 
