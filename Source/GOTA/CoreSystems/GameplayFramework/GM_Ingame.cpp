@@ -118,6 +118,7 @@ void AGM_Ingame::EndGame(EGameEnding Ending, const FString& EndingMessage)
 void AGM_Ingame::CheckGameEndingConditions()
 {
 	if (GOTAGameState->GameEnded) return;
+	if (GOTAGameState->GameStatus == EGameStatus::Loading) return;
 	if (!GOTAGameState->GetColony()) return;
 	if (!GOTAGameState->GetTribe()) return;
 
@@ -144,7 +145,9 @@ void AGM_Ingame::CheckGameEndingConditions()
 	if (TreeRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
 	if (ForageRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
 	if (EcoUnderRatioCount >= 2)
+	{
 		EndGame(EGameEnding::ColonistsWon, FString("Defeat! :("));
+	}
 }
 
 // ---------------------------------------------------------
