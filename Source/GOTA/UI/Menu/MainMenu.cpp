@@ -16,6 +16,7 @@ void UMainMenu::NativeConstruct()
 	BTN_SinglePlayer->OnPressed.AddDynamic(this, &UMainMenu::StartSinglePlayer);
 	BTN_Multiplayer->OnPressed.AddDynamic(this, &UMainMenu::OpenMultiplayerMenu);
 	BTN_Settings->OnPressed.AddDynamic(this, &UMainMenu::OpenSettings);
+	BTN_SelfPlay->OnPressed.AddDynamic(this, &UMainMenu::StartSelfPlay);
 	BTN_Quit->OnPressed.AddDynamic(this, &UMainMenu::QuitGame);
 
 	WBP_Options->BTN_Back->OnPressed.AddDynamic(this, &UMainMenu::OpenMainMenu);
@@ -40,6 +41,12 @@ void UMainMenu::OpenSettings()
 {
 	VB_Menu->SetVisibility(ESlateVisibility::Hidden);
 	WBP_Options->SetVisibility(ESlateVisibility::Visible);
+}
+
+void UMainMenu::StartSelfPlay()
+{
+	AGM_MainMenu* GameMode = GetWorld()->GetAuthGameMode<AGM_MainMenu>();
+	GameMode->StartSelfPlay();
 }
 
 void UMainMenu::OpenMainMenu()
