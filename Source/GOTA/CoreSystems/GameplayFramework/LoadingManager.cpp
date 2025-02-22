@@ -28,6 +28,15 @@ ALoadingManager::ALoadingManager()
 	bAlwaysRelevant = true;
 }
 
+void ALoadingManager::Delete()
+{
+	for (ALoadingStatusActor* Status : LoadingStatuses)
+	{
+		if (Status) Status->Delete();
+	}
+	Destroy();
+}
+
 void ALoadingManager::BeginPlay()
 {
 	Super::BeginPlay();
@@ -35,7 +44,7 @@ void ALoadingManager::BeginPlay()
 	GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->SetLoadingManager(this);
 	LocalPlayerController = GetWorld()->GetFirstPlayerController<APC_Ingame>();
-	if(LocalPlayerController.IsValid())
+	if(LocalPlayerController)
 	{
 		LocalPlayerController->RemoveLobbyUI();
 		LocalPlayerController->CreateLoadingUI();
@@ -136,7 +145,7 @@ void ALoadingManager::ServerTick()
 void ALoadingManager::ClientTick()
 {
 	// Check for GOTAPlayerID
-	if (GOTAPlayerID < 0 && LocalPlayerController.IsValid() && LocalPlayerController->GetPlayerState<APS_Ingame>())
+	if (GOTAPlayerID < 0 && LocalPlayerController && LocalPlayerController->GetPlayerState<APS_Ingame>())
 		GOTAPlayerID = LocalPlayerController->GetPlayerState<APS_Ingame>()->GOTAPlayerID;
 	if (GOTAPlayerID < 0)
 		return;

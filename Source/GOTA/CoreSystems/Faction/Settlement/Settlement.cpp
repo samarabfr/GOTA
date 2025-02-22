@@ -54,6 +54,11 @@ void ASettlement::BeginPlay()
 	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
 }
 
+void ASettlement::Delete()
+{
+	Destroy();
+}
+
 void ASettlement::S_Init(ATile* SpawnTile)
 {
 	S_AddResources(StartingResources);

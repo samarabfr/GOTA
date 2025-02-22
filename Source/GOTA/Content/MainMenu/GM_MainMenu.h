@@ -13,7 +13,8 @@ class GOTA_API AGM_MainMenu : public AGameModeBase
 
 
 private:
-	const FString IslandPath = "/Game/CoreSystems/GameplayFramework/Island";
+	UPROPERTY(EditDefaultsOnly)
+	FString IslandPath = "/Game/CoreSystems/GameplayFramework/Island";
 	
 public:
 	UFUNCTION(BlueprintCallable)

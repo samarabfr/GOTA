@@ -1,0 +1,64 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+#include "AIController.h"
+#include "GOTA/ReinforcementLearning/BuildingSelector/RL_BuildingSelectorAgent.h"
+
+#include "GuardianAI_BuildingSelector.generated.h"
+
+class ASettlement;
+class AGuardian;
+class ULearningAgentsManager;
+class ARL_BuildingSelectorManager;
+class AGS_Ingame;
+class ULearningAgentsNeuralNetwork;
+class ATile;
+
+UCLASS(Blueprintable)
+class GOTA_API AGuardianAI_BuildingSelector : public AAIController, public IRL_BuildingSelectorAgent
+{
+	GENERATED_BODY()
+
+	// ----------------------- LifeCycle -----------------------
+
+private:
+	virtual void Tick(float DeltaSeconds) override;
+
+protected:
+	AGuardianAI_BuildingSelector();
+
+
+	// ----------------------- Utility -----------------------
+private:
+	UPROPERTY()
+	AGS_Ingame* GameState;
+	UPROPERTY()
+	AGuardian* PossessedGuardian;
+	UPROPERTY()
+	ASettlement* Settlement;
+	virtual void OnPossess(APawn* InPawn) override;
+
+	// ----------------------- Reinforcement Learning -----------------------
+private:
+	UPROPERTY(EditDefaultsOnly)
+	ULearningAgentsNeuralNetwork* NN_Encoder;
+	UPROPERTY(EditDefaultsOnly)
+	ULearningAgentsNeuralNetwork* NN_Policy;
+	UPROPERTY(EditDefaultsOnly)
+	ULearningAgentsNeuralNetwork* NN_Decoder;
+	UPROPERTY(EditDefaultsOnly)
+	ULearningAgentsNeuralNetwork* NN_Critic;
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ARL_BuildingSelectorManager> ManagerClass;
+
+	void RandomlyPlaceBuilding(UBuildingSettings* Building);
+	TArray<int32> MilestonesReached;
+
+public:
+	virtual ASettlement* GetSettlement() override;
+	virtual TArray<UBuildingSettings*> GetAvailableBuildings() override;
+	virtual void SelectBuilding(UBuildingSettings* Building) override;
+	virtual EAffiliation GetAffiliation() override;
+	virtual TArray<int32> GetMilestonesReached() override;
+	virtual void IncrementMilestone(int32 MilestoneIndex) override;
+};

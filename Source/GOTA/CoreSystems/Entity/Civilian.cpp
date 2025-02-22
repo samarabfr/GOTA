@@ -93,6 +93,11 @@ void ACivilian::C_Tick(const float DeltaSeconds)
 	}
 }
 
+void ACivilian::Delete()
+{
+	Destroy();
+}
+
 void ACivilian::BeginDestroy()
 {
 	Super::BeginDestroy();
@@ -215,7 +220,7 @@ void ACivilian::S_AddResources(const FGameResources Resources)
 
 bool ACivilian::S_TryFindPathToClosestWorkTile()
 {
-	if (!CurrentTile.IsValid()) return false;
+	if (!CurrentTile.IsValid() || !GameState->GetTileMap()) return false;
 	if (IsTileValidForWork(GetCurrentTile())) return true;
 	const TArray<ATile*> ResultPath = GameState->GetTileMap()->FindPathToNearestTile(GetCurrentTile(), EEntityType::Civilian,
 	                                                      [this](const ATile* Tile)
@@ -231,7 +236,8 @@ bool ACivilian::S_TryFindPathToWorkTileClosestToSettlement()
 {
 	if (!GetOriginBuilding() ||
 		!GetOriginBuilding()->GetSettlement() ||
-		GetOriginBuilding()->GetSettlement()->ClaimedTiles.IsEmpty())
+		GetOriginBuilding()->GetSettlement()->ClaimedTiles.IsEmpty() ||
+		!GameState->GetTileMap())
 		return false;
 	for (ATile* ClaimedTile : GetOriginBuilding()->GetSettlement()->ClaimedTiles)
 	{
@@ -259,7 +265,9 @@ bool ACivilian::S_TryFindPathToWorkTileClosestToSettlement()
 
 bool ACivilian::S_TryFindPathToPriorityTile()
 {
-	if (!CurrentTile.IsValid() || !PriorityTile.IsValid()) return false;
+	if (!CurrentTile.IsValid() ||
+		!PriorityTile.IsValid() ||
+		!GameState->GetTileMap()) return false;
 	const TArray<ATile*> ResultPath = GameState->GetTileMap()->GetPath(GetCurrentTile(), GetPriorityTile(),
 	                                                                   EEntityType::Civilian);
 	if (ResultPath.IsEmpty()) return false;
@@ -269,7 +277,10 @@ bool ACivilian::S_TryFindPathToPriorityTile()
 
 bool ACivilian::S_TryFindPathToOriginBuilding()
 {
-	if (!CurrentTile.IsValid() || !OriginBuilding.IsValid() || !GetOriginBuilding()->GetTile()) return false;
+	if (!CurrentTile.IsValid() ||
+		!OriginBuilding.IsValid() ||
+		!GetOriginBuilding()->GetTile() ||
+		!GameState->GetTileMap()) return false;
 
 	const TArray<ATile*> ResultPath = GameState->GetTileMap()->GetPath(GetCurrentTile(), GetOriginBuilding()->GetTile(),
 	                                                                   EEntityType::Civilian);

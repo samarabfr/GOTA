@@ -30,6 +30,8 @@ public:
 	void S_Tick(const float DeltaSeconds);
 	void C_Tick(const float DeltaSeconds);
 
+	void Delete();
+
 private:
 	virtual void BeginDestroy() override;
 	
@@ -41,10 +43,10 @@ public:
 
 private:
 	UPROPERTY(Replicated)
-	UBuilding* Building;
+	TWeakObjectPtr<UBuilding> Building;
 
 	UPROPERTY()
-	AGS_Ingame* GameState;
+	TWeakObjectPtr<AGS_Ingame> GameState;
 
 	UPROPERTY()
 	UStaticMeshComponent* MeshComponent;
@@ -110,7 +112,7 @@ private:
 	FVector NetLocation;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated)
-	ATile* CurrentTile;
+	TWeakObjectPtr<ATile> CurrentTile;
 
 	UFUNCTION()
 	void OnRep_NetLocation();
@@ -170,10 +172,10 @@ public:
 
 private:
 	UPROPERTY(EditInstanceOnly, Replicated)
-	ATile* GuardTile;
+	TWeakObjectPtr<ATile> GuardTile;
 
 public:
-	ATile* GetGuardTile() const { return GuardTile; }
+	ATile* GetGuardTile() const { return GuardTile.Get(); }
 	void SetGuardTile(ATile* NewGuardTile) { GuardTile = NewGuardTile; }
 	bool IsOnGuardTile() const { return GuardTile == CurrentTile; }
 	bool TryFindPathToGuardTile();

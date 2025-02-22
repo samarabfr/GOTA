@@ -6,6 +6,7 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "GS_Ingame.generated.h"
 
+class AAIController;
 class ULearningAgentsManager;
 class ULearningAgentsNeuralNetwork;
 class ATile;
@@ -51,6 +52,8 @@ public:
 
 	UPROPERTY(Replicated)
 	UStartParameter* StartParameter;
+
+	void DeleteEverything();
 
 	// ------------------- TileMap -------------------
 private:
@@ -148,6 +151,9 @@ private:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
 		FGameEndingSignature, const EGameEnding, Ending, const FString&, EndMessage);
 
+	// TODO: kann man mit Affiliation ersetzen: "WinningTeam"
+	EGameEnding GameEnding = EGameEnding::ColonistsWon;
+
 public:
 	UPROPERTY()
 	EGameStatus GameStatus = EGameStatus::Lobby;
@@ -158,6 +164,20 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void S_EndGame(EGameEnding Ending, const FString& EndingMessage);
+
+	EGameEnding GetGameEnding() const { return GameEnding; }
+
+
+	// ------------------- Reinforcement Learning Manager -------------------
+
+private:
+	TArray<AAIController*> GuardianAIControllers;
+
+public:
+	TArray<AAIController*> GetGuardianAIControllers() const;
+	AAIController* GetGuardianAIController(int32 GOTAPlayerID) const;
+	void SetGuardianAIController(int32 GOTAPlayerID, AAIController* GuardianAIController);
+
 
 	// ------------------- Reinforcement Learning Manager -------------------
 private:

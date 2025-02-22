@@ -7,6 +7,7 @@
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
+#include "Kismet/GameplayStatics.h"
 
 AGM_SelfPlay::AGM_SelfPlay()
 {
@@ -31,15 +32,41 @@ void AGM_SelfPlay::CreateGuardians()
 		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(
 			GuardianSettings[i]->GuardianBlueprint, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
+		GOTAGameState->SetGuardian(1, Guardian);
 		Guardian->S_Init(GuardianSettings[i], PossibleBuildingsForPlayers);
-		AAIController* GuardianAI = GetWorld()->SpawnActor<AAIController>(
+		if (AAIController* GuardianAI = GOTAGameState->GetGuardianAIController(i))
+		{
+			GuardianAI->Possess(Guardian);
+		}
+		else if (GuardianAIClass)
+		{
+			GuardianAI = GetWorld()->SpawnActor<AAIController>(
 			GuardianAIClass, SpawnLocation, FRotator::ZeroRotator);
-		GuardianAI->Possess(Guardian);
+			GuardianAI->Possess(Guardian);
+			GOTAGameState->SetGuardianAIController(i, GuardianAI);
+		}
+		
 	}
 }
 
 void AGM_SelfPlay::BeginPlay()
 {
 	Super::BeginPlay();
+	LoadGame();
+	// set max time dilation
+	UGameplayStatics::SetGlobalTimeDilation(this, TimeDilation);
+}
+
+void AGM_SelfPlay::EndGame(EGameEnding Ending, const FString& EndingMessage)
+{
+	Super::EndGame(Ending, EndingMessage);
+	RestartSelfPlay();
+}
+
+void AGM_SelfPlay::RestartSelfPlay()
+{
+	// Delete Everything
+	GOTAGameState->DeleteEverything();
+	// Load from the beginning
 	LoadGame();
 }
