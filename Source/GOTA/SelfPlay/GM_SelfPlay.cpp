@@ -43,6 +43,7 @@ void AGM_SelfPlay::CreateGuardians()
 			GuardianAI = GetWorld()->SpawnActor<AAIController>(
 			GuardianAIClass, SpawnLocation, FRotator::ZeroRotator);
 			GuardianAI->Possess(Guardian);
+			GOTAGameState->SetGuardianAIController(i, GuardianAI);
 		}
 		
 	}

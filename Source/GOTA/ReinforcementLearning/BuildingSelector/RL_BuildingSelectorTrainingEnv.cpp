@@ -114,6 +114,7 @@ void URL_BuildingSelectorTrainingEnv::GatherAgentReward_Implementation(float& Ou
 void URL_BuildingSelectorTrainingEnv::GatherAgentCompletion_Implementation(ELearningAgentsCompletion& OutCompletion,
                                                                            const int32 AgentId)
 {
+	OutCompletion = ULearningAgentsCompletions::MakeCompletionOnCondition(GameState->GameEnded);
 }
 
 void URL_BuildingSelectorTrainingEnv::ResetAgentEpisode_Implementation(const int32 AgentId)

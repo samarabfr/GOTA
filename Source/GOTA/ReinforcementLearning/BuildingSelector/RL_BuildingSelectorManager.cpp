@@ -34,6 +34,7 @@ ARL_BuildingSelectorManager::ARL_BuildingSelectorManager()
 void ARL_BuildingSelectorManager::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if (IsPaused()) return;
 	if (bRunInference)
 	{
 		Policy->RunInference(0.0f);
@@ -47,6 +48,7 @@ void ARL_BuildingSelectorManager::Tick(float DeltaSeconds)
 void ARL_BuildingSelectorManager::DoLastTrainingRound(const EGameEnding Ending, const FString& EndMessage)
 {
 	PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings);
+	Pause();
 }
 
 void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encoder,
@@ -91,7 +93,7 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 		FName("BuildingSelectorTrainingEnvironment"));
 	if (URL_BuildingSelectorTrainingEnv* BSTrainingEnv = Cast<URL_BuildingSelectorTrainingEnv>(TrainingEnv))
 	{
-		BSTrainingEnv->Init(GameState, VictoryReward, LooseReward,IncomeRewardMilestones, ResourcesRewardMilestones);
+		BSTrainingEnv->Init(GameState, VictoryReward, LooseReward, IncomeRewardMilestones, ResourcesRewardMilestones);
 	}
 	// Shared Memory
 	FLearningAgentsTrainerProcessSettings TrainerProcessSettings = FLearningAgentsTrainerProcessSettings();
@@ -108,8 +110,29 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 		ULearningAgentsPPOTrainer::StaticClass(), FName("PPOTrainer"), TrainerSettings);
 }
 
+bool ARL_BuildingSelectorManager::IsPaused()
+{
+	return bPaused;
+}
+
+void ARL_BuildingSelectorManager::Pause()
+{
+	bPaused = true;
+}
+
+void ARL_BuildingSelectorManager::Unpause()
+{
+	bPaused = false;
+}
+
 void ARL_BuildingSelectorManager::S_RegisterAgent(UObject* Agent)
 {
 	if (!ManagerComponent || !Agent) return;
 	ManagerComponent->AddAgent(Agent);
+}
+
+bool ARL_BuildingSelectorManager::IsRegistered(UObject* Agent)
+{
+	if (!ManagerComponent || !Agent) return false;
+	return ManagerComponent->HasAgentObject(Agent);
 }

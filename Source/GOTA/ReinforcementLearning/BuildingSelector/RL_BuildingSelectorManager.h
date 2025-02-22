@@ -75,9 +75,15 @@ private:
 	FLearningAgentsPPOTrainingSettings TrainingSettings;
 	FLearningAgentsTrainingGameSettings TrainingGameSettings;
 
+	bool bPaused = false;
+
 public:
 	void S_RegisterAgent(UObject* Agent);
 	void S_Init(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
 	            ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic,
 	            int32 AvailableBuildingsCount);
+	bool IsPaused();
+	void Pause();
+	void Unpause();
+	bool IsRegistered(UObject* Agent);
 };

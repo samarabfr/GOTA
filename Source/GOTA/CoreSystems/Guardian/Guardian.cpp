@@ -48,6 +48,10 @@ void AGuardian::BeginPlay()
 
 void AGuardian::Delete()
 {
+	if (Controller)
+	{
+		Controller->UnPossess();
+	}
 	Destroy();
 }
 

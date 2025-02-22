@@ -40,7 +40,14 @@ void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 			AddTickPrerequisiteActor(Manager); // make the manager tick before this
 			GameState->S_AddManager(ManagerClass, Manager);
 		}
-		Manager->S_RegisterAgent(this);
+		if (!Manager->IsRegistered(this))
+		{
+			Manager->S_RegisterAgent(this);
+		}
+		if (Manager->IsPaused())
+		{
+			Manager->Unpause();
+		}
 	}
 }
 
