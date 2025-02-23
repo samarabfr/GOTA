@@ -25,11 +25,6 @@ ARL_BuildingSelectorManager::ARL_BuildingSelectorManager()
 	ManagerComponent = CreateDefaultSubobject<ULearningAgentsManager>("LearningAgentsManager");
 
 	Tags.Add("LearningAgentsManager");
-
-	TrainingSettings = FLearningAgentsPPOTrainingSettings();
-	TrainingSettings.bUseTensorboard = bUseTensorboard;
-	TrainingSettings.bSaveSnapshots = bSaveSnapshotsContinuously;
-	TrainingGameSettings = FLearningAgentsTrainingGameSettings();
 }
 
 void ARL_BuildingSelectorManager::Tick(float DeltaSeconds)
@@ -98,6 +93,8 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	}
 	// Shared Memory
 	FLearningAgentsTrainerProcessSettings TrainerProcessSettings = FLearningAgentsTrainerProcessSettings();
+	TrainerProcessSettings.NonEditorEngineRelativePath =  NonEditorEngineRelativePath;
+	TrainerProcessSettings.NonEditorIntermediateRelativePath =  NonEditorIntermediateRelativePath;
 	FLearningAgentsSharedMemoryCommunicatorSettings SharedMemorySettings =
 		FLearningAgentsSharedMemoryCommunicatorSettings();
 	TrainerProcess = ULearningAgentsCommunicatorLibrary::SpawnSharedMemoryTrainingProcess(
@@ -109,6 +106,10 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	PPOTrainer = ULearningAgentsPPOTrainer::MakePPOTrainer(
 		ManagerComponent, Interactor, TrainingEnv, Policy, Critic, Communicator,
 		ULearningAgentsPPOTrainer::StaticClass(), FName("PPOTrainer"), TrainerSettings);
+	TrainingSettings = FLearningAgentsPPOTrainingSettings();
+	TrainingSettings.bUseTensorboard = bUseTensorboard;
+	TrainingSettings.bSaveSnapshots = bSaveSnapshotsContinuously;
+	TrainingGameSettings = FLearningAgentsTrainingGameSettings();
 }
 
 bool ARL_BuildingSelectorManager::IsPaused()
