@@ -27,7 +27,8 @@ ARL_BuildingSelectorManager::ARL_BuildingSelectorManager()
 	Tags.Add("LearningAgentsManager");
 
 	TrainingSettings = FLearningAgentsPPOTrainingSettings();
-	TrainingSettings.bUseTensorboard = true;
+	TrainingSettings.bUseTensorboard = bUseTensorboard;
+	TrainingSettings.bSaveSnapshots = bSaveSnapshotsContinuously;
 	TrainingGameSettings = FLearningAgentsTrainingGameSettings();
 }
 

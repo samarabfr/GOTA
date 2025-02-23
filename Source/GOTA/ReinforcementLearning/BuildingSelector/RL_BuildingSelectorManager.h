@@ -39,6 +39,10 @@ private:
 	bool bRunInference = false;
 	UPROPERTY(EditDefaultsOnly)
 	bool bResetNNsWhenStartingTraining = false;
+	UPROPERTY(EditDefaultsOnly)
+	bool bSaveSnapshotsContinuously = false;
+	UPROPERTY(EditDefaultsOnly)
+	bool bUseTensorboard = false;
 
 	UPROPERTY(EditDefaultsOnly)
 	ULearningAgentsManager* ManagerComponent;
