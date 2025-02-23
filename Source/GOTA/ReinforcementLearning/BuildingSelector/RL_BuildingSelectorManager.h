@@ -43,7 +43,10 @@ private:
 	bool bSaveSnapshotsContinuously = false;
 	UPROPERTY(EditDefaultsOnly)
 	bool bUseTensorboard = false;
-
+	UPROPERTY(EditDefaultsOnly)
+	FString NonEditorEngineRelativePath = "../../../../Program Files/Epic Games/UE_5.5/Engine";
+	UPROPERTY(EditDefaultsOnly)
+	FString NonEditorIntermediateRelativePath = "../../../GOTAFunzt/Intermediate";
 	UPROPERTY(EditDefaultsOnly)
 	ULearningAgentsManager* ManagerComponent;
 
