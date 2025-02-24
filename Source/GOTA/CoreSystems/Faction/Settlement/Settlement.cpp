@@ -63,14 +63,22 @@ void ASettlement::S_Init(ATile* SpawnTile)
 {
 	S_AddResources(StartingResources);
 
-	SpawnTile->S_TryForceBuild(StartingBuildings[0], this);
-	SpawnTile->GetBuilding()->FinishConstruction();
+	if (SpawnTile->S_TryForceBuild(StartingBuildings[0], this))
+	{
+		SpawnTile->GetBuilding()->FinishConstruction();
+	}
 	for (int32 i = 1; i < StartingBuildings.Num(); ++i)
 	{
-		if (BorderingUnclaimedTiles.Num() <= 0) break;
+		if (BorderingUnclaimedTiles.Num() <= 0)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Did not have enough bordering tiles to place starting buildings"))
+			break;
+		}
 		ATile* Tile = BorderingUnclaimedTiles[FMath::RandRange(0, BorderingUnclaimedTiles.Num() - 1)];
-		Tile->S_TryForceBuild(StartingBuildings[i], this);
-		Tile->GetBuilding()->FinishConstruction();
+		if (Tile && Tile->S_TryBuild(StartingBuildings[i], this))
+		{
+			Tile->GetBuilding()->FinishConstruction();
+		}
 	}
 	for (ATile* Tile : ClaimedTiles)
 	{
@@ -142,7 +150,10 @@ void ASettlement::RefreshBorderingUnclaimedTiles()
 	{
 		for (ATile* Neighbor : ClaimedTile->Neighbors)
 		{
-			if (Neighbor && !Neighbor->GetClaimant() && !BorderingUnclaimedTiles.Contains(Neighbor))
+			if (Neighbor &&
+				!Neighbor->IsClaimed() &&
+				!ClaimedTiles.Contains(Neighbor) &&
+				!BorderingUnclaimedTiles.Contains(Neighbor))
 			{
 				BorderingUnclaimedTiles.Add(Neighbor);
 			}

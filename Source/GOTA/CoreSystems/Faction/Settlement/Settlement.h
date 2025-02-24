@@ -102,7 +102,7 @@ public:
 	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
 	TArray<ATile*> ClaimedTiles;
 
-	UPROPERTY()
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
 	TArray<ATile*> BorderingUnclaimedTiles;
 
 	bool IsBorderingUnclaimedTile(const ATile* Tile) const;

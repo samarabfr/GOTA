@@ -216,25 +216,52 @@ bool ATile::CanBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 	for (FGameplayTagRule PlacementRule : BuildingDataAsset->PlacementRules)
 	{
 		if (!PlacementRule.IsValid(GameplayTags))
+		{
 			return false;
+		}
 	}
-	return !Building &&
-		Terrain.Biome != EBiome::Volcano &&
-		Builder != nullptr &&
-		Builder->GetCountOfBuilders() + Settings->ExtraAllowedConstructionSites
-		> Builder->GetCountOfConstructionSites() &&
-		Builder->IsBorderingUnclaimedTile(this);
+	// ifs instead of one condition to make debugging easier
+	if (Building)
+	{
+		return false;
+	}
+	if (Terrain.Biome == EBiome::Volcano)
+	{
+		return false;
+	}
+	if (Builder == nullptr)
+	{
+		return false;
+	}
+	if (Builder->GetCountOfConstructionSites() >
+		Builder->GetCountOfBuilders() + Settings->ExtraAllowedConstructionSites)
+	{
+		return false;
+	}
+	if (!Builder->IsBorderingUnclaimedTile(this))
+	{
+		return false;
+	}
+	return true;
 }
 
 bool ATile::S_TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
-	if (!CanBuild(BuildingDataAsset, Builder)) return false;
+	if (!CanBuild(BuildingDataAsset, Builder))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Tried to build despite not being allowed."))
+		return false;
+	}
 	return S_TryForceBuild(BuildingDataAsset, Builder);
 }
 
 bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
-	if (!Builder) return false;
+	if (!Builder)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Tried to build without a valid builder!"))
+		return false;
+	}
 	//check if multiple production things are on
 	int32 EnabledCount = 0;
 	EnabledCount += BuildingDataAsset->bDirectProductionEnabled;
