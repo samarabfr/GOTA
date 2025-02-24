@@ -228,7 +228,11 @@ bool ATile::CanBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 
 bool ATile::S_TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
-	if (!CanBuild(BuildingDataAsset, Builder)) return false;
+	if (!CanBuild(BuildingDataAsset, Builder))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Tried to build despite not being allowed."))
+		return false;
+	}
 	return S_TryForceBuild(BuildingDataAsset, Builder);
 }
 
