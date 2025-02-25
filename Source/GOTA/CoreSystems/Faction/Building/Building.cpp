@@ -3,6 +3,7 @@
 
 #include "Building.h"
 
+#include "Production.h"
 #include "BuildingSettings.h"
 #include "Population.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
@@ -29,6 +30,7 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Population, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, bIsUnderConstruction, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, ConstructionProgress, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, Production, Params);
 }
 
 bool UBuilding::IsSupportedForNetworking() const
@@ -42,11 +44,13 @@ UBuilding::UBuilding()
 {
 	Population = CreateDefaultSubobject<UPopulation>(TEXT("Population"));
 	Population->OnSizeChanged.AddDynamic(this, &UBuilding::PopulationChanged);
+	Production = CreateDefaultSubobject<UProduction>(TEXT("Production"));
 }
 
 void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
 {
 	Population->S_Init(InSettlement->GetGrowthPerOwnPop(), InSettlement->GetGrowthPerNeighborPop());
+	Production->S_Init(this);
 	Settings = InSettings;
 	Tile = InTile;
 	S_SetSettlement(InSettlement);
@@ -60,11 +64,13 @@ void UBuilding::C_Init()
 void UBuilding::S_Tick(const float DeltaSeconds)
 {
 	Population->S_Tick(DeltaSeconds);
+	Production->S_Tick(DeltaSeconds);
 }
 
 void UBuilding::C_Tick(const float DeltaSeconds)
 {
 	Population->C_Tick(DeltaSeconds);
+	Production->C_Tick(DeltaSeconds);
 }
 
 void UBuilding::S_PrepareDestroy()
@@ -109,47 +115,11 @@ void UBuilding::SetEfficiency(const float NewEfficiency)
 
 	Efficiency = NewEfficiency;
 	OnEfficiencyChanged.Broadcast(Change);
-
-	// when Efficiency changes, the predicted Production also changes
-	OnPredictedProductionChanged.Broadcast(Settings->GetDefaultPredictedProduction() * Change,
-	                                       Settings->ProductionType);
-	OnPredictedConsumptionChanged.Broadcast(Settings->GetDefaultPredictedConsumption() * Change,
-	                                        Settings->ConsumptionType);
 }
 
 void UBuilding::RefreshEfficiency()
 {
 	SetEfficiency(Population->GetSize() / static_cast<float>(Settings->Housing));
-}
-
-// ------------------------------------- Predicted Production ---------------------------------------
-
-EProductionType UBuilding::GetProductionType() const
-{
-	if (Settings)
-		return Settings->ProductionType;
-	return EProductionType::None;
-}
-
-float UBuilding::GetPredictedProduction() const
-{
-	if (GetProductionType() != EProductionType::None)
-		return Settings->GetDefaultPredictedProduction() * Efficiency;
-	return 0.0f;
-}
-
-EConsumptionType UBuilding::GetConsumptionType() const
-{
-	if (Settings)
-		return Settings->ConsumptionType;
-	return EConsumptionType::None;
-}
-
-float UBuilding::GetPredictedConsumption() const
-{
-	if (GetConsumptionType() != EConsumptionType::None)
-		return Settings->GetDefaultPredictedConsumption() * Efficiency;
-	return 0.0f;
 }
 
 // --------------------- Construction phase ---------------------
@@ -173,6 +143,14 @@ void UBuilding::FinishConstruction()
 	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, bIsUnderConstruction, this)
 	Tile->OnBuildingFinishedConstruction();
 	Population->S_ChangeMaxSize(Settings->Housing);
+}
+
+
+// --------------------- Protection ---------------------
+
+UProduction* UBuilding::GetProduction()
+{
+	return Production;
 }
 
 // --------------------- Protection ---------------------

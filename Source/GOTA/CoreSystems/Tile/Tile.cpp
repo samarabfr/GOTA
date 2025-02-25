@@ -12,7 +12,7 @@
 #include "GOTA/CoreSystems/Faction/Building/BuildingCivilian.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingDefense.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
-#include "GOTA/CoreSystems/Faction/Building/BuildingDirectProduction.h"
+#include "GOTA/CoreSystems/Faction/Building/Production.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
@@ -264,7 +264,7 @@ bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* B
 	}
 	//check if multiple production things are on
 	int32 EnabledCount = 0;
-	EnabledCount += BuildingDataAsset->bDirectProductionEnabled;
+	EnabledCount += BuildingDataAsset->bProductionEnabled;
 	EnabledCount += BuildingDataAsset->bCivilianEnabled;
 	EnabledCount += BuildingDataAsset->bArmyEnabled;
 	if (EnabledCount > 1)
@@ -274,8 +274,8 @@ bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* B
 	}
 	Builder->S_RegisterTile(this);
 	// Choose fitting class
-	if (BuildingDataAsset->bDirectProductionEnabled)
-		Building = NewObject<UBuildingDirectProduction>();
+	if (BuildingDataAsset->bProductionEnabled)
+		Building = NewObject<UProduction>();
 	else if (BuildingDataAsset->bCivilianEnabled)
 		Building = NewObject<UBuildingCivilian>();
 	else if (BuildingDataAsset->bArmyEnabled)

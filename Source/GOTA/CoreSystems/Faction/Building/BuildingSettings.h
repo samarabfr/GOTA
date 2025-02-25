@@ -39,22 +39,33 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Building")
 	EConsumptionType ConsumptionType = EConsumptionType::None;
 
-	// ------------------------------------ Direct Production ------------------------------------
+	// ------------------------------------ Production ------------------------------------
 
-	UPROPERTY(EditDefaultsOnly, Category="Income")
-	bool bDirectProductionEnabled = false;
+	UPROPERTY(EditDefaultsOnly, Category="Production")
+	bool bProductionEnabled = false;
 
 	// In Seconds
-	UPROPERTY(EditDefaultsOnly, Category="Income", meta=(Tooltip="In Seconds"))
-	float DirectProductionTime = 0.0f;
+	UPROPERTY(EditDefaultsOnly, Category="Production", meta=(Tooltip="In Seconds"))
+	float ProductionTime = 0.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category="Income")
-	float DirectProductionAmount = 0.0f;
+	UPROPERTY(EditDefaultsOnly, Category="Production")
+	float ProductionAmount = 0.0f;
+	
+	// ------------------------------------ Consumption ------------------------------------
 
-	UPROPERTY(EditDefaultsOnly, Category="Income")
-	float DirectConsumptionAmount = 0.0f;
+	UPROPERTY(EditDefaultsOnly, Category="Consumption")
+	bool bConsumptionEnabled = false;
 
-	// ------------------------------------ Civilian Entity ------------------------------------
+	UPROPERTY(EditDefaultsOnly, Category="Consumption")
+	bool bConsumesWhenProduces = false;
+
+	UPROPERTY(EditDefaultsOnly, Category="Consumption", meta=(Tooltip="In Seconds"))
+	float ConsumptionTime = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Consumption")
+	float ConsumptionAmount = 0.0f;
+
+	// ------------------------------------ Civilian ------------------------------------
 
 	UPROPERTY(EditDefaultsOnly, Category="Civilian")
 	bool bCivilianEnabled = false;
@@ -64,13 +75,10 @@ public:
 
 	// In Seconds
 	UPROPERTY(EditDefaultsOnly, Category="Civilian", meta=(Tooltip="In Seconds"))
-	float CivilianProductionTime = 0.0f;
+	float CivilianGatheringTime = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Civilian")
-	float CivilianProductionAmount = 0;
-
-	UPROPERTY(EditDefaultsOnly, Category="Civilian")
-	float CivilianConsumptionAmount = 0;
+	float CivilianGatheringAmount = 0;
 
 	UPROPERTY(EditDefaultsOnly, Category="Civilian")
 	FGameResources CivilianInventoryLimit = FGameResources::Zero();
@@ -81,19 +89,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Civilian", meta=(Tooltip="In Seconds"))
 	float CivilianRespawnTime = 0.0f;
-
-	// Multiplies the theoretical optimum production to estimate the time spent not working
-	UPROPERTY(EditDefaultsOnly, Category="Civilian"
-		, meta=(Tooltip="Multiplies the theoretical optimum production to abstract the time spent not working"))
-	float CivilianPredictedIncomeFactor = 0.7f;
-
-	// ------------------------------------ Utility ------------------------------------
-public:
-	// returns the predicted Production per Second
-	float GetDefaultPredictedProduction() const;
-
-	// returns the predicted Consumption per Second
-	float GetDefaultPredictedConsumption() const;
 
 	//--------------------------Army-------------------
 

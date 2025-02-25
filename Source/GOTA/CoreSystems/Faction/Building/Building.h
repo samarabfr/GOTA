@@ -6,6 +6,7 @@
 
 #include "Building.generated.h"
 
+class UProduction;
 class AArmy;
 class ASettlement;
 class ATile;
@@ -77,7 +78,7 @@ public:
 	// When a Building Pop is not influenced by any modifiers and has exactly the pop as the default
 	// max pop it will be at 100% (1.0f) efficiency. If there is less pop the efficiency will be lower.
 	// When efficiency is lower, the building will work slower and vice versa
-private:
+protected:
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEfficiencyChangedSig, float, EfficiencyChange);
 
@@ -93,37 +94,6 @@ public:
 
 	// Building Efficiency at 1.0f will work at the default speed
 	float GetEfficiency() const { return Efficiency; }
-
-
-	// ------------------------------------- Predicted Production ---------------------------------------
-	// How much will this building produce? Including direct production, civilian and any modifiers.
-	// The main use for this is for the AI and player to know how much resource production their settlement has.
-private:
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPredictedProductionChangedSig,
-	                                             float, PredictedProductionChange,
-	                                             EProductionType, ProductionType);
-
-	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPredictedConsumptionChangedSig,
-	                                             float, PredictedConsumptionChange,
-	                                             EConsumptionType, ConsumptionType);
-
-public:
-	FOnPredictedProductionChangedSig OnPredictedProductionChanged;
-	FOnPredictedConsumptionChangedSig OnPredictedConsumptionChanged;
-
-	// returns what this building is producing, can be abstract things like "construction"
-	EProductionType GetProductionType() const;
-
-	// returns the predicted Production of GetProductionType() in Units per Second
-	float GetPredictedProduction() const;
-
-	// returns what this building is consuming
-	EConsumptionType GetConsumptionType() const;
-
-	// returns the predicted Consumption of GetConsumptionType() in Units per Second
-	float GetPredictedConsumption() const;
 
 	// --------------------- Construction phase ---------------------
 private:
@@ -141,8 +111,17 @@ public:
 
 	virtual void FinishConstruction();
 
-	// --------------------- Protection ---------------------
+	// --------------------- Production ---------------------
+private:
+	UPROPERTY(Replicated)
+	UProduction* Production;
+	
+public:
+	UProduction* GetProduction();
+	
+	// --------------------- Consumption ---------------------
 
+	// --------------------- Protection ---------------------
 public:
 	bool IsProtected() const;
 
@@ -151,7 +130,6 @@ public:
 	virtual AArmy* GetArmy() const { return nullptr; }
 
 	// --------------------- Defense building ---------------------
-
 public:
 	virtual void S_BuildingDefenseTakeDamage(int32 Damage)
 	{

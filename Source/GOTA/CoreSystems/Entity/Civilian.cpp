@@ -56,7 +56,7 @@ void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	SetNetLocation(NewLocation);
 
 	const UBuildingSettings* BuildingSettings = OriginBuilding->GetSettings();
-	WorkAmount = BuildingSettings->CivilianProductionAmount;
+	WorkAmount = BuildingSettings->CivilianGatheringAmount;
 	MovementRate = 100 / BuildingSettings->CivilianMoveTime;
 	ResourceInventoryLimit = BuildingSettings->CivilianInventoryLimit;
 	
@@ -175,7 +175,7 @@ bool ACivilian::IsCurrentTilePriorityTile() const
 
 float ACivilian::GetWorkRate() const
 {
-	return 100.f / OriginBuilding->GetSettings()->CivilianProductionTime * OriginBuilding->GetEfficiency();
+	return 100.f / OriginBuilding->GetSettings()->CivilianGatheringTime * OriginBuilding->GetEfficiency();
 }
 
 bool ACivilian::HasResourcesInInventory() const

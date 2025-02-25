@@ -103,7 +103,7 @@ float AColony::CalculateScore(const UBuildingSettings* Data, FNewBuildingImporta
 	// Calculate GainScore
 	float GainsScore = 0;
 	// income
-	const float MaxIncome = Data->Housing * Data->DirectProductionTime;
+	const float MaxIncome = Data->Housing * Data->ProductionTime;
 	if (Data->ProductionType == EProductionType::Food)
 	{
 		GainsScore = ImportanceRatings.Food * MaxIncome;
