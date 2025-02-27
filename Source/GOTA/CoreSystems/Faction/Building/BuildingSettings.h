@@ -47,8 +47,19 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Production", meta=(EditCondition = bProductionEnabled))
 	float BaseProductionPerSecond = 0.0f;
 
+	// ------------------------------------ Consumption ------------------------------------
+
 	UPROPERTY(EditDefaultsOnly, Category="Consumption")
+	bool bConsumptionEnabled = false;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Consumption", meta=(EditCondition = bConsumptionEnabled))
 	float BaseConsumptionPerSecond = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Consumption", meta=(EditCondition = bConsumptionEnabled))
+	FGameResources BaseResourceLimit = FGameResources::Zero();
+
+	UPROPERTY(EditDefaultsOnly, Category="Consumption", meta=(EditCondition = bConsumptionEnabled))
+	FGameResources ResourceLimitIncreasePerEfficiencyPercentage = FGameResources::Zero();
 
 	// ------------------------------------ Civilian ------------------------------------
 
