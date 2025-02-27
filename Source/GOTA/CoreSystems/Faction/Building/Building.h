@@ -118,8 +118,6 @@ private:
 	
 public:
 	UProduction* GetProduction();
-	
-	// --------------------- Consumption ---------------------
 
 	// --------------------- Protection ---------------------
 public:

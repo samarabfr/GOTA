@@ -43,27 +43,12 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Production")
 	bool bProductionEnabled = false;
-
-	// In Seconds
-	UPROPERTY(EditDefaultsOnly, Category="Production", meta=(Tooltip="In Seconds"))
-	float ProductionTime = 0.0f;
-
-	UPROPERTY(EditDefaultsOnly, Category="Production")
-	float ProductionAmount = 0.0f;
 	
-	// ------------------------------------ Consumption ------------------------------------
+	UPROPERTY(EditDefaultsOnly, Category="Production", meta=(EditCondition = bProductionEnabled))
+	float BaseProductionPerSecond = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Consumption")
-	bool bConsumptionEnabled = false;
-
-	UPROPERTY(EditDefaultsOnly, Category="Consumption")
-	bool bConsumesWhenProduces = false;
-
-	UPROPERTY(EditDefaultsOnly, Category="Consumption", meta=(Tooltip="In Seconds"))
-	float ConsumptionTime = 0.0f;
-
-	UPROPERTY(EditDefaultsOnly, Category="Consumption")
-	float ConsumptionAmount = 0.0f;
+	float BaseConsumptionPerSecond = 0.0f;
 
 	// ------------------------------------ Civilian ------------------------------------
 

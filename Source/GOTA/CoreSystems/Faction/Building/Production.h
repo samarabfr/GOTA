@@ -16,8 +16,6 @@ class GOTA_API UProduction : public UObject
 
 public:
 	void S_Init(UBuilding* InBuilding);
-	void S_Tick(float DeltaSeconds);
-	void C_Tick(const float DeltaSeconds);
 
 	// ---------------------------------------- Utility ----------------------------------------
 
@@ -29,27 +27,23 @@ public:
 	// returns what this building is producing, can be abstract things like "construction"
 	EProductionType GetProductionType() const;
 
-	// ---------------------------------------- Effective production ----------------------------------------
+	// ---------------------------------------- Production ----------------------------------------
 
 private:
+	UPROPERTY(ReplicatedUsing=OnRep_ProductionPerSecond)
+	float ProductionPerSecond = 0.0f;
+	void RecalculateProductionPerSecond();
+
+	UFUNCTION()
+	void OnRep_ProductionPerSecond(float OldProductionPerSecond);
+
 	UFUNCTION()
 	void HandleEfficiencyChange(float EfficiencyChange);
+
 public:
-	float GetEffectiveProductionPerSecond() const;
-	// in seconds
-	float GetEffectiveProductionTime() const;
 	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnEffectiveProductionChangedSig);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnProductionPerSecondChangedSig, float, Change, float, NewValue);
 
-	FOnEffectiveProductionChangedSig OnEffectiveProductionChanged;
-	
-	// ---------------------------------------- Progress ----------------------------------------
-	
-private:
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	float ProductionProgress = 0.0f;
-	void S_ApplyProduction();
-
-public:
-	float GetProductionProgress() const;
+	FOnProductionPerSecondChangedSig OnProductionPerSecondChanged;
+	float GetProductionPerSecond() const;
 };

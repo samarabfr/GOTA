@@ -1,6 +1,7 @@
 ﻿#include "Production.h"
 
 #include "BuildingSettings.h"
+#include "Engine/AssetManagerTypes.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
@@ -18,7 +19,6 @@ void UProduction::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
-	DOREPLIFETIME_WITH_PARAMS(UProduction, ProductionProgress, Params);
 }
 
 bool UProduction::IsSupportedForNetworking() const
@@ -26,32 +26,15 @@ bool UProduction::IsSupportedForNetworking() const
 	return true;
 }
 
+// ---------------------------------------- Lifecycle ----------------------------------------
+
 void UProduction::S_Init(UBuilding* InBuilding)
 {
 	Building = InBuilding;
 	Building->OnEfficiencyChanged.AddDynamic(this, &UProduction::HandleEfficiencyChange);
+	RecalculateProductionPerSecond();
 }
 
-// ---------------------------------------- Lifecycle ----------------------------------------
-
-void UProduction::S_Tick(float DeltaSeconds)
-{
-	if (ProductionProgress < GetEffectiveProductionTime())
-	{
-		ProductionProgress += DeltaSeconds;
-	}
-	else
-	{
-		S_ApplyProduction();
-		ProductionProgress = 0.0f;
-		MARK_PROPERTY_DIRTY_FROM_NAME(UProduction, ProductionProgress, this)
-	}
-}
-
-void UProduction::C_Tick(const float DeltaSeconds)
-{
-	ProductionProgress += DeltaSeconds;
-}
 
 // ---------------------------------------- Utility ----------------------------------------
 
@@ -61,37 +44,33 @@ EProductionType UProduction::GetProductionType() const
 	return Building->GetSettings()->ProductionType;
 }
 
-// --------------------------------------- Effective production ---------------------------------------
+// --------------------------------------- production ---------------------------------------
 
 void UProduction::HandleEfficiencyChange(float EfficiencyChange)
 {
-	OnEffectiveProductionChanged.Broadcast();
+	RecalculateProductionPerSecond();
 }
 
-float UProduction::GetEffectiveProductionPerSecond() const
+void UProduction::RecalculateProductionPerSecond()
 {
-	if (!Building.IsValid()) return 0.0f;
-	return Building->GetSettings()->ProductionAmount / GetEffectiveProductionTime();
+	float OldProductionPerSecond = ProductionPerSecond;
+	if (!Building.IsValid() || !Building->GetSettings()->bProductionEnabled)
+	{
+		ProductionPerSecond = 0.f;
+	}
+	ProductionPerSecond = Building->GetSettings()->BaseProductionPerSecond * Building->GetEfficiency();
+	if (ProductionPerSecond == OldProductionPerSecond) return;
+	OnProductionPerSecondChanged.Broadcast(OldProductionPerSecond - ProductionPerSecond,
+										   ProductionPerSecond);
 }
 
-float UProduction::GetEffectiveProductionTime() const
+void UProduction::OnRep_ProductionPerSecond(float OldProductionPerSecond)
 {
-	if (!Building.IsValid()) return 0.0f;
-	return Building->GetSettings()->ProductionTime / Building->GetEfficiency();
+	OnProductionPerSecondChanged.Broadcast(OldProductionPerSecond - ProductionPerSecond,
+										   ProductionPerSecond);
 }
 
-// ---------------------------------------- Progress ----------------------------------------
-
-void UProduction::S_ApplyProduction()
+float UProduction::GetProductionPerSecond() const
 {
-	if (!Building.IsValid() || !Building->GetSettlement()) return;
-	FGameResources NewResources;
-	NewResources.AddProduction(Building->GetSettings()->ProductionAmount, Building->GetSettings()->ProductionType);
-	Building->GetSettlement()->S_AddResources(NewResources);
+	return ProductionPerSecond;
 }
-
-float UProduction::GetProductionProgress() const
-{
-	return ProductionProgress;
-}
-
