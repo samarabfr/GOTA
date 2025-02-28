@@ -263,9 +263,9 @@ bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* B
 	}
 	//check if multiple production things are on
 	int32 EnabledCount = 0;
-	EnabledCount += BuildingDataAsset->bProductionEnabled;
 	EnabledCount += BuildingDataAsset->bCivilianEnabled;
 	EnabledCount += BuildingDataAsset->bArmyEnabled;
+	EnabledCount += BuildingDataAsset->bDefenseEnabled;
 	if (EnabledCount > 1)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Multiple building types enabled in BuildingDataAsset. Only one allowed!"))
