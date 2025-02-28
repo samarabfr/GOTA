@@ -32,7 +32,7 @@ protected:
 
 public:
 	void S_Init(ATile* SpawnTile);
-	virtual void Delete();
+	virtual void S_Delete();
 
 	void EnableTick();
 
@@ -93,7 +93,7 @@ public:
 
 	// --------------------------- Building ---------------------------
 protected:
-	void RefreshBorderingUnclaimedTiles();
+	void S_RefreshBorderingUnclaimedTiles();
 	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UBuildingSettings*> StartingBuildings;
@@ -122,35 +122,35 @@ private:
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
 	FConstructionResources Resources;
 
-	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	FConstructionResources PredictedProduction;
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
+	FConstructionResources Production;
 
-	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	FConstructionResources PredictedConsumption;
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
+	FConstructionResources Consumption;
 
-	void RegisterBuildingForResourcePrediction(UBuilding* Building);
-	void UnregisterBuildingForResourcePrediction(UBuilding* Building);
-
-	UFUNCTION()
-	void UpdatePredictedProduction(const float Change, const EProductionType Type);
+	void S_RegisterBuildingForIncome(UBuilding* Building);
+	void S_UnregisterBuildingForIncome(UBuilding* Building);
 
 	UFUNCTION()
-	void UpdatePredictedConsumption(const float Change, const EConsumptionType Type);
+	void S_UpdateProduction(const float Change, float _, const EProductionType Type);
 
 	UFUNCTION()
-	void UpdatePredictionFromPopulation(int16 Change);
+	void S_UpdateConsumption(const float Change, float _, EResource Type);
+
+	UFUNCTION()
+	void S_UpdateConsumptionFromPopulation(int16 Change);
 
 public:
 	FConstructionResources GetResources() const { return Resources; }
 
 	// Returns predicted production - predicted consumption
-	FConstructionResources GetEffectivePredictedProduction() const { return PredictedProduction - PredictedConsumption; }
+	FConstructionResources GetEffectiveProduction() const { return Production - Consumption; }
 
 	// Returns raw predicted production
-	FConstructionResources GetPredictedProduction() const { return PredictedProduction; }
+	FConstructionResources GetProduction() const { return Production; }
 
 	// Returns raw predicted consumption
-	FConstructionResources GetPredictedConsumption() const { return PredictedConsumption; }
+	FConstructionResources GetConsumption() const { return Consumption; }
 
 	void S_AddResources(FConstructionResources Amount);
 	void S_RemoveResources(FConstructionResources Amount);

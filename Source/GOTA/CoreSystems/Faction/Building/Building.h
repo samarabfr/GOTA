@@ -118,16 +118,18 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_ProductionPerSecond)
 	float ProductionPerSecond = 0.0f;
 	void S_RecalculateProductionPerSecond();
-	
+
 	UFUNCTION()
 	void OnRep_ProductionPerSecond(float OldProductionPerSecond);
 
 public:
 	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnProductionPerSecondChangedSig, float, Change, float, NewValue);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnProductionPerSecondChangedSig, float, Change, float, NewValue,
+	                                             EProductionType, ProductionType);
 
 	FOnProductionPerSecondChangedSig OnProductionPerSecondChanged;
 	float GetProductionPerSecond() const;
+	EProductionType GetProductionType() const;
 
 	// --------------------- Consumption ---------------------
 
@@ -137,9 +139,10 @@ private:
 
 	UFUNCTION()
 	void S_HandleStorageEmptyChanged(bool IsEmpty);
-	
+
 public:
 	UResourceStorage* GetResourceStorage() const { return ResourceStorage; }
+	EResource GetConsumptionType() const;
 
 	// --------------------- Protection ---------------------
 

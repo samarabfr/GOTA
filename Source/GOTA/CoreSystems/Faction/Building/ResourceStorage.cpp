@@ -28,11 +28,11 @@ bool UResourceStorage::IsSupportedForNetworking() const
 	return true;
 }
 
-void UResourceStorage::S_Init(float Limit, bool ReplicateOnAdding, bool ReplicateOnRemoving)
+void UResourceStorage::S_Init(float InLimit, bool ReplicateOnAdding, bool ReplicateOnRemoving)
 {
 	S_SetReplicateOnAdding(ReplicateOnAdding);
 	S_SetReplicateOnRemoving(ReplicateOnRemoving);
-	S_SetLimit(Limit);
+	S_SetLimit(InLimit);
 }
 
 // ------------------------------------ Utility --------------------------------------

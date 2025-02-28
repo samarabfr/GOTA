@@ -42,10 +42,10 @@ public:
 	void S_SetLimit(float NewLimit);
 	float GetLimit() const;
 
-	// ------------------------------------ Current Resources --------------------------------------
+	// ------------------------------------ Current --------------------------------------
 
 private:
-	UPROPERTY(ReplicatedUsing=OnRep_CurrentResources)
+	UPROPERTY(ReplicatedUsing=OnRep_Current)
 	float Current = 0.0f;
 
 	UFUNCTION()

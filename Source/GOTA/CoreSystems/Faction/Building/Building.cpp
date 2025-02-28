@@ -178,18 +178,23 @@ void UBuilding::S_RecalculateProductionPerSecond()
 	ProductionPerSecond = GetSettings()->BaseProductionPerSecond * GetEfficiency();
 	if (ProductionPerSecond == OldProductionPerSecond) return;
 	OnProductionPerSecondChanged.Broadcast(OldProductionPerSecond - ProductionPerSecond,
-	                                       ProductionPerSecond);
+	                                       ProductionPerSecond, GetProductionType());
 }
 
 void UBuilding::OnRep_ProductionPerSecond(float OldProductionPerSecond)
 {
 	OnProductionPerSecondChanged.Broadcast(OldProductionPerSecond - ProductionPerSecond,
-	                                       ProductionPerSecond);
+	                                       ProductionPerSecond, GetProductionType());
 }
 
 float UBuilding::GetProductionPerSecond() const
 {
 	return ProductionPerSecond;
+}
+
+EProductionType UBuilding::GetProductionType() const
+{
+	return GetSettings()->ProductionType;
 }
 
 void UBuilding::S_HandleStorageEmptyChanged(bool IsEmpty)
@@ -200,6 +205,11 @@ void UBuilding::S_HandleStorageEmptyChanged(bool IsEmpty)
 // --------------------- Consumption ---------------------
 
 // --------------------- Protection ---------------------
+
+EResource UBuilding::GetConsumptionType() const
+{
+	return GetSettings()->ConsumptionType;
+}
 
 bool UBuilding::IsProtected() const
 {

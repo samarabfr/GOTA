@@ -68,7 +68,7 @@ FLearningAgentsObservationObjectElement URL_BuildingSelectorInteractor::MakeSett
 {
 	TMap<FName, FLearningAgentsObservationObjectElement> Map;
 	Map.Add("Income", MakeResourceObservation(
-		        InObservationObject, Settlement ? Settlement->GetEffectivePredictedProduction() : FConstructionResources()));
+		        InObservationObject, Settlement ? Settlement->GetEffectiveProduction() : FConstructionResources()));
 	Map.Add("CurrentResources", MakeResourceObservation(
 		        InObservationObject, Settlement ? Settlement->GetResources() : FConstructionResources()));
 	return ULearningAgentsObservations::MakeStructObservation(InObservationObject, Map);

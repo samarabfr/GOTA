@@ -12,7 +12,6 @@
 #include "GOTA/CoreSystems/Faction/Building/BuildingCivilian.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingDefense.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
-#include "GOTA/CoreSystems/Faction/Building/Production.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"

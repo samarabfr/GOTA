@@ -42,7 +42,7 @@ void UTopBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	Colony_Wood->SetText(FText::AsNumber(static_cast<int32>(ColonyRes.Wood)));
 	Colony_Stone->SetText(FText::AsNumber(static_cast<int32>(ColonyRes.Stone)));
 
-	FConstructionResources ColonyResIncome = GameState->GetColony()->GetEffectivePredictedProduction();
+	FConstructionResources ColonyResIncome = GameState->GetColony()->GetEffectiveProduction();
 	UpdateIncomeNumber(TXT_ColonyFoodIncome, ColonyResIncome.Food);
 	UpdateIncomeNumber(TXT_ColonyWoodIncome, ColonyResIncome.Wood);
 	UpdateIncomeNumber(TXT_ColonyStoneIncome, ColonyResIncome.Stone);
@@ -53,7 +53,7 @@ void UTopBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	Tribe_Wood->SetText(FText::AsNumber(static_cast<int32>(TribeRes.Wood)));
 	Tribe_Stone->SetText(FText::AsNumber(static_cast<int32>(TribeRes.Stone)));
 
-	FConstructionResources TribeResIncome = GameState->GetTribe()->GetEffectivePredictedProduction();
+	FConstructionResources TribeResIncome = GameState->GetTribe()->GetEffectiveProduction();
 	UpdateIncomeNumber(TXT_TribeFoodIncome, TribeResIncome.Food);
 	UpdateIncomeNumber(TXT_TribeWoodIncome, TribeResIncome.Wood);
 	UpdateIncomeNumber(TXT_TribeStoneIncome, TribeResIncome.Stone);
