@@ -53,7 +53,7 @@ UBuilding::UBuilding()
 void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
 {
 	Population->S_Init(InSettlement->GetGrowthPerOwnPop(), InSettlement->GetGrowthPerNeighborPop());
-	ResourceStorage->S_Init(GetSettings()->BaseResourceLimit, true, false);
+	ResourceStorage->S_Init(InSettings->BaseResourceLimit, true, false);
 	Settings = InSettings;
 	Tile = InTile;
 	S_SetSettlement(InSettlement);
