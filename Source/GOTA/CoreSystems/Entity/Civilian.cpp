@@ -179,7 +179,7 @@ bool ACivilian::IsCurrentTilePriorityTile() const
 
 float ACivilian::GetWorkRate() const
 {
-	return 100.f / OriginBuilding->GetSettings()->CivilianGatheringTime;
+	return 100.f / OriginBuilding->GetSettings()->CivilianGatheringTime * OriginBuilding->GetEfficiency();
 }
 
 bool ACivilian::HasResourcesInInventory() const

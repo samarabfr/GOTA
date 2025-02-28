@@ -86,6 +86,9 @@ protected:
 	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float Efficiency;
 
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	bool bIsProductionActive = true;
+
 	void S_SetEfficiency(const float NewEfficiency);
 
 	void S_RefreshEfficiency();

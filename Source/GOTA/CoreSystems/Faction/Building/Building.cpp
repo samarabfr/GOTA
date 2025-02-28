@@ -33,6 +33,7 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, ProductionPerSecond, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, ResourceStorage, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Efficiency, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, bIsProductionActive, Params);
 }
 
 bool UBuilding::IsSupportedForNetworking() const
@@ -54,6 +55,7 @@ void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement
 {
 	Population->S_Init(InSettlement->GetGrowthPerOwnPop(), InSettlement->GetGrowthPerNeighborPop());
 	ResourceStorage->S_Init(InSettings->BaseResourceLimit, true, false);
+	bIsProductionActive = !ResourceStorage->IsEmpty();
 	Settings = InSettings;
 	Tile = InTile;
 	S_SetSettlement(InSettlement);
@@ -68,7 +70,7 @@ void UBuilding::C_Init()
 void UBuilding::S_Tick(const float DeltaSeconds)
 {
 	Population->S_Tick(DeltaSeconds);
-	if (GetSettings()->bConsumptionEnabled)
+	if (GetSettings()->bConsumptionEnabled && !bIsProductionActive)
 	{
 		ResourceStorage->S_Remove(GetSettings()->BaseConsumptionPerSecond * DeltaSeconds);
 	}
@@ -77,7 +79,7 @@ void UBuilding::S_Tick(const float DeltaSeconds)
 void UBuilding::C_Tick(const float DeltaSeconds)
 {
 	Population->C_Tick(DeltaSeconds);
-	if (GetSettings()->bConsumptionEnabled)
+	if (GetSettings()->bConsumptionEnabled && !bIsProductionActive)
 	{
 		ResourceStorage->Remove(GetSettings()->BaseConsumptionPerSecond * DeltaSeconds);
 	}
@@ -132,15 +134,8 @@ void UBuilding::S_SetEfficiency(const float NewEfficiency)
 
 void UBuilding::S_RefreshEfficiency()
 {
-	if (!GetSettings()->bConsumptionEnabled || !ResourceStorage->IsEmpty())
-	{
-		const float PopulationFactor = Population->GetSize() / static_cast<float>(Settings->Housing);
-		S_SetEfficiency(1.0f * PopulationFactor);
-	}
-	else
-	{
-		S_SetEfficiency(0.0f);
-	}
+	const float PopulationFactor = Population->GetSize() / static_cast<float>(Settings->Housing);
+	S_SetEfficiency(1.0f * PopulationFactor);
 }
 
 // --------------------- Construction phase ---------------------
@@ -171,7 +166,7 @@ void UBuilding::S_FinishConstruction()
 void UBuilding::S_RecalculateProductionPerSecond()
 {
 	float OldProductionPerSecond = ProductionPerSecond;
-	if (GetSettings()->bProductionEnabled)
+	if (GetSettings()->bProductionEnabled || !bIsProductionActive)
 	{
 		ProductionPerSecond = 0.f;
 	}
@@ -199,7 +194,8 @@ EProductionType UBuilding::GetProductionType() const
 
 void UBuilding::S_HandleStorageEmptyChanged(bool IsEmpty)
 {
-	S_RefreshEfficiency();
+	bIsProductionActive = !IsEmpty;
+	S_RecalculateProductionPerSecond();
 }
 
 // --------------------- Consumption ---------------------
