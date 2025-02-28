@@ -107,10 +107,10 @@ public:
 
 	bool IsBorderingUnclaimedTile(const ATile* Tile) const;
 
-	void S_RegisterTile(ATile* Tile);
+	void S_RegisterTile(ATile* Tile, UBuilding* Building);
 	void RegisterPopulation(UPopulation* InPopulation);
 
-	void S_UnregisterTile(ATile* Tile);
+	void S_UnregisterTile(ATile* Tile, UBuilding* Building);
 	void UnregisterPopulation(UPopulation* InPopulation);
 	int32 GetCountOfConstructionSites();
 
@@ -154,6 +154,8 @@ public:
 
 	void S_AddResources(FConstructionResources Amount);
 	void S_RemoveResources(FConstructionResources Amount);
+	void C_AddResources(FConstructionResources Amount);
+	void C_RemoveResources(FConstructionResources Amount);
 
 
 	// --------------------------- Civilians ---------------------------

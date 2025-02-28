@@ -271,7 +271,6 @@ bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* B
 		UE_LOG(LogTemp, Warning, TEXT("Multiple building types enabled in BuildingDataAsset. Only one allowed!"))
 		return false;
 	}
-	Builder->S_RegisterTile(this);
 	// Choose fitting class
 	if (BuildingDataAsset->bCivilianEnabled)
 		Building = NewObject<UBuildingCivilian>();
@@ -291,6 +290,8 @@ bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* B
 
 	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, GameplayTags, this);
 	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, Building, this);
+	
+	Builder->S_RegisterTile(this, Building);
 
 	OnGameplayTagsChanged.Broadcast();
 	BuildingChanged();
@@ -301,7 +302,7 @@ bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* B
 void ATile::S_Unbuild()
 {
 	if (!Building) return;
-	Building->GetSettlement()->S_UnregisterTile(this);
+	Building->GetSettlement()->S_UnregisterTile(this, Building);
 	GameplayTags.RemoveTags(Building->GetSettings()->GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
 	RemoveReplicatedSubObject(Building);

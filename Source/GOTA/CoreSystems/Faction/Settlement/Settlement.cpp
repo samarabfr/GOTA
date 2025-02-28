@@ -97,15 +97,14 @@ void ASettlement::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	Resources += Production - Consumption;
-
-	if (Resources.Food < 0)
-		Population->S_SetStarving(true);
-	else
-		Population->S_SetStarving(false);
-
 	if (HasAuthority())
 	{
+		S_AddResources(Production - Consumption);
+		// starving
+		if (Resources.Food < 0)
+			Population->S_SetStarving(true);
+		else
+			Population->S_SetStarving(false);
 		const float Threshold = GetStarvingThreshold();
 		if (Resources.Food < Threshold)
 		{
@@ -116,6 +115,10 @@ void ASettlement::Tick(float DeltaSeconds)
 				GetPopulation()->StarveRandomPop();
 			}
 		}
+	}
+	else
+	{
+		C_AddResources(Production - Consumption);
 	}
 }
 
@@ -170,10 +173,14 @@ bool ASettlement::IsBorderingUnclaimedTile(const ATile* Tile) const
 
 // --------------------------- Building ---------------------------
 
-void ASettlement::S_RegisterTile(ATile* Tile)
+void ASettlement::S_RegisterTile(ATile* Tile, UBuilding* Building)
 {
 	ClaimedTiles.Add(Tile);
 	S_RefreshBorderingUnclaimedTiles();
+	if (Building)
+	{
+		S_RegisterBuildingForIncome(Building);
+	}
 }
 
 void ASettlement::RegisterPopulation(UPopulation* InPopulation)
@@ -181,10 +188,14 @@ void ASettlement::RegisterPopulation(UPopulation* InPopulation)
 	GetPopulation()->RegisterPop(InPopulation);
 }
 
-void ASettlement::S_UnregisterTile(ATile* Tile)
+void ASettlement::S_UnregisterTile(ATile* Tile, UBuilding* Building)
 {
 	ClaimedTiles.Remove(Tile);
 	S_RefreshBorderingUnclaimedTiles();
+	if (Building)
+	{
+		S_UnregisterBuildingForIncome(Building);
+	}
 }
 
 void ASettlement::UnregisterPopulation(UPopulation* InPopulation)
@@ -207,6 +218,16 @@ void ASettlement::S_RemoveResources(const FConstructionResources Amount)
 	Resources -= Amount;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
 	ForceNetUpdate();
+}
+
+void ASettlement::C_AddResources(FConstructionResources Amount)
+{
+	Resources += Amount;
+}
+
+void ASettlement::C_RemoveResources(FConstructionResources Amount)
+{
+	Resources -= Amount;
 }
 
 int32 ASettlement::GetCountOfBuilders()
