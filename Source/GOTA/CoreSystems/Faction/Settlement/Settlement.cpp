@@ -193,14 +193,14 @@ void ASettlement::UnregisterPopulation(UPopulation* InPopulation)
 // --------------------------- Resources ---------------------------
 
 
-void ASettlement::S_AddResources(const FGameResources Amount)
+void ASettlement::S_AddResources(const FConstructionResources Amount)
 {
 	Resources += Amount;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
 	ForceNetUpdate();
 }
 
-void ASettlement::S_RemoveResources(const FGameResources Amount)
+void ASettlement::S_RemoveResources(const FConstructionResources Amount)
 {
 	Resources -= Amount;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
@@ -250,7 +250,7 @@ void ASettlement::RegisterBuildingForResourcePrediction(UBuilding* Building)
 		|| ProductionType == EProductionType::Wood
 		|| ProductionType == EProductionType::Stone)
 	{
-		PredictedProduction.AddProduction(Building->GetPredictedProduction(), ProductionType);
+		PredictedProduction.Add(Building->GetPredictedProduction(), ProductionType);
 		Building->OnPredictedProductionChanged.AddDynamic(this, &ASettlement::UpdatePredictedProduction);
 	}
 	const EConsumptionType ConsumptionType = Building->GetConsumptionType();
@@ -258,10 +258,10 @@ void ASettlement::RegisterBuildingForResourcePrediction(UBuilding* Building)
 		|| ConsumptionType == EConsumptionType::Wood
 		|| ConsumptionType == EConsumptionType::Stone)
 	{
-		PredictedConsumption.AddConsumption(Building->GetPredictedConsumption(), ConsumptionType);
+		PredictedConsumption.Add(Building->GetPredictedConsumption(), ConsumptionType);
 		Building->OnPredictedConsumptionChanged.AddDynamic(this, &ASettlement::UpdatePredictedConsumption);
 	}
-	PredictedConsumption.AddConsumption(
+	PredictedConsumption.Add(
 		Building->GetPopulation()->GetSize() * GetPopEatingPerSecond(), EConsumptionType::Food);
 	Building->GetPopulation()->OnSizeChanged.AddDynamic(this, &ASettlement::UpdatePredictionFromPopulation);
 }
@@ -273,7 +273,7 @@ void ASettlement::UnregisterBuildingForResourcePrediction(UBuilding* Building)
 		|| ProductionType == EProductionType::Wood
 		|| ProductionType == EProductionType::Stone)
 	{
-		PredictedProduction.RemoveProduction(Building->GetPredictedProduction(), ProductionType);
+		PredictedProduction.Remove(Building->GetPredictedProduction(), ProductionType);
 		Building->OnPredictedProductionChanged.RemoveDynamic(this, &ASettlement::UpdatePredictedProduction);
 	}
 	const EConsumptionType ConsumptionType = Building->GetConsumptionType();
@@ -281,25 +281,25 @@ void ASettlement::UnregisterBuildingForResourcePrediction(UBuilding* Building)
 		|| ConsumptionType == EConsumptionType::Wood
 		|| ConsumptionType == EConsumptionType::Stone)
 	{
-		PredictedConsumption.RemoveConsumption(Building->GetPredictedConsumption(), ConsumptionType);
+		PredictedConsumption.Remove(Building->GetPredictedConsumption(), ConsumptionType);
 		Building->OnPredictedConsumptionChanged.RemoveDynamic(this, &ASettlement::UpdatePredictedConsumption);
 	}
-	PredictedConsumption.RemoveConsumption(
+	PredictedConsumption.Remove(
 		Building->GetPopulation()->GetSize() * GetPopEatingPerSecond(), EConsumptionType::Food);
 	Building->GetPopulation()->OnSizeChanged.RemoveDynamic(this, &ASettlement::UpdatePredictionFromPopulation);
 }
 
 void ASettlement::UpdatePredictedProduction(const float Change, const EProductionType Type)
 {
-	PredictedProduction.AddProduction(Change, Type);
+	PredictedProduction.Add(Change, Type);
 }
 
 void ASettlement::UpdatePredictedConsumption(const float Change, const EConsumptionType Type)
 {
-	PredictedConsumption.AddConsumption(Change, Type);
+	PredictedConsumption.Add(Change, Type);
 }
 
 void ASettlement::UpdatePredictionFromPopulation(int16 Change)
 {
-	PredictedConsumption.AddConsumption(Change * GetPopEatingPerSecond(), EConsumptionType::Food);
+	PredictedConsumption.Add(Change * GetPopEatingPerSecond(), EConsumptionType::Food);
 }

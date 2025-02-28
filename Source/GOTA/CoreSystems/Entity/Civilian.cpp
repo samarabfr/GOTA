@@ -197,12 +197,12 @@ bool ACivilian::IsCurrentTileOriginBuilding() const
 void ACivilian::S_UnloadResources()
 {
 	GetOriginBuilding()->GetSettlement()->S_AddResources(GetResourceInventory());
-	ResourceInventory = FGameResources::Zero();
+	ResourceInventory = FConstructionResources::Zero();
 }
 
-void ACivilian::S_AddResources(const FGameResources Resources)
+void ACivilian::S_AddResources(const FConstructionResources Resources)
 {
-	if (Resources <= FGameResources::Zero() || IsInventoryFull()) return;
+	if (Resources <= FConstructionResources::Zero() || IsInventoryFull()) return;
 
 	if (ResourceInventory.Food < ResourceInventoryLimit.Food)
 	{

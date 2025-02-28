@@ -3,7 +3,7 @@
 #pragma once
 
 #include "GameplayTagContainer.h"
-#include "GameResources.h"
+#include "ConstructionResources.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
@@ -117,16 +117,16 @@ public:
 	// --------------------------- Resources ---------------------------
 private:
 	UPROPERTY(EditDefaultsOnly)
-	FGameResources StartingResources;
+	FConstructionResources StartingResources;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
-	FGameResources Resources;
+	FConstructionResources Resources;
 
 	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	FGameResources PredictedProduction;
+	FConstructionResources PredictedProduction;
 
 	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	FGameResources PredictedConsumption;
+	FConstructionResources PredictedConsumption;
 
 	void RegisterBuildingForResourcePrediction(UBuilding* Building);
 	void UnregisterBuildingForResourcePrediction(UBuilding* Building);
@@ -141,19 +141,19 @@ private:
 	void UpdatePredictionFromPopulation(int16 Change);
 
 public:
-	FGameResources GetResources() const { return Resources; }
+	FConstructionResources GetResources() const { return Resources; }
 
 	// Returns predicted production - predicted consumption
-	FGameResources GetEffectivePredictedProduction() const { return PredictedProduction - PredictedConsumption; }
+	FConstructionResources GetEffectivePredictedProduction() const { return PredictedProduction - PredictedConsumption; }
 
 	// Returns raw predicted production
-	FGameResources GetPredictedProduction() const { return PredictedProduction; }
+	FConstructionResources GetPredictedProduction() const { return PredictedProduction; }
 
 	// Returns raw predicted consumption
-	FGameResources GetPredictedConsumption() const { return PredictedConsumption; }
+	FConstructionResources GetPredictedConsumption() const { return PredictedConsumption; }
 
-	void S_AddResources(FGameResources Amount);
-	void S_RemoveResources(FGameResources Amount);
+	void S_AddResources(FConstructionResources Amount);
+	void S_RemoveResources(FConstructionResources Amount);
 
 
 	// --------------------------- Civilians ---------------------------

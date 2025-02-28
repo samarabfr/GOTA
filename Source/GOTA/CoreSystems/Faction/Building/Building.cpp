@@ -6,6 +6,7 @@
 #include "Production.h"
 #include "BuildingSettings.h"
 #include "Population.h"
+#include "ResourceStorage.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
@@ -45,12 +46,14 @@ UBuilding::UBuilding()
 	Population = CreateDefaultSubobject<UPopulation>(TEXT("Population"));
 	Population->OnSizeChanged.AddDynamic(this, &UBuilding::PopulationChanged);
 	Production = CreateDefaultSubobject<UProduction>(TEXT("Production"));
+	ResourceStorage = CreateDefaultSubobject<UResourceStorage>(TEXT("ResourceStorage"));
 }
 
 void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
 {
 	Population->S_Init(InSettlement->GetGrowthPerOwnPop(), InSettlement->GetGrowthPerNeighborPop());
 	Production->S_Init(this);
+	ResourceStorage->S_Init(GetSettings()->BaseResourceLimit, true, false);
 	Settings = InSettings;
 	Tile = InTile;
 	S_SetSettlement(InSettlement);
@@ -64,13 +67,20 @@ void UBuilding::C_Init()
 void UBuilding::S_Tick(const float DeltaSeconds)
 {
 	Population->S_Tick(DeltaSeconds);
-	Production->S_Tick(DeltaSeconds);
+	if (ResourceStorage->GetCurrent() <= 0.0f)
+	{
+		
+	}
+	else
+	{
+		ResourceStorage->S_Remove(GetSettings()->BaseConsumptionPerSecond * DeltaSeconds);
+	}
 }
 
 void UBuilding::C_Tick(const float DeltaSeconds)
 {
 	Population->C_Tick(DeltaSeconds);
-	Production->C_Tick(DeltaSeconds);
+	ResourceStorage->S_Remove(GetSettings()->BaseConsumptionPerSecond * DeltaSeconds);
 }
 
 void UBuilding::S_PrepareDestroy()
@@ -124,12 +134,12 @@ void UBuilding::RefreshEfficiency()
 
 // --------------------- Construction phase ---------------------
 
-FGameResources UBuilding::GetConstructionProgress() const
+FConstructionResources UBuilding::GetConstructionProgress() const
 {
 	return ConstructionProgress;
 }
 
-void UBuilding::SetConstructionProgress(const FGameResources NewConstructionProgress)
+void UBuilding::SetConstructionProgress(const FConstructionResources NewConstructionProgress)
 {
 	ConstructionProgress = NewConstructionProgress;
 	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, ConstructionProgress, this)

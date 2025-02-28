@@ -82,10 +82,10 @@ private:
 	int32 WorkAmount;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated)
-	FGameResources ResourceInventoryLimit;
+	FConstructionResources ResourceInventoryLimit;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated)
-	FGameResources ResourceInventory;
+	FConstructionResources ResourceInventory;
 
 	UPROPERTY(EditAnywhere, Replicated)
 	TWeakObjectPtr<ATile> PriorityTile;
@@ -93,9 +93,9 @@ private:
 protected:
 	virtual bool IsTileValidForWork(const ATile* Tile) const;
 	int32 GetWorkAmount() const { return WorkAmount; }
-	FGameResources GetResourceInventoryLimit() const { return ResourceInventoryLimit; }
-	FGameResources GetResourceInventory() const { return ResourceInventory; }
-	void S_AddResources(FGameResources Resources);
+	FConstructionResources GetResourceInventoryLimit() const { return ResourceInventoryLimit; }
+	FConstructionResources GetResourceInventory() const { return ResourceInventory; }
+	void S_AddResources(FConstructionResources Resources);
 	bool S_TryFindPathToClosestWorkTile();
 	bool S_TryFindPathToWorkTileClosestToSettlement();
 

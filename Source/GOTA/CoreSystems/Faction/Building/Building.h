@@ -1,11 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-#include "GOTA/CoreSystems/Faction/Settlement/GameResources.h"
+#include "GOTA/CoreSystems/Faction/Settlement/ConstructionResources.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 
 #include "Building.generated.h"
 
+class UResourceStorage;
 class UProduction;
 class AArmy;
 class ASettlement;
@@ -101,33 +102,46 @@ private:
 	bool bIsUnderConstruction = true;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated)
-	FGameResources ConstructionProgress;
+	FConstructionResources ConstructionProgress;
 
 public:
 	bool GetIsUnderConstruction() const { return bIsUnderConstruction; }
 
-	FGameResources GetConstructionProgress() const;
-	void SetConstructionProgress(const FGameResources NewConstructionProgress);
+	FConstructionResources GetConstructionProgress() const;
+	void SetConstructionProgress(const FConstructionResources NewConstructionProgress);
 
 	virtual void FinishConstruction();
 
 	// --------------------- Production ---------------------
+
 private:
 	UPROPERTY(Replicated)
 	UProduction* Production;
-	
+
 public:
 	UProduction* GetProduction();
 
+	// --------------------- Production ---------------------
+
+private:
+	UPROPERTY(Replicated)
+	UResourceStorage* ResourceStorage;
+	
+public:
+	UResourceStorage* GetResourceStorage() const { return ResourceStorage; }
+
 	// --------------------- Protection ---------------------
+
 public:
 	bool IsProtected() const;
 
 	// --------------------- Army ---------------------
+
 public:
 	virtual AArmy* GetArmy() const { return nullptr; }
 
 	// --------------------- Defense building ---------------------
+
 public:
 	virtual void S_BuildingDefenseTakeDamage(int32 Damage)
 	{

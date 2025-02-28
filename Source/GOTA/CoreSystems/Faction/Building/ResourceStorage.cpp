@@ -16,11 +16,11 @@ void UResourceStorage::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Out
 	Params.RepNotifyCondition = REPNOTIFY_Always;
 	DOREPLIFETIME_WITH_PARAMS(UResourceStorage, bReplicateOnAdding, Params);
 	DOREPLIFETIME_WITH_PARAMS(UResourceStorage, bReplicateOnRemoving, Params);
-	DOREPLIFETIME_WITH_PARAMS(UResourceStorage, ResourceLimit, Params);
+	DOREPLIFETIME_WITH_PARAMS(UResourceStorage, Limit, Params);
 
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
-	DOREPLIFETIME_WITH_PARAMS(UResourceStorage, CurrentResources, Params);
+	DOREPLIFETIME_WITH_PARAMS(UResourceStorage, Current, Params);
 }
 
 bool UResourceStorage::IsSupportedForNetworking() const
@@ -28,11 +28,11 @@ bool UResourceStorage::IsSupportedForNetworking() const
 	return true;
 }
 
-void UResourceStorage::S_Init(FGameResources ResourceLimit, bool ReplicateOnAdding, bool ReplicateOnRemoving)
+void UResourceStorage::S_Init(float Limit, bool ReplicateOnAdding, bool ReplicateOnRemoving)
 {
 	S_SetReplicateOnAdding(ReplicateOnAdding);
 	S_SetReplicateOnRemoving(ReplicateOnRemoving);
-	S_SetResourceLimit(ResourceLimit);
+	S_SetLimit(Limit);
 }
 
 // ------------------------------------ Utility --------------------------------------
@@ -49,64 +49,57 @@ void UResourceStorage::S_SetReplicateOnRemoving(bool ReplicateOnRemoving)
 	MARK_PROPERTY_DIRTY_FROM_NAME(UResourceStorage, bReplicateOnRemoving, this)
 }
 
-void UResourceStorage::S_SetResourceLimit(FGameResources NewResourceLimit)
+void UResourceStorage::S_SetLimit(float NewLimit)
 {
-	ResourceLimit = NewResourceLimit;
-	MARK_PROPERTY_DIRTY_FROM_NAME(UResourceStorage, ResourceLimit, this)
+	Limit = NewLimit;
+	MARK_PROPERTY_DIRTY_FROM_NAME(UResourceStorage, Limit, this)
 }
 
-FGameResources UResourceStorage::GetResourceLimit() const
+float UResourceStorage::GetLimit() const
 {
-	return ResourceLimit;
+	return Limit;
 }
 
 // ------------------------------------ Current Resources --------------------------------------
 
-void UResourceStorage::OnRep_CurrentResources()
+void UResourceStorage::OnRep_Current()
 {
-	OnCurrentResourcesChanged.Broadcast(CurrentResources);
+	OnCurrentChanged.Broadcast(Current);
 }
 
-void UResourceStorage::AddResources(FGameResources Resources)
+void UResourceStorage::Add(float Amount)
 {
-	CurrentResources.Food = FMath::Min(ResourceLimit.Food,
-								   CurrentResources.Food + FMath::Max(0.f, Resources.Food));
-	CurrentResources.Wood = FMath::Min(ResourceLimit.Wood,
-									   CurrentResources.Wood + FMath::Max(0.f, Resources.Wood));
-	CurrentResources.Stone = FMath::Min(ResourceLimit.Stone,
-										CurrentResources.Stone + FMath::Max(0.f, Resources.Stone));
+	Current = FMath::Min(Limit,Current + FMath::Max(0.f, Amount));
 }
 
-void UResourceStorage::RemoveResources(FGameResources Resources)
+void UResourceStorage::Remove(float Amount)
 {
-	CurrentResources.Food = FMath::Max(0.f, CurrentResources.Food - FMath::Max(0.f, Resources.Food));
-	CurrentResources.Wood = FMath::Max(0.f, CurrentResources.Wood - FMath::Max(0.f, Resources.Wood));
-	CurrentResources.Stone = FMath::Max(0.f, CurrentResources.Stone - FMath::Max(0.f, Resources.Stone));
+	Current = FMath::Max(0.f, Current - FMath::Max(0.f, Amount));
 }
 
-FGameResources UResourceStorage::GetCurrentResources() const
+float UResourceStorage::GetCurrent() const
 {
-	return CurrentResources;
+	return Current;
 }
 
-bool UResourceStorage::IsEmpty()
+bool UResourceStorage::IsEmpty() const
 {
-	return CurrentResources == FGameResources::Zero();
+	return Current == 0.0f;
 }
 
-bool UResourceStorage::IsFull()
+bool UResourceStorage::IsFull() const
 {
-	return CurrentResources == ResourceLimit;
+	return Current == Limit;
 }
 
-void UResourceStorage::S_AddResources(FGameResources Resources)
+void UResourceStorage::S_Add(float Amount)
 {
-	const FGameResources OldResources = CurrentResources;
-	AddResources(Resources);
+	const float Old = Current;
+	Add(Amount);
 	// Events and replication
-	if (OldResources != CurrentResources)
+	if (Old != Current)
 	{
-		OnCurrentResourcesChanged.Broadcast(CurrentResources);
+		OnCurrentChanged.Broadcast(Current);
 		if (IsFull())
 		{
 			OnIsFullChanged.Broadcast(true);
@@ -117,41 +110,41 @@ void UResourceStorage::S_AddResources(FGameResources Resources)
 		}
 		if (bReplicateOnAdding)
 		{
-			MARK_PROPERTY_DIRTY_FROM_NAME(UResourceStorage, CurrentResources, this)
+			MARK_PROPERTY_DIRTY_FROM_NAME(UResourceStorage, Current, this)
 		}
 	}
 }
 
-void UResourceStorage::S_RemoveResources(FGameResources Resources)
+void UResourceStorage::S_Remove(float Amount)
 {
-	const FGameResources OldResources = CurrentResources;
-	RemoveResources(Resources);
-	if (OldResources != CurrentResources)
+	const float Old = Current;
+	Remove(Amount);
+	if (Old != Current)
 	{
-		OnCurrentResourcesChanged.Broadcast(CurrentResources);
+		OnCurrentChanged.Broadcast(Current);
 		if (bReplicateOnRemoving)
 		{
-			MARK_PROPERTY_DIRTY_FROM_NAME(UResourceStorage, CurrentResources, this)
+			MARK_PROPERTY_DIRTY_FROM_NAME(UResourceStorage, Current, this)
 		}
 	}
 }
 
-void UResourceStorage::C_AddResources(FGameResources Resources)
+void UResourceStorage::C_Add(float Amount)
 {
-	const FGameResources OldResources = CurrentResources;
-	AddResources(Resources);
-	if (OldResources != CurrentResources)
+	const float Old = Current;
+	Add(Amount);
+	if (Old != Current)
 	{
-		OnCurrentResourcesChanged.Broadcast(CurrentResources);
+		OnCurrentChanged.Broadcast(Current);
 	}
 }
 
-void UResourceStorage::C_RemoveResources(FGameResources Resources)
+void UResourceStorage::C_Remove(float Amount)
 {
-	const FGameResources OldResources = CurrentResources;
-	RemoveResources(Resources);
-	if (OldResources != CurrentResources)
+	const float Old = Current;
+	Remove(Amount);
+	if (Old != Current)
 	{
-		OnCurrentResourcesChanged.Broadcast(CurrentResources);
+		OnCurrentChanged.Broadcast(Current);
 	}
 }

@@ -7,7 +7,7 @@ void AForager::S_Work()
 {
 	if (IsInventoryFull()) return;
 	GetCurrentTile()->EcoValues->SubtractForage(1);
-	FGameResources WorkResources = FGameResources();
+	FConstructionResources WorkResources = FConstructionResources();
 	WorkResources.Food = GetWorkAmount();
 	S_AddResources(WorkResources);
 }

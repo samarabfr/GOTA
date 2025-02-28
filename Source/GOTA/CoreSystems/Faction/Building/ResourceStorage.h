@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GOTA/CoreSystems/Faction/Settlement/GameResources.h"
 #include "UObject/Object.h"
 #include "ResourceStorage.generated.h"
 
@@ -21,9 +20,9 @@ class GOTA_API UResourceStorage : public UObject
 	virtual bool IsSupportedForNetworking() const override;
 
 	// ------------------------------------ Lifecycle --------------------------------------
-	
+
 public:
-	void S_Init(FGameResources ResourceLimit, bool ReplicateOnAdding = true, bool ReplicateOnRemoving = true);
+	void S_Init(float InLimit, bool ReplicateOnAdding = true, bool ReplicateOnRemoving = true);
 
 	// ------------------------------------ Utility --------------------------------------
 
@@ -35,49 +34,48 @@ private:
 	bool bReplicateOnRemoving = true;
 
 	UPROPERTY(Replicated)
-	FGameResources ResourceLimit = FGameResources();
+	float Limit = 0.0f;
 
 public:
 	void S_SetReplicateOnAdding(bool ReplicateOnAdding);
 	void S_SetReplicateOnRemoving(bool ReplicateOnRemoving);
-	void S_SetResourceLimit(FGameResources NewResourceLimit);
-	FGameResources GetResourceLimit() const;
-	
+	void S_SetLimit(float NewLimit);
+	float GetLimit() const;
+
 	// ------------------------------------ Current Resources --------------------------------------
-	
+
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_CurrentResources)
-	FGameResources CurrentResources = FGameResources();
+	float Current = 0.0f;
 
 	UFUNCTION()
-	void OnRep_CurrentResources();
+	void OnRep_Current();
 
 	// doesnt replicate nor broadcasts any events
-	void AddResources(FGameResources Resources);
-	void RemoveResources(FGameResources Resources);
+	void Add(float Amount);
+	void Remove(float Amount);
 
 public:
-	FGameResources GetCurrentResources() const;
-	bool IsEmpty();
-	bool IsFull();
+	float GetCurrent() const;
+	bool IsEmpty() const;
+	bool IsFull() const;
 	// Replicates and broadcasts events
-	void S_AddResources(FGameResources Resources);
-	void S_RemoveResources(FGameResources Resources);
+	void S_Add(float Amount);
+	void S_Remove(float Amount);
 	// broadcasts events but doesnt replicate
-	void C_AddResources(FGameResources Resources);
-	void C_RemoveResources(FGameResources Resources);
+	void C_Add(float Amount);
+	void C_Remove(float Amount);
 
 	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCurrentResourcesChangedSignature, FGameResources,
-	                                            NewCurrentResources);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCurrentChangedSignature, float, NewCurrent);
 
-	FOnCurrentResourcesChangedSignature OnCurrentResourcesChanged;
-	
+	FOnCurrentChangedSignature OnCurrentChanged;
+
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsEmptyChangedSignature, bool, IsEmpty);
 
 	FOnIsEmptyChangedSignature OnIsEmptyChanged;
-	
+
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnIsFullChangedSignature, bool, IsFull);
 

@@ -51,7 +51,7 @@ void URL_BuildingSelectorInteractor::SpecifyAgentObservation_Implementation(
 // ----------------------- Make Observations -----------------------
 
 FLearningAgentsObservationObjectElement URL_BuildingSelectorInteractor::MakeResourceObservation(
-	ULearningAgentsObservationObject* InObservationObject, const FGameResources Resources)
+	ULearningAgentsObservationObject* InObservationObject, const FConstructionResources Resources)
 {
 	TMap<FName, FLearningAgentsObservationObjectElement> Map;
 	Map.Add("Food", ULearningAgentsObservations::MakeFloatObservation(
@@ -68,9 +68,9 @@ FLearningAgentsObservationObjectElement URL_BuildingSelectorInteractor::MakeSett
 {
 	TMap<FName, FLearningAgentsObservationObjectElement> Map;
 	Map.Add("Income", MakeResourceObservation(
-		        InObservationObject, Settlement ? Settlement->GetEffectivePredictedProduction() : FGameResources()));
+		        InObservationObject, Settlement ? Settlement->GetEffectivePredictedProduction() : FConstructionResources()));
 	Map.Add("CurrentResources", MakeResourceObservation(
-		        InObservationObject, Settlement ? Settlement->GetResources() : FGameResources()));
+		        InObservationObject, Settlement ? Settlement->GetResources() : FConstructionResources()));
 	return ULearningAgentsObservations::MakeStructObservation(InObservationObject, Map);
 }
 

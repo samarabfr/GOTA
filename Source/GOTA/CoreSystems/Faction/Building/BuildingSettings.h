@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameplayTagContainer.h"
-#include "GOTA/CoreSystems/Faction/Settlement/GameResources.h"
+#include "GOTA/CoreSystems/Faction/Settlement/ConstructionResources.h"
 #include "GOTA/CoreSystems/Tile/GameplayTagRule.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "BuildingSettings.generated.h"
@@ -28,7 +28,7 @@ public:
 	TArray<FGameplayTagRule> PlacementRules;
 
 	UPROPERTY(EditDefaultsOnly, Category="Building")
-	FGameResources Cost;
+	FConstructionResources Cost;
 
 	UPROPERTY(EditDefaultsOnly, Category="Building")
 	int32 Housing = 0;
@@ -37,7 +37,7 @@ public:
 	EProductionType ProductionType = EProductionType::None;
 
 	UPROPERTY(EditDefaultsOnly, Category="Building")
-	EConsumptionType ConsumptionType = EConsumptionType::None;
+	EResource ConsumptionType = EResource::None;
 
 	// ------------------------------------ Production ------------------------------------
 
@@ -56,10 +56,10 @@ public:
 	float BaseConsumptionPerSecond = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Consumption", meta=(EditCondition = bConsumptionEnabled))
-	FGameResources BaseResourceLimit = FGameResources::Zero();
+	float BaseResourceLimit = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Consumption", meta=(EditCondition = bConsumptionEnabled))
-	FGameResources ResourceLimitIncreasePerEfficiencyPercentage = FGameResources::Zero();
+	float ResourceLimitIncreasePerEfficiencyPercentage = 0.0f;
 
 	// ------------------------------------ Civilian ------------------------------------
 
@@ -74,10 +74,10 @@ public:
 	float CivilianGatheringTime = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Civilian")
-	float CivilianGatheringAmount = 0;
+	float CivilianGatheringAmount = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Civilian")
-	FGameResources CivilianInventoryLimit = FGameResources::Zero();
+	float CivilianInventoryLimit = 0.0f;
 
 	// In Seconds
 	UPROPERTY(EditDefaultsOnly, Category="Civilian", meta=(Tooltip="In Seconds"))

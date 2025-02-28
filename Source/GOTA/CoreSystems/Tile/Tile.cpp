@@ -274,9 +274,7 @@ bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* B
 	}
 	Builder->S_RegisterTile(this);
 	// Choose fitting class
-	if (BuildingDataAsset->bProductionEnabled)
-		Building = NewObject<UProduction>();
-	else if (BuildingDataAsset->bCivilianEnabled)
+	if (BuildingDataAsset->bCivilianEnabled)
 		Building = NewObject<UBuildingCivilian>();
 	else if (BuildingDataAsset->bArmyEnabled)
 		Building = NewObject<UBuildingArmy>();

@@ -36,24 +36,24 @@ void UTopBar::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 		Power_Disk->SetRenderTransformAngle(Angle);
 	}
 
-	FGameResources ColonyRes = GameState->GetColony()->GetResources();
+	FConstructionResources ColonyRes = GameState->GetColony()->GetResources();
 	Colony_Pop->SetText(FText::AsNumber(Colonists));
 	Colony_Food->SetText(FText::AsNumber(static_cast<int32>(ColonyRes.Food)));
 	Colony_Wood->SetText(FText::AsNumber(static_cast<int32>(ColonyRes.Wood)));
 	Colony_Stone->SetText(FText::AsNumber(static_cast<int32>(ColonyRes.Stone)));
 
-	FGameResources ColonyResIncome = GameState->GetColony()->GetEffectivePredictedProduction();
+	FConstructionResources ColonyResIncome = GameState->GetColony()->GetEffectivePredictedProduction();
 	UpdateIncomeNumber(TXT_ColonyFoodIncome, ColonyResIncome.Food);
 	UpdateIncomeNumber(TXT_ColonyWoodIncome, ColonyResIncome.Wood);
 	UpdateIncomeNumber(TXT_ColonyStoneIncome, ColonyResIncome.Stone);
 
-	FGameResources TribeRes = GameState->GetTribe()->GetResources();
+	FConstructionResources TribeRes = GameState->GetTribe()->GetResources();
 	Tribe_Pop->SetText(FText::AsNumber(Natives));
 	Tribe_Food->SetText(FText::AsNumber(static_cast<int32>(TribeRes.Food)));
 	Tribe_Wood->SetText(FText::AsNumber(static_cast<int32>(TribeRes.Wood)));
 	Tribe_Stone->SetText(FText::AsNumber(static_cast<int32>(TribeRes.Stone)));
 
-	FGameResources TribeResIncome = GameState->GetTribe()->GetEffectivePredictedProduction();
+	FConstructionResources TribeResIncome = GameState->GetTribe()->GetEffectivePredictedProduction();
 	UpdateIncomeNumber(TXT_TribeFoodIncome, TribeResIncome.Food);
 	UpdateIncomeNumber(TXT_TribeWoodIncome, TribeResIncome.Wood);
 	UpdateIncomeNumber(TXT_TribeStoneIncome, TribeResIncome.Stone);

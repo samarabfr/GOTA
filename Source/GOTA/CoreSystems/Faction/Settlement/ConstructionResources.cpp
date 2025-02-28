@@ -1,6 +1,6 @@
-﻿#include "GameResources.h"
+﻿#include "ConstructionResources.h"
 
-void FGameResources::AddProduction(const float Amount, const EProductionType ProductionType)
+void FConstructionResources::Add(const float Amount, const EProductionType ProductionType)
 {
 	switch (ProductionType)
 	{
@@ -21,7 +21,7 @@ void FGameResources::AddProduction(const float Amount, const EProductionType Pro
 	}
 }
 
-void FGameResources::RemoveProduction(const float Amount, const EProductionType ProductionType)
+void FConstructionResources::Remove(const float Amount, const EProductionType ProductionType)
 {
 	switch (ProductionType)
 	{
@@ -42,19 +42,19 @@ void FGameResources::RemoveProduction(const float Amount, const EProductionType 
 	}
 }
 
-void FGameResources::AddConsumption(const float Amount, const EConsumptionType ConsumptionType)
+void FConstructionResources::Add(const float Amount, const EResource Resource)
 {
-	switch (ConsumptionType)
+	switch (Resource)
 	{
-	case EConsumptionType::Food:
+	case EResource::Food:
 		Food += Amount;
 		break;
 
-	case EConsumptionType::Wood:
+	case EResource::Wood:
 		Wood += Amount;
 		break;
 
-	case EConsumptionType::Stone:
+	case EResource::Stone:
 		Stone += Amount;
 		break;
 
@@ -63,19 +63,19 @@ void FGameResources::AddConsumption(const float Amount, const EConsumptionType C
 	}
 }
 
-void FGameResources::RemoveConsumption(const float Amount, const EConsumptionType ConsumptionType)
+void FConstructionResources::Remove(const float Amount, const EResource Resource)
 {
-	switch (ConsumptionType)
+	switch (Resource)
 	{
-	case EConsumptionType::Food:
+	case EResource::Food:
 		Food -= Amount;
 		break;
 
-	case EConsumptionType::Wood:
+	case EResource::Wood:
 		Wood -= Amount;
 		break;
 
-	case EConsumptionType::Stone:
+	case EResource::Stone:
 		Stone -= Amount;
 		break;
 
@@ -84,7 +84,7 @@ void FGameResources::RemoveConsumption(const float Amount, const EConsumptionTyp
 	}
 }
 
-FGameResources& FGameResources::operator+=(const FGameResources& Other)
+FConstructionResources& FConstructionResources::operator+=(const FConstructionResources& Other)
 {
 	this->Food += Other.Food;
 	this->Wood += Other.Wood;
@@ -92,7 +92,7 @@ FGameResources& FGameResources::operator+=(const FGameResources& Other)
 	return *this;
 }
 
-FGameResources& FGameResources::operator-=(const FGameResources& Other)
+FConstructionResources& FConstructionResources::operator-=(const FConstructionResources& Other)
 {
 	this->Food -= Other.Food;
 	this->Wood -= Other.Wood;
@@ -100,48 +100,48 @@ FGameResources& FGameResources::operator-=(const FGameResources& Other)
 	return *this;
 }
 
-bool FGameResources::operator<(const FGameResources& Other) const
+bool FConstructionResources::operator<(const FConstructionResources& Other) const
 {
 	return this->Food < Other.Food && this->Wood < Other.Wood && this->Stone < Other.Stone;
 }
 
-bool FGameResources::operator>(const FGameResources& Other) const
+bool FConstructionResources::operator>(const FConstructionResources& Other) const
 {
 	return this->Food > Other.Food && this->Wood > Other.Wood && this->Stone > Other.Stone;
 }
 
-bool FGameResources::operator<=(const FGameResources& Other) const
+bool FConstructionResources::operator<=(const FConstructionResources& Other) const
 {
 	return this->Food <= Other.Food && this->Wood <= Other.Wood && this->Stone <= Other.Stone;
 }
 
-bool FGameResources::operator>=(const FGameResources& Other) const
+bool FConstructionResources::operator>=(const FConstructionResources& Other) const
 {
 	return this->Food >= Other.Food && this->Wood >= Other.Wood && this->Stone >= Other.Stone;
 }
 
-bool FGameResources::operator==(const FGameResources& Other) const
+bool FConstructionResources::operator==(const FConstructionResources& Other) const
 {
 	return this->Food == Other.Food && this->Wood == Other.Wood && this->Stone == Other.Stone;
 }
 
-bool FGameResources::operator!=(const FGameResources& Other) const
+bool FConstructionResources::operator!=(const FConstructionResources& Other) const
 {
 	return this->Food != Other.Food || this->Wood != Other.Wood || this->Stone != Other.Stone;
 }
 
-FGameResources FGameResources::operator+(const FGameResources& Other) const
+FConstructionResources FConstructionResources::operator+(const FConstructionResources& Other) const
 {
-	FGameResources Result;
+	FConstructionResources Result;
 	Result.Food = this->Food + Other.Food;
 	Result.Wood = this->Wood + Other.Wood;
 	Result.Stone = this->Stone + Other.Stone;
 	return Result;
 }
 
-FGameResources FGameResources::operator-(const FGameResources& Other) const
+FConstructionResources FConstructionResources::operator-(const FConstructionResources& Other) const
 {
-	FGameResources Result;
+	FConstructionResources Result;
 	Result.Food = this->Food - Other.Food;
 	Result.Wood = this->Wood - Other.Wood;
 	Result.Stone = this->Stone - Other.Stone;

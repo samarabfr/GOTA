@@ -52,8 +52,8 @@ void URL_BuildingSelectorTrainingEnv::GatherAgentReward_Implementation(float& Ou
 	{
 		if (ASettlement* Settlement = Agent->GetSettlement())
 		{
-			FGameResources Resources = Settlement->GetResources();
-			FGameResources Income = Settlement->GetEffectivePredictedProduction();
+			FConstructionResources Resources = Settlement->GetResources();
+			FConstructionResources Income = Settlement->GetEffectivePredictedProduction();
 			// Food
 			if (MilestonesReached[0] < ResourcesRewardMilestones.Num() &&
 				Resources.Food >= ResourcesRewardMilestones[MilestonesReached[0]].Goal)

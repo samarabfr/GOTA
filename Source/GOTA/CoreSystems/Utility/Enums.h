@@ -37,16 +37,6 @@ enum class EProductionType : uint8
 };
 
 UENUM()
-enum class EConsumptionType : uint8
-{
-	None UMETA(DisplayName = "None"),
-	Food UMETA(DisplayName = "Food"),
-	Wood UMETA(DisplayName = "Wood"),
-	Stone UMETA(DisplayName = "Stone"),
-	Enum_Length UMETA(Hidden)
-};
-
-UENUM()
 enum class EMood : uint8
 {
 	Content UMETA(DisplayName = "Content"),
@@ -128,3 +118,17 @@ enum class EAbilityCategory : uint8
 	Common UMETA(DisplayName = "Common"),
 	Fire UMETA(DisplayName = "Fire")
 };
+
+UENUM()
+enum class EResource : uint8
+{
+	None UMETA(DisplayName = "None"),
+	Food UMETA(DisplayName = "Food"),
+	Wood UMETA(DisplayName = "Wood"),
+	Stone UMETA(DisplayName = "Stone"),
+	Forage UMETA(DisplayName = "Forage"),
+	Trees UMETA(DisplayName = "Trees"),
+	Enum_Length UMETA(Hidden)
+};
+
+

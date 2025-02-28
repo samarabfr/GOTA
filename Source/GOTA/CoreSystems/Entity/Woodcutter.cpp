@@ -7,7 +7,7 @@ void AWoodcutter::S_Work()
 {
 	if (IsInventoryFull()) return;
 	GetCurrentTile()->EcoValues->SubtractTrees(1);
-	FGameResources WorkResources = FGameResources();
+	FConstructionResources WorkResources = FConstructionResources();
 	WorkResources.Wood = GetWorkAmount();
 	S_AddResources(WorkResources);
 }

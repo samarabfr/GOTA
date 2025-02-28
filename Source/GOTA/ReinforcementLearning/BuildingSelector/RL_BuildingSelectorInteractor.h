@@ -7,7 +7,7 @@
 #include "RL_BuildingSelectorInteractor.generated.h"
 
 class ASettlement;
-struct FGameResources;
+struct FConstructionResources;
 class IRL_BuildingSelectorAgent;
 
 UCLASS(Blueprintable)
@@ -37,7 +37,7 @@ public:
 private:
 	static FLearningAgentsObservationObjectElement MakeResourceObservation(
 		ULearningAgentsObservationObject* InObservationObject,
-		FGameResources Resources);
+		FConstructionResources Resources);
 	static FLearningAgentsObservationObjectElement MakeSettlementObservation(
 		ULearningAgentsObservationObject* InObservationObject,
 		const ASettlement* Settlement);
