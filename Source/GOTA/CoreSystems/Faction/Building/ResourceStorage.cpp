@@ -129,6 +129,19 @@ void UResourceStorage::S_Remove(float Amount)
 	}
 }
 
+void UResourceStorage::S_Empty()
+{
+	if (Current > 0.0f)
+	{
+		Current = 0.0f;
+		OnCurrentChanged.Broadcast(Current);
+		if (bReplicateOnRemoving)
+		{
+			MARK_PROPERTY_DIRTY_FROM_NAME(UResourceStorage, Current, this)
+		}
+	}
+}
+
 void UResourceStorage::C_Add(float Amount)
 {
 	const float Old = Current;
@@ -145,6 +158,15 @@ void UResourceStorage::C_Remove(float Amount)
 	Remove(Amount);
 	if (Old != Current)
 	{
+		OnCurrentChanged.Broadcast(Current);
+	}
+}
+
+void UResourceStorage::C_Empty()
+{
+	if (Current > 0.0f)
+	{
+		Current = 0.0f;
 		OnCurrentChanged.Broadcast(Current);
 	}
 }

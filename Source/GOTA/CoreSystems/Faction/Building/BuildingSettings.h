@@ -77,7 +77,10 @@ public:
 	float CivilianGatheringAmount = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="Civilian")
-	float CivilianInventoryLimit = 0.0f;
+	float CivilianStorageLimit = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="Consumption", meta=(EditCondition = bConsumptionEnabled))
+	float CivilianStorageLimitIncreasePerEfficiencyPercentage = 0.0f;
 
 	// In Seconds
 	UPROPERTY(EditDefaultsOnly, Category="Civilian", meta=(Tooltip="In Seconds"))

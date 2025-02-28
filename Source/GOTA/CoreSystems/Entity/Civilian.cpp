@@ -2,6 +2,7 @@
 #include "Components/StateTreeComponent.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
+#include "GOTA/CoreSystems/Faction/Building/ResourceStorage.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
@@ -20,7 +21,6 @@ void ACivilian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, OriginBuilding, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, WorkAmount, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, MovementRate, Params);
-	DOREPLIFETIME_WITH_PARAMS(ACivilian, ResourceInventoryLimit, Params);
 
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
@@ -30,7 +30,7 @@ void ACivilian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, bProgresserActive, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, ProgressRate, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, PriorityTile, Params);
-	DOREPLIFETIME_WITH_PARAMS(ACivilian, ResourceInventory, Params);
+	DOREPLIFETIME_WITH_PARAMS(ACivilian, Storage, Params);
 }
 
 // ----------------------- LifeCycle -----------------------
@@ -44,12 +44,14 @@ ACivilian::ACivilian()
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	StateTree = CreateDefaultSubobject<UStateTreeComponent>("StateTree");
+	Storage = CreateDefaultSubobject<UResourceStorage>("Storage");
 }
 
 void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 {
 	GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	OriginBuilding = InBuilding;
+	OriginBuilding->OnEfficiencyChanged.AddDynamic(this, &ACivilian::HandleEfficiencyChange);
 	CurrentTile = SpawnTile;
 	FVector NewLocation = FVector();
 	SpawnTile->AddCivilian(this, NewLocation);
@@ -58,7 +60,9 @@ void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	const UBuildingSettings* BuildingSettings = OriginBuilding->GetSettings();
 	WorkAmount = BuildingSettings->CivilianGatheringAmount;
 	MovementRate = 100 / BuildingSettings->CivilianMoveTime;
-	ResourceInventoryLimit = BuildingSettings->CivilianInventoryLimit;
+	Storage->S_SetLimit(BuildingSettings->CivilianStorageLimit +
+		OriginBuilding->GetEfficiency() *
+		OriginBuilding->GetSettings()->CivilianStorageLimitIncreasePerEfficiencyPercentage);
 	
 	StateTree->StartLogic();
 }
@@ -180,12 +184,12 @@ float ACivilian::GetWorkRate() const
 
 bool ACivilian::HasResourcesInInventory() const
 {
-	return GetResourceInventory().Food > 0 || GetResourceInventory().Stone > 0 || GetResourceInventory().Wood > 0;
+	return Storage->GetCurrent() > 0;
 }
 
 bool ACivilian::IsInventoryFull() const
 {
-	return GetResourceInventory() == GetResourceInventoryLimit();
+	return Storage->IsFull();
 }
 
 bool ACivilian::IsCurrentTileOriginBuilding() const
@@ -196,26 +200,8 @@ bool ACivilian::IsCurrentTileOriginBuilding() const
 
 void ACivilian::S_UnloadResources()
 {
-	GetOriginBuilding()->GetSettlement()->S_AddResources(GetResourceInventory());
-	ResourceInventory = FConstructionResources::Zero();
-}
-
-void ACivilian::S_AddResources(const FConstructionResources Resources)
-{
-	if (Resources <= FConstructionResources::Zero() || IsInventoryFull()) return;
-
-	if (ResourceInventory.Food < ResourceInventoryLimit.Food)
-	{
-		ResourceInventory.Food = FMath::Min(ResourceInventoryLimit.Food, ResourceInventory.Food + Resources.Food);
-	}
-	if (ResourceInventory.Stone < ResourceInventoryLimit.Stone)
-	{
-		ResourceInventory.Stone = FMath::Min(ResourceInventoryLimit.Stone, ResourceInventory.Stone + Resources.Stone);
-	}
-	if (ResourceInventory.Wood < ResourceInventoryLimit.Wood)
-	{
-		ResourceInventory.Wood = FMath::Min(ResourceInventoryLimit.Wood, ResourceInventory.Wood + Resources.Wood);
-	}
+	GetOriginBuilding()->GetResourceStorage()->S_Add(Storage->GetCurrent());
+	Storage->S_Empty();
 }
 
 bool ACivilian::S_TryFindPathToClosestWorkTile()
@@ -261,6 +247,13 @@ bool ACivilian::S_TryFindPathToWorkTileClosestToSettlement()
 	if (ResultPath.IsEmpty()) return false;
 	Path = ResultPath;
 	return true;
+}
+
+void ACivilian::HandleEfficiencyChange(float Change)
+{
+	Storage->S_SetLimit(OriginBuilding->GetSettings()->CivilianStorageLimit +
+		OriginBuilding->GetEfficiency() *
+		OriginBuilding->GetSettings()->CivilianStorageLimitIncreasePerEfficiencyPercentage);
 }
 
 bool ACivilian::S_TryFindPathToPriorityTile()

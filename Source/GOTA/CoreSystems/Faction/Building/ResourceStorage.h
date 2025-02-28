@@ -62,9 +62,11 @@ public:
 	// Replicates and broadcasts events
 	void S_Add(float Amount);
 	void S_Remove(float Amount);
+	void S_Empty();
 	// broadcasts events but doesnt replicate
 	void C_Add(float Amount);
 	void C_Remove(float Amount);
+	void C_Empty();
 
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCurrentChangedSignature, float, NewCurrent);
