@@ -79,7 +79,7 @@ void UBuilding::C_Tick(const float DeltaSeconds)
 	Population->C_Tick(DeltaSeconds);
 	if (GetSettings()->bConsumptionEnabled)
 	{
-		ResourceStorage->C_Remove(GetSettings()->BaseConsumptionPerSecond * DeltaSeconds);
+		ResourceStorage->Remove(GetSettings()->BaseConsumptionPerSecond * DeltaSeconds);
 	}
 }
 
@@ -177,13 +177,13 @@ void UBuilding::S_RecalculateProductionPerSecond()
 	}
 	ProductionPerSecond = GetSettings()->BaseProductionPerSecond * GetEfficiency();
 	if (ProductionPerSecond == OldProductionPerSecond) return;
-	OnProductionPerSecondChanged.Broadcast(OldProductionPerSecond - ProductionPerSecond,
+	OnProductionPerSecondChanged.Broadcast(ProductionPerSecond - OldProductionPerSecond,
 	                                       ProductionPerSecond, GetProductionType());
 }
 
 void UBuilding::OnRep_ProductionPerSecond(float OldProductionPerSecond)
 {
-	OnProductionPerSecondChanged.Broadcast(OldProductionPerSecond - ProductionPerSecond,
+	OnProductionPerSecondChanged.Broadcast(ProductionPerSecond - OldProductionPerSecond,
 	                                       ProductionPerSecond, GetProductionType());
 }
 

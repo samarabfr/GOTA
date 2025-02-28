@@ -51,22 +51,23 @@ private:
 	UFUNCTION()
 	void OnRep_Current();
 
-	// doesnt replicate nor broadcasts any events
-	void Add(float Amount);
-	void Remove(float Amount);
+	// broadcasts events but doesn't replicate 
+	void SetCurrent(float NewCurrent);
 
 public:
 	float GetCurrent() const;
 	bool IsEmpty() const;
 	bool IsFull() const;
-	// Replicates and broadcasts events
+	// doesn't replicate
+	void Add(float Amount);
+	void Remove(float Amount);
+	void Empty();
+	void Fill();
+	// Replicates
 	void S_Add(float Amount);
 	void S_Remove(float Amount);
 	void S_Empty();
-	// broadcasts events but doesnt replicate
-	void C_Add(float Amount);
-	void C_Remove(float Amount);
-	void C_Empty();
+	void S_Fill();
 
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnCurrentChangedSignature, float, NewCurrent);

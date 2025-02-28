@@ -67,14 +67,23 @@ void UResourceStorage::OnRep_Current()
 	OnCurrentChanged.Broadcast(Current);
 }
 
-void UResourceStorage::Add(float Amount)
+void UResourceStorage::SetCurrent(const float NewCurrent)
 {
-	Current = FMath::Min(Limit,Current + FMath::Max(0.f, Amount));
-}
-
-void UResourceStorage::Remove(float Amount)
-{
-	Current = FMath::Max(0.f, Current - FMath::Max(0.f, Amount));
+	if (NewCurrent != Current)
+	{
+		const bool bWasFull = IsFull();
+		const bool bWasEmpty = IsEmpty();
+		Current = NewCurrent;
+		OnCurrentChanged.Broadcast(Current);
+		if (bWasFull != IsFull())
+		{
+			OnIsFullChanged.Broadcast(IsFull());
+		}
+		if (bWasEmpty != IsEmpty())
+		{
+			OnIsEmptyChanged.Broadcast(IsEmpty());
+		}
+	}
 }
 
 float UResourceStorage::GetCurrent() const
@@ -92,26 +101,35 @@ bool UResourceStorage::IsFull() const
 	return Current == Limit;
 }
 
+void UResourceStorage::Add(float Amount)
+{
+	SetCurrent(FMath::Min(Limit, Current + FMath::Max(0.f, Amount)));
+}
+
+void UResourceStorage::Remove(float Amount)
+{
+	SetCurrent(FMath::Max(0.f, Current - FMath::Max(0.f, Amount)));
+}
+
+void UResourceStorage::Empty()
+{
+	SetCurrent(0.0f);
+}
+
+void UResourceStorage::Fill()
+{
+	
+	SetCurrent(Limit);
+}
+
 void UResourceStorage::S_Add(float Amount)
 {
 	const float Old = Current;
 	Add(Amount);
 	// Events and replication
-	if (Old != Current)
+	if (Old != Current && bReplicateOnAdding)
 	{
-		OnCurrentChanged.Broadcast(Current);
-		if (IsFull())
-		{
-			OnIsFullChanged.Broadcast(true);
-		}
-		if (!IsEmpty())
-		{
-			OnIsEmptyChanged.Broadcast(false);
-		}
-		if (bReplicateOnAdding)
-		{
-			MARK_PROPERTY_DIRTY_FROM_NAME(UResourceStorage, Current, this)
-		}
+		MARK_PROPERTY_DIRTY_FROM_NAME(UResourceStorage, Current, this)
 	}
 }
 
@@ -119,54 +137,28 @@ void UResourceStorage::S_Remove(float Amount)
 {
 	const float Old = Current;
 	Remove(Amount);
-	if (Old != Current)
+	if (Old != Current && bReplicateOnRemoving)
 	{
-		OnCurrentChanged.Broadcast(Current);
-		if (bReplicateOnRemoving)
-		{
-			MARK_PROPERTY_DIRTY_FROM_NAME(UResourceStorage, Current, this)
-		}
+		MARK_PROPERTY_DIRTY_FROM_NAME(UResourceStorage, Current, this)
 	}
 }
 
 void UResourceStorage::S_Empty()
 {
-	if (Current > 0.0f)
+	const float Old = Current;
+	Empty();
+	if (Old != Current && bReplicateOnRemoving)
 	{
-		Current = 0.0f;
-		OnCurrentChanged.Broadcast(Current);
-		if (bReplicateOnRemoving)
-		{
-			MARK_PROPERTY_DIRTY_FROM_NAME(UResourceStorage, Current, this)
-		}
+		MARK_PROPERTY_DIRTY_FROM_NAME(UResourceStorage, Current, this)
 	}
 }
 
-void UResourceStorage::C_Add(float Amount)
+void UResourceStorage::S_Fill()
 {
 	const float Old = Current;
-	Add(Amount);
-	if (Old != Current)
+	Fill();
+	if (Old != Current && bReplicateOnRemoving)
 	{
-		OnCurrentChanged.Broadcast(Current);
-	}
-}
-
-void UResourceStorage::C_Remove(float Amount)
-{
-	const float Old = Current;
-	Remove(Amount);
-	if (Old != Current)
-	{
-		OnCurrentChanged.Broadcast(Current);
-	}
-}
-
-void UResourceStorage::C_Empty()
-{
-	if (Current > 0.0f)
-	{
-		Current = 0.0f;
-		OnCurrentChanged.Broadcast(Current);
+		MARK_PROPERTY_DIRTY_FROM_NAME(UResourceStorage, Current, this)
 	}
 }

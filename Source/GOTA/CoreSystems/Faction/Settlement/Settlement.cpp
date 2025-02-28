@@ -7,6 +7,7 @@
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingCivilian.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
+#include "GOTA/CoreSystems/Faction/Building/ResourceStorage.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
@@ -85,6 +86,7 @@ void ASettlement::S_Init(ATile* SpawnTile)
 	for (ATile* Tile : ClaimedTiles)
 	{
 		Tile->GetBuilding()->GetPopulation()->S_ChangeSize(100);
+		Tile->GetBuilding()->GetResourceStorage()->S_Fill();
 	}
 }
 
