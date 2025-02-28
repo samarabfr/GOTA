@@ -132,7 +132,7 @@ void UBuilding::S_SetEfficiency(const float NewEfficiency)
 
 void UBuilding::S_RefreshEfficiency()
 {
-	if (!ResourceStorage->IsEmpty())
+	if (!GetSettings()->bConsumptionEnabled || !ResourceStorage->IsEmpty())
 	{
 		const float PopulationFactor = Population->GetSize() / static_cast<float>(Settings->Housing);
 		S_SetEfficiency(1.0f * PopulationFactor);
