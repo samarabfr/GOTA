@@ -33,16 +33,13 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Building")
 	int32 Housing = 0;
 
-	UPROPERTY(EditDefaultsOnly, Category="Building")
-	EProductionType ProductionType = EProductionType::None;
-
-	UPROPERTY(EditDefaultsOnly, Category="Building")
-	EResource ConsumptionType = EResource::None;
-
 	// ------------------------------------ Production ------------------------------------
 
 	UPROPERTY(EditDefaultsOnly, Category="Production")
 	bool bProductionEnabled = false;
+
+	UPROPERTY(EditDefaultsOnly, Category="Production", meta=(EditCondition = bProductionEnabled))
+	EProductionType ProductionType = EProductionType::None;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Production", meta=(EditCondition = bProductionEnabled))
 	float BaseProductionPerSecond = 0.0f;
@@ -51,6 +48,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="Consumption")
 	bool bConsumptionEnabled = false;
+
+	UPROPERTY(EditDefaultsOnly, Category="Consumption", meta=(EditCondition = bConsumptionEnabled))
+	EResource ConsumptionType = EResource::None;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Consumption", meta=(EditCondition = bConsumptionEnabled))
 	float BaseConsumptionPerSecond = 0.0f;
@@ -66,27 +66,27 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Civilian")
 	bool bCivilianEnabled = false;
 
-	UPROPERTY(EditDefaultsOnly, Category="Civilian")
+	UPROPERTY(EditDefaultsOnly, Category="Civilian", meta=(EditCondition = bCivilianEnabled))
 	TSubclassOf<ACivilian> CivilianClass;
 
 	// In Seconds
-	UPROPERTY(EditDefaultsOnly, Category="Civilian", meta=(Tooltip="In Seconds"))
+	UPROPERTY(EditDefaultsOnly, Category="Civilian", meta=(Tooltip="In Seconds"), meta=(EditCondition = bCivilianEnabled))
 	float CivilianGatheringTime = 0.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category="Civilian")
+	UPROPERTY(EditDefaultsOnly, Category="Civilian", meta=(EditCondition = bCivilianEnabled))
 	float CivilianGatheringAmount = 0.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category="Civilian")
+	UPROPERTY(EditDefaultsOnly, Category="Civilian", meta=(EditCondition = bCivilianEnabled))
 	float CivilianStorageLimit = 0.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category="Consumption", meta=(EditCondition = bConsumptionEnabled))
+	UPROPERTY(EditDefaultsOnly, Category="Civilian", meta=(EditCondition = bCivilianEnabled))
 	float CivilianStorageLimitIncreasePerEfficiencyPercentage = 0.0f;
 
 	// In Seconds
-	UPROPERTY(EditDefaultsOnly, Category="Civilian", meta=(Tooltip="In Seconds"))
+	UPROPERTY(EditDefaultsOnly, Category="Civilian", meta=(Tooltip="In Seconds"), meta=(EditCondition = bCivilianEnabled))
 	float CivilianMoveTime = 0.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category="Civilian", meta=(Tooltip="In Seconds"))
+	UPROPERTY(EditDefaultsOnly, Category="Civilian", meta=(Tooltip="In Seconds"), meta=(EditCondition = bCivilianEnabled))
 	float CivilianRespawnTime = 0.0f;
 
 	//--------------------------Army-------------------
@@ -94,31 +94,31 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Army")
 	bool bArmyEnabled = false;
 
-	UPROPERTY(EditDefaultsOnly, Category="Army")
+	UPROPERTY(EditDefaultsOnly, Category="Army", meta=(EditCondition = bArmyEnabled))
 	TSubclassOf<AArmy> ArmyClass;
 
-	UPROPERTY(EditDefaultsOnly, Category="Army")
+	UPROPERTY(EditDefaultsOnly, Category="Army", meta=(EditCondition = bArmyEnabled))
 	float SecondsPerRecruitCycle = 0.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category="Army")
+	UPROPERTY(EditDefaultsOnly, Category="Army", meta=(EditCondition = bArmyEnabled))
 	float ArmyMoveTime = 0.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category="Army")
+	UPROPERTY(EditDefaultsOnly, Category="Army", meta=(EditCondition = bArmyEnabled))
 	float ArmyRespawnTime = 0.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category="Army")
+	UPROPERTY(EditDefaultsOnly, Category="Army", meta=(EditCondition = bArmyEnabled))
 	int32 ArmyIndividualMaxHP = 0;
 
-	UPROPERTY(EditDefaultsOnly, Category="Army")
+	UPROPERTY(EditDefaultsOnly, Category="Army", meta=(EditCondition = bArmyEnabled))
 	int32 ArmyIndividualAttack = 0;
 
-	UPROPERTY(EditDefaultsOnly, Category="Army")
+	UPROPERTY(EditDefaultsOnly, Category="Army", meta=(EditCondition = bArmyEnabled))
 	int32 ArmyIndividualCount = 0;
 
-	UPROPERTY(EditDefaultsOnly, Category="Army")
+	UPROPERTY(EditDefaultsOnly, Category="Army", meta=(EditCondition = bArmyEnabled))
 	float ArmyAttackTime = 0.0f;
 
-	UPROPERTY(EditDefaultsOnly, Category="Army")
+	UPROPERTY(EditDefaultsOnly, Category="Army", meta=(EditCondition = bArmyEnabled))
 	float ArmyRavageTime = 0.0f;
 
 	//--------------------------Defense-------------------
@@ -126,18 +126,18 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Defense")
 	bool bDefenseEnabled = false;
 	
-	UPROPERTY(EditDefaultsOnly, Category="Defense")
+	UPROPERTY(EditDefaultsOnly, Category="Defense", meta=(EditCondition = bDefenseEnabled))
 	int32 RavageProtectionRange = 0;
 
-	UPROPERTY(EditDefaultsOnly, Category="Defense")
+	UPROPERTY(EditDefaultsOnly, Category="Defense", meta=(EditCondition = bDefenseEnabled))
 	int32 DefenseIndividualMaxHP = 0;
 
-	UPROPERTY(EditDefaultsOnly, Category="Defense")
+	UPROPERTY(EditDefaultsOnly, Category="Defense", meta=(EditCondition = bDefenseEnabled))
 	int32 DefenseIndividualAttack = 0;
 
-	UPROPERTY(EditDefaultsOnly, Category="Defense")
+	UPROPERTY(EditDefaultsOnly, Category="Defense", meta=(EditCondition = bDefenseEnabled))
 	int32 DefenseIndividualCount = 0;
 
-	UPROPERTY(EditDefaultsOnly, Category="Defense")
+	UPROPERTY(EditDefaultsOnly, Category="Defense", meta=(EditCondition = bDefenseEnabled))
 	float DefenseAttackTime = 0.0f;
 };
