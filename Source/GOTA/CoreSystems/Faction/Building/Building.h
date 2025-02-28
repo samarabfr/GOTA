@@ -83,12 +83,12 @@ protected:
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEfficiencyChangedSig, float, EfficiencyChange);
 
-	UPROPERTY(VisibleInstanceOnly)
+	UPROPERTY(Replicated, VisibleInstanceOnly)
 	float Efficiency;
 
-	void SetEfficiency(const float NewEfficiency);
+	void S_SetEfficiency(const float NewEfficiency);
 
-	void RefreshEfficiency();
+	void S_RefreshEfficiency();
 
 public:
 	FOnEfficiencyChangedSig OnEfficiencyChanged;
@@ -108,16 +108,16 @@ public:
 	bool GetIsUnderConstruction() const { return bIsUnderConstruction; }
 
 	FConstructionResources GetConstructionProgress() const;
-	void SetConstructionProgress(const FConstructionResources NewConstructionProgress);
+	void S_SetConstructionProgress(const FConstructionResources NewConstructionProgress);
 
-	virtual void FinishConstruction();
+	virtual void S_FinishConstruction();
 
 	// --------------------- Production ---------------------
 
 private:
 	UPROPERTY(ReplicatedUsing=OnRep_ProductionPerSecond)
 	float ProductionPerSecond = 0.0f;
-	void RecalculateProductionPerSecond();
+	void S_RecalculateProductionPerSecond();
 	
 	UFUNCTION()
 	void OnRep_ProductionPerSecond(float OldProductionPerSecond);
@@ -134,6 +134,9 @@ public:
 private:
 	UPROPERTY(Replicated)
 	UResourceStorage* ResourceStorage;
+
+	UFUNCTION()
+	void S_HandleStorageEmptyChanged(bool IsEmpty);
 	
 public:
 	UResourceStorage* GetResourceStorage() const { return ResourceStorage; }

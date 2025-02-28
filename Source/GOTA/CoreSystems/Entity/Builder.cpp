@@ -37,7 +37,7 @@ void ABuilder::S_Work()
 		ResourcesProgressToAdd.Stone = DoneWork;
 		WorkAmountLeft -= DoneWork;
 	}
-	GetCurrentTile()->GetBuilding()->SetConstructionProgress(ResourcesProgress + ResourcesProgressToAdd);
+	GetCurrentTile()->GetBuilding()->S_SetConstructionProgress(ResourcesProgress + ResourcesProgressToAdd);
 	GetOriginBuilding()->GetSettlement()->S_RemoveResources(ResourcesProgressToAdd);
 }
 

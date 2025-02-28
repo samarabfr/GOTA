@@ -65,7 +65,7 @@ void ASettlement::S_Init(ATile* SpawnTile)
 
 	if (SpawnTile->S_TryForceBuild(StartingBuildings[0], this))
 	{
-		SpawnTile->GetBuilding()->FinishConstruction();
+		SpawnTile->GetBuilding()->S_FinishConstruction();
 	}
 	for (int32 i = 1; i < StartingBuildings.Num(); ++i)
 	{
@@ -77,7 +77,7 @@ void ASettlement::S_Init(ATile* SpawnTile)
 		ATile* Tile = BorderingUnclaimedTiles[FMath::RandRange(0, BorderingUnclaimedTiles.Num() - 1)];
 		if (Tile && Tile->S_TryBuild(StartingBuildings[i], this))
 		{
-			Tile->GetBuilding()->FinishConstruction();
+			Tile->GetBuilding()->S_FinishConstruction();
 		}
 	}
 	for (ATile* Tile : ClaimedTiles)

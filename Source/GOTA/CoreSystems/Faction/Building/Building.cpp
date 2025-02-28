@@ -3,7 +3,6 @@
 
 #include "Building.h"
 
-#include "Production.h"
 #include "BuildingSettings.h"
 #include "Population.h"
 #include "ResourceStorage.h"
@@ -31,7 +30,9 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Population, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, bIsUnderConstruction, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, ConstructionProgress, Params);
-	DOREPLIFETIME_WITH_PARAMS(UBuilding, Production, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, ProductionPerSecond, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, ResourceStorage, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, Efficiency, Params);
 }
 
 bool UBuilding::IsSupportedForNetworking() const
@@ -45,8 +46,8 @@ UBuilding::UBuilding()
 {
 	Population = CreateDefaultSubobject<UPopulation>(TEXT("Population"));
 	Population->OnSizeChanged.AddDynamic(this, &UBuilding::PopulationChanged);
-	Production = CreateDefaultSubobject<UProduction>(TEXT("Production"));
 	ResourceStorage = CreateDefaultSubobject<UResourceStorage>(TEXT("ResourceStorage"));
+	ResourceStorage->OnIsEmptyChanged.AddDynamic(this, &UBuilding::S_HandleStorageEmptyChanged);
 }
 
 void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
@@ -57,7 +58,7 @@ void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement
 	Tile = InTile;
 	S_SetSettlement(InSettlement);
 	bIsUnderConstruction = true;
-	RecalculateProductionPerSecond();
+	S_RecalculateProductionPerSecond();
 }
 
 void UBuilding::C_Init()
@@ -67,11 +68,7 @@ void UBuilding::C_Init()
 void UBuilding::S_Tick(const float DeltaSeconds)
 {
 	Population->S_Tick(DeltaSeconds);
-	if (ResourceStorage->GetCurrent() <= 0.0f)
-	{
-		
-	}
-	else
+	if (GetSettings()->bConsumptionEnabled)
 	{
 		ResourceStorage->S_Remove(GetSettings()->BaseConsumptionPerSecond * DeltaSeconds);
 	}
@@ -80,7 +77,10 @@ void UBuilding::S_Tick(const float DeltaSeconds)
 void UBuilding::C_Tick(const float DeltaSeconds)
 {
 	Population->C_Tick(DeltaSeconds);
-	ResourceStorage->S_Remove(GetSettings()->BaseConsumptionPerSecond * DeltaSeconds);
+	if (GetSettings()->bConsumptionEnabled)
+	{
+		ResourceStorage->C_Remove(GetSettings()->BaseConsumptionPerSecond * DeltaSeconds);
+	}
 }
 
 void UBuilding::S_PrepareDestroy()
@@ -113,24 +113,34 @@ void UBuilding::S_SetSettlement(ASettlement* InSettlement)
 
 void UBuilding::PopulationChanged(int16 Change)
 {
-	RefreshEfficiency();
+	S_RefreshEfficiency();
 }
 
 // --------------------------------------- Efficiency ---------------------------------------
 
-void UBuilding::SetEfficiency(const float NewEfficiency)
+void UBuilding::S_SetEfficiency(const float NewEfficiency)
 {
 	const float Change = NewEfficiency - Efficiency;
 	if (FMath::IsNearlyZero(Change)) return;
 
 	Efficiency = NewEfficiency;
 	OnEfficiencyChanged.Broadcast(Change);
-	RecalculateProductionPerSecond();
+	S_RecalculateProductionPerSecond();
+	ResourceStorage->S_SetLimit(GetSettings()->BaseResourceLimit +
+		Efficiency * GetSettings()->ResourceLimitIncreasePerEfficiencyPercentage);
 }
 
-void UBuilding::RefreshEfficiency()
+void UBuilding::S_RefreshEfficiency()
 {
-	SetEfficiency(Population->GetSize() / static_cast<float>(Settings->Housing));
+	if (!ResourceStorage->IsEmpty())
+	{
+		const float PopulationFactor = Population->GetSize() / static_cast<float>(Settings->Housing);
+		S_SetEfficiency(1.0f * PopulationFactor);
+	}
+	else
+	{
+		S_SetEfficiency(0.0f);
+	}
 }
 
 // --------------------- Construction phase ---------------------
@@ -140,15 +150,15 @@ FConstructionResources UBuilding::GetConstructionProgress() const
 	return ConstructionProgress;
 }
 
-void UBuilding::SetConstructionProgress(const FConstructionResources NewConstructionProgress)
+void UBuilding::S_SetConstructionProgress(const FConstructionResources NewConstructionProgress)
 {
 	ConstructionProgress = NewConstructionProgress;
 	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, ConstructionProgress, this)
 	if (ConstructionProgress >= Settings->Cost)
-		FinishConstruction();
+		S_FinishConstruction();
 }
 
-void UBuilding::FinishConstruction()
+void UBuilding::S_FinishConstruction()
 {
 	bIsUnderConstruction = false;
 	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, bIsUnderConstruction, this)
@@ -158,7 +168,7 @@ void UBuilding::FinishConstruction()
 
 // --------------------- Production ---------------------
 
-void UBuilding::RecalculateProductionPerSecond()
+void UBuilding::S_RecalculateProductionPerSecond()
 {
 	float OldProductionPerSecond = ProductionPerSecond;
 	if (GetSettings()->bProductionEnabled)
@@ -168,18 +178,23 @@ void UBuilding::RecalculateProductionPerSecond()
 	ProductionPerSecond = GetSettings()->BaseProductionPerSecond * GetEfficiency();
 	if (ProductionPerSecond == OldProductionPerSecond) return;
 	OnProductionPerSecondChanged.Broadcast(OldProductionPerSecond - ProductionPerSecond,
-										   ProductionPerSecond);
+	                                       ProductionPerSecond);
 }
 
 void UBuilding::OnRep_ProductionPerSecond(float OldProductionPerSecond)
 {
 	OnProductionPerSecondChanged.Broadcast(OldProductionPerSecond - ProductionPerSecond,
-										   ProductionPerSecond);
+	                                       ProductionPerSecond);
 }
 
 float UBuilding::GetProductionPerSecond() const
 {
 	return ProductionPerSecond;
+}
+
+void UBuilding::S_HandleStorageEmptyChanged(bool IsEmpty)
+{
+	S_RefreshEfficiency();
 }
 
 // --------------------- Consumption ---------------------
