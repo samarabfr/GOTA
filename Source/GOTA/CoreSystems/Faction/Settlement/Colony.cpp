@@ -77,12 +77,15 @@ UBuildingSettings* AColony::SelectNewBuilding() const
 	//		3. prio: stone; all military buildings need stone
 	for (int i = ViableBuildings.Num() - 1; i >= 0; --i)
 	{
-		const auto [FoodIncome, WoodIncome, StoneIncome] = GetEffectivePredictedProduction();
+		const auto [FoodIncome, WoodIncome, StoneIncome] = GetEffectiveProduction();
 		const int32 FoodThreshhold = 300;
 		if (!ViableBuildings[i] ||
-			(ViableBuildings[i]->Cost.Food > GetResources().Food && FoodIncome <= 0) ||
-			(ViableBuildings[i]->Cost.Stone > GetResources().Stone && StoneIncome <= 0) ||
-			(ViableBuildings[i]->Cost.Wood > GetResources().Wood && WoodIncome <= 0) ||
+			(ViableBuildings[i]->Cost.Food > 0 &&
+				ViableBuildings[i]->Cost.Food > GetResources().Food && FoodIncome <= 0) ||
+			(ViableBuildings[i]->Cost.Stone > 0 &&
+				ViableBuildings[i]->Cost.Stone > GetResources().Stone && StoneIncome <= 0) ||
+			(ViableBuildings[i]->Cost.Wood > 0 &&
+				ViableBuildings[i]->Cost.Wood > GetResources().Wood && WoodIncome <= 0) ||
 			((FoodIncome <= 0 || GetResources().Food < FoodThreshhold) &&
 				ViableBuildings[i]->ProductionType != EProductionType::Food))
 		{
@@ -95,6 +98,7 @@ UBuildingSettings* AColony::SelectNewBuilding() const
 
 float AColony::CalculateScore(const UBuildingSettings* Data, FNewBuildingImportanceRatings ImportanceRatings)
 {
+	/*
 	// costs
 	float CostScore = 0;
 	CostScore += FMath::Pow(EULERS_NUMBER, -0.1 * Data->Cost.Food);
@@ -103,7 +107,7 @@ float AColony::CalculateScore(const UBuildingSettings* Data, FNewBuildingImporta
 	// Calculate GainScore
 	float GainsScore = 0;
 	// income
-	const float MaxIncome = Data->Housing * Data->DirectProductionTime;
+	const float MaxIncome = Data->Housing * Data->;
 	if (Data->ProductionType == EProductionType::Food)
 	{
 		GainsScore = ImportanceRatings.Food * MaxIncome;
@@ -119,6 +123,8 @@ float AColony::CalculateScore(const UBuildingSettings* Data, FNewBuildingImporta
 
 	// result
 	return CostScore * GainsScore;
+	*/
+	return 0.f;
 }
 
 FNewBuildingImportanceRatings AColony::CalculateImportanceRatings() const

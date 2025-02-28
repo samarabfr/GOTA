@@ -73,8 +73,8 @@ void AGS_Ingame::DeleteEverything()
 {
 	if (TileMap) TileMap->Delete();
 	if (LoadingManager) LoadingManager->Delete();
-	if (Colony) Colony->Delete();
-	if (Tribe) Tribe->Delete();
+	if (Colony) Colony->S_Delete();
+	if (Tribe) Tribe->S_Delete();
 	for (AGuardian* Guardian : Guardians)
 	{
 		if (Guardian) Guardian->Delete();
