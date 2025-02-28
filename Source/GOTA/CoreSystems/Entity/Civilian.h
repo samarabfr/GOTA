@@ -41,7 +41,7 @@ public:
 	// ----------------------- Utility -----------------------
 
 private:
-	UPROPERTY(Replicated)
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	TWeakObjectPtr<UBuilding> OriginBuilding;
 
 	UPROPERTY()

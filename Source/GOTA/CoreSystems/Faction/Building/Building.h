@@ -83,7 +83,7 @@ protected:
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnEfficiencyChangedSig, float, EfficiencyChange);
 
-	UPROPERTY(Replicated, VisibleInstanceOnly)
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float Efficiency;
 
 	void S_SetEfficiency(const float NewEfficiency);
@@ -115,7 +115,7 @@ public:
 	// --------------------- Production ---------------------
 
 private:
-	UPROPERTY(ReplicatedUsing=OnRep_ProductionPerSecond)
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_ProductionPerSecond)
 	float ProductionPerSecond = 0.0f;
 	void S_RecalculateProductionPerSecond();
 
@@ -134,7 +134,7 @@ public:
 	// --------------------- Consumption ---------------------
 
 private:
-	UPROPERTY(Replicated)
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	UResourceStorage* ResourceStorage;
 
 	UFUNCTION()

@@ -27,13 +27,13 @@ public:
 	// ------------------------------------ Utility --------------------------------------
 
 private:
-	UPROPERTY(Replicated)
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	bool bReplicateOnAdding = true;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	bool bReplicateOnRemoving = true;
 
-	UPROPERTY(Replicated)
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	float Limit = 0.0f;
 
 public:
@@ -45,7 +45,7 @@ public:
 	// ------------------------------------ Current --------------------------------------
 
 private:
-	UPROPERTY(ReplicatedUsing=OnRep_Current)
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Current)
 	float Current = 0.0f;
 
 	UFUNCTION()
