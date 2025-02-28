@@ -115,13 +115,21 @@ public:
 	// --------------------- Production ---------------------
 
 private:
-	UPROPERTY(Replicated)
-	UProduction* Production;
+	UPROPERTY(ReplicatedUsing=OnRep_ProductionPerSecond)
+	float ProductionPerSecond = 0.0f;
+	void RecalculateProductionPerSecond();
+	
+	UFUNCTION()
+	void OnRep_ProductionPerSecond(float OldProductionPerSecond);
 
 public:
-	UProduction* GetProduction();
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnProductionPerSecondChangedSig, float, Change, float, NewValue);
 
-	// --------------------- Production ---------------------
+	FOnProductionPerSecondChangedSig OnProductionPerSecondChanged;
+	float GetProductionPerSecond() const;
+
+	// --------------------- Consumption ---------------------
 
 private:
 	UPROPERTY(Replicated)

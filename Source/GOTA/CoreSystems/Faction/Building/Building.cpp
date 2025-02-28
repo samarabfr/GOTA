@@ -52,12 +52,12 @@ UBuilding::UBuilding()
 void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
 {
 	Population->S_Init(InSettlement->GetGrowthPerOwnPop(), InSettlement->GetGrowthPerNeighborPop());
-	Production->S_Init(this);
 	ResourceStorage->S_Init(GetSettings()->BaseResourceLimit, true, false);
 	Settings = InSettings;
 	Tile = InTile;
 	S_SetSettlement(InSettlement);
 	bIsUnderConstruction = true;
+	RecalculateProductionPerSecond();
 }
 
 void UBuilding::C_Init()
@@ -125,6 +125,7 @@ void UBuilding::SetEfficiency(const float NewEfficiency)
 
 	Efficiency = NewEfficiency;
 	OnEfficiencyChanged.Broadcast(Change);
+	RecalculateProductionPerSecond();
 }
 
 void UBuilding::RefreshEfficiency()
@@ -155,13 +156,33 @@ void UBuilding::FinishConstruction()
 	Population->S_ChangeMaxSize(Settings->Housing);
 }
 
+// --------------------- Production ---------------------
 
-// --------------------- Protection ---------------------
-
-UProduction* UBuilding::GetProduction()
+void UBuilding::RecalculateProductionPerSecond()
 {
-	return Production;
+	float OldProductionPerSecond = ProductionPerSecond;
+	if (GetSettings()->bProductionEnabled)
+	{
+		ProductionPerSecond = 0.f;
+	}
+	ProductionPerSecond = GetSettings()->BaseProductionPerSecond * GetEfficiency();
+	if (ProductionPerSecond == OldProductionPerSecond) return;
+	OnProductionPerSecondChanged.Broadcast(OldProductionPerSecond - ProductionPerSecond,
+										   ProductionPerSecond);
 }
+
+void UBuilding::OnRep_ProductionPerSecond(float OldProductionPerSecond)
+{
+	OnProductionPerSecondChanged.Broadcast(OldProductionPerSecond - ProductionPerSecond,
+										   ProductionPerSecond);
+}
+
+float UBuilding::GetProductionPerSecond() const
+{
+	return ProductionPerSecond;
+}
+
+// --------------------- Consumption ---------------------
 
 // --------------------- Protection ---------------------
 
@@ -182,3 +203,7 @@ bool UBuilding::IsProtected() const
 	}
 	return false;
 }
+
+// --------------------- Army ---------------------
+
+// --------------------- Defense building ---------------------
