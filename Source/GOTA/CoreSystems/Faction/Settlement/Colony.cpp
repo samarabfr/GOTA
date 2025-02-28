@@ -80,9 +80,12 @@ UBuildingSettings* AColony::SelectNewBuilding() const
 		const auto [FoodIncome, WoodIncome, StoneIncome] = GetEffectiveProduction();
 		const int32 FoodThreshhold = 300;
 		if (!ViableBuildings[i] ||
-			(ViableBuildings[i]->Cost.Food > GetResources().Food && FoodIncome <= 0) ||
-			(ViableBuildings[i]->Cost.Stone > GetResources().Stone && StoneIncome <= 0) ||
-			(ViableBuildings[i]->Cost.Wood > GetResources().Wood && WoodIncome <= 0) ||
+			(ViableBuildings[i]->Cost.Food > 0 &&
+				ViableBuildings[i]->Cost.Food > GetResources().Food && FoodIncome <= 0) ||
+			(ViableBuildings[i]->Cost.Stone > 0 &&
+				ViableBuildings[i]->Cost.Stone > GetResources().Stone && StoneIncome <= 0) ||
+			(ViableBuildings[i]->Cost.Wood > 0 &&
+				ViableBuildings[i]->Cost.Wood > GetResources().Wood && WoodIncome <= 0) ||
 			((FoodIncome <= 0 || GetResources().Food < FoodThreshhold) &&
 				ViableBuildings[i]->ProductionType != EProductionType::Food))
 		{
