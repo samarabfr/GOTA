@@ -314,5 +314,11 @@ void ACivilian::S_MoveToNextTileOnPath()
 
 bool ACivilian::IsPathValid()
 {
-	return !Path.IsEmpty() && Path[Path.Num() - 1]->AcceptsCivilian();
+	if (Path.IsEmpty())
+	{
+		return false;
+	}
+	const ATile* Tile = Path[Path.Num() - 1];
+	if (!Tile) return false;
+	return  Tile->AcceptsCivilian();
 }
