@@ -31,6 +31,17 @@ class GOTA_API AGM_SelfPlay : public AGM_Ingame
 	UPROPERTY(EditDefaultsOnly)
 	float TimeDilation = 20.0f;
 
+	virtual void Tick(float DeltaSeconds) override;
+
+	int32 TickCount = 0;
+	float GameTimeStart = 0.0f;
+	float MaxDeltaSeconds = 0.0f;
+	float MinDeltaSeconds = FLT_MAX;
+	float RealTimeStart = 0.0f;
+	float LastRealTime = 0.0f;
+	float MaxRealTime = 0.0f;
+	float MinRealTime = FLT_MAX;
+
 	virtual void BeginPlay() override;
 	virtual void EndGame(EGameEnding Ending, const FString& EndingMessage) override;
 

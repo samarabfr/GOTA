@@ -41,12 +41,36 @@ void AGM_SelfPlay::CreateGuardians()
 		else if (GuardianAIClass)
 		{
 			GuardianAI = GetWorld()->SpawnActor<AAIController>(
-			GuardianAIClass, SpawnLocation, FRotator::ZeroRotator);
+				GuardianAIClass, SpawnLocation, FRotator::ZeroRotator);
 			GuardianAI->Possess(Guardian);
 			GOTAGameState->SetGuardianAIController(i, GuardianAI);
 		}
-		
 	}
+}
+
+void AGM_SelfPlay::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	UE_LOG(LogTemp, Warning, TEXT("GameTime tick: %f"), DeltaSeconds)
+	TickCount++;
+	if (DeltaSeconds > MaxDeltaSeconds)
+	{
+		MaxDeltaSeconds = DeltaSeconds;
+	}
+	if (DeltaSeconds < MinDeltaSeconds)
+	{
+		MinDeltaSeconds = DeltaSeconds;
+	}
+	const float RealDeltaSeconds = FPlatformTime::Seconds()- LastRealTime;
+	if (RealDeltaSeconds > MaxRealTime)
+	{
+		MaxRealTime = RealDeltaSeconds;
+	}
+	if (RealDeltaSeconds < MinRealTime)
+	{
+		MinRealTime = RealDeltaSeconds;
+	}
+	LastRealTime = RealDeltaSeconds;
 }
 
 void AGM_SelfPlay::BeginPlay()
@@ -55,11 +79,19 @@ void AGM_SelfPlay::BeginPlay()
 	LoadGame();
 	// set max time dilation
 	UGameplayStatics::SetGlobalTimeDilation(this, TimeDilation);
+	GameTimeStart = GetWorld()->GetTimeSeconds();
+	RealTimeStart = FPlatformTime::Seconds();
+	LastRealTime = RealTimeStart;
 }
 
 void AGM_SelfPlay::EndGame(EGameEnding Ending, const FString& EndingMessage)
 {
 	Super::EndGame(Ending, EndingMessage);
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *EndingMessage)
+	UE_LOG(LogTemp, Warning, TEXT("GameTime average delta: %f, Max: %f, Min: %f"),
+	       (GetWorld()->GetTimeSeconds()- GameTimeStart ) / TickCount, MaxDeltaSeconds, MinDeltaSeconds)
+	UE_LOG(LogTemp, Warning, TEXT("Realtime average delta: %f, Max: %f, Min: %f"),
+	       (FPlatformTime::Seconds() - RealTimeStart) / TickCount, MaxRealTime, MinRealTime)
 	RestartSelfPlay();
 }
 
