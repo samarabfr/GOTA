@@ -3,7 +3,7 @@
 #pragma once
 
 #include "GameplayTagContainer.h"
-#include "GameResources.h"
+#include "ConstructionResources.h"
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
@@ -32,7 +32,7 @@ protected:
 
 public:
 	void S_Init(ATile* SpawnTile);
-	virtual void Delete();
+	virtual void S_Delete();
 
 	void EnableTick();
 
@@ -93,7 +93,7 @@ public:
 
 	// --------------------------- Building ---------------------------
 protected:
-	void RefreshBorderingUnclaimedTiles();
+	void S_RefreshBorderingUnclaimedTiles();
 	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UBuildingSettings*> StartingBuildings;
@@ -102,58 +102,60 @@ public:
 	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
 	TArray<ATile*> ClaimedTiles;
 
-	UPROPERTY()
+	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
 	TArray<ATile*> BorderingUnclaimedTiles;
 
 	bool IsBorderingUnclaimedTile(const ATile* Tile) const;
 
-	void S_RegisterTile(ATile* Tile);
+	void S_RegisterTile(ATile* Tile, UBuilding* Building);
 	void RegisterPopulation(UPopulation* InPopulation);
 
-	void S_UnregisterTile(ATile* Tile);
+	void S_UnregisterTile(ATile* Tile, UBuilding* Building);
 	void UnregisterPopulation(UPopulation* InPopulation);
 	int32 GetCountOfConstructionSites();
 
 	// --------------------------- Resources ---------------------------
 private:
 	UPROPERTY(EditDefaultsOnly)
-	FGameResources StartingResources;
+	FConstructionResources StartingResources;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
-	FGameResources Resources;
+	FConstructionResources Resources;
 
-	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	FGameResources PredictedProduction;
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
+	FConstructionResources Production;
 
-	UPROPERTY(VisibleInstanceOnly, Category="Settlement")
-	FGameResources PredictedConsumption;
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
+	FConstructionResources Consumption;
 
-	void RegisterBuildingForResourcePrediction(UBuilding* Building);
-	void UnregisterBuildingForResourcePrediction(UBuilding* Building);
-
-	UFUNCTION()
-	void UpdatePredictedProduction(const float Change, const EProductionType Type);
+	void S_RegisterBuildingForIncome(UBuilding* Building);
+	void S_UnregisterBuildingForIncome(UBuilding* Building);
 
 	UFUNCTION()
-	void UpdatePredictedConsumption(const float Change, const EConsumptionType Type);
+	void S_UpdateProduction(const float Change, float _, const EProductionType Type);
 
 	UFUNCTION()
-	void UpdatePredictionFromPopulation(int16 Change);
+	void S_UpdateConsumption(const float Change, float _, EResource Type);
+
+	UFUNCTION()
+	void S_UpdateConsumptionFromPopulation(int16 Change);
 
 public:
-	FGameResources GetResources() const { return Resources; }
+	FConstructionResources GetResources() const { return Resources; }
 
 	// Returns predicted production - predicted consumption
-	FGameResources GetEffectivePredictedProduction() const { return PredictedProduction - PredictedConsumption; }
+	FConstructionResources GetEffectiveProduction() const { return Production - Consumption; }
 
 	// Returns raw predicted production
-	FGameResources GetPredictedProduction() const { return PredictedProduction; }
+	FConstructionResources GetProduction() const { return Production; }
 
 	// Returns raw predicted consumption
-	FGameResources GetPredictedConsumption() const { return PredictedConsumption; }
+	FConstructionResources GetConsumption() const { return Consumption; }
 
-	void S_AddResources(FGameResources Amount);
-	void S_RemoveResources(FGameResources Amount);
+	void S_AddResources(FConstructionResources Amount);
+	void S_RemoveResources(FConstructionResources Amount);
+	void C_AddResources(FConstructionResources Amount);
+	void C_RemoveResources(FConstructionResources Amount);
 
 
 	// --------------------------- Civilians ---------------------------

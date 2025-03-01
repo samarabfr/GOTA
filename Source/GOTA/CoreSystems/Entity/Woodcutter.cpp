@@ -1,15 +1,13 @@
 ﻿#include "Woodcutter.h"
 
-#include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
+#include "GOTA/CoreSystems/Faction/Building/ResourceStorage.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 
 void AWoodcutter::S_Work()
 {
 	if (IsInventoryFull()) return;
 	GetCurrentTile()->EcoValues->SubtractTrees(1);
-	FGameResources WorkResources = FGameResources();
-	WorkResources.Wood = GetWorkAmount();
-	S_AddResources(WorkResources);
+	GetStorage()->S_Add(GetWorkAmount());
 }
 
 bool AWoodcutter::IsTileValidForWork(const ATile* Tile) const

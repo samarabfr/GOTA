@@ -12,7 +12,6 @@
 #include "GOTA/CoreSystems/Faction/Building/BuildingCivilian.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingDefense.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
-#include "GOTA/CoreSystems/Faction/Building/BuildingDirectProduction.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
@@ -216,40 +215,64 @@ bool ATile::CanBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 	for (FGameplayTagRule PlacementRule : BuildingDataAsset->PlacementRules)
 	{
 		if (!PlacementRule.IsValid(GameplayTags))
+		{
 			return false;
+		}
 	}
-	return !Building &&
-		Terrain.Biome != EBiome::Volcano &&
-		Builder != nullptr &&
-		Builder->GetCountOfBuilders() + Settings->ExtraAllowedConstructionSites
-		> Builder->GetCountOfConstructionSites() &&
-		Builder->IsBorderingUnclaimedTile(this);
+	// ifs instead of one condition to make debugging easier
+	if (Building)
+	{
+		return false;
+	}
+	if (Terrain.Biome == EBiome::Volcano)
+	{
+		return false;
+	}
+	if (Builder == nullptr)
+	{
+		return false;
+	}
+	if (Builder->GetCountOfConstructionSites() >
+		Builder->GetCountOfBuilders() + Settings->ExtraAllowedConstructionSites)
+	{
+		return false;
+	}
+	if (!Builder->IsBorderingUnclaimedTile(this))
+	{
+		return false;
+	}
+	return true;
 }
 
 bool ATile::S_TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
-	if (!CanBuild(BuildingDataAsset, Builder)) return false;
+	if (!CanBuild(BuildingDataAsset, Builder))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Tried to build despite not being allowed."))
+		return false;
+	}
 	return S_TryForceBuild(BuildingDataAsset, Builder);
 }
 
 bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
-	if (!Builder) return false;
+	if (!Builder)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Tried to build without a valid builder!"))
+		return false;
+	}
 	//check if multiple production things are on
 	int32 EnabledCount = 0;
-	EnabledCount += BuildingDataAsset->bDirectProductionEnabled;
 	EnabledCount += BuildingDataAsset->bCivilianEnabled;
 	EnabledCount += BuildingDataAsset->bArmyEnabled;
+	EnabledCount += BuildingDataAsset->bDefenseEnabled;
 	if (EnabledCount > 1)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Multiple building types enabled in BuildingDataAsset. Only one allowed!"))
 		return false;
 	}
-	Builder->S_RegisterTile(this);
 	// Choose fitting class
-	if (BuildingDataAsset->bDirectProductionEnabled)
-		Building = NewObject<UBuildingDirectProduction>();
-	else if (BuildingDataAsset->bCivilianEnabled)
+	if (BuildingDataAsset->bCivilianEnabled)
 		Building = NewObject<UBuildingCivilian>();
 	else if (BuildingDataAsset->bArmyEnabled)
 		Building = NewObject<UBuildingArmy>();
@@ -267,6 +290,8 @@ bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* B
 
 	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, GameplayTags, this);
 	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, Building, this);
+	
+	Builder->S_RegisterTile(this, Building);
 
 	OnGameplayTagsChanged.Broadcast();
 	BuildingChanged();
@@ -277,7 +302,7 @@ bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* B
 void ATile::S_Unbuild()
 {
 	if (!Building) return;
-	Building->GetSettlement()->S_UnregisterTile(this);
+	Building->GetSettlement()->S_UnregisterTile(this, Building);
 	GameplayTags.RemoveTags(Building->GetSettings()->GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
 	RemoveReplicatedSubObject(Building);

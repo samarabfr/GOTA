@@ -9,7 +9,7 @@ void AInstantBuild::S_ActivateAbility(FAbilityTarget Target)
 {
 	if (Target.Tile.IsValid() && Target.Tile->GetBuilding())
 	{
-		Target.Tile->GetBuilding()->FinishConstruction();
+		Target.Tile->GetBuilding()->S_FinishConstruction();
 	}
 }
 

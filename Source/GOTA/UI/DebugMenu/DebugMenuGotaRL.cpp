@@ -77,6 +77,7 @@ void UDebugMenuGotaRL::LoadModel()
 
 void UDebugMenuGotaRL::RefreshNeuralNetworkOptions(FString AgentName, ESelectInfo::Type SelectInfo)
 {
+	CB_NeuralNetworkSelection->ClearOptions();
 	USnapshotAgentData* Agent = SnapshotAgents->GetAgentByName(AgentName);
 	if (Agent == nullptr) return;
 	for (FString NeuralNetworkName : Agent->GetAllNeuralNetworkNames())
