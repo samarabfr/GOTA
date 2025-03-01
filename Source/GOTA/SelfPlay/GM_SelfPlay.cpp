@@ -51,7 +51,6 @@ void AGM_SelfPlay::CreateGuardians()
 void AGM_SelfPlay::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	UE_LOG(LogTemp, Warning, TEXT("GameTime tick: %f"), DeltaSeconds)
 	TickCount++;
 	if (DeltaSeconds > MaxDeltaSeconds)
 	{
@@ -61,7 +60,7 @@ void AGM_SelfPlay::Tick(float DeltaSeconds)
 	{
 		MinDeltaSeconds = DeltaSeconds;
 	}
-	const float RealDeltaSeconds = FPlatformTime::Seconds()- LastRealTime;
+	const float RealDeltaSeconds = FPlatformTime::Seconds() - LastRealTime;
 	if (RealDeltaSeconds > MaxRealTime)
 	{
 		MaxRealTime = RealDeltaSeconds;
@@ -77,8 +76,8 @@ void AGM_SelfPlay::BeginPlay()
 {
 	Super::BeginPlay();
 	LoadGame();
-	// set max time dilation
-	UGameplayStatics::SetGlobalTimeDilation(this, TimeDilation);
+	UGameplayStatics::SetGlobalTimeDilation(this,
+		FixedDeltaSeconds / LearningAgentsFixedDeltaSeconds);
 	GameTimeStart = GetWorld()->GetTimeSeconds();
 	RealTimeStart = FPlatformTime::Seconds();
 	LastRealTime = RealTimeStart;
@@ -92,6 +91,8 @@ void AGM_SelfPlay::EndGame(EGameEnding Ending, const FString& EndingMessage)
 	       (GetWorld()->GetTimeSeconds()- GameTimeStart ) / TickCount, MaxDeltaSeconds, MinDeltaSeconds)
 	UE_LOG(LogTemp, Warning, TEXT("Realtime average delta: %f, Max: %f, Min: %f"),
 	       (FPlatformTime::Seconds() - RealTimeStart) / TickCount, MaxRealTime, MinRealTime)
+	UE_LOG(LogTemp, Warning, TEXT("GameTime total: %f, Realtime total: %f"),
+	       GetWorld()->GetTimeSeconds() - GameTimeStart, FPlatformTime::Seconds() - RealTimeStart)
 	RestartSelfPlay();
 }
 

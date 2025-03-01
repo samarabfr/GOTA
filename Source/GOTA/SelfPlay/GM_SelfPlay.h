@@ -29,7 +29,8 @@ class GOTA_API AGM_SelfPlay : public AGM_Ingame
 	TSubclassOf<AAIController> GuardianAIClass;
 
 	UPROPERTY(EditDefaultsOnly)
-	float TimeDilation = 20.0f;
+	float FixedDeltaSeconds = 0.1f;
+	float LearningAgentsFixedDeltaSeconds = 1.0f/60.0f;
 
 	virtual void Tick(float DeltaSeconds) override;
 
