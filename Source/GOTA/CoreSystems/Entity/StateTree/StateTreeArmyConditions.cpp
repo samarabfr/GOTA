@@ -8,130 +8,99 @@
 
 bool FSTC_CurrentTileIsValidForRecruiting::TestCondition(FStateTreeExecutionContext& Context) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return false;
-	}
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return false;
 
-	const bool bResult = InstanceData.ArmyRef.Get()->IsCurrentTileValidForRecruiting();
+	const bool bResult = Army->IsCurrentTileValidForRecruiting();
 	return bResult ^ bInvert;
 }
 
 bool FSTC_IsPathValidArmy::TestCondition(FStateTreeExecutionContext& Context) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return false;
-	}
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return false;
 
-	const bool bResult = InstanceData.ArmyRef.Get()->IsPathValid();
+	const bool bResult = Army->IsPathValid();
+	return bResult ^ bInvert;
+}
+
+bool FSTC_IsPathEmptyArmy::TestCondition(FStateTreeExecutionContext& Context) const
+{
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return false;
+
+	const bool bResult = Army->IsPathEmpty();
 	return bResult ^ bInvert;
 }
 
 bool FSTC_HasEnemyInGarrisonModeRange::TestCondition(FStateTreeExecutionContext& Context) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return false;
-	}
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return false;
 
-	const bool bResult = InstanceData.ArmyRef.Get()->HasEnemyInGarrisonModeRange();
+	const bool bResult = Army->HasEnemyInGarrisonModeRange();
 	return bResult ^ bInvert;
 }
 
 bool FSTC_HasEnemyOnNeighboringTile::TestCondition(FStateTreeExecutionContext& Context) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return false;
-	}
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return false;
 
-	const bool bResult = InstanceData.ArmyRef.Get()->HasEnemyOnNeighboringTile();
+	const bool bResult = Army->HasEnemyOnNeighboringTile();
 	return bResult ^ bInvert;
 }
 
 bool FSTC_IsOnEnemyBuilding::TestCondition(FStateTreeExecutionContext& Context) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return false;
-	}
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return false;
 
-	const bool bResult = InstanceData.ArmyRef.Get()->IsOnEnemyBuilding();
+	const bool bResult = Army->IsOnEnemyBuilding();
 	return bResult ^ bInvert;
 }
 
 bool FSTC_IsBuildingProtected::TestCondition(FStateTreeExecutionContext& Context) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return false;
-	}
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return false;
 
-	const bool bResult = InstanceData.ArmyRef.Get()->IsBuildingProtected();
+	const bool bResult = Army->IsBuildingProtected();
 	return bResult ^ bInvert;
 }
 
 bool FSTC_IsOnGuardTile::TestCondition(FStateTreeExecutionContext& Context) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return false;
-	}
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return false;
 
-	const bool bResult = InstanceData.ArmyRef.Get()->IsOnGuardTile();
+	const bool bResult = Army->IsOnGuardTile();
 	return bResult ^ bInvert;
 }
 
 bool FSTC_HasEnemyInGuardTileRange::TestCondition(FStateTreeExecutionContext& Context) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return false;
-	}
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return false;
 
-	const bool bResult = InstanceData.ArmyRef.Get()->HasEnemyInGuardTileRange();
+	const bool bResult = Army->HasEnemyInGuardTileRange();
 	return bResult ^ bInvert;
 }
 
 bool FSTC_HasGuardTile::TestCondition(FStateTreeExecutionContext& Context) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return false;
-	}
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return false;
 
-	const bool bResult = InstanceData.ArmyRef.Get()->GetGuardTile() == nullptr;
+	const bool bResult = Army->GetGuardTile() == nullptr;
 	return bResult ^ bInvert;
 }
 
 bool FSTC_HasInterceptArmy::TestCondition(FStateTreeExecutionContext& Context) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return false;
-	}
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return false;
 
-	const bool bResult = InstanceData.ArmyRef.Get()->GetInterceptArmy().IsValid();
+	const bool bResult = Army->GetInterceptArmy().IsValid();
 	return bResult ^ bInvert;
 }

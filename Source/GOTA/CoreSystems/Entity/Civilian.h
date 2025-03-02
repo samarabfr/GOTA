@@ -2,78 +2,31 @@
 
 #include <functional>
 
-#include "GOTA/CoreSystems/Tile/Tile.h"
+#include "Entity.h"
 #include "Civilian.generated.h"
 
-class UStateTreeComponent;
-class AGS_Ingame;
-class ATile;
-class ASettlement;
-class UCivilianSettings;
-class UBuilding;
+
+class UResourceStorage;
 
 UCLASS()
-class GOTA_API ACivilian : public AActor
+class GOTA_API ACivilian : public AEntity
 {
 	GENERATED_BODY()
+
+	// ----------------------- Replication Setup -----------------------
+protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	// ----------------------- LifeCycle -----------------------
-
 protected:
 	ACivilian();
 
 public:
-	void S_Init(UBuilding* InBuilding, ATile* SpawnTile);
+	virtual void S_Init(UBuilding* InBuilding, ATile* SpawnTile) override;
 
-	void S_Tick(const float DeltaSeconds);
-	void C_Tick(const float DeltaSeconds);
-
-	void Delete();
-
-private:
-	virtual void BeginDestroy() override;
-
+	// ----------------- Utility ------------------------
 public:
-	UFUNCTION()
-	void S_HandleDeath();
-
-	// ----------------------- Utility -----------------------
-
-private:
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	TWeakObjectPtr<UBuilding> OriginBuilding;
-
-	UPROPERTY()
-	TWeakObjectPtr<AGS_Ingame> GameState;
-
-protected:
-	UPROPERTY(EditDefaultsOnly)
-	UStateTreeComponent* StateTree;
-	
-	UBuilding* GetOriginBuilding() const { return OriginBuilding.Get(); }
-	AGS_Ingame* S_GetGameState() const { return GameState.Get(); }
-
-	// ----------------- Progresser ------------------------
-protected:
-	// Progress of current Action in percent
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	float Progress;
-
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	bool bProgresserActive = false;
-
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	float ProgressRate = 0.f;
-
-	std::function<float()> CalculateProgressRate;
-	std::function<void()> FinishProgress;
-
-public:
-	void S_StartProgresser(const std::function<float()>& ProgressRateCalculator,
-	                       const std::function<void()>& Finisher);
-	void S_StopProgresser();
-	void ProgressTick(float DeltaSeconds);
+	virtual EEntityType GetEntityType() const override;
 
 	// ----------------- Working ------------------------
 private:
@@ -88,14 +41,12 @@ private:
 	TWeakObjectPtr<ATile> PriorityTile;
 
 protected:
+	virtual void S_HandleEfficiencyChange(float Change) override;
 	virtual bool IsTileValidForWork(const ATile* Tile) const;
-	int32 GetWorkAmount() const { return WorkAmount; }
-	UResourceStorage* GetStorage() const { return Storage; }
+	int32 GetWorkAmount() const;
+	UResourceStorage* GetStorage() const;
 	bool S_TryFindPathToClosestWorkTile();
 	bool S_TryFindPathToWorkTileClosestToSettlement();
-
-	UFUNCTION()
-	void HandleEfficiencyChange(float Change);
 
 public:
 	virtual void S_Work();
@@ -105,40 +56,10 @@ public:
 	virtual bool IsCurrentTileAmongBestWorkTiles();
 	bool IsCurrentTilePriorityTile() const;
 	float GetWorkRate() const;
-	ATile* GetPriorityTile() const { return PriorityTile.Get(); }
-	void S_SetPriorityTile(ATile* NewPriorityTile) { PriorityTile = NewPriorityTile; }
+	ATile* GetPriorityTile() const;
+	void S_SetPriorityTile(ATile* NewPriorityTile);
 	bool HasResourcesInInventory() const;
 	bool IsInventoryFull() const;
 	bool IsCurrentTileOriginBuilding() const;
 	void S_UnloadResources();
-
-	// ----------------- Moving ------------------------
-private:
-	UPROPERTY(ReplicatedUsing=OnRep_NetLocation)
-	FVector NetLocation;
-
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	TWeakObjectPtr<ATile> CurrentTile;
-
-	UFUNCTION()
-	void OnRep_NetLocation();
-
-	void SetNetLocation(const FVector& NewNetLocation);
-
-	// How fast the progress increases when moving, in percent per second
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	float MovementRate;
-
-	UPROPERTY(VisibleInstanceOnly)
-	TArray<ATile*> Path;
-
-protected:
-	ATile* GetCurrentTile() const { return CurrentTile.Get(); }
-	void S_SetPath(const TArray<ATile*>& NewPath) { Path = NewPath; }
-
-public:
-	void S_MoveToNextTileOnPath();
-	float GetMovementRate() const { return MovementRate; };
-	bool IsPathValid();
-	bool IsPathEmpty() const { return Path.IsEmpty(); }
 };
