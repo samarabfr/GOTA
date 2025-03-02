@@ -190,11 +190,12 @@ void AArmy::S_TakePopFromTile()
 
 bool AArmy::IsTileValidForRecruiting(const ATile* Tile) const
 {
-	return Tile
-		&& Tile->GetBuilding()
-		&& Tile->GetBuilding()->GetPopulation()->GetSize() == Tile->GetBuilding()->GetPopulation()->GetMaxSize()
-		&& Tile->GetClaimant()
-		&& Tile->GetClaimant() == Building->GetSettlement();
+	return Tile &&
+		Tile->GetBuilding() &&
+		!Tile->GetBuilding()->GetIsUnderConstruction() &&
+		Tile->GetBuilding()->GetPopulation()->GetSize() == Tile->GetBuilding()->GetPopulation()->GetMaxSize() &&
+		Tile->GetClaimant() &&
+		Tile->GetClaimant() == Building->GetSettlement();
 }
 
 void AArmy::S_StartRecruitFromTile()
@@ -221,10 +222,11 @@ bool AArmy::TryFindPathToNearestRecruitable()
 		}
 	}
 	if (!HasValidTiles) return false;
-	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile.Get(), EEntityType::Army, [this](const ATile* Tile)
-	{
-		return IsTileValidForRecruiting(Tile);
-	});
+	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile.Get(), EEntityType::Army,
+	                                                      [this](const ATile* Tile)
+	                                                      {
+		                                                      return IsTileValidForRecruiting(Tile);
+	                                                      });
 	return !Path.IsEmpty();
 }
 
@@ -278,52 +280,59 @@ bool AArmy::HasEnemyOnNeighboringTile() const
 bool AArmy::TryFindPathToNearestEnemy()
 {
 	if (!GameState->GetTileMap()) return false;
-	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile.Get(), EEntityType::Army, [this](const ATile* Tile)
-	{
-		if (!Tile) return false;
-		for (ATile* Neighbor : Tile->GetNeighbors())
-		{
-			if (Neighbor && Neighbor->GetArmy() && Neighbor->GetArmy()->GetAffiliation() != GetAffiliation())
-				return true;
-		}
-		return false;
-	});
+	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile.Get(), EEntityType::Army,
+	                                                      [this](const ATile* Tile)
+	                                                      {
+		                                                      if (!Tile) return false;
+		                                                      for (ATile* Neighbor : Tile->GetNeighbors())
+		                                                      {
+			                                                      if (Neighbor && Neighbor->GetArmy() && Neighbor->
+				                                                      GetArmy()->GetAffiliation() != GetAffiliation())
+				                                                      return true;
+		                                                      }
+		                                                      return false;
+	                                                      });
 	return !Path.IsEmpty();
 }
 
 bool AArmy::TryFindPathToNearestEnemyUnprotectedNormalBuilding()
 {
 	if (!GameState->GetTileMap()) return false;
-	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile.Get(), EEntityType::Army, [this](const ATile* Tile)
-	{
-		return Tile &&
-			Tile->GetClaimant() &&
-			Tile->GetClaimant()->GetAffiliation() != GetAffiliation() &&
-			Tile->GetBuilding() &&
-			!Tile->GetBuilding()->IsProtected();
-	});
+	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile.Get(), EEntityType::Army,
+	                                                      [this](const ATile* Tile)
+	                                                      {
+		                                                      return Tile &&
+			                                                      Tile->GetClaimant() &&
+			                                                      Tile->GetClaimant()->GetAffiliation() !=
+			                                                      GetAffiliation() &&
+			                                                      Tile->GetBuilding() &&
+			                                                      !Tile->GetBuilding()->IsProtected();
+	                                                      });
 	return !Path.IsEmpty();
 }
 
 bool AArmy::TryFindPathToNearestEnemyDefenseBuilding()
 {
 	if (!GameState->GetTileMap()) return false;
-	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile.Get(), EEntityType::Army, [this](const ATile* Tile)
-	{
-		if (!Tile) return false;
-		for (ATile* Neighbor : Tile->GetNeighbors())
-		{
-			if (Neighbor &&
-				Neighbor->GetClaimant() &&
-				Neighbor->GetClaimant()->GetAffiliation() != GetAffiliation() &&
-				Neighbor->GetBuilding() &&
-				Neighbor->GetBuilding()->GetSettings()->bDefenseEnabled)
-			{
-				return true;
-			}
-		}
-		return false;
-	});
+	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile.Get(), EEntityType::Army,
+	                                                      [this](const ATile* Tile)
+	                                                      {
+		                                                      if (!Tile) return false;
+		                                                      for (ATile* Neighbor : Tile->GetNeighbors())
+		                                                      {
+			                                                      if (Neighbor &&
+				                                                      Neighbor->GetClaimant() &&
+				                                                      Neighbor->GetClaimant()->GetAffiliation() !=
+				                                                      GetAffiliation() &&
+				                                                      Neighbor->GetBuilding() &&
+				                                                      Neighbor->GetBuilding()->GetSettings()->
+				                                                      bDefenseEnabled)
+			                                                      {
+				                                                      return true;
+			                                                      }
+		                                                      }
+		                                                      return false;
+	                                                      });
 	return !Path.IsEmpty();
 }
 
@@ -453,10 +462,11 @@ void AArmy::S_RavageEnemyBuilding()
 bool AArmy::TryFindPathToGuardTile()
 {
 	if (!GameState->GetTileMap()) return false;
-	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile.Get(), EEntityType::Army, [this](const ATile* Tile)
-	{
-		return Tile && Tile == GuardTile;
-	});
+	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile.Get(), EEntityType::Army,
+	                                                      [this](const ATile* Tile)
+	                                                      {
+		                                                      return Tile && Tile == GuardTile;
+	                                                      });
 	return !Path.IsEmpty();
 }
 
@@ -492,15 +502,17 @@ bool AArmy::HasEnemyInGuardTileRange()
 bool AArmy::TryFindPathToInterceptArmy()
 {
 	if (!GameState->GetTileMap()) return false;
-	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile.Get(), EEntityType::Army, [this](const ATile* Tile)
-	{
-		if (!Tile) return false;
-		for (ATile* Neighbor : Tile->GetNeighbors())
-		{
-			if (Neighbor && Neighbor->GetArmy() && Neighbor->GetArmy() == InterceptArmy)
-				return true;
-		}
-		return false;
-	});
+	Path = GameState->GetTileMap()->FindPathToNearestTile(CurrentTile.Get(), EEntityType::Army,
+	                                                      [this](const ATile* Tile)
+	                                                      {
+		                                                      if (!Tile) return false;
+		                                                      for (ATile* Neighbor : Tile->GetNeighbors())
+		                                                      {
+			                                                      if (Neighbor && Neighbor->GetArmy() && Neighbor->
+				                                                      GetArmy() == InterceptArmy)
+				                                                      return true;
+		                                                      }
+		                                                      return false;
+	                                                      });
 	return !Path.IsEmpty();
 }
