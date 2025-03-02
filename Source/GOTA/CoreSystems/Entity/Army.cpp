@@ -333,7 +333,7 @@ float AArmy::GetRavageSpeed() const
 
 void AArmy::S_RavageEnemyBuilding()
 {
-	if (!GetCurrentTile() || GetCurrentTile()->GetBuilding() || !IsOnEnemyBuilding() || IsBuildingProtected()) return;
+	if (!GetCurrentTile() || !GetCurrentTile()->GetBuilding() || !IsOnEnemyBuilding() || IsBuildingProtected()) return;
 	if (GetCurrentTile()->GetBuilding()->GetPopulation()->GetSize() > 0)
 	{
 		GetCurrentTile()->GetBuilding()->GetPopulation()->S_DecreaseSize(1);
