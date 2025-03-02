@@ -11,7 +11,7 @@ void AColony::S_Tick(const float DeltaSeconds)
 	FigureOutBuilding();
 	if (SendArmiesIntervalTimeLeft <= 0.0f)
 	{
-		SendArmies();
+		SetAllArmiesOnAttack();
 		SendArmiesIntervalTimeLeft = SendArmiesIntervalTime;
 	}
 	else
@@ -179,25 +179,4 @@ void AColony::CalculateScores(FNewBuildingImportanceRatings ImportanceRatings)
 	}
 	SetCurrentBuildingProject(Highest);
 	*/
-}
-
-void AColony::SendArmies()
-{
-	for (AArmy* Army : GetAllColonyArmies())
-	{
-		Army->SetMode(EArmyMode::AttackMode);
-	}
-}
-
-TArray<AArmy*> AColony::GetAllColonyArmies()
-{
-	TArray<AArmy*> Result;
-	for (ATile* Tile : ClaimedTiles)
-	{
-		if (Tile && Tile->GetBuilding() && Tile->GetBuilding()->GetArmy())
-		{
-			Result.Add(Tile->GetBuilding()->GetArmy());
-		}
-	}
-	return Result;
 }
