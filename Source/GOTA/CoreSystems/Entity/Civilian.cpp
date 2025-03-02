@@ -8,6 +8,8 @@
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "Net/UnrealNetwork.h"
 
+// ----------------------- Replication Setup -----------------------
+
 void ACivilian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
@@ -60,6 +62,11 @@ bool ACivilian::IsTileValidForWork(const ATile* Tile) const
 	return false;
 }
 
+int32 ACivilian::GetWorkAmount() const
+{
+	return WorkAmount; 
+}
+
 void ACivilian::S_Work()
 {
 }
@@ -84,6 +91,16 @@ float ACivilian::GetWorkRate() const
 	return 100.f / GetOriginBuilding()->GetSettings()->CivilianGatheringTime * GetOriginBuilding()->GetEfficiency();
 }
 
+ATile* ACivilian::GetPriorityTile() const
+{
+	return PriorityTile.Get(); 
+}
+
+void ACivilian::S_SetPriorityTile(ATile* NewPriorityTile)
+{
+	PriorityTile = NewPriorityTile; 
+}
+
 bool ACivilian::HasResourcesInInventory() const
 {
 	return Storage->GetCurrent() > 0;
@@ -104,6 +121,11 @@ void ACivilian::S_UnloadResources()
 {
 	GetOriginBuilding()->GetResourceStorage()->S_Add(Storage->GetCurrent());
 	Storage->S_Empty();
+}
+
+UResourceStorage* ACivilian::GetStorage() const
+{
+	return Storage; 
 }
 
 bool ACivilian::S_TryFindPathToClosestWorkTile()

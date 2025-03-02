@@ -18,18 +18,21 @@ UCLASS()
 class GOTA_API AEntity : public AActor
 {
 	GENERATED_BODY()
+
+	// ----------------------- Replication Setup -----------------------
+protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	// ----------------------- LifeCycle -----------------------	
 protected:
 	AEntity();
-	
+
 	virtual void S_HandleDeath();
 
 public:
 	UFUNCTION()
 	virtual void Delete();
-	
+
 	virtual void S_Init(UBuilding* InBuilding, ATile* SpawnTile);
 	virtual void S_Tick(const float DeltaSeconds);
 	virtual void C_Tick(const float DeltaSeconds);
@@ -44,20 +47,20 @@ private:
 
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Affiliation)
 	EAffiliation Affiliation;
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	UStateTreeComponent* StateTree;
 
-	UFUNCTION()
-	virtual void OnRep_Affiliation();
 
 protected:
-
 	UBuilding* GetOriginBuilding() const;
 	AGS_Ingame* S_GetGameState() const;
 
 	UFUNCTION()
 	virtual void S_HandleEfficiencyChange(float Change);
+	
+	UFUNCTION()
+	virtual void OnRep_Affiliation();
 
 public:
 	virtual EEntityType GetEntityType() const;

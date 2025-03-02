@@ -17,6 +17,9 @@ UCLASS()
 class GOTA_API AArmy : public AEntity
 {
 	GENERATED_BODY()
+
+	// ----------------------- Replication Setup -----------------------
+protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	// ----------------------- LifeCycle -----------------------

@@ -12,6 +12,9 @@ UCLASS()
 class GOTA_API ACivilian : public AEntity
 {
 	GENERATED_BODY()
+
+	// ----------------------- Replication Setup -----------------------
+protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	// ----------------------- LifeCycle -----------------------
@@ -40,8 +43,8 @@ private:
 protected:
 	virtual void S_HandleEfficiencyChange(float Change) override;
 	virtual bool IsTileValidForWork(const ATile* Tile) const;
-	int32 GetWorkAmount() const { return WorkAmount; }
-	UResourceStorage* GetStorage() const { return Storage; }
+	int32 GetWorkAmount() const;
+	UResourceStorage* GetStorage() const;
 	bool S_TryFindPathToClosestWorkTile();
 	bool S_TryFindPathToWorkTileClosestToSettlement();
 
@@ -53,8 +56,8 @@ public:
 	virtual bool IsCurrentTileAmongBestWorkTiles();
 	bool IsCurrentTilePriorityTile() const;
 	float GetWorkRate() const;
-	ATile* GetPriorityTile() const { return PriorityTile.Get(); }
-	void S_SetPriorityTile(ATile* NewPriorityTile) { PriorityTile = NewPriorityTile; }
+	ATile* GetPriorityTile() const;
+	void S_SetPriorityTile(ATile* NewPriorityTile);
 	bool HasResourcesInInventory() const;
 	bool IsInventoryFull() const;
 	bool IsCurrentTileOriginBuilding() const;
