@@ -29,6 +29,9 @@ protected:
 	UButton* BTN_Settings;
 
 	UPROPERTY(meta = (BindWidget))
+	UButton* BTN_SelfPlay;
+
+	UPROPERTY(meta = (BindWidget))
 	UButton* BTN_Quit;
 
 	UPROPERTY(meta = (BindWidget))
@@ -49,6 +52,9 @@ private:
 
 	UFUNCTION()
 	void OpenSettings();
+	
+	UFUNCTION()
+	void StartSelfPlay();
 	
 	UFUNCTION()
 	void OpenMainMenu();

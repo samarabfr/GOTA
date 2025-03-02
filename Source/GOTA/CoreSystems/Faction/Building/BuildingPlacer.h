@@ -4,6 +4,7 @@
 
 #include "BuildingPlacer.generated.h"
 
+class AGS_Ingame;
 class ATile;
 class UBuildingSettings;
 class AMouseUtils;
@@ -47,6 +48,8 @@ private:
 
 	UPROPERTY(ReplicatedUsing=OnRep_MouseUtils)
 	AMouseUtils* MouseUtils;
+
+	TWeakObjectPtr<AGS_Ingame> GameState;
 
 	UFUNCTION()
 	void OnRep_MouseUtils();

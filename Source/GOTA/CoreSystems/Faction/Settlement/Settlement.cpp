@@ -3,7 +3,12 @@
 #include "Settlement.h"
 
 #include "SettlementPopulation.h"
+#include "GOTA/CoreSystems/Entity/Army.h"
+#include "GOTA/CoreSystems/Entity/Builder.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingCivilian.h"
+#include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
+#include "GOTA/CoreSystems/Faction/Building/ResourceStorage.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
@@ -27,6 +32,8 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME_WITH_PARAMS(ASettlement, StarvingThreshold, Params)
 	DOREPLIFETIME_WITH_PARAMS(ASettlement, GrowthPerOwnPop, Params)
 	DOREPLIFETIME_WITH_PARAMS(ASettlement, GrowthPerNeighborPop, Params)
+	DOREPLIFETIME_WITH_PARAMS(ASettlement, Consumption, Params)
+	DOREPLIFETIME_WITH_PARAMS(ASettlement, Production, Params)
 }
 
 // --------------------------- LifeCycle ---------------------------
@@ -51,22 +58,36 @@ void ASettlement::BeginPlay()
 	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
 }
 
+void ASettlement::S_Delete()
+{
+	Destroy();
+}
+
 void ASettlement::S_Init(ATile* SpawnTile)
 {
 	S_AddResources(StartingResources);
 
-	SpawnTile->S_TryBuild(StartingBuildings[0], this);
-	SpawnTile->GetBuilding()->FinishConstruction();
+	if (SpawnTile->S_TryForceBuild(StartingBuildings[0], this))
+	{
+		SpawnTile->GetBuilding()->S_FinishConstruction();
+	}
 	for (int32 i = 1; i < StartingBuildings.Num(); ++i)
 	{
-		if (BorderingUnclaimedTiles.Num() <= 0) break;
+		if (BorderingUnclaimedTiles.Num() <= 0)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Did not have enough bordering tiles to place starting buildings"))
+			break;
+		}
 		ATile* Tile = BorderingUnclaimedTiles[FMath::RandRange(0, BorderingUnclaimedTiles.Num() - 1)];
-		Tile->S_TryBuild(StartingBuildings[i], this);
-		Tile->GetBuilding()->FinishConstruction();
+		if (Tile && Tile->S_TryBuild(StartingBuildings[i], this))
+		{
+			Tile->GetBuilding()->S_FinishConstruction();
+		}
 	}
 	for (ATile* Tile : ClaimedTiles)
 	{
 		Tile->GetBuilding()->GetPopulation()->S_ChangeSize(100);
+		Tile->GetBuilding()->GetResourceStorage()->S_Fill();
 	}
 }
 
@@ -79,15 +100,14 @@ void ASettlement::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	Resources.Food -= GetPopulation()->GetSize() * GetPopEatingPerSecond() * DeltaSeconds;
-
-	if (Resources.Food < 0)
-		Population->S_SetStarving(true);
-	else
-		Population->S_SetStarving(false);
-
 	if (HasAuthority())
 	{
+		S_AddResources(Production - Consumption);
+		// starving
+		if (Resources.Food < 0)
+			Population->S_SetStarving(true);
+		else
+			Population->S_SetStarving(false);
 		const float Threshold = GetStarvingThreshold();
 		if (Resources.Food < Threshold)
 		{
@@ -98,6 +118,10 @@ void ASettlement::Tick(float DeltaSeconds)
 				GetPopulation()->StarveRandomPop();
 			}
 		}
+	}
+	else
+	{
+		C_AddResources(Production - Consumption);
 	}
 }
 
@@ -127,14 +151,17 @@ void ASettlement::S_SetStarvingThreshold(float NewValue)
 
 // --------------------------- Claims ---------------------------
 
-void ASettlement::RefreshBorderingUnclaimedTiles()
+void ASettlement::S_RefreshBorderingUnclaimedTiles()
 {
 	BorderingUnclaimedTiles.Empty();
 	for (ATile* ClaimedTile : ClaimedTiles)
 	{
 		for (ATile* Neighbor : ClaimedTile->Neighbors)
 		{
-			if (Neighbor && !Neighbor->GetClaimant() && !BorderingUnclaimedTiles.Contains(Neighbor))
+			if (Neighbor &&
+				!Neighbor->IsClaimed() &&
+				!ClaimedTiles.Contains(Neighbor) &&
+				!BorderingUnclaimedTiles.Contains(Neighbor))
 			{
 				BorderingUnclaimedTiles.Add(Neighbor);
 			}
@@ -149,10 +176,14 @@ bool ASettlement::IsBorderingUnclaimedTile(const ATile* Tile) const
 
 // --------------------------- Building ---------------------------
 
-void ASettlement::S_RegisterTile(ATile* Tile)
+void ASettlement::S_RegisterTile(ATile* Tile, UBuilding* Building)
 {
 	ClaimedTiles.Add(Tile);
-	RefreshBorderingUnclaimedTiles();
+	S_RefreshBorderingUnclaimedTiles();
+	if (Building)
+	{
+		S_RegisterBuildingForIncome(Building);
+	}
 }
 
 void ASettlement::RegisterPopulation(UPopulation* InPopulation)
@@ -160,10 +191,14 @@ void ASettlement::RegisterPopulation(UPopulation* InPopulation)
 	GetPopulation()->RegisterPop(InPopulation);
 }
 
-void ASettlement::S_UnregisterTile(ATile* Tile)
+void ASettlement::S_UnregisterTile(ATile* Tile, UBuilding* Building)
 {
 	ClaimedTiles.Remove(Tile);
-	RefreshBorderingUnclaimedTiles();
+	S_RefreshBorderingUnclaimedTiles();
+	if (Building)
+	{
+		S_UnregisterBuildingForIncome(Building);
+	}
 }
 
 void ASettlement::UnregisterPopulation(UPopulation* InPopulation)
@@ -174,77 +209,129 @@ void ASettlement::UnregisterPopulation(UPopulation* InPopulation)
 // --------------------------- Resources ---------------------------
 
 
-void ASettlement::S_AddResources(const FGameResources Amount)
+void ASettlement::S_AddResources(const FConstructionResources Amount)
 {
 	Resources += Amount;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
 	ForceNetUpdate();
 }
 
-void ASettlement::S_RemoveResources(const FGameResources Amount)
+void ASettlement::S_RemoveResources(const FConstructionResources Amount)
 {
 	Resources -= Amount;
 	MARK_PROPERTY_DIRTY_FROM_NAME(ASettlement, Resources, this)
 	ForceNetUpdate();
 }
 
-void ASettlement::RegisterBuildingForResourcePrediction(UBuilding* Building)
+void ASettlement::C_AddResources(FConstructionResources Amount)
+{
+	Resources += Amount;
+}
+
+void ASettlement::C_RemoveResources(FConstructionResources Amount)
+{
+	Resources -= Amount;
+}
+
+int32 ASettlement::GetCountOfBuilders()
+{
+	int32 Count = 0;
+	for (ATile* ClaimedTile : ClaimedTiles)
+	{
+		if (ClaimedTile &&
+			ClaimedTile->GetBuilding() &&
+			ClaimedTile->GetBuilding()->GetSettings()->bCivilianEnabled)
+		{
+			UBuildingCivilian* Building = Cast<UBuildingCivilian>(ClaimedTile->GetBuilding());
+			if (Building &&
+				Building->GetCivilian() &&
+				Cast<ABuilder>(Building->GetCivilian()) != nullptr)
+			{
+				++Count;
+			}
+		}
+	}
+	return Count;
+}
+
+TArray<AArmy*> ASettlement::GetAllArmies()
+{
+	TArray<AArmy*> Result;
+	for (ATile* Tile : ClaimedTiles)
+	{
+		if (Tile && Tile->GetBuilding() && Tile->GetBuilding()->GetArmy())
+		{
+			Result.Add(Tile->GetBuilding()->GetArmy());
+		}
+	}
+	return Result;
+}
+
+void ASettlement::SetAllArmiesOnAttack()
+{
+	for (AArmy* Army : GetAllArmies())
+	{
+		if (Army)
+		{
+			Army->SetMode(EArmyMode::AttackMode);
+		}
+	}
+}
+
+int32 ASettlement::GetCountOfConstructionSites()
+{
+	int32 Count = 0;
+	for (ATile* ClaimedTile : ClaimedTiles)
+	{
+		if (ClaimedTile &&
+			ClaimedTile->GetBuilding() &&
+			ClaimedTile->GetBuilding()->GetIsUnderConstruction())
+		{
+			++Count;
+		}
+	}
+	return Count;
+}
+
+void ASettlement::S_RegisterBuildingForIncome(UBuilding* Building)
 {
 	const EProductionType ProductionType = Building->GetProductionType();
 	if (ProductionType == EProductionType::Food
 		|| ProductionType == EProductionType::Wood
 		|| ProductionType == EProductionType::Stone)
 	{
-		PredictedProduction.AddProduction(Building->GetPredictedProduction(), ProductionType);
-		Building->OnPredictedProductionChanged.AddDynamic(this, &ASettlement::UpdatePredictedProduction);
+		Production.Add(Building->GetProductionPerSecond(), ProductionType);
+		Building->OnProductionPerSecondChanged.AddDynamic(this, &ASettlement::S_UpdateProduction);
 	}
-	const EConsumptionType ConsumptionType = Building->GetConsumptionType();
-	if (ConsumptionType == EConsumptionType::Food
-		|| ConsumptionType == EConsumptionType::Wood
-		|| ConsumptionType == EConsumptionType::Stone)
-	{
-		PredictedConsumption.AddConsumption(Building->GetPredictedConsumption(), ConsumptionType);
-		Building->OnPredictedConsumptionChanged.AddDynamic(this, &ASettlement::UpdatePredictedConsumption);
-	}
-	PredictedConsumption.AddConsumption(
-		Building->GetPopulation()->GetSize() * GetPopEatingPerSecond(), EConsumptionType::Food);
-	Building->GetPopulation()->OnSizeChanged.AddDynamic(this, &ASettlement::UpdatePredictionFromPopulation);
+	Consumption.Add(Building->GetPopulation()->GetSize() * GetPopEatingPerSecond(), EResource::Food);
+	Building->GetPopulation()->OnSizeChanged.AddDynamic(this, &ASettlement::S_UpdateConsumptionFromPopulation);
 }
 
-void ASettlement::UnregisterBuildingForResourcePrediction(UBuilding* Building)
+void ASettlement::S_UnregisterBuildingForIncome(UBuilding* Building)
 {
 	const EProductionType ProductionType = Building->GetProductionType();
 	if (ProductionType == EProductionType::Food
 		|| ProductionType == EProductionType::Wood
 		|| ProductionType == EProductionType::Stone)
 	{
-		PredictedProduction.RemoveProduction(Building->GetPredictedProduction(), ProductionType);
-		Building->OnPredictedProductionChanged.RemoveDynamic(this, &ASettlement::UpdatePredictedProduction);
+		Production.Remove(Building->GetProductionPerSecond(), ProductionType);
+		Building->OnProductionPerSecondChanged.RemoveDynamic(this, &ASettlement::S_UpdateProduction);
 	}
-	const EConsumptionType ConsumptionType = Building->GetConsumptionType();
-	if (ConsumptionType == EConsumptionType::Food
-		|| ConsumptionType == EConsumptionType::Wood
-		|| ConsumptionType == EConsumptionType::Stone)
-	{
-		PredictedConsumption.RemoveConsumption(Building->GetPredictedConsumption(), ConsumptionType);
-		Building->OnPredictedConsumptionChanged.RemoveDynamic(this, &ASettlement::UpdatePredictedConsumption);
-	}
-	PredictedConsumption.RemoveConsumption(
-		Building->GetPopulation()->GetSize() * GetPopEatingPerSecond(), EConsumptionType::Food);
-	Building->GetPopulation()->OnSizeChanged.RemoveDynamic(this, &ASettlement::UpdatePredictionFromPopulation);
+	Consumption.Remove(Building->GetPopulation()->GetSize() * GetPopEatingPerSecond(), EResource::Food);
+	Building->GetPopulation()->OnSizeChanged.RemoveDynamic(this, &ASettlement::S_UpdateConsumptionFromPopulation);
 }
 
-void ASettlement::UpdatePredictedProduction(const float Change, const EProductionType Type)
+void ASettlement::S_UpdateProduction(const float Change, const float _, const EProductionType Type)
 {
-	PredictedProduction.AddProduction(Change, Type);
+	Production.Add(Change, Type);
 }
 
-void ASettlement::UpdatePredictedConsumption(const float Change, const EConsumptionType Type)
+void ASettlement::S_UpdateConsumption(const float Change, const float _, const EResource Type)
 {
-	PredictedConsumption.AddConsumption(Change, Type);
+	Consumption.Add(Change, Type);
 }
 
-void ASettlement::UpdatePredictionFromPopulation(int16 Change)
+void ASettlement::S_UpdateConsumptionFromPopulation(int16 Change)
 {
-	PredictedConsumption.AddConsumption(Change * GetPopEatingPerSecond(), EConsumptionType::Food);
+	Consumption.Add(Change * GetPopEatingPerSecond(), EResource::Food);
 }

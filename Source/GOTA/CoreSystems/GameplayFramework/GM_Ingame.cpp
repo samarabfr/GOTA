@@ -82,6 +82,7 @@ void AGM_Ingame::LoadGame()
 {
 	GOTAGameState = GetGameState<AGS_Ingame>();
 	GOTAGameState->GameStatus = EGameStatus::Loading;
+	GOTAGameState->GameEnded = false;
 	GetWorld()->SpawnActor<ALoadingManager>();
 }
 
@@ -117,6 +118,7 @@ void AGM_Ingame::EndGame(EGameEnding Ending, const FString& EndingMessage)
 void AGM_Ingame::CheckGameEndingConditions()
 {
 	if (GOTAGameState->GameEnded) return;
+	if (GOTAGameState->GameStatus == EGameStatus::Loading) return;
 	if (!GOTAGameState->GetColony()) return;
 	if (!GOTAGameState->GetTribe()) return;
 
@@ -127,12 +129,12 @@ void AGM_Ingame::CheckGameEndingConditions()
 
 	if (ColonialPop == 0)
 	{
-		EndGame(EGameEnding::Victory, FString("Victory! :)"));
+		EndGame(EGameEnding::NativesWon, FString("Victory! :)"));
 		return;
 	}
 	if (NativePop == 0)
 	{
-		EndGame(EGameEnding::Defeat, FString("Defeat! :("));
+		EndGame(EGameEnding::ColonistsWon, FString("Defeat! :("));
 		return;
 	}
 
@@ -143,7 +145,9 @@ void AGM_Ingame::CheckGameEndingConditions()
 	if (TreeRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
 	if (ForageRatio < GameBalance->GameEndingEcoThreshold) ++EcoUnderRatioCount;
 	if (EcoUnderRatioCount >= 2)
-		EndGame(EGameEnding::Defeat, FString("Defeat! :("));
+	{
+		EndGame(EGameEnding::ColonistsWon, FString("Defeat! :("));
+	}
 }
 
 // ---------------------------------------------------------
@@ -189,7 +193,7 @@ void AGM_Ingame::CreateGuardians()
 		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(PlayerStateIngame->SelectedGuardian->GuardianBlueprint,
 		                                                        SpawnLocation, FRotator::ZeroRotator);
 		GOTAGameState->SetGuardian(PlayerStateIngame->GOTAPlayerID, Guardian);
-		Guardian->S_Init(PlayerStateIngame->SelectedGuardian);
+		Guardian->S_Init(PlayerStateIngame->SelectedGuardian, PossibleBuildingsForPlayers);
 	}
 }
 

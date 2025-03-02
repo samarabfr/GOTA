@@ -25,6 +25,7 @@ private:
 	TArray<UTileAsset*> TreeAssets;
 	TArray<UTileAsset*> PropAssets;
 	TArray<UTileAsset*> ForageAssets;
+	TArray<UTileAsset*> FoliageAssets;
 
 public:
 	UTileAsset* GetDefaultTileAsset() const { return DefaultTileAsset; }
@@ -34,4 +35,5 @@ public:
 	const TArray<UTileAsset*>& GetAllTreeAssets() const { return TreeAssets; }
 	const TArray<UTileAsset*>& GetAllPropAssets() const { return PropAssets; }
 	const TArray<UTileAsset*>& GetAllForageAssets() const { return ForageAssets; }
+	const TArray<UTileAsset*>& GetAllFoliageAssets() const { return FoliageAssets; }
 };

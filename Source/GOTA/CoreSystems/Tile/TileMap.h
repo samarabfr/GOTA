@@ -22,6 +22,7 @@ public:
 	void Init();
 	void EnableTick();
 	void MaxAllEcoValues();
+	void Delete();
 
 private:
 	virtual void BeginPlay() override;

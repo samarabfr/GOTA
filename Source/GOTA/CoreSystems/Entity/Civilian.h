@@ -29,6 +29,8 @@ public:
 	void S_Tick(const float DeltaSeconds);
 	void C_Tick(const float DeltaSeconds);
 
+	void Delete();
+
 private:
 	virtual void BeginDestroy() override;
 
@@ -39,18 +41,18 @@ public:
 	// ----------------------- Utility -----------------------
 
 private:
-	UPROPERTY(Replicated)
+	UPROPERTY(VisibleInstanceOnly, Replicated)
 	TWeakObjectPtr<UBuilding> OriginBuilding;
 
 	UPROPERTY()
-	AGS_Ingame* GameState;
+	TWeakObjectPtr<AGS_Ingame> GameState;
 
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	UStateTreeComponent* StateTree;
 	
 	UBuilding* GetOriginBuilding() const { return OriginBuilding.Get(); }
-	AGS_Ingame* GetGameState() const { return GameState; }
+	AGS_Ingame* S_GetGameState() const { return GameState.Get(); }
 
 	// ----------------- Progresser ------------------------
 protected:
@@ -80,10 +82,7 @@ private:
 	int32 WorkAmount;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated)
-	FGameResources ResourceInventoryLimit;
-
-	UPROPERTY(VisibleInstanceOnly, Replicated)
-	FGameResources ResourceInventory;
+	UResourceStorage* Storage;
 
 	UPROPERTY(EditAnywhere, Replicated)
 	TWeakObjectPtr<ATile> PriorityTile;
@@ -91,11 +90,12 @@ private:
 protected:
 	virtual bool IsTileValidForWork(const ATile* Tile) const;
 	int32 GetWorkAmount() const { return WorkAmount; }
-	FGameResources GetResourceInventoryLimit() const { return ResourceInventoryLimit; }
-	FGameResources GetResourceInventory() const { return ResourceInventory; }
-	void S_AddResources(FGameResources Resources);
+	UResourceStorage* GetStorage() const { return Storage; }
 	bool S_TryFindPathToClosestWorkTile();
 	bool S_TryFindPathToWorkTileClosestToSettlement();
+
+	UFUNCTION()
+	void HandleEfficiencyChange(float Change);
 
 public:
 	virtual void S_Work();

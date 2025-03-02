@@ -51,6 +51,8 @@ class GOTA_API ATile : public AActor
 public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="TileMap")
 	void S_Init();
+	
+	void Delete();
 
 	// ------------------------Tilemap---------------------------
 private:
@@ -89,7 +91,7 @@ public:
 	// ------------------------Army---------------------------
 private:
 	UPROPERTY(VisibleInstanceOnly)
-	AArmy* Army;
+	TWeakObjectPtr<AArmy> Army;
 
 public:
 	AArmy* GetArmy() const;
@@ -126,9 +128,11 @@ public:
 
 	FOnTileChangedSignature OnBuildingChanged;
 
-	bool CanBuild();
+	bool CanBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder);
 
 	bool S_TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder);
+
+	bool S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder);
 
 	void S_Unbuild();
 

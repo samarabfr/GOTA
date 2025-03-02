@@ -8,6 +8,7 @@
 #include "Misc/LowLevelTestAdapter.h"
 #include "Net/UnrealNetwork.h"
 #include "Tile.h"
+#include "GOTA/CoreSystems/Entity/Army.h"
 
 void ATileMap::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -740,4 +741,16 @@ void ATileMap::CountAllMaxEcoValues(int32& TotalMaxTrees, int32& TotalMaxForage)
 		TotalMaxTrees += Tile->EcoValues->GetMaxTrees();
 		TotalMaxForage += Tile->EcoValues->GetMaxForage();
 	}
+}
+
+void ATileMap::Delete()
+{
+	for (ATile* Tile : Tiles)
+	{
+		if (Tile)
+		{
+			Tile->Delete();
+		}
+	}
+	Destroy();
 }
