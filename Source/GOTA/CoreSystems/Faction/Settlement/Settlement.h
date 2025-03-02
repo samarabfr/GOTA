@@ -9,6 +9,7 @@
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "Settlement.generated.h"
 
+class AArmy;
 class UBuildingSettings;
 class USettlementPopulation;
 class ACivilian;
@@ -162,4 +163,9 @@ public:
 
 public:
 	int32 GetCountOfBuilders();
+
+	// --------------------------- Armies ---------------------------
+public:
+	TArray<AArmy*> GetAllArmies();
+	void SetAllArmiesOnAttack();
 };

@@ -3,6 +3,7 @@
 #include "Settlement.h"
 
 #include "SettlementPopulation.h"
+#include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Entity/Builder.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingCivilian.h"
@@ -251,6 +252,30 @@ int32 ASettlement::GetCountOfBuilders()
 		}
 	}
 	return Count;
+}
+
+TArray<AArmy*> ASettlement::GetAllArmies()
+{
+	TArray<AArmy*> Result;
+	for (ATile* Tile : ClaimedTiles)
+	{
+		if (Tile && Tile->GetBuilding() && Tile->GetBuilding()->GetArmy())
+		{
+			Result.Add(Tile->GetBuilding()->GetArmy());
+		}
+	}
+	return Result;
+}
+
+void ASettlement::SetAllArmiesOnAttack()
+{
+	for (AArmy* Army : GetAllArmies())
+	{
+		if (Army)
+		{
+			Army->SetMode(EArmyMode::AttackMode);
+		}
+	}
 }
 
 int32 ASettlement::GetCountOfConstructionSites()

@@ -151,7 +151,7 @@ void AGS_Ingame::SetTribe(ATribe* NewTribe)
 
 void AGS_Ingame::GuardiansChanged()
 {
-	OnGuardiansChanged.Broadcast(this);
+	OnGuardiansChanged.Broadcast();
 }
 
 AGuardian* AGS_Ingame::GetGuardian(const int32 GOTAPlayerID) const

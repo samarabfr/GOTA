@@ -50,9 +50,6 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	float SendArmiesIntervalTime = 60.0f;
 
-	void SendArmies();
-	TArray<AArmy*> GetAllColonyArmies();
-
 	// --------------------Importances----------------------
 private:
 	UPROPERTY(EditDefaultsOnly)

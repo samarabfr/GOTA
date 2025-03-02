@@ -105,7 +105,7 @@ public:
 	// ------------------- Guardians -------------------
 private:
 	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGuardiansChangedSig, AGS_Ingame*, GameState);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGuardiansChangedSig);
 
 	UPROPERTY(ReplicatedUsing=GuardiansChanged)
 	TArray<AGuardian*> Guardians;
