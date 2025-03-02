@@ -87,6 +87,8 @@ public:
 	// ------------------------Entity---------------------------
 public:
 	bool AcceptsEntity(const EEntityType EntityType) const;
+	void AddEntity(AEntity* Entity, const EEntityType EntityType, FVector& NewLocation);
+	void RemoveEntity(AEntity* Entity, const EEntityType EntityType);
 
 	// ------------------------Army---------------------------
 private:
@@ -108,7 +110,7 @@ public:
 	TArray<ACivilian*> GetCivilians() const { return Civilians; }
 	bool AcceptsCivilian() const;
 	void AddCivilian(ACivilian* Civilian, FVector& NewLocation);
-	void RemoveCivilian(const ACivilian* Civilian);
+	void RemoveCivilian(ACivilian* Civilian);
 
 	// ----------------------- Building and Claiming ---------------------
 

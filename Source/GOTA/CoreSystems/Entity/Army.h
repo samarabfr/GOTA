@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Entity.h"
 #include "GameplayTagContainer.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "Army.generated.h"
@@ -15,7 +16,7 @@ class ASettlement;
 class UArmySettings;
 
 UCLASS()
-class GOTA_API AArmy : public AActor
+class GOTA_API AArmy : public AEntity
 {
 	GENERATED_BODY()
 
