@@ -29,9 +29,13 @@ protected:
 	virtual void NativeConstruct() override;
 
 	// ------------------------------- Utility -------------------------------
+private:
+	UPROPERTY()
+	AGS_Ingame* GameState;
+
 public:
 	void HoverActor(AActor* Actor);
-	
+
 	void HandleEscapePressed();
 
 	// ------------------------------- Ingame Menu -------------------------------
@@ -39,7 +43,6 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	UIngameMenu* IngameMenu;
 
-	
 public:
 	void ToggleMenu();
 
@@ -59,7 +62,7 @@ protected:
 
 private:
 	UFUNCTION()
-	void RefreshGuardianWidgets(AGS_Ingame* GameState);
+	void RefreshGuardianWidgets();
 
 	// ------------------------------- Click Info -------------------------------
 public:
@@ -110,4 +113,13 @@ protected:
 
 public:
 	void ToggleDebugMenu();
+
+	// ------------------------------- Attack -------------------------------
+private:
+	UFUNCTION()
+	void SetAllNativeArmiesToAttack();
+
+protected:
+	UPROPERTY(meta = (BindWidget))
+	UButton* BTN_Attack;
 };

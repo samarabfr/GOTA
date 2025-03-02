@@ -6,6 +6,8 @@
 #include "GuardianInfo.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
 #include "GOTA/UI/Menu/IngameMenu.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/UI/DebugMenu/DebugMenu.h"
@@ -15,11 +17,12 @@
 void UIngameUI::NativeConstruct()
 {
 	Super::NativeConstruct();
-	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
+	GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	GameState->OnGameEnding.AddDynamic(this, &UIngameUI::OnGameEnding);
 	GameState->OnGuardiansChanged.AddDynamic(this, &UIngameUI::RefreshGuardianWidgets);
-	RefreshGuardianWidgets(GameState);
+	RefreshGuardianWidgets();
 	BTN_Build->OnPressed.AddDynamic(this, &UIngameUI::ToggleBuildMenu);
+	BTN_Attack->OnPressed.AddDynamic(this, &UIngameUI::SetAllNativeArmiesToAttack);
 }
 
 // ------------------------------- Utility -------------------------------
@@ -42,8 +45,9 @@ void UIngameUI::ToggleMenu()
 
 // ------------------------------- Guardian Info -------------------------------
 
-void UIngameUI::RefreshGuardianWidgets(AGS_Ingame* GameState)
+void UIngameUI::RefreshGuardianWidgets()
 {
+	if (!GameState) return;
 	WBP_GuardianInfo1->SetGuardian(GameState->GetGuardian(0));
 	WBP_GuardianInfo2->SetGuardian(GameState->GetGuardian(1));
 	WBP_GuardianInfo3->SetGuardian(GameState->GetGuardian(2));
@@ -97,8 +101,20 @@ void UIngameUI::ToggleDebugMenu()
 	if (DebugMenu->GetVisibility() == ESlateVisibility::Hidden)
 	{
 		DebugMenu->SetVisibility(ESlateVisibility::Visible);
-	} else
+	}
+	else
 	{
 		DebugMenu->SetVisibility(ESlateVisibility::Hidden);
+	}
+}
+
+// ------------------------------- Attack -------------------------------
+
+void UIngameUI::SetAllNativeArmiesToAttack()
+{
+	ASettlement* NativeSettlement = GameState->GetTribe();
+	if (NativeSettlement)
+	{
+		NativeSettlement->SetAllArmiesOnAttack();
 	}
 }
