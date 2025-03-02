@@ -61,4 +61,12 @@ public:
 	virtual EAffiliation GetAffiliation() override;
 	virtual TArray<int32> GetMilestonesReached() override;
 	virtual void IncrementMilestone(int32 MilestoneIndex) override;
+
+	// --------------------Army----------------------
+private:
+	UPROPERTY(VisibleInstanceOnly)
+	float SendArmiesIntervalTimeLeft = 0.0f;
+
+	UPROPERTY(EditDefaultsOnly)
+	float SendArmiesIntervalTime = 90.0f;
 };

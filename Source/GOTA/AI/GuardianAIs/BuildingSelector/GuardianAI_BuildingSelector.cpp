@@ -14,6 +14,16 @@
 void AGuardianAI_BuildingSelector::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if (!Settlement) return;
+	if (SendArmiesIntervalTimeLeft <= 0.0f)
+	{
+		Settlement->SetAllArmiesOnAttack();
+		SendArmiesIntervalTimeLeft = SendArmiesIntervalTime;
+	}
+	else
+	{
+		SendArmiesIntervalTimeLeft -= DeltaSeconds;
+	}
 }
 
 AGuardianAI_BuildingSelector::AGuardianAI_BuildingSelector()
@@ -53,7 +63,7 @@ void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 
 void AGuardianAI_BuildingSelector::RandomlyPlaceBuilding(UBuildingSettings* Building)
 {
-	if (Settlement->BorderingUnclaimedTiles.Num() <= 0) return;
+	if (!Settlement || Settlement->BorderingUnclaimedTiles.Num() <= 0) return;
 	const int32 RandomIndex = FMath::RandRange(0, Settlement->BorderingUnclaimedTiles.Num() - 1);
 	ATile* Tile = Settlement->BorderingUnclaimedTiles[RandomIndex];
 	if (Tile && Tile->CanBuild(Building, Settlement))
