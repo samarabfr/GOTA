@@ -62,7 +62,7 @@ void UBuildingCivilian::S_PrepareDestroy()
 {
 	Super::S_PrepareDestroy();
 	if(Civilian)
-		Civilian->S_HandleDeath();
+		Civilian->Delete();
 }
 
 // ---------------- Civilian Entity ----------------

@@ -127,6 +127,37 @@ bool ATile::AcceptsEntity(const EEntityType EntityType) const
 	return false;
 }
 
+void ATile::AddEntity(AEntity* Entity, const EEntityType EntityType, FVector& NewLocation)
+{
+	if (EntityType == EEntityType::Civilian)
+	{
+		ACivilian* CivilianToRemove = Cast<ACivilian>(Entity);
+		AddCivilian(CivilianToRemove, NewLocation);
+		return;
+	}
+	if (EntityType == EEntityType::Army)
+	{
+		AArmy* ArmyToRemove = Cast<AArmy>(Entity);
+		SetArmy(ArmyToRemove, NewLocation);
+		return;
+	}
+}
+
+void ATile::RemoveEntity(AEntity* Entity, const EEntityType EntityType)
+{
+	if (EntityType == EEntityType::Civilian)
+	{
+		ACivilian* CivilianToRemove = Cast<ACivilian>(Entity);
+		RemoveCivilian(CivilianToRemove);
+		return;
+	}
+	if (EntityType == EEntityType::Army)
+	{
+		RemoveArmy();
+		return;
+	}
+}
+
 AArmy* ATile::GetArmy() const
 {
 	return Army.Get();
@@ -177,7 +208,7 @@ void ATile::AddCivilian(ACivilian* Civilian, FVector& NewLocation)
 	}
 }
 
-void ATile::RemoveCivilian(const ACivilian* Civilian)
+void ATile::RemoveCivilian(ACivilian* Civilian)
 {
 	for (int32 i = 0; i < Civilians.Num(); ++i)
 	{

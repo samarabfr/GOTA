@@ -60,7 +60,7 @@ void UBuildingArmy::S_PrepareDestroy()
 {
 	Super::S_PrepareDestroy();
 	if(Army)
-		Army->S_HandleDeath();
+		Army->Delete();
 }
 
 // ---------------- Army ----------------
