@@ -23,12 +23,13 @@ class GOTA_API AEntity : public AActor
 	// ----------------------- LifeCycle -----------------------	
 protected:
 	AEntity();
-
-	UFUNCTION()
+	
 	virtual void S_HandleDeath();
 
 public:
+	UFUNCTION()
 	virtual void Delete();
+	
 	virtual void S_Init(UBuilding* InBuilding, ATile* SpawnTile);
 	virtual void S_Tick(const float DeltaSeconds);
 	virtual void C_Tick(const float DeltaSeconds);
@@ -41,9 +42,16 @@ private:
 	UPROPERTY()
 	TWeakObjectPtr<AGS_Ingame> GameState;
 
-protected:
+	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_Affiliation)
+	EAffiliation Affiliation;
+	
 	UPROPERTY(EditDefaultsOnly)
 	UStateTreeComponent* StateTree;
+
+	UFUNCTION()
+	virtual void OnRep_Affiliation();
+
+protected:
 
 	UBuilding* GetOriginBuilding() const;
 	AGS_Ingame* S_GetGameState() const;
@@ -53,6 +61,7 @@ protected:
 
 public:
 	virtual EEntityType GetEntityType() const;
+	EAffiliation GetAffiliation() const;
 
 	// ----------------- Progresser ------------------------
 protected:

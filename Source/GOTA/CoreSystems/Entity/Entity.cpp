@@ -6,6 +6,7 @@
 #include "NiagaraComponent.h"
 #include "Components/SplineComponent.h"
 #include "Components/StateTreeComponent.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
@@ -21,6 +22,7 @@ void AEntity::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	Params.RepNotifyCondition = REPNOTIFY_Always;
 	DOREPLIFETIME_WITH_PARAMS(AEntity, OriginBuilding, Params);
 	DOREPLIFETIME_WITH_PARAMS(AEntity, MovementRate, Params);
+	DOREPLIFETIME_WITH_PARAMS(AEntity, Affiliation, Params);
 
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
@@ -51,6 +53,8 @@ AEntity::AEntity()
 
 void AEntity::S_HandleDeath()
 {
+	if (!GetCurrentTile()) return;
+	GetCurrentTile()->RemoveEntity(this, GetEntityType());
 }
 
 void AEntity::Delete()
@@ -65,6 +69,7 @@ void AEntity::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	OriginBuilding = InBuilding;
 	OriginBuilding->OnEfficiencyChanged.AddDynamic(this, &AEntity::S_HandleEfficiencyChange);
 	CurrentTile = SpawnTile;
+	Affiliation = OriginBuilding->GetSettlement()->GetAffiliation();
 
 	StateTree->StartLogic();
 }
@@ -102,6 +107,10 @@ void AEntity::C_Tick(const float DeltaSeconds)
 
 // ----------------------- Utility -----------------------
 
+void AEntity::OnRep_Affiliation()
+{
+}
+
 UBuilding* AEntity::GetOriginBuilding() const
 {
 	return OriginBuilding.Get();
@@ -119,6 +128,11 @@ void AEntity::S_HandleEfficiencyChange(float Change)
 EEntityType AEntity::GetEntityType() const
 {
 	return EEntityType::Other;
+}
+
+EAffiliation AEntity::GetAffiliation() const
+{
+	return Affiliation;
 }
 
 // ----------------- Progresser ------------------------

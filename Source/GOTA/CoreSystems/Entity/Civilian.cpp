@@ -1,5 +1,4 @@
 ﻿#include "Civilian.h"
-#include "Components/StateTreeComponent.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 #include "GOTA/CoreSystems/Faction/Building/ResourceStorage.h"
@@ -8,7 +7,6 @@
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "Net/UnrealNetwork.h"
-#include "Net/Core/PushModel/PushModel.h"
 
 void ACivilian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -48,14 +46,7 @@ void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 		GetOriginBuilding()->GetEfficiency() *
 		GetOriginBuilding()->GetSettings()->CivilianStorageLimitIncreasePerEfficiencyPercentage);
 }
-
-void ACivilian::S_HandleDeath()
-{
-	if (!GetCurrentTile()) return;
-	GetCurrentTile()->RemoveCivilian(this);
-}
-
-// ----------------- Working ------------------------
+// ----------------- Utility ------------------------
 
 EEntityType ACivilian::GetEntityType() const
 {

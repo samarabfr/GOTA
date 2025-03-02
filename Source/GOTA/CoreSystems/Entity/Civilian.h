@@ -15,12 +15,8 @@ class GOTA_API ACivilian : public AEntity
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	// ----------------------- LifeCycle -----------------------
-
 protected:
 	ACivilian();
-
-	UFUNCTION()
-	virtual void S_HandleDeath() override;
 
 public:
 	virtual void S_Init(UBuilding* InBuilding, ATile* SpawnTile) override;
