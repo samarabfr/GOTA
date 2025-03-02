@@ -57,10 +57,8 @@ void AAbilityIndicator::Tick(float DeltaSeconds)
 
 void AAbilityIndicator::Activate()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Activating Ability Indicator"))
 	if (FX_IndicatorComponent)
 	{
-		//FX_IndicatorComponent->ResetSystem();
 		FX_IndicatorComponent->SetFloatParameter(FName("AgeSpeed"), 1.0f);
 		FX_IndicatorComponent->ActivateSystem();
 	}
@@ -68,7 +66,6 @@ void AAbilityIndicator::Activate()
 
 void AAbilityIndicator::Deactivate()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Deactivating Ability Indicator"))
 	if (FX_IndicatorComponent)
 	{
 		FX_IndicatorComponent->SetFloatParameter(FName("AgeSpeed"), 5.0f);
