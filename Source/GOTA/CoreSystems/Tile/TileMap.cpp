@@ -279,6 +279,8 @@ TArray<ATile*> ATileMap::FindTilesInRange(const TArray<ATile*>& Origin, TArray<i
 	DistanceMap.SetNumZeroed(Tiles.Num()); // Distances need to seen as +1 because i cant do setnum with -1
 	for (const ATile* FrontierTile : Frontier)
 	{
+		if (!FrontierTile)
+			return TArray<ATile*>();
 		DistanceMap[FrontierTile->HexCoords.Q * Size.R + FrontierTile->HexCoords.R] = 1;
 	}
 	TArray<ATile*> FoundTargets;
