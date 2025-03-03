@@ -207,7 +207,7 @@ void ATile::OnRep_Building(UBuilding* OldBuilding)
 {
 	if (OldBuilding)
 	{
-		OldBuilding->S_PrepareDestroy();
+		OldBuilding->C_PrepareDestroy();
 	}
 	if (Building)
 	{
