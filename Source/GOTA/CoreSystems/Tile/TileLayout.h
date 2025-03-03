@@ -24,5 +24,8 @@ struct FTileLayout : public FTableRowBase
 	TArray<bool> RiverConnections;
 
 	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	FGameplayTag LayoutTag;
+
+	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
 	TArray<USpawnLayoutDataAsset*> SpawnLayouts;
 };

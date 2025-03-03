@@ -524,6 +524,7 @@ void ATile::InitTileLayout()
 	if (!NewLayout) return;
 	TileLayout = NewLayout;
 	HexagonMesh = NewLayout->HexagonMesh;
+	GameplayTags.AddTag(TileLayout->LayoutTag);
 	InitHexagonMesh();
 	ServerInitTileRotation();
 	ValidateSpawnLayout();
