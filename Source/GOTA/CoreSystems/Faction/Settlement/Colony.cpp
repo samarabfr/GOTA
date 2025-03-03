@@ -45,7 +45,10 @@ void AColony::FigureOutBuilding()
 	if (!Tile) return;
 	UBuildingSettings* NewBuilding = SelectNewBuilding();
 	if (!NewBuilding) return;
-	Tile->S_TryBuild(NewBuilding, this);
+	if (Tile && Tile->CanBuild(NewBuilding, this))
+	{
+		Tile->S_TryBuild(NewBuilding, this);
+	}
 }
 
 bool AColony::ShouldBuild() const
