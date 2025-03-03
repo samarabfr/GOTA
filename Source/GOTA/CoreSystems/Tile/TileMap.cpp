@@ -269,6 +269,7 @@ ATile* ATileMap::FindNearestTileInRange(const TArray<ATile*>& Origin,
                                         TArray<int8>& OutDistanceMap, int32 Range, const EEntityType EntityType,
                                         const std::function<bool(const ATile*)>& Condition) const
 {
+	TRACE_CPUPROFILER_EVENT_SCOPE_STR("ATileMap::FindNearestTileInRange");
 	if (Origin.IsEmpty()) return nullptr;
 	TArray<ATile*> Frontier = Origin;
 
@@ -280,12 +281,14 @@ ATile* ATileMap::FindNearestTileInRange(const TArray<ATile*>& Origin,
 	}
 	TArray<ATile*> FoundTargets;
 	int8 Distance = 2;
+	// Find all frontier neighboring tiles
 	// Frontier.IsEmpty() = flood fill finished
 	// FoundTargets.IsEmpty() = terminate early as soon as targets have been found, because we only want the nearest
 	// TODO: make nearest tile (early termination) optional
 	// (optional) Distance - 1 <= Range => is in range
 	while (!Frontier.IsEmpty() && FoundTargets.IsEmpty() && (Range < 0 || Distance - 1 <= Range))
 	{
+		TRACE_CPUPROFILER_EVENT_SCOPE_STR("ATileMap::FindNearestTileInRange->FindAllNeighboringTiles");
 		TArray<ATile*> NewFrontier;
 		for (ATile* Current : Frontier)
 		{
@@ -300,9 +303,9 @@ ATile* ATileMap::FindNearestTileInRange(const TArray<ATile*>& Origin,
 				// Neighbor => is ocean
 				// (optional) Neighbor->AcceptsEntity(EntityType) => valid path for the entity type
 				// DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] == 0 => has not been explored already
-				if (Neighbor
-					&& (EntityType == EEntityType::None || Neighbor->AcceptsEntity(EntityType))
-					&& DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] == 0)
+				if (Neighbor &&
+					DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] == 0 &&
+					(EntityType == EEntityType::None || Neighbor->AcceptsEntity(EntityType)))
 				{
 					NewFrontier.Add(Neighbor);
 					DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] = Distance;
@@ -356,11 +359,14 @@ TArray<ATile*> ATileMap::FindPathToNearestTileInRangeFromSearchOrigin(const TArr
                                                                       const std::function<bool(const ATile*)>&
                                                                       Condition) const
 {
+	TRACE_CPUPROFILER_EVENT_SCOPE_STR("ATileMap::FindPathToNearestTileInRangeFromSearchOrigin");
 	if (SearchOrigin.IsEmpty() || PathOrigin.IsEmpty()) return TArray<ATile*>();
 	TArray<int8> DistanceMap;
 	ATile* Current = FindNearestTileInRange(SearchOrigin, DistanceMap, Range, EntityType, Condition);
+	if (!Current)
+			return TArray<ATile*>();
 	TArray<ATile*> Path;
-	while (PathOrigin.Contains(Current))
+	while (!PathOrigin.Contains(Current))
 	{
 		Path.Add(Current);
 		int8 CurrentDistance = DistanceMap[Current->HexCoords.Q * Size.R + Current->HexCoords.R];
@@ -372,6 +378,8 @@ TArray<ATile*> ATileMap::FindPathToNearestTileInRangeFromSearchOrigin(const TArr
 			if (NeighborDistance != 0 && NeighborDistance < CurrentDistance)
 				PossibleNextCurrents.Add(Neighbor);
 		}
+		if (PossibleNextCurrents.IsEmpty())
+			return TArray<ATile*>();
 		Current = PossibleNextCurrents[FMath::RandRange(0, PossibleNextCurrents.Num() - 1)];
 	}
 	return Path;

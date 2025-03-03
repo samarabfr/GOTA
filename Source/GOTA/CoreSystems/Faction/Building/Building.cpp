@@ -216,7 +216,6 @@ bool UBuilding::IsProtected() const
 			ClaimedTile->GetBuilding() &&
 			ClaimedTile->GetBuilding()->Settings->bDefenseEnabled)
 		{
-			TRACE_CPUPROFILER_EVENT_SCOPE_STR("UBuilding::IsProtected Defensebuilding");
 			const int32 TileDistance = Tile->GetPathTileDistanceTo(ClaimedTile);
 			if (TileDistance > 0 && ClaimedTile->GetBuilding()->Settings->RavageProtectionRange >= TileDistance)
 			{
