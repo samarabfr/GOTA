@@ -230,8 +230,23 @@ void ATileMap::Delete()
 
 // -----------------  Tilefinding ------------------------
 
+
+TMap<ATile*, int8> ATileMap::FindAllTilesWithRangesInRange(const TArray<ATile*>& Origin, int32 Range,
+                                                           const EEntityType EntityType,
+                                                           const std::function<bool(const ATile*)>& Condition) const
+{
+	TArray<int8> DistanceMap;
+	TArray<ATile*> AllTiles = FindTilesInRange(Origin, DistanceMap, Range, EntityType, false, Condition);
+	TMap<ATile*, int8> AllTilesWithRanges;
+	for (ATile* Tile : AllTiles)
+	{
+		AllTilesWithRanges.Add(Tile, DistanceMap[Tile->HexCoords.Q * Size.R + Tile->HexCoords.R] - 1);
+	}
+	return AllTilesWithRanges;
+}
+
 ATile* ATileMap::FindNearestTile(ATile* Origin, EEntityType EntityType,
-								 const std::function<bool(const ATile*)>& Condition) const
+                                 const std::function<bool(const ATile*)>& Condition) const
 {
 	if (!Origin) return nullptr;
 
@@ -241,14 +256,14 @@ ATile* ATileMap::FindNearestTile(ATile* Origin, EEntityType EntityType,
 }
 
 ATile* ATileMap::FindNearestTile(const TArray<ATile*>& Origin, const EEntityType EntityType,
-								 const std::function<bool(const ATile*)>& Condition) const
+                                 const std::function<bool(const ATile*)>& Condition) const
 {
 	return FindNearestTileInRange(Origin, -1, EntityType, Condition);
 }
 
 ATile* ATileMap::FindNearestTileInRange(ATile* Origin, int32 Range,
-										EEntityType EntityType,
-										const std::function<bool(const ATile*)>& Condition) const
+                                        EEntityType EntityType,
+                                        const std::function<bool(const ATile*)>& Condition) const
 {
 	if (!Origin || Range < 0) return nullptr;
 	if (Range == 0) return Condition(Origin) ? Origin : nullptr;
@@ -259,7 +274,7 @@ ATile* ATileMap::FindNearestTileInRange(ATile* Origin, int32 Range,
 }
 
 ATile* ATileMap::FindNearestTileInRange(const TArray<ATile*>& Origin, int32 Range, const EEntityType EntityType,
-										const std::function<bool(const ATile*)>& Condition) const
+                                        const std::function<bool(const ATile*)>& Condition) const
 {
 	TArray<int8> _;
 	return FindNearestTileInRange(Origin, _, Range, EntityType, Condition);
@@ -269,12 +284,21 @@ ATile* ATileMap::FindNearestTileInRange(const TArray<ATile*>& Origin,
                                         TArray<int8>& OutDistanceMap, int32 Range, const EEntityType EntityType,
                                         const std::function<bool(const ATile*)>& Condition) const
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("ATileMap::FindNearestTileInRange");
-	if (Origin.IsEmpty()) return nullptr;
+	TArray<ATile*> FoundTargets = FindTilesInRange(Origin, OutDistanceMap, Range, EntityType, true, Condition);
+	if (FoundTargets.IsEmpty()) return nullptr;
+	return FoundTargets[FMath::RandRange(0, FoundTargets.Num() - 1)];
+}
+
+TArray<ATile*> ATileMap::FindTilesInRange(const TArray<ATile*>& Origin, TArray<int8>& OutDistanceMap, int32 Range,
+                                          const EEntityType EntityType, bool bTerminateEarly,
+                                          const std::function<bool(const ATile*)>& Condition) const
+{
+	TRACE_CPUPROFILER_EVENT_SCOPE_STR("ATileMap::FindTilesInRange");
+	if (Origin.IsEmpty()) return TArray<ATile*>();
 	TArray<ATile*> Frontier = Origin;
 
 	TArray<int8> DistanceMap;
-	DistanceMap.SetNumZeroed(Tiles.Num());
+	DistanceMap.SetNumZeroed(Tiles.Num()); // Distances need to seen as +1 because i cant do setnum with -1
 	for (const ATile* FrontierTile : Frontier)
 	{
 		DistanceMap[FrontierTile->HexCoords.Q * Size.R + FrontierTile->HexCoords.R] = 1;
@@ -284,19 +308,14 @@ ATile* ATileMap::FindNearestTileInRange(const TArray<ATile*>& Origin,
 	// Find all frontier neighboring tiles
 	// Frontier.IsEmpty() = flood fill finished
 	// FoundTargets.IsEmpty() = terminate early as soon as targets have been found, because we only want the nearest
-	// TODO: make nearest tile (early termination) optional
 	// (optional) Distance - 1 <= Range => is in range
-	while (!Frontier.IsEmpty() && FoundTargets.IsEmpty() && (Range < 0 || Distance - 1 <= Range))
+	while (!Frontier.IsEmpty() &&
+		(!bTerminateEarly || FoundTargets.IsEmpty()) &&
+		(Range < 0 || Distance <= Range + 1))
 	{
-		TRACE_CPUPROFILER_EVENT_SCOPE_STR("ATileMap::FindNearestTileInRange->FindAllNeighboringTiles");
 		TArray<ATile*> NewFrontier;
 		for (ATile* Current : Frontier)
 		{
-			// check if tile meets the conditions
-			if (Condition(Current))
-			{
-				FoundTargets.Add(Current);
-			}
 			// search for the next tiles
 			for (ATile* Neighbor : Current->Neighbors)
 			{
@@ -309,6 +328,11 @@ ATile* ATileMap::FindNearestTileInRange(const TArray<ATile*>& Origin,
 				{
 					NewFrontier.Add(Neighbor);
 					DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] = Distance;
+					// check if tile meets the conditions
+					if (Condition(Neighbor))
+					{
+						FoundTargets.Add(Neighbor);
+					}
 				}
 			}
 		}
@@ -316,8 +340,7 @@ ATile* ATileMap::FindNearestTileInRange(const TArray<ATile*>& Origin,
 		Frontier = NewFrontier;
 	}
 	OutDistanceMap = DistanceMap;
-	if (FoundTargets.IsEmpty()) return nullptr;
-	return FoundTargets[FMath::RandRange(0, FoundTargets.Num() - 1)];
+	return FoundTargets;
 }
 
 // -----------------  Pathfinding ------------------------
@@ -364,7 +387,7 @@ TArray<ATile*> ATileMap::FindPathToNearestTileInRangeFromSearchOrigin(const TArr
 	TArray<int8> DistanceMap;
 	ATile* Current = FindNearestTileInRange(SearchOrigin, DistanceMap, Range, EntityType, Condition);
 	if (!Current)
-			return TArray<ATile*>();
+		return TArray<ATile*>();
 	TArray<ATile*> Path;
 	while (!PathOrigin.Contains(Current))
 	{

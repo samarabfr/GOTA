@@ -167,10 +167,10 @@ bool ACivilian::S_TryFindPathToWorkTileClosestToSettlement()
 			}
 		}
 	}
-	TArray<ATile*> SearchOrigin;
-	SearchOrigin.Add(GetCurrentTile());
+	TArray<ATile*> PathOrigin;
+	PathOrigin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTileFromSearchOrigin(
-		GetOriginBuilding()->GetSettlement()->ClaimedTiles, SearchOrigin
+		GetOriginBuilding()->GetSettlement()->ClaimedTiles, PathOrigin
 		, EEntityType::Civilian,
 		[this](const ATile* Tile)
 		{

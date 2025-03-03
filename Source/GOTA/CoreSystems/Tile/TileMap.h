@@ -78,42 +78,59 @@ public:
 
 	// -----------------  Tilefinding -----------------------
 public:
+	TMap<ATile*, int8> FindAllTilesWithRangesInRange(const TArray<ATile*>& Origin,
+	                                                 int32 Range = -1,
+	                                                 const EEntityType EntityType = EEntityType::None,
+	                                                 const std::function<bool(const ATile*)>& Condition = [
+		                                                 ](const ATile*)
+	                                                 {
+		                                                 return true;
+	                                                 }) const;
 	ATile* FindNearestTile(ATile* Origin,
-	                       EEntityType EntityType,
+	                       EEntityType EntityType = EEntityType::None,
 	                       const std::function<bool(const ATile*)>& Condition = [](const ATile*)
 	                       {
 		                       return true;
 	                       }) const;
 	ATile* FindNearestTile(const TArray<ATile*>& Origin,
-							   EEntityType EntityType,
-							   const std::function<bool(const ATile*)>& Condition = [](const ATile*)
-							   {
-								   return true;
-							   }) const;
+	                       EEntityType EntityType = EEntityType::None,
+	                       const std::function<bool(const ATile*)>& Condition = [](const ATile*)
+	                       {
+		                       return true;
+	                       }) const;
 	ATile* FindNearestTileInRange(ATile* Origin,
-								  int32 Range = -1,
-								  const EEntityType EntityType = EEntityType::None,
-								  const std::function<bool(const ATile*)>& Condition = [](const ATile*)
-								  {
-									  return true;
-								  }) const;
+	                              int32 Range = -1,
+	                              const EEntityType EntityType = EEntityType::None,
+	                              const std::function<bool(const ATile*)>& Condition = [](const ATile*)
+	                              {
+		                              return true;
+	                              }) const;
 	ATile* FindNearestTileInRange(const TArray<ATile*>& Origin,
-							  int32 Range = -1,
-							  const EEntityType EntityType = EEntityType::None,
-							  const std::function<bool(const ATile*)>& Condition = [](const ATile*)
-							  {
-								  return true;
-							  }) const;
+	                              int32 Range = -1,
+	                              const EEntityType EntityType = EEntityType::None,
+	                              const std::function<bool(const ATile*)>& Condition = [](const ATile*)
+	                              {
+		                              return true;
+	                              }) const;
 
 private:
 	ATile* FindNearestTileInRange(const TArray<ATile*>& Origin,
-								  TArray<int8>& OutDistanceMap,
-								  int32 Range = -1,
-								  const EEntityType EntityType = EEntityType::None,
-								  const std::function<bool(const ATile*)>& Condition = [](const ATile*)
-								  {
-									  return true;
-								  }) const;
+	                              TArray<int8>& OutDistanceMap,
+	                              int32 Range = -1,
+	                              const EEntityType EntityType = EEntityType::None,
+	                              const std::function<bool(const ATile*)>& Condition = [](const ATile*)
+	                              {
+		                              return true;
+	                              }) const;
+	TArray<ATile*> FindTilesInRange(const TArray<ATile*>& Origin,
+	                                TArray<int8>& OutDistanceMap,
+	                                int32 Range = -1,
+	                                const EEntityType EntityType = EEntityType::None,
+	                                bool bTerminateEarly = false,
+	                                const std::function<bool(const ATile*)>& Condition = [](const ATile*)
+	                                {
+		                                return true;
+	                                }) const;
 
 	// -----------------  Pathfinding ------------------------
 public:

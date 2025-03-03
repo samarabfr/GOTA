@@ -18,7 +18,7 @@ class GOTA_API UBuildingDefense : public UBuilding
 private:
 	UBuildingDefense();
 public:
-	virtual void S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement) override;
+	virtual void S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement, AGS_Ingame* InGameState) override;
 	
 	virtual void S_Tick(float DeltaSeconds) override;
 	virtual void C_Tick(const float DeltaSeconds) override;
@@ -51,4 +51,9 @@ public:
 	bool HasEnemyOnNeighboringTile() const;
 	void S_StartAttacking();
 	virtual void S_BuildingDefenseTakeDamage(int32 Damage) override;
+
+	
+	// ----------------- Protection ------------------------
+protected:
+	virtual void S_FinishConstruction() override;
 };

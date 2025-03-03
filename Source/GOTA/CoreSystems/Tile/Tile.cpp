@@ -311,7 +311,7 @@ bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* B
 		Building = NewObject<UBuildingDefense>();
 	else
 		Building = NewObject<UBuilding>();
-	Building->S_Init(BuildingDataAsset, this, Builder);
+	Building->S_Init(BuildingDataAsset, this, Builder, GameState);
 	AddReplicatedSubObject(Building);
 	AddReplicatedSubObject(Building->GetPopulation());
 

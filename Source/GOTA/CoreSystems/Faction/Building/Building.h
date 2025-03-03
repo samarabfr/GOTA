@@ -6,6 +6,7 @@
 
 #include "Building.generated.h"
 
+class AGS_Ingame;
 class UResourceStorage;
 class UProduction;
 class AArmy;
@@ -30,7 +31,8 @@ protected:
 	UBuilding();
 
 public:
-	virtual void S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement);
+	virtual void S_Init(UBuildingSettings* InSettings, ATile* InTile,
+	                    ASettlement* InSettlement, AGS_Ingame* InGameState);
 	void C_Init();
 
 	virtual void S_Tick(float DeltaSeconds);
@@ -44,12 +46,16 @@ private:
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Building")
 	UBuildingSettings* Settings;
 
+	UPROPERTY()
+	AGS_Ingame* GameState;
+
 	UPROPERTY(Replicated)
 	ATile* Tile;
 
 public:
 	UBuildingSettings* GetSettings() const { return Settings; }
 	ATile* GetTile() const { return Tile; }
+	AGS_Ingame* S_GetGameState() const { return GameState; }
 
 	// --------------------------------------- Settlement ---------------------------------------
 private:
@@ -128,7 +134,7 @@ private:
 public:
 	UDELEGATE()
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FOnProductionPerSecondChangedSig, float, Change, float, NewValue,
-	                                             EProductionType, ProductionType);
+	                                               EProductionType, ProductionType);
 
 	FOnProductionPerSecondChangedSig OnProductionPerSecondChanged;
 	float GetProductionPerSecond() const;
@@ -148,9 +154,19 @@ public:
 	EResource GetConsumptionType() const;
 
 	// --------------------- Protection ---------------------
+private:
+	UPROPERTY(VisibleInstanceOnly, Replicated)
+	TArray<TWeakObjectPtr<UBuilding>> Protectors;
+
+	UPROPERTY(VisibleInstanceOnly)
+	int32 MaxProtectionSearchRange = 3;
+
+	void S_CheckForProtection();
 
 public:
 	bool IsProtected() const;
+	void S_RegisterProtector(UBuilding* Protector);
+	void S_UnregisterProtector(UBuilding* Protector);
 
 	// --------------------- Army ---------------------
 
