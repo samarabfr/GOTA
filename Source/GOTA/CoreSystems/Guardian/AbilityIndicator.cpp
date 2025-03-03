@@ -57,6 +57,7 @@ void AAbilityIndicator::BeginPlay()
 	StonePlateMesh->SetVisibility(false);
 	FrontIcon->SetVisibility(false);
 	BackIcon->SetVisibility(false);
+	ValidityMesh->SetVisibility(false);
 }
 
 void AAbilityIndicator::Tick(float DeltaSeconds)
@@ -118,6 +119,9 @@ void AAbilityIndicator::SetTarget(const FAbilityTarget& NewAbilityTarget)
 		Rotator->SetRelativeLocation(FVector(0, 0, 800));
 		GuardianNiagaraEffect->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));
 		ValidityMesh->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));
+	} else
+	{
+		Deactivate();
 	}
 }
 
@@ -142,6 +146,7 @@ void AAbilityIndicator::Activate()
 	StonePlateMesh->SetVisibility(true);
 	FrontIcon->SetVisibility(true);
 	BackIcon->SetVisibility(true);
+	ValidityMesh->SetVisibility(true);
 }
 
 void AAbilityIndicator::Deactivate()
@@ -154,4 +159,5 @@ void AAbilityIndicator::Deactivate()
 	StonePlateMesh->SetVisibility(false);
 	FrontIcon->SetVisibility(false);
 	BackIcon->SetVisibility(false);
+	ValidityMesh->SetVisibility(false);
 }
