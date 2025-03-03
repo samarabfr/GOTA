@@ -76,7 +76,6 @@ void AMouseUtils::Tick(float DeltaSeconds)
 		if (HitResult.GetActor() != HoverActor)
 		{
 			HoverActor = HitResult.GetActor();
-			UE_LOG(LogTemp, Warning, TEXT("test: %s"), *HoverActor->GetName())
 			OnHoverActorChanged.Broadcast(HoverActor);
 		}
 	}
