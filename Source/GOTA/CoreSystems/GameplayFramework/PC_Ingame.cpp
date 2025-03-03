@@ -171,6 +171,11 @@ void APC_Ingame::StartTargeting(AAbility* Ability)
 {
 	CurrentlyTargeting = Ability;
 	if (!AbilityIndicator.Get()) return;
+
+	if (Guardian)
+		AbilityIndicator->SetGuardian(Guardian);
+
+	AbilityIndicator->SetAbility(Ability);
 	AbilityIndicator->Activate();
 }
 

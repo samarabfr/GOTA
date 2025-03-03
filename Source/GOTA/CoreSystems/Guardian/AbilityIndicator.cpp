@@ -2,8 +2,14 @@
 
 #include "AbilityIndicator.h"
 
+#include "Ability.h"
+#include "AbilitySettings.h"
+#include "Guardian.h"
+#include "GuardianSettings.h"
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
+#include "Components/WidgetComponent.h"
+#include "GOTA/UI/Widgets/GotaImage.h"
 
 AAbilityIndicator::AAbilityIndicator()
 {
@@ -21,32 +27,30 @@ AAbilityIndicator::AAbilityIndicator()
 	Rotator = CreateDefaultSubobject<USceneComponent>("Rotator");
 	Rotator->SetupAttachment(RootComponent);
 
-	StonePlateMesh = CreateDefaultSubobject<UStaticMeshComponent>("StonePlate");
+	StonePlateMesh = CreateDefaultSubobject<UStaticMeshComponent>("Stone Plate");
 	StonePlateMesh->SetupAttachment(Rotator);
 
-	FrontIcon = CreateDefaultSubobject<UStaticMeshComponent>("FrontIcon");
+	FrontIcon = CreateDefaultSubobject<UWidgetComponent>("Front Icon");
 	FrontIcon->SetupAttachment(Rotator);
 
-	BackIcon = CreateDefaultSubobject<UStaticMeshComponent>("BackIcon");
+	BackIcon = CreateDefaultSubobject<UWidgetComponent>("Back Icon");
 	BackIcon->SetupAttachment(Rotator);
+	
+	GuardianNiagaraEffect = CreateDefaultSubobject<UNiagaraComponent>("Guardian Effect");
+	GuardianNiagaraEffect->SetupAttachment(RootComponent);
 }
 
 void AAbilityIndicator::BeginPlay()
 {
 	Super::BeginPlay();
-
-	if (IconMaterial)
+	IconWidget = Cast<UGotaImage>(FrontIcon->GetWidget());
+	if (IconWidget)
 	{
-		UMaterialInstanceDynamic* DynamicMat = UMaterialInstanceDynamic::Create(IconMaterial, this);
-		FrontIcon->SetMaterial(0, IconMaterial);
-		BackIcon->SetMaterial(0, IconMaterial);
+		BackIcon->SetWidget(IconWidget);
 	}
-
-	FX_IndicatorComponent = NewObject<UNiagaraComponent>(this);
-	FX_IndicatorComponent->SetAsset(NiagaraSystem);
-	FX_IndicatorComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
-	FX_IndicatorComponent->RegisterComponent();
-	FX_IndicatorComponent->Deactivate();
+	StonePlateMesh->SetVisibility(false);
+	FrontIcon->SetVisibility(false);
+	BackIcon->SetVisibility(false);
 }
 
 void AAbilityIndicator::Tick(float DeltaSeconds)
@@ -55,20 +59,52 @@ void AAbilityIndicator::Tick(float DeltaSeconds)
 	Rotator->AddLocalRotation(FRotator(0, RotationSpeed * DeltaSeconds, 0));
 }
 
+void AAbilityIndicator::SetGuardian(AGuardian* Guardian)
+{
+	if (!Guardian) return;
+
+	UNiagaraSystem* GuardianSystem = Guardian->GetSettings()->GetAbilityIndicatorEffect();
+	UNiagaraSystem* CurrentSystem = GuardianNiagaraEffect->GetAsset();
+	if (GuardianSystem && GuardianSystem != CurrentSystem)
+	{
+		GuardianNiagaraEffect->SetAsset(GuardianSystem);
+	}
+}
+
+void AAbilityIndicator::SetAbility(AAbility* Ability)
+{
+	if (!Ability) return;
+	UTexture2D* Icon = Ability->GetSettings()->GetIcon();
+	if (Icon && IconWidget)
+	{
+		IconWidget->SetImage(Icon);
+	}
+}
+
+void AAbilityIndicator::SetTarget(FAbilityTarget NewAbilityTarget)
+{
+}
+
 void AAbilityIndicator::Activate()
 {
-	if (FX_IndicatorComponent)
+	if (GuardianNiagaraEffect)
 	{
-		FX_IndicatorComponent->SetFloatParameter(FName("AgeSpeed"), 1.0f);
-		FX_IndicatorComponent->ActivateSystem();
+		GuardianNiagaraEffect->SetFloatParameter(FName("AgeSpeed"), 1.0f);
+		GuardianNiagaraEffect->ActivateSystem();
 	}
+	StonePlateMesh->SetVisibility(true);
+	FrontIcon->SetVisibility(true);
+	BackIcon->SetVisibility(true);
 }
 
 void AAbilityIndicator::Deactivate()
 {
-	if (FX_IndicatorComponent)
+	if (GuardianNiagaraEffect)
 	{
-		FX_IndicatorComponent->SetFloatParameter(FName("AgeSpeed"), 5.0f);
-		FX_IndicatorComponent->Deactivate();
+		GuardianNiagaraEffect->SetFloatParameter(FName("AgeSpeed"), 5.0f);
+		GuardianNiagaraEffect->Deactivate();
 	}
+	StonePlateMesh->SetVisibility(false);
+	FrontIcon->SetVisibility(false);
+	BackIcon->SetVisibility(false);
 }
