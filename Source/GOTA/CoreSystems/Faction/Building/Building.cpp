@@ -209,12 +209,14 @@ EResource UBuilding::GetConsumptionType() const
 
 bool UBuilding::IsProtected() const
 {
+	TRACE_CPUPROFILER_EVENT_SCOPE_STR("UBuilding::IsProtected");
 	for (ATile* ClaimedTile : Settlement->ClaimedTiles)
 	{
 		if (ClaimedTile &&
 			ClaimedTile->GetBuilding() &&
 			ClaimedTile->GetBuilding()->Settings->bDefenseEnabled)
 		{
+			TRACE_CPUPROFILER_EVENT_SCOPE_STR("UBuilding::IsProtected Defensebuilding");
 			const int32 TileDistance = Tile->GetPathTileDistanceTo(ClaimedTile);
 			if (TileDistance > 0 && ClaimedTile->GetBuilding()->Settings->RavageProtectionRange >= TileDistance)
 			{

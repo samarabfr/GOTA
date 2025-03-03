@@ -100,7 +100,7 @@ void ATile::Delete()
 
 TArray<ATile*> ATile::GetPathTo(ATile* Target)
 {
-	return ATileMap::GetPath(this, Target);
+	return GameState->GetTileMap()->FindPathToTile(this, Target);
 }
 
 int32 ATile::GetPathTileDistanceTo(ATile* Target)

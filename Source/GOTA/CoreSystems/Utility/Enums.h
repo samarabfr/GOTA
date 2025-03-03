@@ -107,9 +107,10 @@ enum class EArmyMode : uint8
 UENUM()
 enum class EEntityType : uint8
 {
-	Other UMETA(DisplayName = "Other"),
+	None UMETA(DisplayName = "None"),
 	Civilian UMETA(DisplayName = "Civilian"),
-	Army UMETA(DisplayName = "Military")
+	Army UMETA(DisplayName = "Military"),
+	Other UMETA(DisplayName = "Other")
 };
 
 UENUM()

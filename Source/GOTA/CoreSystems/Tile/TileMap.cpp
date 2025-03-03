@@ -206,533 +206,6 @@ ATile* ATileMap::GetRandomTile()
 	return nullptr;
 }
 
-ATile* ATileMap::GetRandomTileInRange(ATile* Origin, int32 Range)
-{
-	if (!Origin || Range < 0) return nullptr;
-	if (Range == 0) return Origin;
-
-	TArray<ATile*> Frontier;
-	Frontier.Add(Origin);
-
-	TArray<int8> DistanceMap;
-	DistanceMap.SetNumZeroed(Tiles.Num());
-	DistanceMap[Origin->HexCoords.Q * Size.R + Origin->HexCoords.R] = 1;
-	TArray<ATile*> FoundTargets;
-	int8 Distance = 1;
-	while (!Frontier.IsEmpty() && Distance - 1 <= Range)
-	{
-		TArray<ATile*> NewFrontier;
-		for (ATile* Current : Frontier)
-		{
-			FoundTargets.Add(Current);
-			for (ATile* Neighbor : Current->Neighbors)
-			{
-				if (Neighbor && DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] == 0)
-				{
-					NewFrontier.Add(Neighbor);
-					DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] = Distance;
-				}
-			}
-		}
-		++Distance;
-		Frontier = NewFrontier;
-	}
-	if (FoundTargets.IsEmpty()) return nullptr;
-	return FoundTargets[FMath::RandRange(0, FoundTargets.Num() - 1)];
-}
-
-ATile* ATileMap::FindNearestTileInRange(ATile* Origin, int32 Range,
-                                        const std::function<bool(const ATile*)>& Condition) const
-{
-	if (!Origin || Range < 0) return nullptr;
-	if (Range == 0) return Condition(Origin) ? Origin : nullptr;
-
-	TArray<ATile*> Frontier;
-	Frontier.Add(Origin);
-
-	TArray<int8> DistanceMap;
-	DistanceMap.SetNumZeroed(Tiles.Num());
-	DistanceMap[Origin->HexCoords.Q * Size.R + Origin->HexCoords.R] = 1;
-	TArray<ATile*> FoundTargets;
-	int8 Distance = 1;
-	while (!Frontier.IsEmpty() && FoundTargets.IsEmpty() && Distance - 1 <= Range)
-	{
-		TArray<ATile*> NewFrontier;
-		for (ATile* Current : Frontier)
-		{
-			if (Condition(Current))
-			{
-				FoundTargets.Add(Current);
-			}
-			for (ATile* Neighbor : Current->Neighbors)
-			{
-				if (Neighbor
-					&& DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] == 0)
-				{
-					NewFrontier.Add(Neighbor);
-					DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] = Distance;
-				}
-			}
-		}
-		++Distance;
-		Frontier = NewFrontier;
-	}
-	if (FoundTargets.IsEmpty()) return nullptr;
-	return FoundTargets[FMath::RandRange(0, FoundTargets.Num() - 1)];
-}
-
-TArray<ATile*> ATileMap::FindPathToNearestTile(ATile* Origin, const EEntityType EntityType,
-                                               const std::function<bool(const ATile*)>& Condition = [](const ATile*)
-                                               {
-	                                               return true;
-                                               }) const
-{
-	if (!Origin) return TArray<ATile*>();
-	TArray<ATile*> Frontier;
-	Frontier.Add(Origin);
-
-	TArray<int8> DistanceMap;
-	DistanceMap.SetNumZeroed(Tiles.Num());
-	DistanceMap[Origin->HexCoords.Q * Size.R + Origin->HexCoords.R] = 1;
-	TArray<ATile*> FoundTargets;
-	int8 Distance = 2;
-	while (!Frontier.IsEmpty() && FoundTargets.IsEmpty())
-	{
-		TArray<ATile*> NewFrontier;
-		for (ATile* Current : Frontier)
-		{
-			if (Condition(Current))
-			{
-				FoundTargets.Add(Current);
-			}
-			for (ATile* Neighbor : Current->Neighbors)
-			{
-				if (Neighbor
-					&& Neighbor->AcceptsEntity(EntityType)
-					&& DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] == 0)
-				{
-					NewFrontier.Add(Neighbor);
-					DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] = Distance;
-				}
-			}
-		}
-		++Distance;
-		Frontier = NewFrontier;
-	}
-	if (FoundTargets.IsEmpty()) return TArray<ATile*>();
-	ATile* Current = FoundTargets[FMath::RandRange(0, FoundTargets.Num() - 1)];
-	TArray<ATile*> Path;
-	while (Current != Origin)
-	{
-		Path.Add(Current);
-		int8 CurrentDistance = DistanceMap[Current->HexCoords.Q * Size.R + Current->HexCoords.R];
-		TArray<ATile*> PossibleNextCurrents;
-		for (ATile* Neighbor : Current->Neighbors)
-		{
-			if (!Neighbor) continue;
-			int8 NeighborDistance = DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R];
-			if (NeighborDistance != 0 && NeighborDistance < CurrentDistance)
-				PossibleNextCurrents.Add(Neighbor);
-		}
-		Current = PossibleNextCurrents[FMath::RandRange(0, PossibleNextCurrents.Num() - 1)];
-	}
-	return Path;
-}
-
-TArray<ATile*> ATileMap::FindPathToNearestTile(const TArray<ATile*>& SearchOrigin, ATile* PathOrigin,
-                                               EEntityType EntityType,
-                                               const std::function<bool(const ATile*)>& Condition) const
-{
-	if (SearchOrigin.IsEmpty() || !PathOrigin) return TArray<ATile*>();
-	return GetPath(PathOrigin, FindNearestTile(SearchOrigin, EEntityType::Civilian, Condition));
-}
-
-ATile* ATileMap::FindNearestTile(const TArray<ATile*>& Origin, const EEntityType EntityType,
-                                 const std::function<bool(const ATile*)>& Condition) const
-{
-	if (Origin.IsEmpty()) return nullptr;
-	TArray<ATile*> Frontier = Origin;
-
-	TArray<int8> DistanceMap;
-	DistanceMap.SetNumZeroed(Tiles.Num());
-	for (const ATile* FrontierTile : Frontier)
-	{
-		DistanceMap[FrontierTile->HexCoords.Q * Size.R + FrontierTile->HexCoords.R] = 1;
-	}
-	TArray<ATile*> FoundTargets;
-	int8 Distance = 2;
-	while (!Frontier.IsEmpty() && FoundTargets.IsEmpty())
-	{
-		TArray<ATile*> NewFrontier;
-		for (ATile* Current : Frontier)
-		{
-			if (Condition(Current))
-			{
-				FoundTargets.Add(Current);
-			}
-			for (ATile* Neighbor : Current->Neighbors)
-			{
-				if (Neighbor
-					&& Neighbor->AcceptsEntity(EntityType)
-					&& DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] == 0)
-				{
-					NewFrontier.Add(Neighbor);
-					DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] = Distance;
-				}
-			}
-		}
-		++Distance;
-		Frontier = NewFrontier;
-	}
-	if (FoundTargets.IsEmpty()) return nullptr;
-	return FoundTargets[FMath::RandRange(0, FoundTargets.Num() - 1)];
-}
-
-TArray<ATile*> ATileMap::FindPathToNearestTileInRange(ATile* Origin, EEntityType EntityType, int32 Range,
-                                                      const std::function<bool(const ATile*)>& Condition) const
-{
-	if (!Origin) return TArray<ATile*>();
-	TArray<ATile*> Frontier;
-	Frontier.Add(Origin);
-
-	TArray<int8> DistanceMap;
-	DistanceMap.SetNumZeroed(Tiles.Num());
-	DistanceMap[Origin->HexCoords.Q * Size.R + Origin->HexCoords.R] = 1;
-	TArray<ATile*> FoundTargets;
-	int8 Distance = 2;
-	while (!Frontier.IsEmpty() && FoundTargets.IsEmpty() && Distance - 1 <= Range)
-	{
-		TArray<ATile*> NewFrontier;
-		for (ATile* Current : Frontier)
-		{
-			if (Condition(Current))
-			{
-				FoundTargets.Add(Current);
-			}
-			for (ATile* Neighbor : Current->Neighbors)
-			{
-				if (Neighbor
-					&& Neighbor->AcceptsEntity(EntityType)
-					&& DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] == 0)
-				{
-					NewFrontier.Add(Neighbor);
-					DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] = Distance;
-				}
-			}
-		}
-		++Distance;
-		Frontier = NewFrontier;
-	}
-	if (FoundTargets.IsEmpty()) return TArray<ATile*>();
-	ATile* Current = FoundTargets[FMath::RandRange(0, FoundTargets.Num() - 1)];
-	TArray<ATile*> Path;
-	while (Current != Origin)
-	{
-		Path.Add(Current);
-		int8 CurrentDistance = DistanceMap[Current->HexCoords.Q * Size.R + Current->HexCoords.R];
-		TArray<ATile*> PossibleNextCurrents;
-		for (ATile* Neighbor : Current->Neighbors)
-		{
-			if (!Neighbor) continue;
-			int8 NeighborDistance = DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R];
-			if (NeighborDistance != 0 && NeighborDistance < CurrentDistance)
-				PossibleNextCurrents.Add(Neighbor);
-		}
-		Current = PossibleNextCurrents[FMath::RandRange(0, PossibleNextCurrents.Num() - 1)];
-	}
-	return Path;
-}
-
-TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End)
-{
-	//https://www.redblobgames.com/pathfinding/a-star/introduction.html
-	TArray<ATile*> Frontier;
-	Frontier.Add(Start);
-	TMap<ATile*, ATile*> CameFrom;
-	CameFrom.Add(Start, nullptr);
-	// from flow field
-	while (!Frontier.IsEmpty())
-	{
-		ATile* Current = Frontier[0];
-		Frontier.Remove(Current);
-		if (Current == End)
-		{
-			// found target Tile
-			break;
-		}
-		for (ATile* Next : Current->Neighbors)
-		{
-			if (Next && !CameFrom.Contains(Next))
-			{
-				Frontier.Add(Next);
-				CameFrom.Add(Next, Current);
-			}
-		}
-	}
-	// reconstruct Path
-	if (!CameFrom.Contains(End))
-	{
-		return TArray<ATile*>();
-	}
-	ATile* Current = End;
-	TArray<ATile*> Path;
-	while (Current != Start)
-	{
-		Path.Add(Current);
-		Current = CameFrom[Current];
-	}
-	return Path;
-}
-
-TArray<ATile*> ATileMap::GetPath(ATile* Start, ATile* End, EEntityType EntityType)
-{
-	//https://www.redblobgames.com/pathfinding/a-star/introduction.html
-	TArray<ATile*> Frontier;
-	Frontier.Add(Start);
-	TMap<ATile*, ATile*> CameFrom;
-	CameFrom.Add(Start, nullptr);
-	// from flow field
-	while (!Frontier.IsEmpty())
-	{
-		ATile* Current = Frontier[0];
-		Frontier.Remove(Current);
-		if (Current == End)
-		{
-			// found target Tile
-			break;
-		}
-		for (ATile* Next : Current->Neighbors)
-		{
-			if (Next && Next->AcceptsEntity(EntityType) && !CameFrom.Contains(Next))
-			{
-				Frontier.Add(Next);
-				CameFrom.Add(Next, Current);
-			}
-		}
-	}
-	// reconstruct Path
-	if (!CameFrom.Contains(End))
-	{
-		return TArray<ATile*>();
-	}
-	ATile* Current = End;
-	TArray<ATile*> Path;
-	while (Current != Start)
-	{
-		Path.Add(Current);
-		Current = CameFrom[Current];
-	}
-	return Path;
-}
-
-TArray<ATile*> ATileMap::GetPathToNearestAffiliatedBuilding(ATile* Start, EAffiliation TargetAffiliation)
-{
-	//https://www.redblobgames.com/pathfinding/a-star/introduction.html
-	TArray<ATile*> Frontier;
-	Frontier.Add(Start);
-	TMap<ATile*, ATile*> CameFrom;
-	CameFrom.Add(Start, nullptr);
-	ATile* Target = nullptr;
-	// from flow field
-	while (!Frontier.IsEmpty())
-	{
-		ATile* Current = Frontier[0];
-		Frontier.Remove(Current);
-		// check if Current Tile is a valid Target
-		if (Current->GetBuilding()
-			&& Current->GetClaimant()
-			&& Current->GetClaimant()->GetAffiliation() == TargetAffiliation
-			&& Current->AcceptsArmy())
-		{
-			// found target Tile
-			Target = Current;
-			break;
-		}
-		// Add all Neighbors of Current tile to the Frontier, with Current Tile as CameFrom
-		for (ATile* Next : Current->Neighbors)
-		{
-			if (Next && Next->AcceptsArmy() && !CameFrom.Contains(Next))
-			{
-				Frontier.Add(Next);
-				CameFrom.Add(Next, Current);
-			}
-		}
-	}
-	// reconstruct Path
-	TArray<ATile*> Path;
-	if (!Target)
-	{
-		return Path;
-	}
-	ATile* Current = Target;
-	while (Current != Start)
-	{
-		Path.Add(Current);
-		Current = CameFrom[Current];
-	}
-	return Path;
-}
-
-int32 ATileMap::TryReduceEcoValue(ASettlement* Initiator, EEcoValue EcoValue, int32 Amount, int32 Threshold,
-                                  int32 MaxRange)
-{
-	int32 AmountReduced = 0;
-	TArray<ATile*> Border;
-	TArray<bool> AlreadyChecked;
-	AlreadyChecked.SetNum(Tiles.Num());
-	int32 ReducableCount = 0;
-	int8 HighestCount = 0;
-	int8 Range = 1;
-	// fill Border initially
-	for (ATile* ClaimedTile : Initiator->ClaimedTiles)
-	{
-		for (int32 i = 0; i < 6; ++i)
-		{
-			ATile* NeighborTile = ClaimedTile->Neighbors[i];
-			bool Checked = NeighborTile
-				               ? AlreadyChecked[ClaimedTile->Neighbors[i]->HexCoords.Q * Size.R
-					               + ClaimedTile->Neighbors[i]->HexCoords.R]
-				               : true;
-			if (!Checked && !NeighborTile->GetBuilding())
-			{
-				Border.Add(NeighborTile);
-				AlreadyChecked[ClaimedTile->Neighbors[i]->HexCoords.Q * Size.R
-					+ ClaimedTile->Neighbors[i]->HexCoords.R] = true;
-				int8 NeighborValue = 0;
-				switch (EcoValue)
-				{
-				case EEcoValue::Tree:
-					NeighborValue = NeighborTile->EcoValues->GetTrees();
-					break;
-				case EEcoValue::Forage:
-					NeighborValue = NeighborTile->EcoValues->GetForage();
-					break;
-				}
-				if (NeighborValue > Threshold)
-					ReducableCount += NeighborValue - Threshold;
-				if (NeighborValue > HighestCount)
-					HighestCount = NeighborValue;
-			}
-		}
-	}
-	// loop through borders and reduce EcoValue in range until we are done
-	while (Range < MaxRange && AmountReduced < Amount && !Border.IsEmpty())
-	{
-		int32 MissingCount = Amount - AmountReduced;
-		// if Border has enough Trees to fill the request we have to reduce them equally on the border
-		if (ReducableCount > MissingCount)
-		{
-			TArray<int8> TileValueReducedCount;
-			TileValueReducedCount.SetNum(Border.Num());
-			int8 TempThreshold = HighestCount;
-			// figure out how much each tile has to be reduced
-			// im not doing it every EcoValue one by one because it would trigger all OnEcoValueChange delegates
-			// for every individual EcoValue, even though we probably reduce a bunch of them
-			while (MissingCount > 0)
-			{
-				--TempThreshold;
-				for (int32 i = 0; i < Border.Num(); ++i)
-				{
-					int8 BorderTileEcoValue = 0;
-					switch (EcoValue)
-					{
-					case EEcoValue::Tree:
-						BorderTileEcoValue = Border[i]->EcoValues->GetTrees();
-						break;
-					case EEcoValue::Forage:
-						BorderTileEcoValue = Border[i]->EcoValues->GetForage();
-						break;
-					}
-					if (BorderTileEcoValue > TempThreshold)
-					{
-						++TileValueReducedCount[i];
-						--MissingCount;
-						if (MissingCount <= 0) break;
-					}
-				}
-			}
-			// Apply the EcoValue reduction
-			for (int32 i = 0; i < Border.Num(); ++i)
-			{
-				switch (EcoValue)
-				{
-				case EEcoValue::Tree:
-					Border[i]->EcoValues->SubtractTrees(TileValueReducedCount[i]);
-					break;
-				case EEcoValue::Forage:
-					Border[i]->EcoValues->SubtractForage(TileValueReducedCount[i]);
-					break;
-				}
-				AmountReduced += TileValueReducedCount[i];
-			}
-			return AmountReduced;
-		}
-		// Border has not enough EcoValue so we reduce all of the Border down to the Threshold
-		for (ATile* BorderTile : Border)
-		{
-			int32 Value = 0;
-			switch (EcoValue)
-			{
-			case EEcoValue::Tree:
-				Value = BorderTile->EcoValues->GetTrees();
-				break;
-			case EEcoValue::Forage:
-				Value = BorderTile->EcoValues->GetForage();
-				break;
-			}
-			if (Value > Threshold)
-			{
-				switch (EcoValue)
-				{
-				case EEcoValue::Tree:
-					BorderTile->EcoValues->SubtractTrees(Value - Threshold);
-					break;
-				case EEcoValue::Forage:
-					BorderTile->EcoValues->SubtractForage(Value - Threshold);
-					break;
-				}
-				AmountReduced += Value - Threshold;
-			}
-		}
-		// Refill Border with the next Range
-		TArray<ATile*> NewBorder;
-		for (ATile* BorderTile : Border)
-		{
-			for (int32 i = 0; i < 6; ++i)
-			{
-				ATile* NeighborTile = BorderTile->Neighbors[i];
-				bool Checked = NeighborTile
-					               ? AlreadyChecked[BorderTile->Neighbors[i]->HexCoords.Q * Size.R
-						               + BorderTile->Neighbors[i]->HexCoords.R]
-					               : true;
-				if (!Checked && !NeighborTile->GetBuilding())
-				{
-					NewBorder.Add(NeighborTile);
-					AlreadyChecked[BorderTile->Neighbors[i]->HexCoords.Q * Size.R
-						+ BorderTile->Neighbors[i]->HexCoords.R] = true;
-					int8 NeighborValue = 0;
-					switch (EcoValue)
-					{
-					case EEcoValue::Tree:
-						NeighborValue = NeighborTile->EcoValues->GetTrees();
-						break;
-					case EEcoValue::Forage:
-						NeighborValue = NeighborTile->EcoValues->GetForage();
-						break;
-					}
-					if (NeighborValue > Threshold)
-						ReducableCount += NeighborValue - Threshold;
-					if (NeighborValue > HighestCount)
-						HighestCount = NeighborValue;
-				}
-			}
-		}
-		Border = NewBorder;
-		++Range;
-	}
-	return AmountReduced;
-}
-
 void ATileMap::CountAllMaxEcoValues(int32& TotalMaxTrees, int32& TotalMaxForage)
 {
 	for (ATile* Tile : Tiles)
@@ -754,3 +227,154 @@ void ATileMap::Delete()
 	}
 	Destroy();
 }
+
+// -----------------  Tilefinding ------------------------
+
+ATile* ATileMap::FindNearestTile(ATile* Origin, EEntityType EntityType,
+								 const std::function<bool(const ATile*)>& Condition) const
+{
+	if (!Origin) return nullptr;
+
+	TArray<ATile*> OriginArray;
+	OriginArray.Add(Origin);
+	return FindNearestTile(OriginArray, EntityType, Condition);
+}
+
+ATile* ATileMap::FindNearestTile(const TArray<ATile*>& Origin, const EEntityType EntityType,
+								 const std::function<bool(const ATile*)>& Condition) const
+{
+	return FindNearestTileInRange(Origin, -1, EntityType, Condition);
+}
+
+ATile* ATileMap::FindNearestTileInRange(ATile* Origin, int32 Range,
+										EEntityType EntityType,
+										const std::function<bool(const ATile*)>& Condition) const
+{
+	if (!Origin || Range < 0) return nullptr;
+	if (Range == 0) return Condition(Origin) ? Origin : nullptr;
+
+	TArray<ATile*> OriginArray;
+	OriginArray.Add(Origin);
+	return FindNearestTileInRange(OriginArray, Range, EntityType, Condition);
+}
+
+ATile* ATileMap::FindNearestTileInRange(const TArray<ATile*>& Origin, int32 Range, const EEntityType EntityType,
+										const std::function<bool(const ATile*)>& Condition) const
+{
+	TArray<int8> _;
+	return FindNearestTileInRange(Origin, _, Range, EntityType, Condition);
+}
+
+ATile* ATileMap::FindNearestTileInRange(const TArray<ATile*>& Origin,
+                                        TArray<int8>& OutDistanceMap, int32 Range, const EEntityType EntityType,
+                                        const std::function<bool(const ATile*)>& Condition) const
+{
+	if (Origin.IsEmpty()) return nullptr;
+	TArray<ATile*> Frontier = Origin;
+
+	TArray<int8> DistanceMap;
+	DistanceMap.SetNumZeroed(Tiles.Num());
+	for (const ATile* FrontierTile : Frontier)
+	{
+		DistanceMap[FrontierTile->HexCoords.Q * Size.R + FrontierTile->HexCoords.R] = 1;
+	}
+	TArray<ATile*> FoundTargets;
+	int8 Distance = 2;
+	// Frontier.IsEmpty() = flood fill finished
+	// FoundTargets.IsEmpty() = terminate early as soon as targets have been found, because we only want the nearest
+	// TODO: make nearest tile (early termination) optional
+	// (optional) Distance - 1 <= Range => is in range
+	while (!Frontier.IsEmpty() && FoundTargets.IsEmpty() && (Range < 0 || Distance - 1 <= Range))
+	{
+		TArray<ATile*> NewFrontier;
+		for (ATile* Current : Frontier)
+		{
+			// check if tile meets the conditions
+			if (Condition(Current))
+			{
+				FoundTargets.Add(Current);
+			}
+			// search for the next tiles
+			for (ATile* Neighbor : Current->Neighbors)
+			{
+				// Neighbor => is ocean
+				// (optional) Neighbor->AcceptsEntity(EntityType) => valid path for the entity type
+				// DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] == 0 => has not been explored already
+				if (Neighbor
+					&& (EntityType == EEntityType::None || Neighbor->AcceptsEntity(EntityType))
+					&& DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] == 0)
+				{
+					NewFrontier.Add(Neighbor);
+					DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] = Distance;
+				}
+			}
+		}
+		++Distance;
+		Frontier = NewFrontier;
+	}
+	OutDistanceMap = DistanceMap;
+	if (FoundTargets.IsEmpty()) return nullptr;
+	return FoundTargets[FMath::RandRange(0, FoundTargets.Num() - 1)];
+}
+
+// -----------------  Pathfinding ------------------------
+
+TArray<ATile*> ATileMap::FindPathToTile(ATile* Origin, ATile* Target, EEntityType EntityType) const
+{
+	return FindPathToNearestTile(Origin, EntityType, [Target](const ATile* Tile)
+	{
+		return Tile == Target;
+	});
+}
+
+TArray<ATile*> ATileMap::FindPathToNearestTile(ATile* Origin, const EEntityType EntityType,
+                                               const std::function<bool(const ATile*)>& Condition) const
+{
+	return FindPathToNearestTileInRange(Origin, -1, EntityType, Condition);
+}
+
+TArray<ATile*> ATileMap::FindPathToNearestTileInRange(ATile* Origin, int32 Range, EEntityType EntityType,
+                                                      const std::function<bool(const ATile*)>& Condition) const
+{
+	if (!Origin) return TArray<ATile*>();
+	TArray<ATile*> OriginArray;
+	OriginArray.Add(Origin);
+	return FindPathToNearestTileInRangeFromSearchOrigin(OriginArray, OriginArray, Range, EntityType, Condition);
+}
+
+TArray<ATile*> ATileMap::FindPathToNearestTileFromSearchOrigin(const TArray<ATile*>& SearchOrigin,
+                                                               const TArray<ATile*>& PathOrigin,
+                                                               EEntityType EntityType,
+                                                               const std::function<bool(const ATile*)>& Condition) const
+{
+	return FindPathToNearestTileInRangeFromSearchOrigin(SearchOrigin, PathOrigin, -1, EntityType, Condition);
+}
+
+TArray<ATile*> ATileMap::FindPathToNearestTileInRangeFromSearchOrigin(const TArray<ATile*>& SearchOrigin,
+                                                                      const TArray<ATile*>& PathOrigin, int32 Range,
+                                                                      EEntityType EntityType,
+                                                                      const std::function<bool(const ATile*)>&
+                                                                      Condition) const
+{
+	if (SearchOrigin.IsEmpty() || PathOrigin.IsEmpty()) return TArray<ATile*>();
+	TArray<int8> DistanceMap;
+	ATile* Current = FindNearestTileInRange(SearchOrigin, DistanceMap, Range, EntityType, Condition);
+	TArray<ATile*> Path;
+	while (PathOrigin.Contains(Current))
+	{
+		Path.Add(Current);
+		int8 CurrentDistance = DistanceMap[Current->HexCoords.Q * Size.R + Current->HexCoords.R];
+		TArray<ATile*> PossibleNextCurrents;
+		for (ATile* Neighbor : Current->Neighbors)
+		{
+			if (!Neighbor) continue;
+			int8 NeighborDistance = DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R];
+			if (NeighborDistance != 0 && NeighborDistance < CurrentDistance)
+				PossibleNextCurrents.Add(Neighbor);
+		}
+		Current = PossibleNextCurrents[FMath::RandRange(0, PossibleNextCurrents.Num() - 1)];
+	}
+	return Path;
+}
+
+// -----------------  TerrainGen ------------------------
