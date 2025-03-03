@@ -98,21 +98,6 @@ void ATile::Delete()
 	Destroy();
 }
 
-TArray<ATile*> ATile::GetPathTo(ATile* Target)
-{
-	return ATileMap::GetPath(this, Target);
-}
-
-int32 ATile::GetPathTileDistanceTo(ATile* Target)
-{
-	return GetPathTo(Target).Num();
-}
-
-int32 ATile::GetTileDistanceTo(const ATile* Target) const
-{
-	return HexCoords.DistanceTo(Target->HexCoords);
-}
-
 void ATile::OnRep_GameplayTags()
 {
 	OnGameplayTagsChanged.Broadcast();
@@ -311,7 +296,7 @@ bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* B
 		Building = NewObject<UBuildingDefense>();
 	else
 		Building = NewObject<UBuilding>();
-	Building->S_Init(BuildingDataAsset, this, Builder);
+	Building->S_Init(BuildingDataAsset, this, Builder, GameState);
 	AddReplicatedSubObject(Building);
 	AddReplicatedSubObject(Building->GetPopulation());
 
@@ -539,6 +524,7 @@ void ATile::InitTileLayout()
 	if (!NewLayout) return;
 	TileLayout = NewLayout;
 	HexagonMesh = NewLayout->HexagonMesh;
+	GameplayTags.AddTag(TileLayout->LayoutTag);
 	InitHexagonMesh();
 	ServerInitTileRotation();
 	ValidateSpawnLayout();
