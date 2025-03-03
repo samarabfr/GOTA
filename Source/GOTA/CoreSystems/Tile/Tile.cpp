@@ -98,21 +98,6 @@ void ATile::Delete()
 	Destroy();
 }
 
-TArray<ATile*> ATile::GetPathTo(ATile* Target)
-{
-	return GameState->GetTileMap()->FindPathToTile(this, Target);
-}
-
-int32 ATile::GetPathTileDistanceTo(ATile* Target)
-{
-	return GetPathTo(Target).Num();
-}
-
-int32 ATile::GetTileDistanceTo(const ATile* Target) const
-{
-	return HexCoords.DistanceTo(Target->HexCoords);
-}
-
 void ATile::OnRep_GameplayTags()
 {
 	OnGameplayTagsChanged.Broadcast();

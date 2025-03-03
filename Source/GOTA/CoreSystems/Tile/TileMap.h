@@ -86,25 +86,12 @@ public:
 	                                                 {
 		                                                 return true;
 	                                                 }) const;
-	ATile* FindNearestTile(ATile* Origin,
-	                       EEntityType EntityType = EEntityType::None,
-	                       const std::function<bool(const ATile*)>& Condition = [](const ATile*)
-	                       {
-		                       return true;
-	                       }) const;
 	ATile* FindNearestTile(const TArray<ATile*>& Origin,
 	                       EEntityType EntityType = EEntityType::None,
 	                       const std::function<bool(const ATile*)>& Condition = [](const ATile*)
 	                       {
 		                       return true;
 	                       }) const;
-	ATile* FindNearestTileInRange(ATile* Origin,
-	                              int32 Range = -1,
-	                              const EEntityType EntityType = EEntityType::None,
-	                              const std::function<bool(const ATile*)>& Condition = [](const ATile*)
-	                              {
-		                              return true;
-	                              }) const;
 	ATile* FindNearestTileInRange(const TArray<ATile*>& Origin,
 	                              int32 Range = -1,
 	                              const EEntityType EntityType = EEntityType::None,
@@ -134,20 +121,15 @@ private:
 
 	// -----------------  Pathfinding ------------------------
 public:
-	TArray<ATile*> FindPathToTile(ATile* Origin, ATile* Target, EEntityType EntityType = EEntityType::None) const;
-	TArray<ATile*> FindPathToNearestTile(ATile* Origin, EEntityType EntityType = EEntityType::None,
+	TArray<ATile*> FindPathToTile(const TArray<ATile*>& Origin, ATile* Target,
+	                              EEntityType EntityType = EEntityType::None) const;
+	TArray<ATile*> FindPathToNearestTile(const TArray<ATile*>& Origin, EEntityType EntityType = EEntityType::None,
 	                                     const std::function<bool(const ATile*)>& Condition = [
 		                                     ](const ATile*)
 	                                     {
 		                                     return true;
 	                                     }) const;
-	TArray<ATile*> FindPathToNearestTileInRange(ATile* Origin, int32 Range,
-	                                            EEntityType EntityType = EEntityType::None,
-	                                            const std::function<bool(const ATile*)>& Condition = [
-		                                            ](const ATile*)
-	                                            {
-		                                            return true;
-	                                            }) const;
+
 	TArray<ATile*> FindPathToNearestTileFromSearchOrigin(const TArray<ATile*>& SearchOrigin,
 	                                                     const TArray<ATile*>& PathOrigin,
 	                                                     EEntityType EntityType = EEntityType::None,
@@ -165,6 +147,13 @@ public:
 	                                                            {
 		                                                            return true;
 	                                                            }) const;
+	TArray<ATile*> FindPathToNearestTileInRange(const TArray<ATile*>& Origin, int32 Range,
+	                                            EEntityType EntityType = EEntityType::None,
+	                                            const std::function<bool(const ATile*)>& Condition = [
+		                                            ](const ATile*)
+	                                            {
+		                                            return true;
+	                                            }) const;
 
 	// -----------------  TerrainGen ------------------------
 private:

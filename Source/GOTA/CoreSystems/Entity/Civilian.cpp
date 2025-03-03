@@ -136,8 +136,10 @@ bool ACivilian::S_TryFindPathToClosestWorkTile()
 	TRACE_CPUPROFILER_EVENT_SCOPE_STR("ACivilian::S_TryFindPathToClosestWorkTile");
 	if (!GetCurrentTile() || !S_GetGameState()->GetTileMap()) return false;
 	if (IsTileValidForWork(GetCurrentTile())) return true;
+	TArray<ATile*> Origin;
+	Origin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTile(
-		GetCurrentTile(), EEntityType::Civilian,
+		Origin, EEntityType::Civilian,
 		[this](const ATile* Tile)
 		{
 			return IsTileValidForWork(Tile);
@@ -159,7 +161,9 @@ bool ACivilian::S_TryFindPathToWorkTileClosestToSettlement()
 	{
 		if (IsTileValidForWork(ClaimedTile))
 		{
-			const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToTile(GetCurrentTile(), ClaimedTile);
+			TArray<ATile*> Origin;
+			Origin.Add(GetCurrentTile());
+			const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToTile(Origin, ClaimedTile);
 			if (!ResultPath.IsEmpty())
 			{
 				S_SetPath(ResultPath);
@@ -196,9 +200,13 @@ bool ACivilian::S_TryFindPathToPriorityTile()
 	if (!GetCurrentTile() ||
 		!PriorityTile.IsValid() ||
 		!S_GetGameState()->GetTileMap())
+	{
 		return false;
-	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToTile(GetCurrentTile(), GetPriorityTile(),
-	                                                                          EEntityType::Civilian);
+	}
+	TArray<ATile*> Origin;
+	Origin.Add(GetCurrentTile());
+	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToTile(Origin, GetPriorityTile(),
+		EEntityType::Civilian);
 	if (ResultPath.IsEmpty()) return false;
 	S_SetPath(ResultPath);
 	return true;
@@ -211,10 +219,13 @@ bool ACivilian::S_TryFindPathToOriginBuilding()
 		!GetOriginBuilding() ||
 		!GetOriginBuilding()->GetTile() ||
 		!S_GetGameState()->GetTileMap())
+	{		
 		return false;
-
+	}
+	TArray<ATile*> Origin;
+	Origin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToTile(
-		GetCurrentTile(), GetOriginBuilding()->GetTile(),
+		Origin, GetOriginBuilding()->GetTile(),
 		EEntityType::Civilian);
 	if (ResultPath.IsEmpty()) return false;
 	S_SetPath(ResultPath);

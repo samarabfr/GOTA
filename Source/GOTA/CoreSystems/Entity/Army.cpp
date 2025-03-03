@@ -150,8 +150,10 @@ bool AArmy::S_TryFindPathToNearestRecruitable()
 		}
 	}
 	if (!HasValidTiles) return false;
+	TArray<ATile*> Origin;
+	Origin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTile(
-		GetCurrentTile(), EEntityType::Army,
+		Origin, EEntityType::Army,
 		[this](const ATile* Tile)
 		{
 			return IsTileValidForRecruiting(Tile);
@@ -174,8 +176,10 @@ bool AArmy::S_TryFindPathToNearestEnemy()
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE_STR("AArmy::S_TryFindPathToNearestEnemy");
 	if (!S_GetGameState()->GetTileMap()) return false;
+	TArray<ATile*> Origin;
+	Origin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTile(
-		GetCurrentTile(), EEntityType::Army,
+		Origin, EEntityType::Army,
 		[this](const ATile* Tile)
 		{
 			if (!Tile) return false;
@@ -197,8 +201,10 @@ bool AArmy::S_TryFindPathToNearestEnemyUnprotectedNormalBuilding()
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE_STR("AArmy::S_TryFindPathToNearestEnemyUnprotectedNormalBuilding");
 	if (!S_GetGameState()->GetTileMap()) return false;
+	TArray<ATile*> Origin;
+	Origin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTile(
-		GetCurrentTile(), EEntityType::Army,
+		Origin, EEntityType::Army,
 		[this](const ATile* Tile)
 		{
 			return Tile &&
@@ -218,8 +224,10 @@ bool AArmy::S_TryFindPathToNearestEnemyDefenseBuilding()
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE_STR("AArmy::S_TryFindPathToNearestEnemyDefenseBuilding");
 	if (!S_GetGameState()->GetTileMap()) return false;
+	TArray<ATile*> Origin;
+	Origin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTile(
-		GetCurrentTile(), EEntityType::Army,
+		Origin, EEntityType::Army,
 		[this](const ATile* Tile)
 		{
 			if (!Tile) return false;
@@ -247,8 +255,10 @@ bool AArmy::S_TryFindPathToNearestEnemyDefenseBuilding()
 bool AArmy::HasEnemyInGarrisonModeRange() const
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE_STR("AArmy::HasEnemyInGarrisonModeRange");
+	TArray<ATile*> Origin;
+	Origin.Add(GetCurrentTile());
 	ATile* EnemyOnTile = S_GetGameState()->GetTileMap()->FindNearestTileInRange(
-		GetCurrentTile(), GarrisonModeInterceptingRange,
+		Origin, GarrisonModeInterceptingRange,
 		GetEntityType(), [this](const ATile* Tile)
 		{
 			return Tile && Tile->GetArmy() && Tile->GetArmy()
@@ -384,8 +394,10 @@ bool AArmy::S_TryFindPathToGuardTile()
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE_STR("AArmy::S_TryFindPathToGuardTile");
 	if (!S_GetGameState()->GetTileMap()) return false;
+	TArray<ATile*> Origin;
+	Origin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTile(
-		GetCurrentTile(), EEntityType::Army,
+		Origin, EEntityType::Army,
 		[this](const ATile* Tile)
 		{
 			return Tile && Tile == GuardTile;
@@ -400,8 +412,12 @@ bool AArmy::S_TryFindPathToNearestEnemyToGuardTile()
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE_STR("AArmy::S_TryFindPathToNearestEnemyToGuardTile");
 	if (!S_GetGameState()->GetTileMap()) return false;
-	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTile(
-		GuardTile.Get(), EEntityType::Army, [this](const ATile* Tile)
+	TArray<ATile*> SearchOrigin;
+	SearchOrigin.Add(GuardTile.Get());
+	TArray<ATile*> PathOrigin;
+	PathOrigin.Add(GuardTile.Get());
+	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTileFromSearchOrigin(
+		SearchOrigin, PathOrigin, EEntityType::Army, [this](const ATile* Tile)
 		{
 			if (!Tile) return false;
 			for (ATile* Neighbor : Tile->GetNeighbors())
@@ -420,8 +436,10 @@ bool AArmy::S_TryFindPathToNearestEnemyToGuardTile()
 bool AArmy::HasEnemyInGuardTileRange()
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE_STR("HasEnemyInGuardTileRange");
+	TArray<ATile*> Origin;
+	Origin.Add(GuardTile.Get());
 	ATile* EnemyOnTile = S_GetGameState()->GetTileMap()->FindNearestTileInRange(
-		GuardTile.Get(), GuardModeInterceptingRange,
+	Origin, GuardModeInterceptingRange,
 		GetEntityType(), [this](const ATile* Tile)
 		{
 			return Tile && Tile->GetArmy() && Tile->GetArmy()->GetAffiliation() != GetAffiliation();
@@ -445,8 +463,10 @@ bool AArmy::S_TryFindPathToInterceptArmy()
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE_STR("AArmy::S_TryFindPathToInterceptArmy");
 	if (!S_GetGameState()->GetTileMap()) return false;
+	TArray<ATile*> Origin;
+	Origin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTile(
-		GetCurrentTile(), EEntityType::Army,
+		Origin, EEntityType::Army,
 		[this](const ATile* Tile)
 		{
 			if (!Tile) return false;

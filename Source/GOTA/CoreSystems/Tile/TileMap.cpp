@@ -245,32 +245,10 @@ TMap<ATile*, int8> ATileMap::FindAllTilesWithRangesInRange(const TArray<ATile*>&
 	return AllTilesWithRanges;
 }
 
-ATile* ATileMap::FindNearestTile(ATile* Origin, EEntityType EntityType,
-                                 const std::function<bool(const ATile*)>& Condition) const
-{
-	if (!Origin) return nullptr;
-
-	TArray<ATile*> OriginArray;
-	OriginArray.Add(Origin);
-	return FindNearestTile(OriginArray, EntityType, Condition);
-}
-
 ATile* ATileMap::FindNearestTile(const TArray<ATile*>& Origin, const EEntityType EntityType,
                                  const std::function<bool(const ATile*)>& Condition) const
 {
 	return FindNearestTileInRange(Origin, -1, EntityType, Condition);
-}
-
-ATile* ATileMap::FindNearestTileInRange(ATile* Origin, int32 Range,
-                                        EEntityType EntityType,
-                                        const std::function<bool(const ATile*)>& Condition) const
-{
-	if (!Origin || Range < 0) return nullptr;
-	if (Range == 0) return Condition(Origin) ? Origin : nullptr;
-
-	TArray<ATile*> OriginArray;
-	OriginArray.Add(Origin);
-	return FindNearestTileInRange(OriginArray, Range, EntityType, Condition);
 }
 
 ATile* ATileMap::FindNearestTileInRange(const TArray<ATile*>& Origin, int32 Range, const EEntityType EntityType,
@@ -345,7 +323,7 @@ TArray<ATile*> ATileMap::FindTilesInRange(const TArray<ATile*>& Origin, TArray<i
 
 // -----------------  Pathfinding ------------------------
 
-TArray<ATile*> ATileMap::FindPathToTile(ATile* Origin, ATile* Target, EEntityType EntityType) const
+TArray<ATile*> ATileMap::FindPathToTile(const TArray<ATile*>& Origin, ATile* Target, EEntityType EntityType) const
 {
 	return FindPathToNearestTile(Origin, EntityType, [Target](const ATile* Tile)
 	{
@@ -353,19 +331,10 @@ TArray<ATile*> ATileMap::FindPathToTile(ATile* Origin, ATile* Target, EEntityTyp
 	});
 }
 
-TArray<ATile*> ATileMap::FindPathToNearestTile(ATile* Origin, const EEntityType EntityType,
+TArray<ATile*> ATileMap::FindPathToNearestTile(const TArray<ATile*>& Origin, const EEntityType EntityType,
                                                const std::function<bool(const ATile*)>& Condition) const
 {
 	return FindPathToNearestTileInRange(Origin, -1, EntityType, Condition);
-}
-
-TArray<ATile*> ATileMap::FindPathToNearestTileInRange(ATile* Origin, int32 Range, EEntityType EntityType,
-                                                      const std::function<bool(const ATile*)>& Condition) const
-{
-	if (!Origin) return TArray<ATile*>();
-	TArray<ATile*> OriginArray;
-	OriginArray.Add(Origin);
-	return FindPathToNearestTileInRangeFromSearchOrigin(OriginArray, OriginArray, Range, EntityType, Condition);
 }
 
 TArray<ATile*> ATileMap::FindPathToNearestTileFromSearchOrigin(const TArray<ATile*>& SearchOrigin,
@@ -384,12 +353,19 @@ TArray<ATile*> ATileMap::FindPathToNearestTileInRangeFromSearchOrigin(const TArr
 {
 	TRACE_CPUPROFILER_EVENT_SCOPE_STR("ATileMap::FindPathToNearestTileInRangeFromSearchOrigin");
 	if (SearchOrigin.IsEmpty() || PathOrigin.IsEmpty()) return TArray<ATile*>();
+	return FindPathToTile(PathOrigin, FindNearestTileInRange(SearchOrigin, Range, EntityType, Condition), EntityType);
+}
+
+TArray<ATile*> ATileMap::FindPathToNearestTileInRange(const TArray<ATile*>& Origin, int32 Range,
+                                                      EEntityType EntityType,
+                                                      const std::function<bool(const ATile*)>& Condition) const
+{
 	TArray<int8> DistanceMap;
-	ATile* Current = FindNearestTileInRange(SearchOrigin, DistanceMap, Range, EntityType, Condition);
+	ATile* Current = FindNearestTileInRange(Origin, DistanceMap, Range, EntityType, Condition);
 	if (!Current)
 		return TArray<ATile*>();
 	TArray<ATile*> Path;
-	while (!PathOrigin.Contains(Current))
+	while (!Origin.Contains(Current))
 	{
 		Path.Add(Current);
 		int8 CurrentDistance = DistanceMap[Current->HexCoords.Q * Size.R + Current->HexCoords.R];
