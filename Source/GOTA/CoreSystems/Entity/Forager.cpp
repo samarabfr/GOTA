@@ -12,6 +12,8 @@ void AForager::S_Work()
 
 bool AForager::IsTileValidForWork(const ATile* Tile) const
 {
+	if (!Tile)
+		return false;
 	return Tile->EcoValues->GetForage() > 0;
 }
 
