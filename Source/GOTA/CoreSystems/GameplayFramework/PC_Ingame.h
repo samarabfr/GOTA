@@ -129,8 +129,13 @@ private:
 	void ActivateCurrentlyTargetingAbility();
 
 	void StartTargeting(AAbility* Ability);
+
+	UFUNCTION()
+	void UpdateTarget(AActor* NewTargetActor);
+	
 	void CancelTargeting();
 
+	
 public:
 	void ActivateAbility(FName SlotName);
 	void ActivateAbility(UAbilitySlot* Slot);

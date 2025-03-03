@@ -70,7 +70,7 @@ public:
 	 *	the target type. In case of a Guardian it will disable the graphics in world and tell the UI to
 	 *	indicate which guardian is getting targeted
 	 */
-	void SetTarget(FAbilityTarget NewAbilityTarget);
+	void SetTarget(const FAbilityTarget& NewAbilityTarget);
 
 	/**
 	 *	Activates the graphics that represent the targeting of an Ability.

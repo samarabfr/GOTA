@@ -5,6 +5,8 @@
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
 #include "InputDataAsset.h"
+#include "GOTA/CoreSystems/Entity/Army.h"
+#include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Guardian/Ability.h"
 #include "GOTA/CoreSystems/Guardian/AbilityIndicator.h"
 #include "GOTA/UI/Ingame/AbilitySlot.h"
@@ -60,7 +62,6 @@ void APC_Ingame::S_Init()
 	AAbilityIndicator* NewAbilityIndicator = GetWorld()->SpawnActor<AAbilityIndicator>(
 		AbilityIndicatorClass, AbilityIndicatorSpawnParams);
 	S_SetAbilityIndicator(NewAbilityIndicator);
-	NewMouseUtils->AttachActorToTilePosition(NewAbilityIndicator);
 
 	// Create BuildingPlacer
 	FActorSpawnParameters BuildingPlacerSpawnParams;
@@ -177,6 +178,27 @@ void APC_Ingame::StartTargeting(AAbility* Ability)
 
 	AbilityIndicator->SetAbility(Ability);
 	AbilityIndicator->Activate();
+
+	MouseUtils->OnHoverActorChanged.AddDynamic(this, &APC_Ingame::UpdateTarget);
+}
+
+void APC_Ingame::UpdateTarget(AActor* NewTargetActor)
+{
+	FAbilityTarget NewAbilityTarget = FAbilityTarget();
+	if (ATile* TileTarget = Cast<ATile>(NewTargetActor))
+	{
+		NewAbilityTarget.Tile = TileTarget;
+	} else if (AGuardian* GuardianTarget = Cast<AGuardian>(NewTargetActor))
+	{
+		NewAbilityTarget.Guardian = GuardianTarget;
+	} else if (ACivilian* CivilianTarget = Cast<ACivilian>(NewTargetActor))
+	{
+		NewAbilityTarget.Civilian = CivilianTarget;
+	} else if (AArmy* ArmyTarget = Cast<AArmy>(NewTargetActor))
+	{
+		NewAbilityTarget.Army = ArmyTarget;
+	}
+	AbilityIndicator->SetTarget(NewAbilityTarget);
 }
 
 void APC_Ingame::CancelTargeting()
@@ -184,6 +206,8 @@ void APC_Ingame::CancelTargeting()
 	CurrentlyTargeting = nullptr;
 	if (!AbilityIndicator.Get()) return;
 	AbilityIndicator->Deactivate();
+
+	MouseUtils->OnHoverActorChanged.RemoveDynamic(this, &APC_Ingame::UpdateTarget);
 }
 
 void APC_Ingame::ActivateAbility(FName SlotName)

@@ -9,6 +9,9 @@
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
 #include "Components/WidgetComponent.h"
+#include "GOTA/CoreSystems/Entity/Army.h"
+#include "GOTA/CoreSystems/Entity/Civilian.h"
+#include "GOTA/CoreSystems/Tile/Tile.h"
 #include "GOTA/UI/Widgets/GotaImage.h"
 
 AAbilityIndicator::AAbilityIndicator()
@@ -35,7 +38,7 @@ AAbilityIndicator::AAbilityIndicator()
 
 	BackIcon = CreateDefaultSubobject<UWidgetComponent>("Back Icon");
 	BackIcon->SetupAttachment(Rotator);
-	
+
 	GuardianNiagaraEffect = CreateDefaultSubobject<UNiagaraComponent>("Guardian Effect");
 	GuardianNiagaraEffect->SetupAttachment(RootComponent);
 }
@@ -81,8 +84,35 @@ void AAbilityIndicator::SetAbility(AAbility* Ability)
 	}
 }
 
-void AAbilityIndicator::SetTarget(FAbilityTarget NewAbilityTarget)
+void AAbilityIndicator::SetTarget(const FAbilityTarget& NewAbilityTarget)
 {
+	if (NewAbilityTarget.Tile.IsValid())
+	{
+		Activate();
+		SetActorLocation(NewAbilityTarget.Tile.Get()->GetActorLocation());
+		Rotator->SetRelativeLocation(FVector(0, 0, 600));
+		GuardianNiagaraEffect->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
+	}
+	else if (NewAbilityTarget.Guardian.IsValid())
+	{
+		// Deactivate Graphics
+		Deactivate();
+		// TODO tell the UI to show which Guardian is getting targeted
+	}
+	else if (NewAbilityTarget.Civilian.IsValid())
+	{
+		Activate();
+		SetActorLocation(NewAbilityTarget.Civilian.Get()->GetActorLocation());
+		Rotator->SetRelativeLocation(FVector(0, 0, 800));
+		GuardianNiagaraEffect->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));
+	}
+	else if (NewAbilityTarget.Army.IsValid())
+	{
+		Activate();
+		SetActorLocation(NewAbilityTarget.Army.Get()->GetActorLocation());
+		Rotator->SetRelativeLocation(FVector(0, 0, 800));
+		GuardianNiagaraEffect->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));
+	}
 }
 
 void AAbilityIndicator::Activate()
