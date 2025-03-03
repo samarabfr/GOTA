@@ -65,6 +65,34 @@ struct GOTA_API FSTC_IsPathValidArmy : public FStateTreeConditionCommonBase
 };
 
 USTRUCT()
+struct GOTA_API FSTC_IsPathEmptyArmyInstanceData
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, Category=Context)
+	TObjectPtr<AArmy> ArmyRef = nullptr;
+};
+
+/**
+ * Condition checking if path is empty for army
+ */
+USTRUCT(DisplayName = "Is Path empty for Army")
+struct GOTA_API FSTC_IsPathEmptyArmy : public FStateTreeConditionCommonBase
+{
+	GENERATED_BODY()
+
+	using FInstanceDataType = FSTC_IsPathEmptyArmyInstanceData;
+
+	FSTC_IsPathEmptyArmy() = default;
+
+	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
+	virtual bool TestCondition(FStateTreeExecutionContext& Context) const override;
+
+	UPROPERTY(EditAnywhere, Category = "Parameter")
+	bool bInvert = false;
+};
+
+USTRUCT()
 struct GOTA_API FSTC_HasEnemyInGarrisonModeRangeInstanceData
 {
 	GENERATED_BODY()

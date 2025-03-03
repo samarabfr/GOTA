@@ -5,160 +5,211 @@
 
 #include "StateTreeExecutionContext.h"
 #include "GOTA/CoreSystems/Entity/Army.h"
+#include "GOTA/CoreSystems/GameplayFramework/CombatValues.h"
 
 EStateTreeRunStatus FSTT_AttackEnemy::EnterState(FStateTreeExecutionContext& Context,
-                                                     const FStateTreeTransitionResult& Transition) const
+                                                 const FStateTreeTransitionResult& Transition) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return EStateTreeRunStatus::Failed;
-	}
-
-	InstanceData.ArmyRef.Get()->S_StartAttacking();
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return EStateTreeRunStatus::Failed;
+	
+	TWeakObjectPtr<AArmy> WeakArmy = Army;
+	Army->S_StartProgresser([WeakArmy]()
+								{
+									return WeakArmy.IsValid() ? WeakArmy->GetCombatValues()->GetAttackSpeed() : 0.f;
+								},
+								[WeakArmy]()
+								{
+									if (WeakArmy.IsValid()) WeakArmy->S_AttackEnemy();
+								});
 
 	return EStateTreeRunStatus::Running;
+}
+
+void FSTT_AttackEnemy::ExitState(FStateTreeExecutionContext& Context,
+	const FStateTreeTransitionResult& Transition) const
+{
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return;
+
+	Army->S_StopProgresser();
 }
 
 EStateTreeRunStatus FSTT_ArmyMoveToNextTile::EnterState(FStateTreeExecutionContext& Context,
-													const FStateTreeTransitionResult& Transition) const
+                                                        const FStateTreeTransitionResult& Transition) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return EStateTreeRunStatus::Failed;
-	}
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return EStateTreeRunStatus::Failed;
+	
+	TWeakObjectPtr<AArmy> WeakArmy = Army;
+	Army->S_StartProgresser([WeakArmy]()
+								{
+									return WeakArmy.IsValid() ? WeakArmy->GetMovementRate() : 0.f;
+								},
+								[WeakArmy]()
+								{
+									if (WeakArmy.IsValid()) WeakArmy->S_MoveToNextTileOnPath();
+								});
 
-	InstanceData.ArmyRef.Get()->S_StartMoveToNextTileOnPath();
 	return EStateTreeRunStatus::Running;
+}
+
+void FSTT_ArmyMoveToNextTile::ExitState(FStateTreeExecutionContext& Context,
+	const FStateTreeTransitionResult& Transition) const
+{
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return;
+
+	Army->S_StopProgresser();
 }
 
 EStateTreeRunStatus FSTT_RecruitFromTile::EnterState(FStateTreeExecutionContext& Context,
-													 const FStateTreeTransitionResult& Transition) const
+                                                     const FStateTreeTransitionResult& Transition) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return EStateTreeRunStatus::Failed;
-	}
-
-	InstanceData.ArmyRef.Get()->S_StartRecruitFromTile();
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return EStateTreeRunStatus::Failed;
+	
+	TWeakObjectPtr<AArmy> WeakArmy = Army;
+	Army->S_StartProgresser([WeakArmy]()
+								{
+									return WeakArmy.IsValid() ? WeakArmy->GetRecruitRate() : 0.f;
+								},
+								[WeakArmy]()
+								{
+									if (WeakArmy.IsValid()) WeakArmy->S_TakePopFromTile();
+								});
 
 	return EStateTreeRunStatus::Running;
 }
 
-EStateTreeRunStatus FSTT_FindPathToNearestEnemy::EnterState(FStateTreeExecutionContext& Context,
-													 const FStateTreeTransitionResult& Transition) const
-{
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return EStateTreeRunStatus::Failed;
-	}
-
-	const bool bHasPath = InstanceData.ArmyRef.Get()->TryFindPathToNearestEnemy();
-	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
-}
-
-EStateTreeRunStatus FSTT_FindPathToNearestEnemyUnprotectedNormalBuilding::EnterState(FStateTreeExecutionContext& Context,
-													 const FStateTreeTransitionResult& Transition) const
-{
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return EStateTreeRunStatus::Failed;
-	}
-
-	const bool bHasPath = InstanceData.ArmyRef.Get()->TryFindPathToNearestEnemyUnprotectedNormalBuilding();
-	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
-}
-
-EStateTreeRunStatus FSTT_FindPathToNearestEnemyDefenseBuilding::EnterState(FStateTreeExecutionContext& Context,
+void FSTT_RecruitFromTile::ExitState(FStateTreeExecutionContext& Context,
 	const FStateTreeTransitionResult& Transition) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return EStateTreeRunStatus::Failed;
-	}
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return;
 
-	const bool bHasPath = InstanceData.ArmyRef.Get()->TryFindPathToNearestEnemyDefenseBuilding();
-	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
+	Army->S_StopProgresser();
 }
 
-EStateTreeRunStatus FSTT_FindPathToNearestRecruitable::EnterState(FStateTreeExecutionContext& Context,
-                                                                  const FStateTreeTransitionResult& Transition) const
+EStateTreeRunStatus FSTT_FindPathToNearestEnemy::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return EStateTreeRunStatus::Failed;
-	}
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return EStateTreeRunStatus::Failed;
 
-	const bool bHasPath = InstanceData.ArmyRef.Get()->TryFindPathToNearestRecruitable();
-	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
+	const bool bOverridePath = Context.GetInstanceData(*this).bOverridePathIn;
+	if (!bOverridePath && !Army->IsPathEmpty()) return EStateTreeRunStatus::Succeeded;
+
+	return Army->S_TryFindPathToNearestEnemy()
+			   ? EStateTreeRunStatus::Succeeded
+			   : EStateTreeRunStatus::Running;
+}
+
+EStateTreeRunStatus FSTT_FindPathToNearestEnemyUnprotectedNormalBuilding::Tick(FStateTreeExecutionContext& Context,
+	const float DeltaTime) const
+{
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return EStateTreeRunStatus::Failed;
+
+	const bool bOverridePath = Context.GetInstanceData(*this).bOverridePathIn;
+	if (!bOverridePath && !Army->IsPathEmpty()) return EStateTreeRunStatus::Succeeded;
+
+	return Army->S_TryFindPathToNearestEnemyUnprotectedNormalBuilding()
+			   ? EStateTreeRunStatus::Succeeded
+			   : EStateTreeRunStatus::Running;
+}
+
+EStateTreeRunStatus FSTT_FindPathToNearestEnemyDefenseBuilding::Tick(FStateTreeExecutionContext& Context,
+	const float DeltaTime) const
+{
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return EStateTreeRunStatus::Failed;
+
+	const bool bOverridePath = Context.GetInstanceData(*this).bOverridePathIn;
+	if (!bOverridePath && !Army->IsPathEmpty()) return EStateTreeRunStatus::Succeeded;
+
+	return Army->S_TryFindPathToNearestEnemyDefenseBuilding()
+			   ? EStateTreeRunStatus::Succeeded
+			   : EStateTreeRunStatus::Running;
+}
+
+EStateTreeRunStatus FSTT_FindPathToNearestRecruitable::Tick(FStateTreeExecutionContext& Context,
+	const float DeltaTime) const
+{
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return EStateTreeRunStatus::Failed;
+
+	const bool bOverridePath = Context.GetInstanceData(*this).bOverridePathIn;
+	if (!bOverridePath && !Army->IsPathEmpty()) return EStateTreeRunStatus::Succeeded;
+
+	return Army->S_TryFindPathToNearestRecruitable()
+			   ? EStateTreeRunStatus::Succeeded
+			   : EStateTreeRunStatus::Running;
 }
 
 EStateTreeRunStatus FSTT_RavageEnemyBuilding::EnterState(FStateTreeExecutionContext& Context,
 	const FStateTreeTransitionResult& Transition) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return EStateTreeRunStatus::Failed;
-	}
-
-	InstanceData.ArmyRef.Get()->S_StartRavagingEnemyBuilding();
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return EStateTreeRunStatus::Failed;
+	
+	TWeakObjectPtr<AArmy> WeakArmy = Army;
+	Army->S_StartProgresser([WeakArmy]()
+								{
+									return WeakArmy.IsValid() ? WeakArmy->GetRavageSpeed() : 0.f;
+								},
+								[WeakArmy]()
+								{
+									if (WeakArmy.IsValid()) WeakArmy->S_RavageEnemyBuilding();
+								});
 
 	return EStateTreeRunStatus::Running;
 }
 
-EStateTreeRunStatus FSTT_FindPathToGuardTile::EnterState(FStateTreeExecutionContext& Context,
+void FSTT_RavageEnemyBuilding::ExitState(FStateTreeExecutionContext& Context,
 	const FStateTreeTransitionResult& Transition) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return EStateTreeRunStatus::Failed;
-	}
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return;
 
-	const bool bHasPath = InstanceData.ArmyRef.Get()->TryFindPathToGuardTile();
-	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
+	Army->S_StopProgresser();
 }
 
-EStateTreeRunStatus FSTT_FindPathToNearestEnemyToGuardTile::EnterState(FStateTreeExecutionContext& Context,
-	const FStateTreeTransitionResult& Transition) const
+EStateTreeRunStatus FSTT_FindPathToGuardTile::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return EStateTreeRunStatus::Failed;
-	}
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return EStateTreeRunStatus::Failed;
 
-	const bool bHasPath = InstanceData.ArmyRef.Get()->TryFindPathToNearestEnemyToGuardTile();
-	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
+	const bool bOverridePath = Context.GetInstanceData(*this).bOverridePathIn;
+	if (!bOverridePath && !Army->IsPathEmpty()) return EStateTreeRunStatus::Succeeded;
+
+	return Army->S_TryFindPathToGuardTile()
+			   ? EStateTreeRunStatus::Succeeded
+			   : EStateTreeRunStatus::Running;
 }
 
-EStateTreeRunStatus FSTT_FindPathToInterceptArmy::EnterState(FStateTreeExecutionContext& Context,
-	const FStateTreeTransitionResult& Transition) const
+EStateTreeRunStatus FSTT_FindPathToNearestEnemyToGuardTile::Tick(FStateTreeExecutionContext& Context,
+                                                                 const float DeltaTime) const
 {
-	FInstanceDataType& InstanceData = Context.GetInstanceData(*this);
-	if (!InstanceData.ArmyRef)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Army in context is null"))
-		return EStateTreeRunStatus::Failed;
-	}
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return EStateTreeRunStatus::Failed;
 
-	const bool bHasPath = InstanceData.ArmyRef.Get()->TryFindPathToInterceptArmy();
-	return bHasPath ? EStateTreeRunStatus::Succeeded : EStateTreeRunStatus::Failed;
+	const bool bOverridePath = Context.GetInstanceData(*this).bOverridePathIn;
+	if (!bOverridePath && !Army->IsPathEmpty()) return EStateTreeRunStatus::Succeeded;
+
+	return Army->S_TryFindPathToNearestEnemyToGuardTile()
+			   ? EStateTreeRunStatus::Succeeded
+			   : EStateTreeRunStatus::Running;
+}
+
+EStateTreeRunStatus FSTT_FindPathToInterceptArmy::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
+{
+	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
+	if (!Army) return EStateTreeRunStatus::Failed;
+
+	const bool bOverridePath = Context.GetInstanceData(*this).bOverridePathIn;
+	if (!bOverridePath && !Army->IsPathEmpty()) return EStateTreeRunStatus::Succeeded;
+
+	return Army->S_TryFindPathToInterceptArmy()
+			   ? EStateTreeRunStatus::Succeeded
+			   : EStateTreeRunStatus::Running;
 }

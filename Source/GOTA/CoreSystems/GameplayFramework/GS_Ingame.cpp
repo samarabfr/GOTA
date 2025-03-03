@@ -6,8 +6,12 @@
 #include "LoadingManager.h"
 #include "StartParameter.h"
 #include "GOTA/CoreSystems/Faction/Attribute/GOTAAttribute.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
+#include "GOTA/CoreSystems/Guardian/Guardian.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "GOTA/CoreSystems/Utility/StaticMeshBatcher.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -32,7 +36,7 @@ void AGS_Ingame::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifeti
 	DOREPLIFETIME(AGS_Ingame, TotalForage);
 	DOREPLIFETIME(AGS_Ingame, IslandMaxTrees);
 	DOREPLIFETIME(AGS_Ingame, IslandMaxForage);
-	
+
 	DOREPLIFETIME(AGS_Ingame, StartParameter);
 }
 
@@ -62,6 +66,20 @@ AGS_Ingame::AGS_Ingame()
 
 	// 4 because max players, but this should be a constant somewhere
 	Guardians.SetNumZeroed(4);
+	GuardianAIControllers.SetNumZeroed(4);
+}
+
+void AGS_Ingame::DeleteEverything()
+{
+	if (TileMap) TileMap->Delete();
+	if (LoadingManager) LoadingManager->Delete();
+	if (Colony) Colony->S_Delete();
+	if (Tribe) Tribe->S_Delete();
+	for (AGuardian* Guardian : Guardians)
+	{
+		if (Guardian) Guardian->Delete();
+	}
+	if (StaticMeshBatcher) StaticMeshBatcher->Clear();
 }
 
 void AGS_Ingame::BeginPlay()
@@ -133,7 +151,7 @@ void AGS_Ingame::SetTribe(ATribe* NewTribe)
 
 void AGS_Ingame::GuardiansChanged()
 {
-	OnGuardiansChanged.Broadcast(this);
+	OnGuardiansChanged.Broadcast();
 }
 
 AGuardian* AGS_Ingame::GetGuardian(const int32 GOTAPlayerID) const
@@ -172,5 +190,31 @@ void AGS_Ingame::S_EndGame_Implementation(::EGameEnding Ending, const FString& E
 {
 	if (GameEnded) return;
 	GameEnded = true;
+	GameEnding = Ending;
 	OnGameEnding.Broadcast(Ending, EndingMessage);
+}
+
+// ------------------- Reinforcement Learning Manager -------------------
+
+TArray<AAIController*> AGS_Ingame::GetGuardianAIControllers() const
+{
+	return GuardianAIControllers;
+}
+
+AAIController* AGS_Ingame::GetGuardianAIController(int32 GOTAPlayerID) const
+{
+	if (!Guardians.IsValidIndex(GOTAPlayerID)) return nullptr;
+	return GuardianAIControllers[GOTAPlayerID];
+}
+
+void AGS_Ingame::SetGuardianAIController(int32 GOTAPlayerID, AAIController* GuardianAIController) 
+{
+	if (!Guardians.IsValidIndex(GOTAPlayerID)) return;
+	GuardianAIControllers[GOTAPlayerID] = GuardianAIController;
+}
+
+void AGS_Ingame::S_AddManager(TSubclassOf<AActor> ManagerClass, AActor* Manager)
+{
+	if (RL_Managers.Contains(ManagerClass)) return;
+	RL_Managers.Add(ManagerClass, Manager);
 }

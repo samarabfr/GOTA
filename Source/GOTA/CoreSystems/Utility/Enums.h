@@ -9,7 +9,7 @@ enum class EAffiliation : uint8
 
 inline EAffiliation operator!(EAffiliation Affiliation)
 {
-	if(Affiliation == EAffiliation::Ally)
+	if (Affiliation == EAffiliation::Ally)
 		return EAffiliation::Enemy;
 	return EAffiliation::Ally;
 }
@@ -33,16 +33,6 @@ enum class EProductionType : uint8
 	Stone UMETA(DisplayName = "Stone"),
 	Construction UMETA(DisplayName = "Construction"),
 	Healing UMETA(DisplayName = "Healing"),
-	Enum_Length UMETA(Hidden)
-};
-
-UENUM()
-enum class EConsumptionType : uint8
-{
-	None UMETA(DisplayName = "None"),
-	Food UMETA(DisplayName = "Food"),
-	Wood UMETA(DisplayName = "Wood"),
-	Stone UMETA(DisplayName = "Stone"),
 	Enum_Length UMETA(Hidden)
 };
 
@@ -74,8 +64,8 @@ enum class EEcoValue : uint8
 UENUM()
 enum class EGameEnding : uint8
 {
-	Victory UMETA(DisplayName = "Victory"),
-	Defeat UMETA(DisplayName = "Defeat")
+	NativesWon UMETA(DisplayName = "NativesWon"),
+	ColonistsWon UMETA(DisplayName = "ColonistsWon")
 };
 
 UENUM()
@@ -84,7 +74,7 @@ enum class EGameStatus : uint8
 	Lobby UMETA(DisplayName = "Lobby"),
 	Loading UMETA(DisplayName = "Loading"),
 	Running UMETA(DisplayName = "Running"),
-	Ended UMETA(DisplayName = "Victory")
+	Ended UMETA(DisplayName = "Ended")
 };
 
 UENUM()
@@ -117,6 +107,7 @@ enum class EArmyMode : uint8
 UENUM()
 enum class EEntityType : uint8
 {
+	Other UMETA(DisplayName = "Other"),
 	Civilian UMETA(DisplayName = "Civilian"),
 	Army UMETA(DisplayName = "Military")
 };
@@ -128,3 +119,17 @@ enum class EAbilityCategory : uint8
 	Common UMETA(DisplayName = "Common"),
 	Fire UMETA(DisplayName = "Fire")
 };
+
+UENUM()
+enum class EResource : uint8
+{
+	None UMETA(DisplayName = "None"),
+	Food UMETA(DisplayName = "Food"),
+	Wood UMETA(DisplayName = "Wood"),
+	Stone UMETA(DisplayName = "Stone"),
+	Forage UMETA(DisplayName = "Forage"),
+	Trees UMETA(DisplayName = "Trees"),
+	Enum_Length UMETA(Hidden)
+};
+
+

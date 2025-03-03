@@ -8,6 +8,7 @@
 #include "GameFramework/GameMode.h"
 #include "GM_Ingame.generated.h"
 
+class UBuildingSettings;
 class AMouseUtils;
 
 UCLASS()
@@ -34,6 +35,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<ATribe> TribeClass;
 	
+	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
+	TArray<UBuildingSettings*> PossibleBuildingsForPlayers;
+	
 	// ---------------------------------------------------------
 	// Control the Flow of the Game
 private:
@@ -46,7 +50,7 @@ private:
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
-	void LoadGame();
+	virtual void LoadGame();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void StartGame();
@@ -59,9 +63,8 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void UnpauseGame();
-
-	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
-	void EndGame(EGameEnding Ending, const FString& EndingMessage);
+	
+	virtual void EndGame(EGameEnding Ending, const FString& EndingMessage);
 
 private:
 	void CheckGameEndingConditions();

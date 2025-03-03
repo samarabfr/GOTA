@@ -27,8 +27,10 @@ class GOTA_API ALoadingStatusActor : public AActor
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnChangedSignature);
 
 	ALoadingStatusActor();
-
+	
 public:
+	void Delete();
+	
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="Loading")
 	int32 GOTAPlayerID;
 

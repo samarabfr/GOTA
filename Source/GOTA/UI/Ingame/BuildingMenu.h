@@ -3,6 +3,7 @@
 #include "Blueprint/UserWidget.h"
 #include "BuildingMenu.generated.h"
 
+class AGuardian;
 class UWrapBox;
 class UBuildingSettings;
 class UBuildingMenuSlot;
@@ -25,10 +26,10 @@ private:
 
 	TArray<UBuildingMenuSlot*> MenuSlots;
 
+	UFUNCTION()
+	void RefreshMenuSlots(AGuardian* Guardian);
+
 protected:
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<UBuildingMenuSlot> SlotClass;
-
-	UPROPERTY(EditDefaultsOnly)
-	TArray<UBuildingSettings*> PlaceableBuildings;
 };

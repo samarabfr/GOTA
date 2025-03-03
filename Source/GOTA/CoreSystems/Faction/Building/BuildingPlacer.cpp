@@ -54,7 +54,8 @@ ABuildingPlacer::ABuildingPlacer()
 void ABuildingPlacer::BeginPlay()
 {
 	Super::BeginPlay();
-	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
+	GameState = GetWorld()->GetGameState<AGS_Ingame>();
+	GameState->IncrementReplicationCount();
 	MeshComponent->SetStaticMesh(Mesh);
 	MeshComponent->SetMaterial(0, PlacingPossibleMaterial);
 }
@@ -102,8 +103,7 @@ void ABuildingPlacer::PlaceBuilding()
 void ABuildingPlacer::SRPC_PlaceBuilding_Implementation(ATile* Tile, UBuildingSettings* Building)
 {
 	if (!Tile || !Building || !CanPlace(Tile)) return;
-
-	const AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
+	
 	Tile->S_TryBuild(BuildingToPlace, GameState->GetTribe());
 }
 
@@ -122,24 +122,7 @@ void ABuildingPlacer::RefreshPlaceability(ATile* NewTile)
 bool ABuildingPlacer::CanPlace(ATile* Tile)
 {
 	if (!Tile || !BuildingToPlace) return false;
-	// Check if Tile is next to the Tribe
-	bool bNextToTribe = false;
-	for (ATile* Neighbor : Tile->Neighbors)
-	{
-		if (Neighbor && Neighbor->GetClaimant() && Neighbor->GetClaimant()->GetAffiliation() == EAffiliation::Ally)
-		{
-			bNextToTribe = true;
-			break;
-		}
-	}
-	if (!bNextToTribe) return false;
-	// Check if the Building allows to be placed on this Tile
-	for (FGameplayTagRule PlacementRule : BuildingToPlace->PlacementRules)
-	{
-		if (!PlacementRule.IsValid(Tile->GameplayTags))
-			return false;
-	}
-	return true;
+	return Tile->CanBuild(BuildingToPlace, GameState->GetTribe());
 }
 
 // ----------------- Start & Stop Placing -----------------

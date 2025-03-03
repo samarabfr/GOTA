@@ -13,7 +13,11 @@ class GOTA_API AGM_MainMenu : public AGameModeBase
 
 
 private:
-	const FString IslandPath = "/Game/CoreSystems/GameplayFramework/Island";
+	UPROPERTY(EditDefaultsOnly)
+	FString IslandPath = "/Game/CoreSystems/GameplayFramework/Island";
+	
+	UPROPERTY(EditDefaultsOnly)
+	FString SelfPlayLevelPath = "/Game/SelfPlay/SelfPlay_Island";
 	
 public:
 	UFUNCTION(BlueprintCallable)
@@ -21,4 +25,7 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void JoinGame(FString IP);
+	
+	UFUNCTION(BlueprintCallable)
+	void StartSelfPlay();
 };

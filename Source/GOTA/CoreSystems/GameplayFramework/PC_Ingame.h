@@ -32,9 +32,9 @@ class GOTA_API APC_Ingame : public APlayerController
 public:
 	virtual void BeginPlay() override;
 
-	void S_Init();
+	virtual void S_Init();
 
-	void C_Init();
+	virtual void C_Init();
 
 	// -------------------------------------------- Utility --------------------------------------------
 private:
@@ -82,16 +82,22 @@ private:
 	UPROPERTY(ReplicatedUsing=OnRep_Guardian)
 	AGuardian* Guardian;
 
-	void SetGuardian(AGuardian* NewGuardian);
+	void S_SetGuardian(AGuardian* NewGuardian);
 
 	UFUNCTION()
 	void OnRep_Guardian();
 
-	void OnGuardianChanged();
+	UDELEGATE()
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGuardianChangedSignature, AGuardian*, NewGuardian);
 
-public:
+	UFUNCTION()
+	void InitDistanceUtils(AGuardian* _);
+
+protected:
 	virtual void OnPossess(APawn* InPawn) override;
-
+	
+public:
+	FOnGuardianChangedSignature OnGuardianChanged;
 	AGuardian* GetGuardian() { return Guardian; }
 
 	// ---------------------- InteractionMode ----------------------
@@ -123,8 +129,13 @@ private:
 	void ActivateCurrentlyTargetingAbility();
 
 	void StartTargeting(AAbility* Ability);
+
+	UFUNCTION()
+	void UpdateTarget(AActor* NewTargetActor);
+	
 	void CancelTargeting();
 
+	
 public:
 	void ActivateAbility(FName SlotName);
 	void ActivateAbility(UAbilitySlot* Slot);

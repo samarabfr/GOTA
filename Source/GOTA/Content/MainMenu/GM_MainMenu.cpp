@@ -13,3 +13,8 @@ void AGM_MainMenu::JoinGame(const FString IP)
 {	
 	GetWorld()->GetFirstPlayerController()->ClientTravel(IP + IslandPath, TRAVEL_Absolute);
 }
+
+void AGM_MainMenu::StartSelfPlay()
+{
+	GetWorld()->ServerTravel(SelfPlayLevelPath, TRAVEL_Absolute);
+}

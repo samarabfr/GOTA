@@ -6,6 +6,9 @@
 #include "GOTA/CoreSystems/Utility/Enums.h"
 #include "GS_Ingame.generated.h"
 
+class AAIController;
+class ULearningAgentsManager;
+class ULearningAgentsNeuralNetwork;
 class ATile;
 class UGOTAAttribute;
 class AEntity;
@@ -32,13 +35,15 @@ class GOTA_API AGS_Ingame : public AGameState
 
 	// ------------------- LifeCycle -------------------
 
-	AGS_Ingame();
 
 	virtual void BeginPlay() override;
 
 	void S_Init();
 
 	void C_Init();
+
+protected:
+	AGS_Ingame();
 
 	// ------------------- Utility -------------------
 public:
@@ -47,6 +52,8 @@ public:
 
 	UPROPERTY(Replicated)
 	UStartParameter* StartParameter;
+
+	void DeleteEverything();
 
 	// ------------------- TileMap -------------------
 private:
@@ -98,7 +105,7 @@ public:
 	// ------------------- Guardians -------------------
 private:
 	UDELEGATE()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnGuardiansChangedSig, AGS_Ingame*, GameState);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGuardiansChangedSig);
 
 	UPROPERTY(ReplicatedUsing=GuardiansChanged)
 	TArray<AGuardian*> Guardians;
@@ -144,6 +151,9 @@ private:
 	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(
 		FGameEndingSignature, const EGameEnding, Ending, const FString&, EndMessage);
 
+	// TODO: kann man mit Affiliation ersetzen: "WinningTeam"
+	EGameEnding GameEnding = EGameEnding::ColonistsWon;
+
 public:
 	UPROPERTY()
 	EGameStatus GameStatus = EGameStatus::Lobby;
@@ -154,4 +164,32 @@ public:
 
 	UFUNCTION(NetMulticast, Reliable)
 	void S_EndGame(EGameEnding Ending, const FString& EndingMessage);
+
+	EGameEnding GetGameEnding() const { return GameEnding; }
+
+
+	// ------------------- Reinforcement Learning Manager -------------------
+
+private:
+	TArray<AAIController*> GuardianAIControllers;
+
+public:
+	TArray<AAIController*> GetGuardianAIControllers() const;
+	AAIController* GetGuardianAIController(int32 GOTAPlayerID) const;
+	void SetGuardianAIController(int32 GOTAPlayerID, AAIController* GuardianAIController);
+
+
+	// ------------------- Reinforcement Learning Manager -------------------
+private:
+	TMap<TSubclassOf<AActor>, TWeakObjectPtr<AActor>> RL_Managers;
+
+public:
+	template <typename T = ULearningAgentsManager>
+	T* S_GetRLManager(TSubclassOf<AActor> ManagerClass)
+	{
+		if (!RL_Managers.Contains(ManagerClass)) return nullptr;
+		return Cast<T>(RL_Managers[ManagerClass].Get());
+	}
+
+	void S_AddManager(TSubclassOf<AActor> ManagerClass, AActor* Manager);
 };

@@ -20,6 +20,8 @@ class GOTA_API ALoadingManager : public AActor
 public:
 	UPROPERTY(BlueprintReadOnly, Replicated, Category="LoadingManager")
 	TArray<ALoadingStatusActor*> LoadingStatuses;
+
+	void Delete();
 	
 private:
 	double GracePeriodTime;
@@ -28,7 +30,7 @@ private:
 	ALoadingStatusActor* LoadingStatus = nullptr;
 	
 	UPROPERTY()
-	TWeakObjectPtr<APC_Ingame> LocalPlayerController = nullptr;
+	APC_Ingame* LocalPlayerController = nullptr;
 	
 	UPROPERTY()
 	AGM_Ingame* GameMode = nullptr;

@@ -1,13 +1,14 @@
 ﻿#include "Civilian.h"
-#include "Components/StateTreeComponent.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
+#include "GOTA/CoreSystems/Faction/Building/ResourceStorage.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "Net/UnrealNetwork.h"
-#include "Net/Core/PushModel/PushModel.h"
+
+// ----------------------- Replication Setup -----------------------
 
 void ACivilian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -17,129 +18,41 @@ void ACivilian::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 
 	Params.Condition = COND_InitialOnly;
 	Params.RepNotifyCondition = REPNOTIFY_Always;
-	DOREPLIFETIME_WITH_PARAMS(ACivilian, OriginBuilding, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, WorkAmount, Params);
-	DOREPLIFETIME_WITH_PARAMS(ACivilian, MovementRate, Params);
-	DOREPLIFETIME_WITH_PARAMS(ACivilian, ResourceInventoryLimit, Params);
 
 	Params.Condition = COND_None;
 	Params.RepNotifyCondition = REPNOTIFY_OnChanged;
-	DOREPLIFETIME_WITH_PARAMS(ACivilian, Progress, Params);
-	DOREPLIFETIME_WITH_PARAMS(ACivilian, CurrentTile, Params);
-	DOREPLIFETIME_WITH_PARAMS(ACivilian, NetLocation, Params);
-	DOREPLIFETIME_WITH_PARAMS(ACivilian, bProgresserActive, Params);
-	DOREPLIFETIME_WITH_PARAMS(ACivilian, ProgressRate, Params);
 	DOREPLIFETIME_WITH_PARAMS(ACivilian, PriorityTile, Params);
-	DOREPLIFETIME_WITH_PARAMS(ACivilian, ResourceInventory, Params);
+	DOREPLIFETIME_WITH_PARAMS(ACivilian, Storage, Params);
 }
 
 // ----------------------- LifeCycle -----------------------
 
 ACivilian::ACivilian()
 {
-	bReplicates = true;
-	bAlwaysRelevant = true;
-	bReplicateUsingRegisteredSubObjectList = true;
-	SetNetUpdateFrequency(0.1f);
-
-	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
-	StateTree = CreateDefaultSubobject<UStateTreeComponent>("StateTree");
+	Storage = CreateDefaultSubobject<UResourceStorage>("Storage");
 }
 
 void ACivilian::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 {
-	GameState = GetWorld()->GetGameState<AGS_Ingame>();
-	OriginBuilding = InBuilding;
-	CurrentTile = SpawnTile;
+	Super::S_Init(InBuilding, SpawnTile);
+	
 	FVector NewLocation = FVector();
 	SpawnTile->AddCivilian(this, NewLocation);
 	SetNetLocation(NewLocation);
-
-	const UBuildingSettings* BuildingSettings = OriginBuilding->GetSettings();
-	WorkAmount = BuildingSettings->CivilianProductionAmount;
-	MovementRate = 100 / BuildingSettings->CivilianMoveTime;
-	ResourceInventoryLimit = BuildingSettings->CivilianInventoryLimit;
 	
-	StateTree->StartLogic();
+	const UBuildingSettings* BuildingSettings = GetOriginBuilding()->GetSettings();
+	WorkAmount = BuildingSettings->CivilianGatheringAmount;
+	S_SetMovementRate(100 / BuildingSettings->CivilianMoveTime);
+	Storage->S_SetLimit(BuildingSettings->CivilianStorageLimit +
+		GetOriginBuilding()->GetEfficiency() *
+		GetOriginBuilding()->GetSettings()->CivilianStorageLimitIncreasePerEfficiencyPercentage);
 }
+// ----------------- Utility ------------------------
 
-void ACivilian::S_Tick(const float DeltaSeconds)
+EEntityType ACivilian::GetEntityType() const
 {
-	if (bProgresserActive)
-	{
-		const float NewProgressRate = CalculateProgressRate();
-		if (ProgressRate != NewProgressRate)
-		{
-			ProgressRate = NewProgressRate;
-			MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, ProgressRate, this)
-			ForceNetUpdate();
-		}
-		ProgressTick(DeltaSeconds);
-		if (Progress >= 100.f)
-		{
-			FinishProgress();
-			Progress = 0.f;
-			MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Progress, this)
-			ForceNetUpdate();
-		}
-	}
-}
-
-void ACivilian::C_Tick(const float DeltaSeconds)
-{
-	if (bProgresserActive)
-	{
-		ProgressTick(DeltaSeconds);
-	}
-}
-
-void ACivilian::BeginDestroy()
-{
-	Super::BeginDestroy();
-	S_HandleDeath();
-}
-
-void ACivilian::S_HandleDeath()
-{
-	if (!CurrentTile.IsValid()) return;
-	CurrentTile->RemoveCivilian(this);
-	Destroy();
-}
-
-void ACivilian::S_StartProgresser(const std::function<float()>& ProgressRateCalculator,
-                                  const std::function<void()>& Finisher)
-{
-	if (!ProgressRateCalculator || !Finisher) return;
-	bProgresserActive = true;
-	Progress = 0.f;
-	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, bProgresserActive, this)
-	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Progress, this)
-	CalculateProgressRate = ProgressRateCalculator;
-	FinishProgress = Finisher;
-	ProgressRate = CalculateProgressRate();
-	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, ProgressRate, this)
-	ForceNetUpdate();
-}
-
-void ACivilian::S_StopProgresser()
-{
-	bProgresserActive = false;
-	Progress = 0.f;
-	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, bProgresserActive, this)
-	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, Progress, this)
-	CalculateProgressRate = nullptr;
-	FinishProgress = nullptr;
-	ProgressRate = 0.f;
-	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, ProgressRate, this)
-	ForceNetUpdate();
-}
-
-void ACivilian::ProgressTick(float DeltaSeconds)
-{
-	if (Progress == 100.f) return;
-	Progress += ProgressRate * DeltaSeconds;
-	if (Progress > 100.f)
-		Progress = 100.f;
+	return EEntityType::Civilian;
 }
 
 // ----------------- Working ------------------------
@@ -147,6 +60,11 @@ void ACivilian::ProgressTick(float DeltaSeconds)
 bool ACivilian::IsTileValidForWork(const ATile* Tile) const
 {
 	return false;
+}
+
+int32 ACivilian::GetWorkAmount() const
+{
+	return WorkAmount; 
 }
 
 void ACivilian::S_Work()
@@ -170,17 +88,27 @@ bool ACivilian::IsCurrentTilePriorityTile() const
 
 float ACivilian::GetWorkRate() const
 {
-	return 100.f / OriginBuilding->GetSettings()->CivilianProductionTime * OriginBuilding->GetEfficiency();
+	return 100.f / GetOriginBuilding()->GetSettings()->CivilianGatheringTime * GetOriginBuilding()->GetEfficiency();
+}
+
+ATile* ACivilian::GetPriorityTile() const
+{
+	return PriorityTile.Get(); 
+}
+
+void ACivilian::S_SetPriorityTile(ATile* NewPriorityTile)
+{
+	PriorityTile = NewPriorityTile; 
 }
 
 bool ACivilian::HasResourcesInInventory() const
 {
-	return GetResourceInventory().Food > 0 || GetResourceInventory().Stone > 0 || GetResourceInventory().Wood > 0;
+	return Storage->GetCurrent() > 0;
 }
 
 bool ACivilian::IsInventoryFull() const
 {
-	return GetResourceInventory() == GetResourceInventoryLimit();
+	return Storage->IsFull();
 }
 
 bool ACivilian::IsCurrentTileOriginBuilding() const
@@ -191,39 +119,27 @@ bool ACivilian::IsCurrentTileOriginBuilding() const
 
 void ACivilian::S_UnloadResources()
 {
-	GetOriginBuilding()->GetSettlement()->S_AddResources(GetResourceInventory());
-	ResourceInventory = FGameResources::Zero();
+	GetOriginBuilding()->GetResourceStorage()->S_Add(Storage->GetCurrent());
+	Storage->S_Empty();
 }
 
-void ACivilian::S_AddResources(const FGameResources Resources)
+UResourceStorage* ACivilian::GetStorage() const
 {
-	if (Resources <= FGameResources::Zero() || IsInventoryFull()) return;
-
-	if (ResourceInventory.Food < ResourceInventoryLimit.Food)
-	{
-		ResourceInventory.Food = FMath::Min(ResourceInventoryLimit.Food, ResourceInventory.Food + Resources.Food);
-	}
-	if (ResourceInventory.Stone < ResourceInventoryLimit.Stone)
-	{
-		ResourceInventory.Stone = FMath::Min(ResourceInventoryLimit.Stone, ResourceInventory.Stone + Resources.Stone);
-	}
-	if (ResourceInventory.Wood < ResourceInventoryLimit.Wood)
-	{
-		ResourceInventory.Wood = FMath::Min(ResourceInventoryLimit.Wood, ResourceInventory.Wood + Resources.Wood);
-	}
+	return Storage; 
 }
 
 bool ACivilian::S_TryFindPathToClosestWorkTile()
 {
-	if (!CurrentTile.IsValid()) return false;
+	if (!GetCurrentTile() || !S_GetGameState()->GetTileMap()) return false;
 	if (IsTileValidForWork(GetCurrentTile())) return true;
-	const TArray<ATile*> ResultPath = GameState->GetTileMap()->FindPathToNearestTile(GetCurrentTile(), EEntityType::Civilian,
-	                                                      [this](const ATile* Tile)
-	                                                      {
-		                                                      return IsTileValidForWork(Tile);
-	                                                      });
+	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTile(
+		GetCurrentTile(), EEntityType::Civilian,
+                                                  [this](const ATile* Tile)
+                                                  {
+                                                      return IsTileValidForWork(Tile);
+                                                  });
 	if (ResultPath.IsEmpty()) return false;
-	Path = ResultPath;
+	S_SetPath(ResultPath);
 	return true;
 }
 
@@ -231,84 +147,64 @@ bool ACivilian::S_TryFindPathToWorkTileClosestToSettlement()
 {
 	if (!GetOriginBuilding() ||
 		!GetOriginBuilding()->GetSettlement() ||
-		GetOriginBuilding()->GetSettlement()->ClaimedTiles.IsEmpty())
+		GetOriginBuilding()->GetSettlement()->ClaimedTiles.IsEmpty() ||
+		!S_GetGameState()->GetTileMap())
 		return false;
 	for (ATile* ClaimedTile : GetOriginBuilding()->GetSettlement()->ClaimedTiles)
 	{
 		if (IsTileValidForWork(ClaimedTile))
 		{
-			const TArray<ATile*> ResultPath = GameState->GetTileMap()->GetPath(CurrentTile.Get(), ClaimedTile);
+			const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->GetPath(GetCurrentTile(), ClaimedTile);
 			if (!ResultPath.IsEmpty())
 			{
-				Path = ResultPath;
+				S_SetPath(ResultPath);
 				return true;
 			}
 		}
 	}
-	const TArray<ATile*> ResultPath = GameState->GetTileMap()->FindPathToNearestTile(
+	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTile(
 		GetOriginBuilding()->GetSettlement()->ClaimedTiles,
-		CurrentTile.Get(), EEntityType::Civilian,
+		GetCurrentTile(), EEntityType::Civilian,
 		[this](const ATile* Tile)
 		{
 			return IsTileValidForWork(Tile);
 		});
 	if (ResultPath.IsEmpty()) return false;
-	Path = ResultPath;
+	S_SetPath(ResultPath);
 	return true;
+}
+
+void ACivilian::S_HandleEfficiencyChange(float Change)
+{
+	if (!GetOriginBuilding())
+		return;
+	Storage->S_SetLimit(GetOriginBuilding()->GetSettings()->CivilianStorageLimit +
+		GetOriginBuilding()->GetEfficiency() *
+		GetOriginBuilding()->GetSettings()->CivilianStorageLimitIncreasePerEfficiencyPercentage);
 }
 
 bool ACivilian::S_TryFindPathToPriorityTile()
 {
-	if (!CurrentTile.IsValid() || !PriorityTile.IsValid()) return false;
-	const TArray<ATile*> ResultPath = GameState->GetTileMap()->GetPath(GetCurrentTile(), GetPriorityTile(),
+	if (!GetCurrentTile() ||
+		!PriorityTile.IsValid() ||
+		!S_GetGameState()->GetTileMap()) return false;
+	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->GetPath(GetCurrentTile(), GetPriorityTile(),
 	                                                                   EEntityType::Civilian);
 	if (ResultPath.IsEmpty()) return false;
-	Path = ResultPath;
+	S_SetPath(ResultPath);
 	return true;
 }
 
 bool ACivilian::S_TryFindPathToOriginBuilding()
 {
-	if (!CurrentTile.IsValid() || !OriginBuilding.IsValid() || !GetOriginBuilding()->GetTile()) return false;
+	if (!GetCurrentTile() ||
+		!GetOriginBuilding() ||
+		!GetOriginBuilding()->GetTile() ||
+		!S_GetGameState()->GetTileMap()) return false;
 
-	const TArray<ATile*> ResultPath = GameState->GetTileMap()->GetPath(GetCurrentTile(), GetOriginBuilding()->GetTile(),
+	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->GetPath(GetCurrentTile(), GetOriginBuilding()->GetTile(),
 	                                                                   EEntityType::Civilian);
 	if (ResultPath.IsEmpty()) return false;
-	Path = ResultPath;
+	S_SetPath(ResultPath);
 	return true;
-}
-
-// ----------------- Moving ------------------------
-
-void ACivilian::OnRep_NetLocation()
-{
-	SetActorLocation(NetLocation);
-}
-
-void ACivilian::SetNetLocation(const FVector& NewNetLocation)
-{
-	SetActorLocation(NewNetLocation);
-	NetLocation = NewNetLocation;
-	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, NetLocation, this)
-}
-
-void ACivilian::S_MoveToNextTileOnPath()
-{
-	ATile* NewCurrent = nullptr;
-	if (!Path.IsEmpty())
-	{
-		NewCurrent = Path.Pop();
-	}
-	if (!NewCurrent) return;
-	CurrentTile->RemoveCivilian(this);
-	FVector NewLocation = FVector();
-	NewCurrent->AddCivilian(this, NewLocation);
-	SetNetLocation(NewLocation);
-	CurrentTile = NewCurrent;
-	MARK_PROPERTY_DIRTY_FROM_NAME(ACivilian, CurrentTile, this)
-}
-
-bool ACivilian::IsPathValid()
-{
-	return !Path.IsEmpty() && Path[Path.Num() - 1]->AcceptsCivilian();
 }

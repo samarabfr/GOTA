@@ -5,6 +5,8 @@
 #include "EnhancedInputComponent.h"
 #include "InputAction.h"
 #include "InputDataAsset.h"
+#include "GOTA/CoreSystems/Entity/Army.h"
+#include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Guardian/Ability.h"
 #include "GOTA/CoreSystems/Guardian/AbilityIndicator.h"
 #include "GOTA/UI/Ingame/AbilitySlot.h"
@@ -60,7 +62,6 @@ void APC_Ingame::S_Init()
 	AAbilityIndicator* NewAbilityIndicator = GetWorld()->SpawnActor<AAbilityIndicator>(
 		AbilityIndicatorClass, AbilityIndicatorSpawnParams);
 	S_SetAbilityIndicator(NewAbilityIndicator);
-	NewMouseUtils->AttachActorToTilePosition(NewAbilityIndicator);
 
 	// Create BuildingPlacer
 	FActorSpawnParameters BuildingPlacerSpawnParams;
@@ -69,6 +70,9 @@ void APC_Ingame::S_Init()
 		BuildingPlacerClass, BuildingPlacerSpawnParams);
 	NewBuildingPlacer->S_Init(NewMouseUtils);
 	S_SetBuildingPlacer(NewBuildingPlacer);
+
+	// DistanceUtils
+	OnGuardianChanged.AddDynamic(this, &APC_Ingame::InitDistanceUtils);
 
 	ForceNetUpdate();
 }
@@ -94,15 +98,12 @@ void APC_Ingame::S_SetAbilityIndicator(AAbilityIndicator* NewAbilityIndicator)
 
 void APC_Ingame::OnRep_Guardian()
 {
-	OnGuardianChanged();
+	OnGuardianChanged.Broadcast(Guardian);
 }
 
-void APC_Ingame::OnGuardianChanged()
+void APC_Ingame::InitDistanceUtils(AGuardian* _)
 {
-	if (!Guardian)
-		return;
-
-	if (!IsLocalController())
+	if (!Guardian || !IsLocalController() || !DistanceUtils)
 		return;
 
 	DistanceUtils->AttachToActor(Guardian, FAttachmentTransformRules::SnapToTargetIncludingScale);
@@ -111,16 +112,16 @@ void APC_Ingame::OnGuardianChanged()
 void APC_Ingame::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	SetGuardian(Cast<AGuardian>(InPawn));
+	S_SetGuardian(Cast<AGuardian>(InPawn));
 
 	FRotator InitialRotation = FRotator(-30.0f, 0.0f, 0.0f); // Adjust these values
 	SetControlRotation(InitialRotation);
 }
 
-void APC_Ingame::SetGuardian(AGuardian* NewGuardian)
+void APC_Ingame::S_SetGuardian(AGuardian* NewGuardian)
 {
 	Guardian = NewGuardian;
-	OnGuardianChanged();
+	OnGuardianChanged.Broadcast(Guardian);
 	MARK_PROPERTY_DIRTY_FROM_NAME(APC_Ingame, Guardian, this)
 }
 
@@ -140,16 +141,19 @@ void APC_Ingame::S_SetBuildingPlacer(ABuildingPlacer* NewBuildingPlacer)
 
 void APC_Ingame::StartPlacingBuilding(UBuildingSettings* Building)
 {
+	if (!BuildingPlacer) return;
 	BuildingPlacer->StartPlacingBuilding(Building);
 }
 
 void APC_Ingame::StopPlacingBuilding()
 {
+	if (!BuildingPlacer) return;
 	BuildingPlacer->StopPlacingBuilding();
 }
 
 void APC_Ingame::PlaceBuilding()
 {
+	if (!BuildingPlacer) return;
 	BuildingPlacer->PlaceBuilding();
 }
 
@@ -158,7 +162,7 @@ void APC_Ingame::PlaceBuilding()
 
 void APC_Ingame::ActivateCurrentlyTargetingAbility()
 {
-	if (!CurrentlyTargeting.IsValid()) return;
+	if (!CurrentlyTargeting.IsValid() || !MouseUtils.IsValid()) return;
 
 	CurrentlyTargeting.Get()->ActivateAbility(MouseUtils->GetHoverAbilityTarget());
 	CancelTargeting();
@@ -167,13 +171,49 @@ void APC_Ingame::ActivateCurrentlyTargetingAbility()
 void APC_Ingame::StartTargeting(AAbility* Ability)
 {
 	CurrentlyTargeting = Ability;
+	if (!AbilityIndicator.Get()) return;
+
+	if (Guardian)
+		AbilityIndicator->SetGuardian(Guardian);
+
+	AbilityIndicator->SetAbility(Ability);
 	AbilityIndicator->Activate();
+
+	MouseUtils->OnHoverActorChanged.AddDynamic(this, &APC_Ingame::UpdateTarget);
+	UpdateTarget(MouseUtils->GetHoverActor());
+}
+
+void APC_Ingame::UpdateTarget(AActor* NewTargetActor)
+{
+	FAbilityTarget NewAbilityTarget = FAbilityTarget();
+	if (ATile* TileTarget = Cast<ATile>(NewTargetActor))
+	{
+		NewAbilityTarget.Tile = TileTarget;
+	}
+	else if (AGuardian* GuardianTarget = Cast<AGuardian>(NewTargetActor))
+	{
+		NewAbilityTarget.Guardian = GuardianTarget;
+	}
+	else if (ACivilian* CivilianTarget = Cast<ACivilian>(NewTargetActor))
+	{
+		NewAbilityTarget.Civilian = CivilianTarget;
+	}
+	else if (AArmy* ArmyTarget = Cast<AArmy>(NewTargetActor))
+	{
+		NewAbilityTarget.Army = ArmyTarget;
+	}
+	AbilityIndicator->SetTarget(NewAbilityTarget);
+	if (CurrentlyTargeting.IsValid())
+		AbilityIndicator->SetTargetValidity(CurrentlyTargeting->IsValidTarget(NewAbilityTarget));
 }
 
 void APC_Ingame::CancelTargeting()
 {
 	CurrentlyTargeting = nullptr;
+	if (!AbilityIndicator.Get()) return;
 	AbilityIndicator->Deactivate();
+
+	MouseUtils->OnHoverActorChanged.RemoveDynamic(this, &APC_Ingame::UpdateTarget);
 }
 
 void APC_Ingame::ActivateAbility(FName SlotName)
@@ -241,15 +281,14 @@ void APC_Ingame::OnRep_MouseUtils()
 
 void APC_Ingame::MouseUtilsChanged()
 {
-	if (IsLocalController())
-	{
-		MouseUtils->SetPlayerController(this);
-		MouseUtils->OnHoverActorChanged.AddDynamic(this, &APC_Ingame::HoverActorChanged);
-	}
+	if (!IsLocalController() || !MouseUtils.IsValid()) return;
+	MouseUtils->SetPlayerController(this);
+	MouseUtils->OnHoverActorChanged.AddDynamic(this, &APC_Ingame::HoverActorChanged);
 }
 
 void APC_Ingame::HoverActorChanged(AActor* Actor)
 {
+	if (!IngameUI) return;
 	IngameUI->HoverActor(Actor);
 }
 
@@ -301,7 +340,7 @@ void APC_Ingame::LeftClick(const FInputActionInstance& Instance)
 	{
 		ActivateCurrentlyTargetingAbility();
 	}
-	else if (BuildingPlacer->IsPlacing())
+	else if (BuildingPlacer && BuildingPlacer->IsPlacing())
 	{
 		PlaceBuilding();
 	}

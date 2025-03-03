@@ -5,13 +5,13 @@
 
 #include "TileMap.h"
 #include "Algo/RandomShuffle.h"
+#include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Entity/Civilian.h"
 #include "GOTA/CoreSystems/Faction/Building/Building.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingArmy.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingCivilian.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingDefense.h"
 #include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
-#include "GOTA/CoreSystems/Faction/Building/BuildingDirectProduction.h"
 #include "GOTA/CoreSystems/Faction/Building/Population.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
@@ -82,6 +82,22 @@ void ATile::S_Init()
 	SpawnOceanLineMeshes();
 }
 
+void ATile::Delete()
+{
+	if (Army.IsValid())
+	{
+		Army->Delete();
+	}
+	for (ACivilian* Civilian : Civilians)
+	{
+		if (Civilian)
+		{
+			Civilian->Delete();
+		}
+	}
+	Destroy();
+}
+
 TArray<ATile*> ATile::GetPathTo(ATile* Target)
 {
 	return ATileMap::GetPath(this, Target);
@@ -111,9 +127,40 @@ bool ATile::AcceptsEntity(const EEntityType EntityType) const
 	return false;
 }
 
+void ATile::AddEntity(AEntity* Entity, const EEntityType EntityType, FVector& NewLocation)
+{
+	if (EntityType == EEntityType::Civilian)
+	{
+		ACivilian* CivilianToRemove = Cast<ACivilian>(Entity);
+		AddCivilian(CivilianToRemove, NewLocation);
+		return;
+	}
+	if (EntityType == EEntityType::Army)
+	{
+		AArmy* ArmyToRemove = Cast<AArmy>(Entity);
+		SetArmy(ArmyToRemove, NewLocation);
+		return;
+	}
+}
+
+void ATile::RemoveEntity(AEntity* Entity, const EEntityType EntityType)
+{
+	if (EntityType == EEntityType::Civilian)
+	{
+		ACivilian* CivilianToRemove = Cast<ACivilian>(Entity);
+		RemoveCivilian(CivilianToRemove);
+		return;
+	}
+	if (EntityType == EEntityType::Army)
+	{
+		RemoveArmy();
+		return;
+	}
+}
+
 AArmy* ATile::GetArmy() const
 {
-	return Army;
+	return Army.Get();
 }
 
 bool ATile::AcceptsArmy() const
@@ -122,13 +169,13 @@ bool ATile::AcceptsArmy() const
 		GetBuilding() &&
 		GetBuilding()->GetSettings()->bDefenseEnabled)
 		return false;
-	return !Army;
+	return !Army.IsValid();
 }
 
 void ATile::SetArmy(AArmy* NewArmy, FVector& NewLocation)
 {
 	Army = NewArmy;
-	if (Army) NewLocation = Settings->ArmySlot + GetActorLocation();
+	if (Army.IsValid()) NewLocation = Settings->ArmySlot + GetActorLocation();
 }
 
 void ATile::RemoveArmy()
@@ -161,7 +208,7 @@ void ATile::AddCivilian(ACivilian* Civilian, FVector& NewLocation)
 	}
 }
 
-void ATile::RemoveCivilian(const ACivilian* Civilian)
+void ATile::RemoveCivilian(ACivilian* Civilian)
 {
 	for (int32 i = 0; i < Civilians.Num(); ++i)
 	{
@@ -193,29 +240,70 @@ void ATile::BuildingChanged()
 	}
 }
 
-bool ATile::CanBuild()
+bool ATile::CanBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
-	return !Building && Terrain.Biome != EBiome::Volcano;
+	// Check if the Building allows to be placed on this Tile
+	for (FGameplayTagRule PlacementRule : BuildingDataAsset->PlacementRules)
+	{
+		if (!PlacementRule.IsValid(GameplayTags))
+		{
+			return false;
+		}
+	}
+	// ifs instead of one condition to make debugging easier
+	if (Building)
+	{
+		return false;
+	}
+	if (Terrain.Biome == EBiome::Volcano)
+	{
+		return false;
+	}
+	if (Builder == nullptr)
+	{
+		return false;
+	}
+	if (Builder->GetCountOfConstructionSites() >
+		Builder->GetCountOfBuilders() + Settings->ExtraAllowedConstructionSites)
+	{
+		return false;
+	}
+	if (!Builder->IsBorderingUnclaimedTile(this))
+	{
+		return false;
+	}
+	return true;
 }
 
 bool ATile::S_TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
-	if (!CanBuild() || !Builder) return false;
+	if (!CanBuild(BuildingDataAsset, Builder))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Tried to build despite not being allowed."))
+		return false;
+	}
+	return S_TryForceBuild(BuildingDataAsset, Builder);
+}
+
+bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
+{
+	if (!Builder)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Tried to build without a valid builder!"))
+		return false;
+	}
 	//check if multiple production things are on
 	int32 EnabledCount = 0;
-	EnabledCount += BuildingDataAsset->bDirectProductionEnabled;
 	EnabledCount += BuildingDataAsset->bCivilianEnabled;
 	EnabledCount += BuildingDataAsset->bArmyEnabled;
+	EnabledCount += BuildingDataAsset->bDefenseEnabled;
 	if (EnabledCount > 1)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Multiple building types enabled in BuildingDataAsset. Only one allowed!"))
 		return false;
 	}
-	Builder->S_RegisterTile(this);
 	// Choose fitting class
-	if (BuildingDataAsset->bDirectProductionEnabled)
-		Building = NewObject<UBuildingDirectProduction>();
-	else if (BuildingDataAsset->bCivilianEnabled)
+	if (BuildingDataAsset->bCivilianEnabled)
 		Building = NewObject<UBuildingCivilian>();
 	else if (BuildingDataAsset->bArmyEnabled)
 		Building = NewObject<UBuildingArmy>();
@@ -233,6 +321,8 @@ bool ATile::S_TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builde
 
 	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, GameplayTags, this);
 	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, Building, this);
+	
+	Builder->S_RegisterTile(this, Building);
 
 	OnGameplayTagsChanged.Broadcast();
 	BuildingChanged();
@@ -243,7 +333,7 @@ bool ATile::S_TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builde
 void ATile::S_Unbuild()
 {
 	if (!Building) return;
-	Building->GetSettlement()->S_UnregisterTile(this);
+	Building->GetSettlement()->S_UnregisterTile(this, Building);
 	GameplayTags.RemoveTags(Building->GetSettings()->GameplayTags);
 	OnGameplayTagsChanged.Broadcast();
 	RemoveReplicatedSubObject(Building);
