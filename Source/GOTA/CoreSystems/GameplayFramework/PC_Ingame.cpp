@@ -188,17 +188,22 @@ void APC_Ingame::UpdateTarget(AActor* NewTargetActor)
 	if (ATile* TileTarget = Cast<ATile>(NewTargetActor))
 	{
 		NewAbilityTarget.Tile = TileTarget;
-	} else if (AGuardian* GuardianTarget = Cast<AGuardian>(NewTargetActor))
+	}
+	else if (AGuardian* GuardianTarget = Cast<AGuardian>(NewTargetActor))
 	{
 		NewAbilityTarget.Guardian = GuardianTarget;
-	} else if (ACivilian* CivilianTarget = Cast<ACivilian>(NewTargetActor))
+	}
+	else if (ACivilian* CivilianTarget = Cast<ACivilian>(NewTargetActor))
 	{
 		NewAbilityTarget.Civilian = CivilianTarget;
-	} else if (AArmy* ArmyTarget = Cast<AArmy>(NewTargetActor))
+	}
+	else if (AArmy* ArmyTarget = Cast<AArmy>(NewTargetActor))
 	{
 		NewAbilityTarget.Army = ArmyTarget;
 	}
 	AbilityIndicator->SetTarget(NewAbilityTarget);
+	if (CurrentlyTargeting.IsValid())
+		AbilityIndicator->SetTargetValidity(CurrentlyTargeting->IsValidTarget(NewAbilityTarget));
 }
 
 void APC_Ingame::CancelTargeting()

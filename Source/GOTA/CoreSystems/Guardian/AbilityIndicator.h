@@ -30,41 +30,49 @@ public:
 
 	// ---------------------------------------- Utility ----------------------------------------
 private:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category = "Ability Indicator")
 	float RotationSpeed = 1.0f;
-
+	
+	UPROPERTY(EditAnywhere, Category = "Ability Indicator")
+	UMaterialInstance* ValidMaterial;
+	
+	UPROPERTY(EditAnywhere, Category = "Ability Indicator")
+	UMaterialInstance* InvalidMaterial;
+	
 	UPROPERTY(VisibleAnywhere)
 	USceneComponent* Rotator;
 
-	
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* StonePlateMesh;
 
-	
 	UPROPERTY(EditAnywhere)
 	UWidgetComponent* FrontIcon;
-	
+
 	UPROPERTY(EditAnywhere)
 	UWidgetComponent* BackIcon;
 
-	
 	UPROPERTY()
 	UGotaImage* IconWidget;
-	
+
 	UPROPERTY(VisibleAnywhere)
 	UNiagaraComponent* GuardianNiagaraEffect;
+
+	UPROPERTY(EditAnywhere)
+	UStaticMeshComponent* ValidityMesh;
+
+
 
 public:
 	/**
 	 * Sets a new Guardian that is using this indicator.
 	 */
 	void SetGuardian(AGuardian* Guardian);
-	
+
 	/**
 	 * Sets a new Ability to target. Currently only sets the Icon on the stone plate to represent the Ability
 	 */
 	void SetAbility(AAbility* Ability);
-	
+
 	/**
 	 *	Sets a new Target for this indicator. Moves the indicator to the target, scales the graphics to fit
 	 *	the target type. In case of a Guardian it will disable the graphics in world and tell the UI to
@@ -73,10 +81,15 @@ public:
 	void SetTarget(const FAbilityTarget& NewAbilityTarget);
 
 	/**
+	 * Tells the Indicator if the current target is a valid Target for the ability
+	 */
+	void SetTargetValidity(const bool IsValid);
+
+	/**
 	 *	Activates the graphics that represent the targeting of an Ability.
 	 */
 	void Activate();
-	
+
 	/**
 	 * Deactivates all graphics of this Indicator
 	 */

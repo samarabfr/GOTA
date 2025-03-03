@@ -41,6 +41,9 @@ AAbilityIndicator::AAbilityIndicator()
 
 	GuardianNiagaraEffect = CreateDefaultSubobject<UNiagaraComponent>("Guardian Effect");
 	GuardianNiagaraEffect->SetupAttachment(RootComponent);
+	
+	ValidityMesh = CreateDefaultSubobject<UStaticMeshComponent>("Validity Mesh");
+	ValidityMesh->SetupAttachment(RootComponent);
 }
 
 void AAbilityIndicator::BeginPlay()
@@ -92,6 +95,7 @@ void AAbilityIndicator::SetTarget(const FAbilityTarget& NewAbilityTarget)
 		SetActorLocation(NewAbilityTarget.Tile.Get()->GetActorLocation());
 		Rotator->SetRelativeLocation(FVector(0, 0, 600));
 		GuardianNiagaraEffect->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
+		ValidityMesh->SetRelativeScale3D(FVector(1.0f, 1.0f, 1.0f));
 	}
 	else if (NewAbilityTarget.Guardian.IsValid())
 	{
@@ -105,6 +109,7 @@ void AAbilityIndicator::SetTarget(const FAbilityTarget& NewAbilityTarget)
 		SetActorLocation(NewAbilityTarget.Civilian.Get()->GetActorLocation());
 		Rotator->SetRelativeLocation(FVector(0, 0, 800));
 		GuardianNiagaraEffect->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));
+		ValidityMesh->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));
 	}
 	else if (NewAbilityTarget.Army.IsValid())
 	{
@@ -112,6 +117,18 @@ void AAbilityIndicator::SetTarget(const FAbilityTarget& NewAbilityTarget)
 		SetActorLocation(NewAbilityTarget.Army.Get()->GetActorLocation());
 		Rotator->SetRelativeLocation(FVector(0, 0, 800));
 		GuardianNiagaraEffect->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));
+		ValidityMesh->SetRelativeScale3D(FVector(0.5f, 0.5f, 0.5f));
+	}
+}
+
+void AAbilityIndicator::SetTargetValidity(const bool IsValid)
+{
+	if (IsValid)
+	{
+		ValidityMesh->SetMaterial(0, ValidMaterial);
+	} else
+	{
+		ValidityMesh->SetMaterial(0, InvalidMaterial);
 	}
 }
 
