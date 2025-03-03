@@ -180,6 +180,7 @@ void APC_Ingame::StartTargeting(AAbility* Ability)
 	AbilityIndicator->Activate();
 
 	MouseUtils->OnHoverActorChanged.AddDynamic(this, &APC_Ingame::UpdateTarget);
+	UpdateTarget(MouseUtils->GetHoverActor());
 }
 
 void APC_Ingame::UpdateTarget(AActor* NewTargetActor)
