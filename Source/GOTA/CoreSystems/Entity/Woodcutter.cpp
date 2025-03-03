@@ -12,6 +12,8 @@ void AWoodcutter::S_Work()
 
 bool AWoodcutter::IsTileValidForWork(const ATile* Tile) const
 {
+	if (!Tile)
+		return false;
 	return Tile->EcoValues->GetTrees() > 0;
 }
 

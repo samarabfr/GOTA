@@ -3,7 +3,10 @@
 #include "BuildingSettings.h"
 #include "GOTA/CoreSystems/Entity/Army.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
+#include "GOTA/CoreSystems/GameplayFramework/CombatValues.h"
+#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
+#include "GOTA/CoreSystems/Tile/TileMap.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -35,9 +38,9 @@ UBuildingDefense::UBuildingDefense()
 	CombatValues = CreateDefaultSubobject<UCombatValues>("Combat Values");
 }
 
-void UBuildingDefense::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
+void UBuildingDefense::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement, AGS_Ingame* InGameState)
 {
-	Super::S_Init(InSettings, InTile, InSettlement);
+	Super::S_Init(InSettings, InTile, InSettlement, InGameState);
 	CombatValues->SetIndividualAttack(GetSettings()->DefenseIndividualAttack);
 	CombatValues->SetIndividualMaxHP(GetSettings()->DefenseIndividualMaxHP);
 	CombatValues->SetIndividualCount(GetSettings()->DefenseIndividualCount);
@@ -52,12 +55,12 @@ void UBuildingDefense::S_Tick(float DeltaSeconds)
 {
 	Super::S_Tick(DeltaSeconds);
 	C_Tick(DeltaSeconds);
-	if(!bIsAttacking && HasEnemyOnNeighboringTile())
+	if (!bIsAttacking && HasEnemyOnNeighboringTile())
 	{
 		bIsAttacking = true;
 		AttackProgress = 0.0f;
 	}
-	else if(bIsAttacking && !HasEnemyOnNeighboringTile())
+	else if (bIsAttacking && !HasEnemyOnNeighboringTile())
 	{
 		bIsAttacking = true;
 		AttackProgress = 0.0f;
@@ -116,6 +119,28 @@ void UBuildingDefense::S_BuildingDefenseTakeDamage(int32 Damage)
 	CombatValues->SetCurrentTotalHP(CombatValues->GetCurrentTotalHP() - Damage);
 }
 
+void UBuildingDefense::S_FinishConstruction()
+{
+	Super::S_FinishConstruction();
+	if (!S_GetGameState() || !S_GetGameState()->GetTileMap()) return;
+	TArray<ATile*> Origin;
+	Origin.Add(GetTile());
+	TMap<ATile*, int8> Buildings = S_GetGameState()->GetTileMap()->FindAllTilesWithRangesInRange(Origin,
+		GetSettings()->RavageProtectionRange, EEntityType::None,
+		[](const ATile* BuildingTile)
+		{
+			return BuildingTile && BuildingTile->GetBuilding() && !BuildingTile->GetBuilding()->GetSettings()->
+				bDefenseEnabled;
+		});
+	for (auto Building : Buildings)
+	{
+		if (Building.Key->GetClaimant()->GetAffiliation() == GetTile()->GetClaimant()->GetAffiliation())
+		{
+			Building.Key->GetBuilding()->S_RegisterProtector(this);
+		}
+	}
+}
+
 void UBuildingDefense::S_AttackEnemy()
 {
 	// choose enemy randomly
@@ -129,11 +154,28 @@ void UBuildingDefense::S_AttackEnemy()
 
 void UBuildingDefense::S_HandleDeath()
 {
+	if (!S_GetGameState() || !S_GetGameState()->GetTileMap()) return;
+	TArray<ATile*> Origin;
+	Origin.Add(GetTile());
+	TMap<ATile*, int8> Buildings = S_GetGameState()->GetTileMap()->FindAllTilesWithRangesInRange(Origin,
+		GetSettings()->RavageProtectionRange, EEntityType::None,
+		[](const ATile* BuildingTile)
+		{
+			return BuildingTile && BuildingTile->GetBuilding() && !BuildingTile->GetBuilding()->GetSettings()->
+				bDefenseEnabled;
+		});
+	for (auto Building : Buildings)
+	{
+		if (Building.Key->GetClaimant()->GetAffiliation() == GetTile()->GetClaimant()->GetAffiliation())
+		{
+			Building.Key->GetBuilding()->S_UnregisterProtector(this);
+		}
+	}
 	GetTile()->S_Unbuild();
 }
 
 void UBuildingDefense::S_HandlePopSizeChanged(int16 ChangedBy)
 {
-	if(!CombatValues) return;
+	if (!CombatValues) return;
 	CombatValues->SetIndividualCount(GetPopulation()->GetSize());
 }
