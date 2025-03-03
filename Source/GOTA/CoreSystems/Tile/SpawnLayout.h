@@ -7,26 +7,26 @@
 #include "GameFramework/Actor.h"
 #include "SpawnLayout.generated.h"
 
-USTRUCT(BlueprintType)
+USTRUCT()
 struct FSpawnLayout
 {
 	GENERATED_BODY()
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+
+	UPROPERTY(EditDefaultsOnly)
 	FSpawnPoint MainBuilding;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly)
 	TArray<FSpawnPoint> Trees;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly)
 	TArray<FSpawnPoint> Buildings;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly)
 	TArray<FSpawnPoint> Props;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly)
 	TArray<FSpawnPoint> Forage;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly)
 	TArray<FSpawnPoint> Foliage;
 };

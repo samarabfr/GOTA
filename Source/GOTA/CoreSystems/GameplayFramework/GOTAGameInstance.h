@@ -36,4 +36,16 @@ private:
 public:
 	UTileAsset* GetDefaultTileAsset() const { return DefaultTileAsset; }
 	UDataTable* GetTileAssetRegister() const { return TileAssetRegister; }
+
+	// ------------------- Tile Layout Provider -------------------
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "Tile Layout Provider")
+	UDataTable* TileLayoutRegister;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Tile Layout Provider")
+	UDataTable* SpawnLayoutRegister;
+
+public:
+	UDataTable* GetTileLayoutRegister() const { return TileLayoutRegister; }
+	UDataTable* GetSpawnLayoutRegister() const { return SpawnLayoutRegister; }
 };
