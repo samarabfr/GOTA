@@ -15,5 +15,5 @@ struct GOTA_API FSpawnLayoutRegisterEntry : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditDefaultsOnly)
-	ASpawnLayoutActor* SpawnLayoutActor;
+	TSubclassOf<ASpawnLayoutActor> SpawnLayoutActorClass = nullptr;
 };

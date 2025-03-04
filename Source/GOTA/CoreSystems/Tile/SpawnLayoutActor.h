@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "TileLayout.h"
 #include "GameFramework/Actor.h"
 #include "SpawnLayoutActor.generated.h"
 
@@ -16,5 +17,32 @@ class GOTA_API ASpawnLayoutActor : public AActor
 
 public:
 	ASpawnLayoutActor();
+
+private:
+	UPROPERTY(EditDefaultsOnly, Category = "SpawnLayoutActor", meta = (ForceRebuildProperty))
+	ETileLayout TileLayout = ETileLayout::Layout_01;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "SpawnLayoutActor")
+	TArray<FGameplayTagRule> GameplayTagRules;
+
+	UPROPERTY(EditDefaultsOnly, Category = "SpawnLayoutActor")
+	bool GuaranteedIfPossible = false;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "SpawnLayoutActor")
+	FSpawnBias SpawnBias;
+
+	UPROPERTY(EditDefaultsOnly)
+	UStaticMeshComponent* Hexagon;
+
+public:
+	UFUNCTION(CallInEditor)
+	void SayHello()
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Hello!"));
+	}
+
+	ETileLayout GetTileLayout() { return TileLayout; }
+
+	FSpawnLayoutStruct GetSpawnLayout();
 
 };

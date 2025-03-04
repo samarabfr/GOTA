@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "SpawnLayoutDataAsset.h"
+#include "SpawnLayoutStruct.h"
 #include "GameFramework/Actor.h"
 #include "TileLayout.generated.h"
 
-UENUM()
+UENUM(meta = (ScriptName = "ETileLayout"))
 enum class ETileLayout : uint8
 {
 	Layout_01 UMETA(DisplayName = "Layout 01"),
@@ -45,6 +46,8 @@ struct FTileLayout : public FTableRowBase
 	UPROPERTY(EditDefaultsOnly)
 	TArray<USpawnLayoutDataAsset*> SpawnLayouts;
 
+	TArray<FSpawnLayoutStruct> SpawnLayoutStructs;
+	
 	/**
 	 * returns a random valid Rotation of this TileLayout with the given RiverConnections
 	 * 

@@ -225,10 +225,9 @@ private:
 	void InitTileLayout();
 	
 	// ---------------------SpawnLayout--------------------
-
-	UPROPERTY(VisibleInstanceOnly, Category="Tile")
-	USpawnLayoutDataAsset* SpawnLayoutDataAsset;
-
+	
+	FSpawnLayoutStruct* SpawnLayoutStruct;
+	
 public:
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_SpawnPointLayout, Category="Tile")
 	FSpawnLayout SpawnLayout;
@@ -243,5 +242,5 @@ private:
 
 	void ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints);
 
-	USpawnLayoutDataAsset* FindSpawnLayoutDataAsset();
+	FSpawnLayoutStruct* FindSpawnLayoutDataAsset();
 };

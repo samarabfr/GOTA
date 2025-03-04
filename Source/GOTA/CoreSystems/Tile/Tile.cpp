@@ -565,11 +565,12 @@ void ATile::OnRep_SpawnPointLayout()
 void ATile::ValidateSpawnLayout()
 {
 	// check if current SpawnPointLayout still works
-	if (SpawnLayoutDataAsset && SpawnLayoutDataAsset->IsValidFor(GameplayTags)) return;
-	SpawnLayoutDataAsset = FindSpawnLayoutDataAsset();
+	if (SpawnLayoutStruct && SpawnLayoutStruct->IsValidFor(GameplayTags)) return;
+	
+	SpawnLayoutStruct = FindSpawnLayoutDataAsset();
 	FSpawnLayout SL;
-	if (SpawnLayoutDataAsset)
-		SL = SpawnLayoutDataAsset->SpawnLayout;
+	if (SpawnLayoutStruct)
+		SL = SpawnLayoutStruct->SpawnLayout;
 	else
 		SL = FSpawnLayout();
 
@@ -604,34 +605,34 @@ void ATile::ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints)
 	}
 }
 
-USpawnLayoutDataAsset* ATile::FindSpawnLayoutDataAsset()
+FSpawnLayoutStruct* ATile::FindSpawnLayoutDataAsset()
 {
 	if (!TileLayout) return nullptr;
 	
 	// Find Valid Spawn Layouts
-	TArray<USpawnLayoutDataAsset*> PossibleLayouts;
-	for (USpawnLayoutDataAsset* DA_SpawnLayout : TileLayout->SpawnLayouts)
+	TArray<FSpawnLayoutStruct*> PossibleLayouts;
+	for (FSpawnLayoutStruct& Struct : TileLayout->SpawnLayoutStructs)
 	{
-		if (DA_SpawnLayout && DA_SpawnLayout->IsValidFor(GameplayTags))
+		if (Struct.IsValidFor(GameplayTags))
 		{
-			if (DA_SpawnLayout->GuaranteedIfPossible) return DA_SpawnLayout;
-			PossibleLayouts.Add(DA_SpawnLayout);
+			if (Struct.GuaranteedIfPossible) return &Struct;
+			PossibleLayouts.Add(&Struct);
 		}
 	}
 	if (PossibleLayouts.Num() <= 0) return nullptr;
 	// Weighted Random to select a SpawnLayout
 	int32 TotalBias = 0;
-	for (USpawnLayoutDataAsset* DA_SpawnLayout : PossibleLayouts)
+	for (FSpawnLayoutStruct* Struct : PossibleLayouts)
 	{
-		TotalBias += DA_SpawnLayout->SpawnBias.GetBiasAfterMultipliers(Terrain);
+		TotalBias += Struct->SpawnBias.GetBiasAfterMultipliers(Terrain);
 	}
 	int Count = FMath::RandRange(0, TotalBias - 1);
-	for (USpawnLayoutDataAsset* DA_SpawnLayout : PossibleLayouts)
+	for (FSpawnLayoutStruct* Struct : PossibleLayouts)
 	{
-		int32 Bias = DA_SpawnLayout->SpawnBias.GetBiasAfterMultipliers(Terrain);
+		int32 Bias = Struct->SpawnBias.GetBiasAfterMultipliers(Terrain);
 		if (Count < Bias)
 		{
-			return DA_SpawnLayout;
+			return Struct;
 		}
 		Count -= Bias;
 	}

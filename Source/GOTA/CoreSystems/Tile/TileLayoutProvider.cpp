@@ -3,6 +3,8 @@
 
 #include "TileLayoutProvider.h"
 
+#include "SpawnLayoutActor.h"
+#include "SpawnLayoutRegisterEntry.h"
 #include "GOTA/CoreSystems/GameplayFramework/GOTAGameInstance.h"
 
 void UTileLayoutProvider::Initialize(FSubsystemCollectionBase& Collection)
@@ -12,14 +14,42 @@ void UTileLayoutProvider::Initialize(FSubsystemCollectionBase& Collection)
 	const UGOTAGameInstance* GameInstance = Cast<UGOTAGameInstance>(GetGameInstance());
 
 	UDataTable* TileLayoutRegister = GameInstance->GetTileLayoutRegister();
-	if (!TileLayoutRegister) return;
+	if (TileLayoutRegister)
+	{
+		TileLayoutRegister->ForeachRow<FTileLayout>(
+			TEXT("Load Tile Layouts"),
+			[&](const FName& RowName, const FTileLayout& RowData)
+			{
+				int32 index = TileLayouts.Add(RowData);
+				GenerateSpawnLayoutStructsFromDataAssets(TileLayouts[index]);
+			});
+	}
 
-	TileLayoutRegister->ForeachRow<FTileLayout>(
-		TEXT("Load Tile Layouts"),
-		[&](const FName& RowName, const FTileLayout& RowData)
-		{
-			TileLayouts.Add(RowData);
-		});
+	UDataTable* SpawnLayoutRegister = GameInstance->GetSpawnLayoutRegister();
+	if (SpawnLayoutRegister)
+	{
+		SpawnLayoutRegister->ForeachRow<FSpawnLayoutRegisterEntry>(
+			TEXT("Load Spawn Layouts"),
+			[&](const FName& RowName, const FSpawnLayoutRegisterEntry& RowData)
+			{
+				ASpawnLayoutActor* Actor = RowData.SpawnLayoutActorClass->GetDefaultObject<ASpawnLayoutActor>();
+				GetTileLayout(Actor->GetTileLayout())->SpawnLayoutStructs.Add(Actor->GetSpawnLayout());
+			});
+	}
+}
+
+void UTileLayoutProvider::GenerateSpawnLayoutStructsFromDataAssets(FTileLayout& TileLayout)
+{
+	for (USpawnLayoutDataAsset* SpawnLayoutDataAsset : TileLayout.SpawnLayouts)
+	{
+		FSpawnLayoutStruct NewStruct = FSpawnLayoutStruct();
+		NewStruct.Name = SpawnLayoutDataAsset->Name;
+		NewStruct.SpawnBias = SpawnLayoutDataAsset->SpawnBias;
+		NewStruct.GameplayTagRules = SpawnLayoutDataAsset->GameplayTagRules;
+		NewStruct.GuaranteedIfPossible = SpawnLayoutDataAsset->GuaranteedIfPossible;
+		NewStruct.SpawnLayout = SpawnLayoutDataAsset->SpawnLayout;
+		TileLayout.SpawnLayoutStructs.Add(NewStruct);
+	}
 }
 
 FTileLayout* UTileLayoutProvider::GetTileLayout(ETileLayout Layout)

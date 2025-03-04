@@ -23,6 +23,7 @@ public:
 private:
 	TArray<FTileLayout> TileLayouts;
 
+	void GenerateSpawnLayoutStructsFromDataAssets(FTileLayout& TileLayout);
 public:
 	FTileLayout* GetTileLayout(ETileLayout Layout);
 	FTileLayout* GetFittingTileLayout(const FTerrain& Terrain);
