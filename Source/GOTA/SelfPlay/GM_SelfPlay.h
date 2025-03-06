@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
 #include "GOTA/CoreSystems/GameplayFramework/GM_Ingame.h"
 
 #include "GM_SelfPlay.generated.h"
@@ -34,10 +35,24 @@ class GOTA_API AGM_SelfPlay : public AGM_Ingame
 
 	virtual void Tick(float DeltaSeconds) override;
 
+	// Logging
+	UPROPERTY(EditDefaultsOnly)
+	float RegularLogDataInterval = 900.0f; // GameTime in seconds
+	float RegularLogDataCooldown = 0.0f;
+	float GameTimeLastLog = 0.0f;
+	float RealTimeLastLog = 0.0f;
+	void LogSettlementData(ASettlement* Settlement, FString SettlementName);
+	int32 CountColonistsWon = 0;
+	int32 CountNativesWon = 0;
+
+	// Time data
+	void LogTimeData();
 	int32 TickCount = 0;
+	// GameTime
 	float GameTimeStart = 0.0f;
 	float MaxDeltaSeconds = 0.0f;
 	float MinDeltaSeconds = FLT_MAX;
+	// RealTime
 	float RealTimeStart = 0.0f;
 	float LastRealTime = 0.0f;
 	float MaxRealTime = 0.0f;

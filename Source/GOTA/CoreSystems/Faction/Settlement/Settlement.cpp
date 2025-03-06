@@ -257,6 +257,19 @@ int32 ASettlement::GetCountOfBuilders()
 	return Count;
 }
 
+TArray<ACivilian*> ASettlement::GetAllCivilians()
+{
+	TArray<ACivilian*> Result;
+	for (ATile* Tile : ClaimedTiles)
+	{
+		if (Tile && Tile->GetBuilding() && Tile->GetBuilding()->GetCivilian())
+		{
+			Result.Add(Tile->GetBuilding()->GetCivilian());
+		}
+	}
+	return Result;
+}
+
 TArray<AArmy*> ASettlement::GetAllArmies()
 {
 	TArray<AArmy*> Result;
@@ -294,6 +307,19 @@ int32 ASettlement::GetCountOfConstructionSites()
 		}
 	}
 	return Count;
+}
+
+TArray<UBuilding*> ASettlement::GetAllBuildings()
+{
+	TArray<UBuilding*> Result;
+	for (ATile* ClaimedTile : ClaimedTiles)
+	{
+		if (ClaimedTile && ClaimedTile->GetBuilding())
+		{
+			Result.Add(ClaimedTile->GetBuilding());
+		}
+	}
+	return Result;
 }
 
 void ASettlement::S_RegisterBuildingForIncome(UBuilding* Building)

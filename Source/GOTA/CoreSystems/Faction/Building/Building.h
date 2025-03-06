@@ -167,6 +167,11 @@ public:
 	void S_RegisterProtector(UBuilding* Protector);
 	void S_UnregisterProtector(UBuilding* Protector);
 
+	// --------------------- Civilian ---------------------
+
+public:
+	virtual ACivilian* GetCivilian() const { return nullptr; }
+
 	// --------------------- Army ---------------------
 
 public:

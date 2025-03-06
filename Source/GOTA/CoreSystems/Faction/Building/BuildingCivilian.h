@@ -31,5 +31,5 @@ private:
 	void SetCivilian(ACivilian* NewCivilian);
 
 public:
-	ACivilian* GetCivilian() const { return Civilian; }
+	virtual ACivilian* GetCivilian() const override { return Civilian; }
 };

@@ -114,6 +114,7 @@ public:
 	void S_UnregisterTile(ATile* Tile, UBuilding* Building);
 	void UnregisterPopulation(UPopulation* InPopulation);
 	int32 GetCountOfConstructionSites();
+	TArray<UBuilding*> GetAllBuildings();
 
 	// --------------------------- Resources ---------------------------
 private:
@@ -163,6 +164,7 @@ public:
 
 public:
 	int32 GetCountOfBuilders();
+	TArray<ACivilian*> GetAllCivilians();
 
 	// --------------------------- Armies ---------------------------
 public:
