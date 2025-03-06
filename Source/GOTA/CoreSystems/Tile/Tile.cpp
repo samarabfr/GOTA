@@ -327,6 +327,10 @@ void ATile::S_Unbuild()
 	if (!Building) return;
 	Building->GetSettlement()->S_UnregisterTile(this, Building);
 	GameplayTags.RemoveTags(Building->GetSettings()->GameplayTags);
+	if (Building->GetIsUnderConstruction())
+	{
+		GameplayTags.RemoveTag(Settings->BuildingUnderConstructionTag);
+	}
 	OnGameplayTagsChanged.Broadcast();
 	RemoveReplicatedSubObject(Building);
 	RemoveReplicatedSubObject(Building->GetPopulation());
