@@ -27,8 +27,6 @@ protected:
 protected:
 	AEntity();
 
-	virtual void S_HandleDeath();
-
 public:
 	UFUNCTION()
 	virtual void Delete();

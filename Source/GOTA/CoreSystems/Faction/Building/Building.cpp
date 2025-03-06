@@ -91,12 +91,7 @@ void UBuilding::C_Tick(const float DeltaSeconds)
 	}
 }
 
-void UBuilding::S_PrepareDestroy()
-{
-	if (Settlement) Settlement->UnregisterPopulation(Population);
-}
-
-void UBuilding::C_PrepareDestroy()
+void UBuilding::PrepareDelete()
 {
 	if (Settlement) Settlement->UnregisterPopulation(Population);
 }

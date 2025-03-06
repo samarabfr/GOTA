@@ -54,16 +54,14 @@ AEntity::AEntity()
 	NiagaraPath->SetupAttachment(RootComponent);
 }
 
-void AEntity::S_HandleDeath()
-{
-	if (!GetCurrentTile()) return;
-	GetCurrentTile()->RemoveEntity(this, GetEntityType());
-}
-
 void AEntity::Delete()
 {
-	S_HandleDeath();
-	Destroy();
+	if (HasAuthority())
+	{
+		if (!GetCurrentTile()) return;
+		GetCurrentTile()->RemoveEntity(this, GetEntityType());
+		Destroy();
+	}
 }
 
 void AEntity::S_Init(UBuilding* InBuilding, ATile* SpawnTile)

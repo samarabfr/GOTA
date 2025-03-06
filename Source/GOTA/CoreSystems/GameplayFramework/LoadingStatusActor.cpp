@@ -30,7 +30,10 @@ ALoadingStatusActor::ALoadingStatusActor()
 
 void ALoadingStatusActor::Delete()
 {
-	Destroy();
+	if (HasAuthority())
+	{
+		Destroy();
+	}
 }
 
 void ALoadingStatusActor::IncreaseReplicationCount()

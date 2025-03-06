@@ -93,10 +93,10 @@ void AGM_SelfPlay::EndGame(EGameEnding Ending, const FString& EndingMessage)
 	       (FPlatformTime::Seconds() - RealTimeStart) / TickCount, MaxRealTime, MinRealTime)
 	UE_LOG(LogTemp, Warning, TEXT("GameTime total: %f, Realtime total: %f"),
 	       GetWorld()->GetTimeSeconds() - GameTimeStart, FPlatformTime::Seconds() - RealTimeStart)
-	RestartSelfPlay();
+	S_RestartSelfPlay();
 }
 
-void AGM_SelfPlay::RestartSelfPlay()
+void AGM_SelfPlay::S_RestartSelfPlay()
 {
 	// Delete Everything
 	GOTAGameState->DeleteEverything();

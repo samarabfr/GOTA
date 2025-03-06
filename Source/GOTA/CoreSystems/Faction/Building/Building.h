@@ -38,8 +38,7 @@ public:
 	virtual void S_Tick(float DeltaSeconds);
 	virtual void C_Tick(const float DeltaSeconds);
 
-	virtual void S_PrepareDestroy();
-	void C_PrepareDestroy();
+	virtual void PrepareDelete();
 
 	// ---------------------------------------- Utility ----------------------------------------
 private:

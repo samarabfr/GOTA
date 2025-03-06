@@ -225,7 +225,10 @@ void ATileMap::Delete()
 			Tile->Delete();
 		}
 	}
-	Destroy();
+	if (HasAuthority())
+	{
+		Destroy();
+	}
 }
 
 // -----------------  Tilefinding ------------------------

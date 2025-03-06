@@ -33,7 +33,7 @@ protected:
 
 public:
 	void S_Init(ATile* SpawnTile);
-	virtual void S_Delete();
+	virtual void Delete();
 
 	void EnableTick();
 

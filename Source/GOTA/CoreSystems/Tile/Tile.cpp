@@ -95,7 +95,14 @@ void ATile::Delete()
 			Civilian->Delete();
 		}
 	}
-	Destroy();
+	if (Building)
+	{
+		Building->PrepareDelete();
+	}
+	if (HasAuthority())
+	{
+		Destroy();
+	}
 }
 
 void ATile::OnRep_GameplayTags()
@@ -207,7 +214,7 @@ void ATile::OnRep_Building(UBuilding* OldBuilding)
 {
 	if (OldBuilding)
 	{
-		OldBuilding->C_PrepareDestroy();
+		OldBuilding->PrepareDelete();
 	}
 	if (Building)
 	{
@@ -323,7 +330,7 @@ void ATile::S_Unbuild()
 	OnGameplayTagsChanged.Broadcast();
 	RemoveReplicatedSubObject(Building);
 	RemoveReplicatedSubObject(Building->GetPopulation());
-	Building->S_PrepareDestroy();
+	Building->PrepareDelete();
 	Building = nullptr;
 	BuildingChanged();
 	ValidateSpawnLayout();

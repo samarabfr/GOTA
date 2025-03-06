@@ -71,15 +71,15 @@ AGS_Ingame::AGS_Ingame()
 
 void AGS_Ingame::DeleteEverything()
 {
+	if (StaticMeshBatcher) StaticMeshBatcher->Clear();
 	if (TileMap) TileMap->Delete();
 	if (LoadingManager) LoadingManager->Delete();
-	if (Colony) Colony->S_Delete();
-	if (Tribe) Tribe->S_Delete();
+	if (Colony) Colony->Delete();
+	if (Tribe) Tribe->Delete();
 	for (AGuardian* Guardian : Guardians)
 	{
 		if (Guardian) Guardian->Delete();
 	}
-	if (StaticMeshBatcher) StaticMeshBatcher->Clear();
 }
 
 void AGS_Ingame::BeginPlay()
