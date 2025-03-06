@@ -81,7 +81,6 @@ void AGM_SelfPlay::Tick(float DeltaSeconds)
 	}
 	LastRealTime = RealDeltaSeconds;
 	// running log data
-	// TODO: show how often won and lost at the end
 	if (RegularLogDataCooldown <= 0.0f)
 	{
 		RegularLogDataCooldown = RegularLogDataInterval;
@@ -94,6 +93,19 @@ void AGM_SelfPlay::Tick(float DeltaSeconds)
 	else
 	{
 		RegularLogDataCooldown -= DeltaSeconds;
+	}
+	// Reset when soft locked
+	if (SoftLockTimeLeft <= 0.0f)
+	{
+		SoftLockTimeLeft = SoftLockTime;
+		++CountSoftLocked;
+		UE_LOG(LogTemp, Warning, TEXT("Game soft locked after %f seconds. Soft locked %d in total. Resetting..."),
+		   SoftLockTime, CountSoftLocked)
+		S_RestartSelfPlay();
+	}
+	else
+	{
+		SoftLockTimeLeft -= DeltaSeconds;
 	}
 }
 
@@ -118,8 +130,7 @@ void AGM_SelfPlay::LogSettlementData(ASettlement* Settlement, FString Settlement
 	}
 	UE_LOG(LogTemp, Warning,
 	       TEXT("Count Buildings: %d, Count CivilianBuildings: %d, Count ArmyBuildings: %d, Count DefenseBuildings: %d"
-	       ),
-	       CountBuildings, CountCivilianBuildings, CountArmyBuildings, CountDefenseBuildings)
+	       ), CountBuildings, CountCivilianBuildings, CountArmyBuildings, CountDefenseBuildings)
 	// Civilians
 	int32 CountCivilians = Settlement->GetAllCivilians().Num();
 	int32 CountWoodcutter = 0;
@@ -200,6 +211,21 @@ void AGM_SelfPlay::EndGame(EGameEnding Ending, const FString& EndingMessage)
 
 void AGM_SelfPlay::S_RestartSelfPlay()
 {
+	// reset timers
+	SoftLockTimeLeft = SoftLockTime;
+	RegularLogDataCooldown = RegularLogDataInterval;
+	TickCount = 0;
+	// GameTime
+	GameTimeLastLog = 0.0f;
+	GameTimeStart = 0.0f;
+	MaxDeltaSeconds = 0.0f;
+	MinDeltaSeconds = FLT_MAX;
+	// RealTime
+	RealTimeStart = 0.0f;
+	RealTimeLastLog = 0.0f;
+	LastRealTime = 0.0f;
+	MaxRealTime = 0.0f;
+	MinRealTime = FLT_MAX;
 	// Delete Everything
 	GOTAGameState->DeleteEverything();
 	// Load from the beginning
