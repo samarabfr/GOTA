@@ -113,13 +113,17 @@ public:
 
 	void S_UnregisterTile(ATile* Tile, UBuilding* Building);
 	void UnregisterPopulation(UPopulation* InPopulation);
-	int32 GetCountOfConstructionSites();
+	int32 GetCountOfConstructionSites() const;
 	TArray<UBuilding*> GetAllBuildings();
+	bool CanAddConstructionSite() const;
 
 	// --------------------------- Resources ---------------------------
 private:
 	UPROPERTY(EditDefaultsOnly)
 	FConstructionResources StartingResources;
+	
+	UPROPERTY(EditDefaultsOnly)
+	int32 ExtraAllowedConstructionSites = 2;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
 	FConstructionResources Resources;
@@ -163,11 +167,11 @@ public:
 	// --------------------------- Civilians ---------------------------
 
 public:
-	int32 GetCountOfBuilders();
-	TArray<ACivilian*> GetAllCivilians();
+	int32 GetCountOfBuilders() const;
+	TArray<ACivilian*> GetAllCivilians() const;
 
 	// --------------------------- Armies ---------------------------
 public:
-	TArray<AArmy*> GetAllArmies();
+	TArray<AArmy*> GetAllArmies() const;
 	void SetAllArmiesOnAttack();
 };

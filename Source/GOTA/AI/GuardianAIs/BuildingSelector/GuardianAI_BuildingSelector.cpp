@@ -24,6 +24,10 @@ void AGuardianAI_BuildingSelector::Tick(float DeltaSeconds)
 	{
 		SendArmiesIntervalTimeLeft -= DeltaSeconds;
 	}
+	if (Settlement->CanAddConstructionSite())
+	{
+		BuildingSelector->SelectBuilding();
+	}
 }
 
 AGuardianAI_BuildingSelector::AGuardianAI_BuildingSelector()
@@ -36,27 +40,27 @@ void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 	if (HasAuthority())
 	{
 		GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
-		ARL_BuildingSelectorManager* Manager = GameState->S_GetRLManager<ARL_BuildingSelectorManager>(ManagerClass);
+		BuildingSelector = GameState->S_GetRLManager<ARL_BuildingSelectorManager>(ManagerClass);
 		PossessedGuardian = Cast<AGuardian>(InPawn);
 		Settlement = GameState->GetTribe();
 		MilestonesReached.SetNumZeroed(6);
-		if (!Manager)
+		if (!BuildingSelector)
 		{
-			Manager = GetWorld()->SpawnActor<ARL_BuildingSelectorManager>(ManagerClass,
+			BuildingSelector = GetWorld()->SpawnActor<ARL_BuildingSelectorManager>(ManagerClass,
 			                                                              FVector::Zero(),
 			                                                              FRotator::ZeroRotator);
-			Manager->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic,
+			BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic,
 			                PossessedGuardian->GetPossibleBuildings().Num());
-			AddTickPrerequisiteActor(Manager); // make the manager tick before this
-			GameState->S_AddManager(ManagerClass, Manager);
+			AddTickPrerequisiteActor(BuildingSelector); // make the manager tick before this
+			GameState->S_AddManager(ManagerClass, BuildingSelector);
 		}
-		if (!Manager->IsRegistered(this))
+		if (!BuildingSelector->IsRegistered(this))
 		{
-			Manager->S_RegisterAgent(this);
+			BuildingSelector->S_RegisterAgent(this);
 		}
-		if (Manager->IsPaused())
+		if (BuildingSelector->IsPaused())
 		{
-			Manager->Unpause();
+			BuildingSelector->Unpause();
 		}
 	}
 }
@@ -83,7 +87,7 @@ TArray<UBuildingSettings*> AGuardianAI_BuildingSelector::GetAvailableBuildings()
 	return PossessedGuardian->GetPossibleBuildings();
 }
 
-void AGuardianAI_BuildingSelector::SelectBuilding(UBuildingSettings* Building)
+void AGuardianAI_BuildingSelector::HandleBuildingSelected(UBuildingSettings* Building)
 {
 	RandomlyPlaceBuilding(Building);
 }

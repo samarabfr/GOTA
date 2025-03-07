@@ -48,7 +48,4 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Tile Entities")
 	FVector ArmySlot;
-	
-	UPROPERTY(EditDefaultsOnly, Category="Buildings")
-	int32 ExtraAllowedConstructionSites = 2;
 };

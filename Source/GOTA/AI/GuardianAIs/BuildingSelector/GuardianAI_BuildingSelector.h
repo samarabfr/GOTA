@@ -50,6 +50,8 @@ private:
 	ULearningAgentsNeuralNetwork* NN_Critic;
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<ARL_BuildingSelectorManager> ManagerClass;
+	UPROPERTY()
+	ARL_BuildingSelectorManager* BuildingSelector;
 
 	void RandomlyPlaceBuilding(UBuildingSettings* Building);
 	TArray<int32> MilestonesReached;
@@ -57,7 +59,7 @@ private:
 public:
 	virtual ASettlement* GetSettlement() override;
 	virtual TArray<UBuildingSettings*> GetAvailableBuildings() override;
-	virtual void SelectBuilding(UBuildingSettings* Building) override;
+	virtual void HandleBuildingSelected(UBuildingSettings* Building) override;
 	virtual EAffiliation GetAffiliation() override;
 	virtual TArray<int32> GetMilestonesReached() override;
 	virtual void IncrementMilestone(int32 MilestoneIndex) override;

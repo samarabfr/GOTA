@@ -255,12 +255,11 @@ bool ATile::CanBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 	{
 		return false;
 	}
-	if (Builder->GetCountOfConstructionSites() >
-		Builder->GetCountOfBuilders() + Settings->ExtraAllowedConstructionSites)
+	if (!Builder->IsBorderingUnclaimedTile(this))
 	{
 		return false;
 	}
-	if (!Builder->IsBorderingUnclaimedTile(this))
+	if (!Builder->CanAddConstructionSite())
 	{
 		return false;
 	}

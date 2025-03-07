@@ -27,20 +27,6 @@ ARL_BuildingSelectorManager::ARL_BuildingSelectorManager()
 	Tags.Add("LearningAgentsManager");
 }
 
-void ARL_BuildingSelectorManager::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-	if (IsPaused()) return;
-	if (bRunInference)
-	{
-		Policy->RunInference(0.0f);
-	}
-	else
-	{
-		PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings);
-	}
-}
-
 void ARL_BuildingSelectorManager::DoLastTrainingRound(const EGameEnding Ending, const FString& EndMessage)
 {
 	PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings);
@@ -137,4 +123,17 @@ bool ARL_BuildingSelectorManager::IsRegistered(UObject* Agent)
 {
 	if (!ManagerComponent || !Agent) return false;
 	return ManagerComponent->HasAgentObject(Agent);
+}
+
+void ARL_BuildingSelectorManager::SelectBuilding()
+{
+	if (IsPaused()) return;
+	if (bRunInference)
+	{
+		Policy->RunInference(0.0f);
+	}
+	else
+	{
+		PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings);
+	}
 }

@@ -236,7 +236,7 @@ void ASettlement::C_RemoveResources(FConstructionResources Amount)
 	Resources -= Amount;
 }
 
-int32 ASettlement::GetCountOfBuilders()
+int32 ASettlement::GetCountOfBuilders() const
 {
 	int32 Count = 0;
 	for (ATile* ClaimedTile : ClaimedTiles)
@@ -257,7 +257,7 @@ int32 ASettlement::GetCountOfBuilders()
 	return Count;
 }
 
-TArray<ACivilian*> ASettlement::GetAllCivilians()
+TArray<ACivilian*> ASettlement::GetAllCivilians() const
 {
 	TArray<ACivilian*> Result;
 	for (ATile* Tile : ClaimedTiles)
@@ -270,7 +270,7 @@ TArray<ACivilian*> ASettlement::GetAllCivilians()
 	return Result;
 }
 
-TArray<AArmy*> ASettlement::GetAllArmies()
+TArray<AArmy*> ASettlement::GetAllArmies() const
 {
 	TArray<AArmy*> Result;
 	for (ATile* Tile : ClaimedTiles)
@@ -294,7 +294,7 @@ void ASettlement::SetAllArmiesOnAttack()
 	}
 }
 
-int32 ASettlement::GetCountOfConstructionSites()
+int32 ASettlement::GetCountOfConstructionSites() const
 {
 	int32 Count = 0;
 	for (ATile* ClaimedTile : ClaimedTiles)
@@ -320,6 +320,20 @@ TArray<UBuilding*> ASettlement::GetAllBuildings()
 		}
 	}
 	return Result;
+}
+
+bool ASettlement::CanAddConstructionSite() const
+{
+	if (GetCountOfConstructionSites() >=
+		GetCountOfBuilders() + ExtraAllowedConstructionSites)
+	{
+		return false;
+	}
+	if (BorderingUnclaimedTiles.Num() == 0)
+	{
+		return false;
+	}
+	return true;
 }
 
 void ASettlement::S_RegisterBuildingForIncome(UBuilding* Building)

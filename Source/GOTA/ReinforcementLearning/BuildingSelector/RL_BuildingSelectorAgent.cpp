@@ -13,7 +13,7 @@ TArray<UBuildingSettings*> IRL_BuildingSelectorAgent::GetAvailableBuildings()
 	return TArray<UBuildingSettings*>();
 }
 
-void IRL_BuildingSelectorAgent::SelectBuilding(UBuildingSettings* Building)
+void IRL_BuildingSelectorAgent::HandleBuildingSelected(UBuildingSettings* Building)
 {
 }
 

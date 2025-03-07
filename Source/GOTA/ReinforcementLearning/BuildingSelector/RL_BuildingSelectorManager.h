@@ -28,8 +28,6 @@ class GOTA_API ARL_BuildingSelectorManager : public AActor
 protected:
 	ARL_BuildingSelectorManager();
 
-	virtual void Tick(float DeltaSeconds) override;
-
 	UFUNCTION()
 	void DoLastTrainingRound(const EGameEnding Ending, const FString& EndMessage);
 
@@ -93,4 +91,5 @@ public:
 	void Pause();
 	void Unpause();
 	bool IsRegistered(UObject* Agent);
+	void SelectBuilding();
 };
