@@ -329,7 +329,16 @@ bool ASettlement::CanAddConstructionSite() const
 	{
 		return false;
 	}
-	if (BorderingUnclaimedTiles.Num() == 0)
+	// has free neighboring tiles
+	TArray<ATile*> Tiles = BorderingUnclaimedTiles;
+	for (int i = Tiles.Num() - 1; i >= 0; --i)
+	{
+		if (Tiles[i] && Tiles[i]->GetClaimant())
+		{
+			Tiles.RemoveAt(i);
+		}
+	}
+	if (Tiles.Num() == 0)
 	{
 		return false;
 	}
