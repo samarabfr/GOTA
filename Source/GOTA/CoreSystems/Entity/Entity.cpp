@@ -231,7 +231,6 @@ float AEntity::GetMovementRate() const
 
 bool AEntity::IsPathValid()
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("IsPathValid");
 	if (Path.IsEmpty()) return false;
 	ATile* Goal = Path[Path.Num() - 1];
 	if (!Goal) return false;
@@ -240,7 +239,6 @@ bool AEntity::IsPathValid()
 
 bool AEntity::IsPathEmpty() const
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("IsPathEmpty");
 	return Path.IsEmpty();
 }
 
