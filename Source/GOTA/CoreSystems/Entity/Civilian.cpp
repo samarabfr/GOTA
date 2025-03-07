@@ -74,13 +74,11 @@ void ACivilian::S_Work()
 
 bool ACivilian::S_TryFindPathToBestWorkTile()
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("ACivilian::S_TryFindPathToBestWorkTile");
 	return S_TryFindPathToClosestWorkTile();
 }
 
 bool ACivilian::IsCurrentTileAmongBestWorkTiles()
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("ACivilian::IsCurrentTileAmongBestWorkTiles");
 	return IsTileValidForWork(GetCurrentTile());
 }
 
@@ -133,7 +131,6 @@ UResourceStorage* ACivilian::GetStorage() const
 
 bool ACivilian::S_TryFindPathToClosestWorkTile()
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("ACivilian::S_TryFindPathToClosestWorkTile");
 	if (!GetCurrentTile() || !S_GetGameState()->GetTileMap()) return false;
 	if (IsTileValidForWork(GetCurrentTile())) return true;
 	TArray<ATile*> Origin;
@@ -151,7 +148,6 @@ bool ACivilian::S_TryFindPathToClosestWorkTile()
 
 bool ACivilian::S_TryFindPathToWorkTileClosestToSettlement()
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("ACivilian::S_TryFindPathToWorkTileClosestToSettlement");
 	if (!GetOriginBuilding() ||
 		!GetOriginBuilding()->GetSettlement() ||
 		GetOriginBuilding()->GetSettlement()->ClaimedTiles.IsEmpty() ||
@@ -196,7 +192,6 @@ void ACivilian::S_HandleEfficiencyChange(float Change)
 
 bool ACivilian::S_TryFindPathToPriorityTile()
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("ACivilian::S_TryFindPathToPriorityTile");
 	if (!GetCurrentTile() ||
 		!PriorityTile.IsValid() ||
 		!S_GetGameState()->GetTileMap())
@@ -214,7 +209,6 @@ bool ACivilian::S_TryFindPathToPriorityTile()
 
 bool ACivilian::S_TryFindPathToOriginBuilding()
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("ACivilian::S_TryFindPathToOriginBuilding");
 	if (!GetCurrentTile() ||
 		!GetOriginBuilding() ||
 		!GetOriginBuilding()->GetTile() ||
