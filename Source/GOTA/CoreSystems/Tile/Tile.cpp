@@ -278,7 +278,7 @@ bool ATile::S_TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builde
 
 bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
-	if (!Builder)
+	if (!Builder || !BuildingDataAsset)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Tried to build without a valid builder!"))
 		return false;
