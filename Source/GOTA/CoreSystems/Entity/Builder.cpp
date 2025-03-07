@@ -43,6 +43,8 @@ void ABuilder::S_Work()
 
 bool ABuilder::IsTileValidForWork(const ATile* Tile) const
 {
+	if (!Tile)
+	return false;
 	if (!Tile->GetBuilding())
 		return false;
 	if (Tile->GetClaimant() != GetOriginBuilding()->GetSettlement())

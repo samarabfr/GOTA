@@ -7,7 +7,10 @@
 #include "Population.h"
 #include "ResourceStorage.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
+#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Tile/Tile.h"
+#include "GOTA/CoreSystems/Tile/TileMap.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 
@@ -34,6 +37,7 @@ void UBuilding::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, ResourceStorage, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, Efficiency, Params);
 	DOREPLIFETIME_WITH_PARAMS(UBuilding, bIsProductionActive, Params);
+	DOREPLIFETIME_WITH_PARAMS(UBuilding, Protectors, Params);
 }
 
 bool UBuilding::IsSupportedForNetworking() const
@@ -51,8 +55,9 @@ UBuilding::UBuilding()
 	ResourceStorage->OnIsEmptyChanged.AddDynamic(this, &UBuilding::S_HandleStorageEmptyChanged);
 }
 
-void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement)
+void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement, AGS_Ingame* InGameState)
 {
+	GameState = InGameState;
 	Population->S_Init(InSettlement->GetGrowthPerOwnPop(), InSettlement->GetGrowthPerNeighborPop());
 	ResourceStorage->S_Init(InSettings->BaseResourceLimit, true, false);
 	bIsProductionActive = !ResourceStorage->IsEmpty();
@@ -61,6 +66,7 @@ void UBuilding::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement
 	S_SetSettlement(InSettlement);
 	bIsUnderConstruction = true;
 	S_RecalculateProductionPerSecond();
+	S_CheckForProtection();
 }
 
 void UBuilding::C_Init()
@@ -207,22 +213,47 @@ EResource UBuilding::GetConsumptionType() const
 	return GetSettings()->ConsumptionType;
 }
 
-bool UBuilding::IsProtected() const
+void UBuilding::S_CheckForProtection()
 {
-	for (ATile* ClaimedTile : Settlement->ClaimedTiles)
-	{
-		if (ClaimedTile &&
-			ClaimedTile->GetBuilding() &&
-			ClaimedTile->GetBuilding()->Settings->bDefenseEnabled)
+	if (GetSettings()->bDefenseEnabled || !GameState || !GameState->GetTileMap()) return;
+	TArray<ATile*> Origin;
+	Origin.Add(Tile);
+	TMap<ATile*, int8> DefenseTilesWithDistances = GameState->GetTileMap()->FindAllTilesWithRangesInRange(Origin,
+		MaxProtectionSearchRange, EEntityType::None,
+		[](const ATile* Tile)
 		{
-			const int32 TileDistance = Tile->GetPathTileDistanceTo(ClaimedTile);
-			if (TileDistance > 0 && ClaimedTile->GetBuilding()->Settings->RavageProtectionRange >= TileDistance)
-			{
-				return true;
-			}
+			return Tile && Tile->GetBuilding() && Tile->GetBuilding()->Settings->bDefenseEnabled;
+		});
+	for (auto DefenseTile : DefenseTilesWithDistances)
+	{
+		if (DefenseTile.Key->GetClaimant() &&
+			DefenseTile.Key->GetBuilding()->Settings->RavageProtectionRange >= DefenseTile.Value &&
+			DefenseTile.Key->GetClaimant()->GetAffiliation() == Tile->GetClaimant()->GetAffiliation())
+		{
+			S_RegisterProtector(DefenseTile.Key->GetBuilding());
 		}
 	}
-	return false;
+}
+
+bool UBuilding::IsProtected() const
+{
+	if (GetSettings()->bDefenseEnabled)
+		return false;
+	return !Protectors.IsEmpty();
+}
+
+void UBuilding::S_RegisterProtector(UBuilding* Protector)
+{
+	if (GetSettings()->bDefenseEnabled)
+		return;
+	Protectors.Add(Protector);
+}
+
+void UBuilding::S_UnregisterProtector(UBuilding* Protector)
+{
+	if (GetSettings()->bDefenseEnabled)
+		return;
+	Protectors.Remove(Protector);
 }
 
 // --------------------- Army ---------------------
