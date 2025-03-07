@@ -70,7 +70,8 @@ void AGM_SelfPlay::Tick(float DeltaSeconds)
 	{
 		MinDeltaSeconds = DeltaSeconds;
 	}
-	const float RealDeltaSeconds = FPlatformTime::Seconds() - LastRealTime;
+	const double CurrentRealTime = FPlatformTime::Seconds();
+	const double RealDeltaSeconds = CurrentRealTime - LastRealTime;
 	if (RealDeltaSeconds > MaxRealTime)
 	{
 		MaxRealTime = RealDeltaSeconds;
@@ -79,7 +80,7 @@ void AGM_SelfPlay::Tick(float DeltaSeconds)
 	{
 		MinRealTime = RealDeltaSeconds;
 	}
-	LastRealTime = RealDeltaSeconds;
+	LastRealTime = CurrentRealTime;
 	// running log data
 	if (RegularLogDataCooldown <= 0.0f)
 	{
@@ -88,7 +89,7 @@ void AGM_SelfPlay::Tick(float DeltaSeconds)
 		LogSettlementData(GOTAGameState->GetColony(), "Colonists");
 		LogSettlementData(GOTAGameState->GetTribe(), "Natives");
 		GameTimeLastLog = GetWorld()->GetTimeSeconds();
-		RealTimeLastLog = FPlatformTime::Seconds();
+		RealTimeLastLog = CurrentRealTime;
 	}
 	else
 	{
@@ -107,6 +108,26 @@ void AGM_SelfPlay::Tick(float DeltaSeconds)
 	{
 		SoftLockTimeLeft -= DeltaSeconds;
 	}
+}
+
+void AGM_SelfPlay::LoadGame()
+{
+	Super::LoadGame();
+	// reset timers
+	SoftLockTimeLeft = SoftLockTime;
+	RegularLogDataCooldown = RegularLogDataInterval;
+	TickCount = 0;
+	// GameTime
+	GameTimeStart = GetWorld()->GetTimeSeconds();
+	GameTimeLastLog = GameTimeStart;
+	MaxDeltaSeconds = 0.0f;
+	MinDeltaSeconds = FLT_MAX;
+	// RealTime
+	RealTimeStart = FPlatformTime::Seconds();
+	RealTimeLastLog = RealTimeStart;
+	LastRealTime = RealTimeStart;
+	MaxRealTime = 0.0f;
+	MinRealTime = DBL_MAX;
 }
 
 void AGM_SelfPlay::LogSettlementData(ASettlement* Settlement, FString SettlementName)
@@ -161,22 +182,24 @@ void AGM_SelfPlay::LogSettlementData(ASettlement* Settlement, FString Settlement
 
 void AGM_SelfPlay::LogTimeData()
 {
-	float GameTimeSinceLast = GetWorld()->GetTimeSeconds() - GameTimeLastLog;
-	float RealTimeSinceLast = FPlatformTime::Seconds() - RealTimeLastLog;
+	const float GameTimeCurrent = GetWorld()->GetTimeSeconds();
+	const float GameTimeSinceLast = GameTimeCurrent - GameTimeLastLog;
+	const double RealTimeCurrent = FPlatformTime::Seconds();
+	const double RealTimeSinceLast = RealTimeCurrent - RealTimeLastLog;
 	UE_LOG(LogTemp, Warning, TEXT("--------------------------Time Data since last--------------------------"))
 	UE_LOG(LogTemp, Warning, TEXT("GameTime average delta: %f, Max: %f, Min: %f"),
-	       GameTimeSinceLast / TickCount, MaxDeltaSeconds, MinDeltaSeconds)
+	       GameTimeSinceLast / static_cast<float>(TickCount), MaxDeltaSeconds, MinDeltaSeconds)
 	UE_LOG(LogTemp, Warning, TEXT("Realtime average delta: %f, Max: %f, Min: %f"),
-		RealTimeSinceLast / TickCount, MaxRealTime, MinRealTime)
+		RealTimeSinceLast / static_cast<double>(TickCount), MaxRealTime, MinRealTime)
 	UE_LOG(LogTemp, Warning, TEXT("GameTime total: %f, Realtime total: %f, GameSpeedFactor: %f"),
 		   GameTimeSinceLast, RealTimeSinceLast, GameTimeSinceLast / RealTimeSinceLast)
 	UE_LOG(LogTemp, Warning, TEXT("--------------------------Time Data since start--------------------------"))
-	float GameTimeSinceStart = GetWorld()->GetTimeSeconds() - GameTimeStart;
-	float RealTimeSinceStart = FPlatformTime::Seconds() - RealTimeStart;
+	const float GameTimeSinceStart = GameTimeCurrent - GameTimeStart;
+	const double RealTimeSinceStart = RealTimeCurrent - RealTimeStart;
 	UE_LOG(LogTemp, Warning, TEXT("GameTime average delta: %f, Max: %f, Min: %f"),
-		   GameTimeSinceStart / TickCount, MaxDeltaSeconds, MinDeltaSeconds)
+		   GameTimeSinceStart / static_cast<float>(TickCount), MaxDeltaSeconds, MinDeltaSeconds)
 	UE_LOG(LogTemp, Warning, TEXT("Realtime average delta: %f, Max: %f, Min: %f"),
-		RealTimeSinceStart / TickCount, MaxRealTime, MinRealTime)
+		RealTimeSinceStart / static_cast<double>(TickCount), MaxRealTime, MinRealTime)
 	UE_LOG(LogTemp, Warning, TEXT("GameTime total: %f, Realtime total: %f, GameSpeedFactor: %f"),
 		   GameTimeSinceStart, RealTimeSinceStart, GameTimeSinceStart / RealTimeSinceStart)
 }
@@ -187,9 +210,6 @@ void AGM_SelfPlay::BeginPlay()
 	LoadGame();
 	UGameplayStatics::SetGlobalTimeDilation(this,
 	                                        FixedDeltaSeconds / LearningAgentsFixedDeltaSeconds);
-	GameTimeStart = GetWorld()->GetTimeSeconds();
-	RealTimeStart = FPlatformTime::Seconds();
-	LastRealTime = RealTimeStart;
 }
 
 void AGM_SelfPlay::EndGame(EGameEnding Ending, const FString& EndingMessage)
@@ -204,28 +224,13 @@ void AGM_SelfPlay::EndGame(EGameEnding Ending, const FString& EndingMessage)
 		++CountColonistsWon;
 	else
 		++CountNativesWon;
-	UE_LOG(LogTemp, Warning, TEXT("Count Colonists won: %d, Count Natives won: %d"),
-	       CountColonistsWon, CountNativesWon)
+	UE_LOG(LogTemp, Warning, TEXT("Count Colonists won: %d, Count Natives won: %d, Count Soft-locked: %d"),
+	       CountColonistsWon, CountNativesWon, CountSoftLocked)
 	S_RestartSelfPlay();
 }
 
 void AGM_SelfPlay::S_RestartSelfPlay()
 {
-	// reset timers
-	SoftLockTimeLeft = SoftLockTime;
-	RegularLogDataCooldown = RegularLogDataInterval;
-	TickCount = 0;
-	// GameTime
-	GameTimeLastLog = 0.0f;
-	GameTimeStart = 0.0f;
-	MaxDeltaSeconds = 0.0f;
-	MinDeltaSeconds = FLT_MAX;
-	// RealTime
-	RealTimeStart = 0.0f;
-	RealTimeLastLog = 0.0f;
-	LastRealTime = 0.0f;
-	MaxRealTime = 0.0f;
-	MinRealTime = FLT_MAX;
 	// Delete Everything
 	GOTAGameState->DeleteEverything();
 	// Load from the beginning

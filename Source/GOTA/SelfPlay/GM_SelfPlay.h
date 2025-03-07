@@ -34,6 +34,7 @@ class GOTA_API AGM_SelfPlay : public AGM_Ingame
 	float LearningAgentsFixedDeltaSeconds = 1.0f/60.0f;
 
 	virtual void Tick(float DeltaSeconds) override;
+	virtual void LoadGame() override;
 
 	// soft lock
 	UPROPERTY(EditDefaultsOnly)
@@ -57,11 +58,11 @@ class GOTA_API AGM_SelfPlay : public AGM_Ingame
 	float MaxDeltaSeconds = 0.0f;
 	float MinDeltaSeconds = FLT_MAX;
 	// RealTime
-	float RealTimeStart = 0.0f;
-	float RealTimeLastLog = 0.0f;
-	float LastRealTime = 0.0f;
-	float MaxRealTime = 0.0f;
-	float MinRealTime = FLT_MAX;
+	double RealTimeStart = 0.0f;
+	double RealTimeLastLog = 0.0f;
+	double LastRealTime = 0.0f;
+	double MaxRealTime = 0.0f;
+	double MinRealTime = DBL_MAX;
 
 	virtual void BeginPlay() override;
 	virtual void EndGame(EGameEnding Ending, const FString& EndingMessage) override;
