@@ -207,12 +207,18 @@ void AEntity::S_SetMovementRate(float NewMovementRate)
 
 void AEntity::S_MoveToNextTileOnPath()
 {
+	if (!CurrentTile.IsValid())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Wanted to move entity, but entity is not on a tile"))
+		return;
+	}
 	ATile* NewCurrent = nullptr;
 	if (!Path.IsEmpty())
 	{
 		NewCurrent = Path.Pop();
 	}
-	if (!NewCurrent) return;
+	if (!NewCurrent || !NewCurrent->AcceptsEntity(GetEntityType()))
+		return;
 	CurrentTile->RemoveEntity(this, GetEntityType());
 	FVector NewLocation = FVector();
 	NewCurrent->AddEntity(this, GetEntityType(), NewLocation);
@@ -229,10 +235,12 @@ float AEntity::GetMovementRate() const
 
 bool AEntity::IsPathValid()
 {
-	if (Path.IsEmpty()) return false;
-	ATile* Goal = Path[Path.Num() - 1];
-	if (!Goal) return false;
-	return Goal->AcceptsEntity(GetEntityType());
+	if (Path.IsEmpty())
+		return false;
+	ATile* NextTile = Path[0];
+	if (!NextTile)
+		return false;
+	return NextTile->AcceptsEntity(GetEntityType());
 }
 
 bool AEntity::IsPathEmpty() const
