@@ -2,10 +2,10 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "SpawnPoint.h"
-#include "GameFramework/Actor.h"
 #include "SpawnLayout.generated.h"
+
+class UTileAssetSpawnComponent;
 
 USTRUCT()
 struct FSpawnLayout
@@ -16,17 +16,22 @@ struct FSpawnLayout
 	FSpawnPoint MainBuilding;
 
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FSpawnPoint> Trees;
-
+	TArray<FSpawnPoint> MainBuildings;
+	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FSpawnPoint> Buildings;
-
+	
 	UPROPERTY(EditDefaultsOnly)
-	TArray<FSpawnPoint> Props;
-
+	TArray<FSpawnPoint> Trees;
+	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FSpawnPoint> Forage;
-
+	
+	UPROPERTY(EditDefaultsOnly)
+	TArray<FSpawnPoint> Props;
+	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FSpawnPoint> Foliage;
+
+	void AddSpawnPoint(ETileAssetCategory Category, FSpawnPoint SpawnPoint);
 };

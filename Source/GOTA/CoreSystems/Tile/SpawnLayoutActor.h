@@ -35,14 +35,8 @@ private:
 	UStaticMeshComponent* Hexagon;
 
 public:
-	UFUNCTION(CallInEditor)
-	void SayHello()
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Hello!"));
-	}
-
 	ETileLayout GetTileLayout() { return TileLayout; }
 
-	FSpawnLayoutStruct GetSpawnLayout();
+	FSpawnLayoutStruct GetSpawnLayoutStruct();
 
 };

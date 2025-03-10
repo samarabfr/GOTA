@@ -33,7 +33,9 @@ void UTileLayoutProvider::Initialize(FSubsystemCollectionBase& Collection)
 			[&](const FName& RowName, const FSpawnLayoutRegisterEntry& RowData)
 			{
 				ASpawnLayoutActor* Actor = RowData.SpawnLayoutActorClass->GetDefaultObject<ASpawnLayoutActor>();
-				GetTileLayout(Actor->GetTileLayout())->SpawnLayoutStructs.Add(Actor->GetSpawnLayout());
+				ASpawnLayoutActor* SpawnedActor = GetWorld()->SpawnActor<ASpawnLayoutActor>(RowData.SpawnLayoutActorClass);
+				GetTileLayout(SpawnedActor->GetTileLayout())->SpawnLayoutStructs.Add(SpawnedActor->GetSpawnLayoutStruct());
+				SpawnedActor->Destroy();
 			});
 	}
 }
