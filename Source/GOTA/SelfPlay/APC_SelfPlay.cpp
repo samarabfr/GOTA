@@ -10,3 +10,7 @@ void AAPC_SelfPlay::S_Init()
 void AAPC_SelfPlay::C_Init()
 {
 }
+
+void AAPC_SelfPlay::InitInput()
+{
+}
