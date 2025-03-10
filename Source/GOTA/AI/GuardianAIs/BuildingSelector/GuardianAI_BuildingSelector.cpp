@@ -46,7 +46,6 @@ AGuardianAI_BuildingSelector::AGuardianAI_BuildingSelector()
 void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	RealTimeLastSnapshotSave = FPlatformTime::Seconds();
 	SendArmiesIntervalTimeLeft = SendArmiesIntervalTime;
 	if (HasAuthority())
 	{
