@@ -34,7 +34,10 @@ void ALoadingManager::Delete()
 	{
 		if (Status) Status->Delete();
 	}
-	Destroy();
+	if (HasAuthority())
+	{
+		Destroy();
+	}
 }
 
 void ALoadingManager::BeginPlay()

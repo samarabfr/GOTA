@@ -96,7 +96,14 @@ void ATile::Delete()
 			Civilian->Delete();
 		}
 	}
-	Destroy();
+	if (Building)
+	{
+		Building->PrepareDelete();
+	}
+	if (HasAuthority())
+	{
+		Destroy();
+	}
 }
 
 void ATile::OnRep_GameplayTags()
@@ -208,7 +215,7 @@ void ATile::OnRep_Building(UBuilding* OldBuilding)
 {
 	if (OldBuilding)
 	{
-		OldBuilding->S_PrepareDestroy();
+		OldBuilding->PrepareDelete();
 	}
 	if (Building)
 	{
@@ -249,12 +256,11 @@ bool ATile::CanBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 	{
 		return false;
 	}
-	if (Builder->GetCountOfConstructionSites() >
-		Builder->GetCountOfBuilders() + Settings->ExtraAllowedConstructionSites)
+	if (!Builder->IsBorderingUnclaimedTile(this))
 	{
 		return false;
 	}
-	if (!Builder->IsBorderingUnclaimedTile(this))
+	if (!Builder->CanAddConstructionSite())
 	{
 		return false;
 	}
@@ -273,7 +279,7 @@ bool ATile::S_TryBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builde
 
 bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* Builder)
 {
-	if (!Builder)
+	if (!Builder || !BuildingDataAsset)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Tried to build without a valid builder!"))
 		return false;
@@ -321,10 +327,14 @@ void ATile::S_Unbuild()
 	if (!Building) return;
 	Building->GetSettlement()->S_UnregisterTile(this, Building);
 	GameplayTags.RemoveTags(Building->GetSettings()->GameplayTags);
+	if (Building->GetIsUnderConstruction())
+	{
+		GameplayTags.RemoveTag(Settings->BuildingUnderConstructionTag);
+	}
 	OnGameplayTagsChanged.Broadcast();
 	RemoveReplicatedSubObject(Building);
 	RemoveReplicatedSubObject(Building->GetPopulation());
-	Building->S_PrepareDestroy();
+	Building->PrepareDelete();
 	Building = nullptr;
 	BuildingChanged();
 	ValidateSpawnLayout();
@@ -592,8 +602,8 @@ void ATile::ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints)
 
 FSpawnLayoutStruct* ATile::FindSpawnLayoutDataAsset()
 {
-	if (!TileLayout) return nullptr;
-	
+	if (!TileLayout)
+		return nullptr;
 	// Find Valid Spawn Layouts
 	TArray<FSpawnLayoutStruct*> PossibleLayouts;
 	for (FSpawnLayoutStruct& Struct : TileLayout->SpawnLayoutStructs)

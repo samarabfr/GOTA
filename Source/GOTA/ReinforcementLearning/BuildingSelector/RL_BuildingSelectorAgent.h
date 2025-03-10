@@ -27,7 +27,7 @@ class GOTA_API IRL_BuildingSelectorAgent
 public:
 	virtual ASettlement* GetSettlement();
 	virtual TArray<UBuildingSettings*> GetAvailableBuildings();
-	virtual void SelectBuilding(UBuildingSettings* Building);
+	virtual void HandleBuildingSelected(UBuildingSettings* Building);
 	virtual EAffiliation GetAffiliation();
 	virtual TArray<int32> GetMilestonesReached();
 	virtual void IncrementMilestone(int32 MilestoneIndex);

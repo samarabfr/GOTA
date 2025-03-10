@@ -13,7 +13,6 @@
 #include "RL_BuildingSelectorInteractor.h"
 #include "RL_BuildingSelectorTrainingEnv.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
-#include "Kismet/GameplayStatics.h"
 
 ARL_BuildingSelectorManager::ARL_BuildingSelectorManager()
 {
@@ -27,20 +26,6 @@ ARL_BuildingSelectorManager::ARL_BuildingSelectorManager()
 	Tags.Add("LearningAgentsManager");
 }
 
-void ARL_BuildingSelectorManager::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-	if (IsPaused()) return;
-	if (bRunInference)
-	{
-		Policy->RunInference(0.0f);
-	}
-	else
-	{
-		PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings);
-	}
-}
-
 void ARL_BuildingSelectorManager::DoLastTrainingRound(const EGameEnding Ending, const FString& EndMessage)
 {
 	PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings);
@@ -50,8 +35,7 @@ void ARL_BuildingSelectorManager::DoLastTrainingRound(const EGameEnding Ending, 
 void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encoder,
                                          ULearningAgentsNeuralNetwork* NN_Policy,
                                          ULearningAgentsNeuralNetwork* NN_Decoder,
-                                         ULearningAgentsNeuralNetwork* NN_Critic,
-                                         int32 AvailableBuildingsCount)
+                                         ULearningAgentsNeuralNetwork* NN_Critic)
 {
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	if (GameState) GameState->OnGameEnding.AddDynamic(this, &ARL_BuildingSelectorManager::DoLastTrainingRound);
@@ -108,7 +92,6 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 		ULearningAgentsPPOTrainer::StaticClass(), FName("PPOTrainer"), TrainerSettings);
 	TrainingSettings = FLearningAgentsPPOTrainingSettings();
 	TrainingSettings.bUseTensorboard = bUseTensorboard;
-	TrainingSettings.bSaveSnapshots = bSaveSnapshotsContinuously;
 	TrainingGameSettings = FLearningAgentsTrainingGameSettings();
 }
 
@@ -137,4 +120,17 @@ bool ARL_BuildingSelectorManager::IsRegistered(UObject* Agent)
 {
 	if (!ManagerComponent || !Agent) return false;
 	return ManagerComponent->HasAgentObject(Agent);
+}
+
+void ARL_BuildingSelectorManager::SelectBuilding()
+{
+	if (IsPaused()) return;
+	if (bRunInference)
+	{
+		Policy->RunInference(0.0f);
+	}
+	else
+	{
+		PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings);
+	}
 }

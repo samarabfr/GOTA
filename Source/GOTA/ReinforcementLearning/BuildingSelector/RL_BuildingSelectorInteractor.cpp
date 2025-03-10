@@ -124,5 +124,5 @@ void URL_BuildingSelectorInteractor::PerformAgentAction_Implementation(
 	                                                   L"ChooseBuilding");
 	TArray<UBuildingSettings*> AvailableBuildings = Agent->GetAvailableBuildings();
 	if (AvailableBuildings.Num() <= Index) return;
-	Agent->SelectBuilding(AvailableBuildings[Index]);
+	Agent->HandleBuildingSelected(AvailableBuildings[Index]);
 }

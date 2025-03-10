@@ -48,11 +48,14 @@ void AGuardian::BeginPlay()
 
 void AGuardian::Delete()
 {
-	if (Controller)
+	if (HasAuthority())
 	{
-		Controller->UnPossess();
+		if (Controller)
+		{
+			Controller->UnPossess();
+		}
+		Destroy();
 	}
-	Destroy();
 }
 
 void AGuardian::S_Init(UGuardianSettings* InSettings, TArray<UBuildingSettings*> InPossibleBuildings)

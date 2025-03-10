@@ -129,7 +129,7 @@ void APC_Ingame::S_SetGuardian(AGuardian* NewGuardian)
 
 void APC_Ingame::ClickActor()
 {
-	if (!IngameUI) return;
+	if (!IngameUI || !MouseUtils.IsValid()) return;
 	IngameUI->ClickActor(MouseUtils->GetHoverActor());
 }
 
@@ -296,6 +296,9 @@ void APC_Ingame::HoverActorChanged(AActor* Actor)
 
 void APC_Ingame::InitInput()
 {
+	if (bInputInitialized)
+		return;
+	
 	FInputModeGameAndUI InputMode;
 	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
 	InputMode.SetHideCursorDuringCapture(false);
@@ -331,6 +334,8 @@ void APC_Ingame::InitInput()
 	Component->BindAction(InputDataAsset->Ability6, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility6);
 	Component->BindAction(InputDataAsset->Ability7, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility7);
 	Component->BindAction(InputDataAsset->Ability8, ETriggerEvent::Triggered, this, &APC_Ingame::ActivateAbility8);
+	
+	bInputInitialized = true;
 }
 
 void APC_Ingame::LeftClick(const FInputActionInstance& Instance)

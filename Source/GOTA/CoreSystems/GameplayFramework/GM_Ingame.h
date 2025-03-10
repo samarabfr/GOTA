@@ -15,7 +15,7 @@ UCLASS()
 class GOTA_API AGM_Ingame : public AGameMode
 {
 	GENERATED_BODY()
-	
+
 protected:
 	AGM_Ingame();
 
@@ -28,16 +28,16 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<ATileMap> TileMapClass;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<AColony> ColonyClass;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TSubclassOf<ATribe> TribeClass;
-	
+
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TArray<UBuildingSettings*> PossibleBuildingsForPlayers;
-	
+
 	// ---------------------------------------------------------
 	// Control the Flow of the Game
 private:
@@ -45,7 +45,8 @@ private:
 	                      FString& ErrorMessage) override;
 
 	virtual void PostLogin(APlayerController* NewPlayer) override;
-	
+
+protected:
 	virtual void Tick(float DeltaSeconds) override;
 
 public:
@@ -63,7 +64,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void UnpauseGame();
-	
+
 	virtual void EndGame(EGameEnding Ending, const FString& EndingMessage);
 
 private:

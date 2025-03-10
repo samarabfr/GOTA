@@ -62,6 +62,7 @@ private:
 
 public:
 	void S_RegisterAgent(UObject* Agent);
+	bool IsRegistered(UObject* Agent);
 	void S_Init(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
 	          ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic);
 };

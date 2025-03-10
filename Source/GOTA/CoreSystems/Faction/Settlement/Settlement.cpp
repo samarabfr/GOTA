@@ -58,9 +58,12 @@ void ASettlement::BeginPlay()
 	GetWorld()->GetGameState<AGS_Ingame>()->IncrementReplicationCount();
 }
 
-void ASettlement::S_Delete()
+void ASettlement::Delete()
 {
-	Destroy();
+	if (HasAuthority())
+	{
+		Destroy();
+	}
 }
 
 void ASettlement::S_Init(ATile* SpawnTile)
@@ -233,7 +236,7 @@ void ASettlement::C_RemoveResources(FConstructionResources Amount)
 	Resources -= Amount;
 }
 
-int32 ASettlement::GetCountOfBuilders()
+int32 ASettlement::GetCountOfBuilders() const
 {
 	int32 Count = 0;
 	for (ATile* ClaimedTile : ClaimedTiles)
@@ -254,7 +257,20 @@ int32 ASettlement::GetCountOfBuilders()
 	return Count;
 }
 
-TArray<AArmy*> ASettlement::GetAllArmies()
+TArray<ACivilian*> ASettlement::GetAllCivilians() const
+{
+	TArray<ACivilian*> Result;
+	for (ATile* Tile : ClaimedTiles)
+	{
+		if (Tile && Tile->GetBuilding() && Tile->GetBuilding()->GetCivilian())
+		{
+			Result.Add(Tile->GetBuilding()->GetCivilian());
+		}
+	}
+	return Result;
+}
+
+TArray<AArmy*> ASettlement::GetAllArmies() const
 {
 	TArray<AArmy*> Result;
 	for (ATile* Tile : ClaimedTiles)
@@ -278,7 +294,7 @@ void ASettlement::SetAllArmiesOnAttack()
 	}
 }
 
-int32 ASettlement::GetCountOfConstructionSites()
+int32 ASettlement::GetCountOfConstructionSites() const
 {
 	int32 Count = 0;
 	for (ATile* ClaimedTile : ClaimedTiles)
@@ -291,6 +307,42 @@ int32 ASettlement::GetCountOfConstructionSites()
 		}
 	}
 	return Count;
+}
+
+TArray<UBuilding*> ASettlement::GetAllBuildings()
+{
+	TArray<UBuilding*> Result;
+	for (ATile* ClaimedTile : ClaimedTiles)
+	{
+		if (ClaimedTile && ClaimedTile->GetBuilding())
+		{
+			Result.Add(ClaimedTile->GetBuilding());
+		}
+	}
+	return Result;
+}
+
+bool ASettlement::CanAddConstructionSite() const
+{
+	if (GetCountOfConstructionSites() >=
+		GetCountOfBuilders() + ExtraAllowedConstructionSites)
+	{
+		return false;
+	}
+	// has free neighboring tiles
+	TArray<ATile*> Tiles = BorderingUnclaimedTiles;
+	for (int i = Tiles.Num() - 1; i >= 0; --i)
+	{
+		if (Tiles[i] && Tiles[i]->GetClaimant())
+		{
+			Tiles.RemoveAt(i);
+		}
+	}
+	if (Tiles.Num() == 0)
+	{
+		return false;
+	}
+	return true;
 }
 
 void ASettlement::S_RegisterBuildingForIncome(UBuilding* Building)

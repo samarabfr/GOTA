@@ -38,8 +38,7 @@ public:
 	virtual void S_Tick(float DeltaSeconds);
 	virtual void C_Tick(const float DeltaSeconds);
 
-	virtual void S_PrepareDestroy();
-	void C_PrepareDestroy();
+	virtual void PrepareDelete();
 
 	// ---------------------------------------- Utility ----------------------------------------
 private:
@@ -167,6 +166,11 @@ public:
 	bool IsProtected() const;
 	void S_RegisterProtector(UBuilding* Protector);
 	void S_UnregisterProtector(UBuilding* Protector);
+
+	// --------------------- Civilian ---------------------
+
+public:
+	virtual ACivilian* GetCivilian() const { return nullptr; }
 
 	// --------------------- Army ---------------------
 

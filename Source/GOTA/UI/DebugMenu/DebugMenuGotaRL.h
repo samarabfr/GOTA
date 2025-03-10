@@ -3,11 +3,9 @@
 #include "Blueprint/UserWidget.h"
 #include "DebugMenuGotaRL.generated.h"
 
-class USnapshotAgentData;
+class ISnapshotAgent;
 class UComboBoxString;
-class USnapshotAgents;
 class UEditableTextBox;
-class ASimulatedGuardianManager;
 class UButton;
 
 UCLASS()
@@ -21,18 +19,13 @@ protected:
 
 	// -------------------------------------------- Utility --------------------------------------------
 private:
-	TWeakObjectPtr<ASimulatedGuardianManager> SimulatedGuardianManager;
 
 	// -------------------------------------------- Snapshots --------------------------------------------
-
-	UPROPERTY(EditAnywhere)
-	USnapshotAgents* SnapshotAgents;
-
+private:
+	TArray<TScriptInterface<ISnapshotAgent>> SnapshotAgents;
+	
 	UPROPERTY(meta = (BindWidget))
 	UComboBoxString* CB_AgentSelection;
-
-	UPROPERTY(meta = (BindWidget))
-	UComboBoxString* CB_NeuralNetworkSelection;
 
 	UPROPERTY(meta = (BindWidget))
 	UEditableTextBox* TB_ModelName;
@@ -49,6 +42,6 @@ private:
 	UFUNCTION()
 	void LoadModel();
 
-	UFUNCTION()
-	void RefreshNeuralNetworkOptions(FString AgentName, ESelectInfo::Type SelectInfo);
+	TScriptInterface<ISnapshotAgent> GetAgentByName(const FString& AgentName);
+	TArray<FString> GetAllAgentNames();
 };

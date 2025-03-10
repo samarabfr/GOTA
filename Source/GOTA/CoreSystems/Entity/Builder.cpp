@@ -7,6 +7,8 @@
 
 void ABuilder::S_Work()
 {
+	if (!GetCurrentTile() || !GetCurrentTile()->GetBuilding())
+		return;
 	int32 WorkAmountLeft = GetWorkAmount();
 	const FConstructionResources ResourcesProgress = GetCurrentTile()->GetBuilding()->GetConstructionProgress();
 	FConstructionResources ResourcesProgressToAdd = FConstructionResources();

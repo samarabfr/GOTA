@@ -17,7 +17,7 @@ public:
 	virtual void S_Tick(float DeltaSeconds) override;
 	virtual void C_Tick(const float DeltaSeconds) override;
 protected:
-	virtual void S_PrepareDestroy() override;
+	virtual void PrepareDelete() override;
 
 	
 	// ---------------- Civilian Entity ----------------
@@ -31,5 +31,5 @@ private:
 	void SetCivilian(ACivilian* NewCivilian);
 
 public:
-	ACivilian* GetCivilian() const { return Civilian; }
+	virtual ACivilian* GetCivilian() const override { return Civilian; }
 };

@@ -165,6 +165,8 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	UInputDataAsset* InputDataAsset;
 
+	bool bInputInitialized = false;
+
 	void LeftClick(const FInputActionInstance& Instance);
 
 	void StartJump(const FInputActionInstance& Instance);
