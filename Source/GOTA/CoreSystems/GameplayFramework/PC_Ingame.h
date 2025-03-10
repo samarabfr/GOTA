@@ -192,5 +192,5 @@ private:
 	void ActivateAbility8();
 
 public:
-	virtual void InitInput();
+	void InitInput();
 };

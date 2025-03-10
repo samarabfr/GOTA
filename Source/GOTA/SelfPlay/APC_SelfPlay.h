@@ -16,5 +16,4 @@ class GOTA_API AAPC_SelfPlay : public APC_Ingame
 
 	virtual void S_Init() override;
 	virtual void C_Init() override;
-	virtual void InitInput() override;
 };
