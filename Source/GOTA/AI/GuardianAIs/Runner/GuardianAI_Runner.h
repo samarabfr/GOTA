@@ -22,7 +22,7 @@ class GOTA_API AGuardianAI_Runner : public AAIController, public IRL_RunnerAgent
 
 private:
 	virtual void Tick(float DeltaSeconds) override;
-	virtual void BeginPlay() override;
+	virtual void OnPossess(APawn* InPawn) override;
 
 protected:
 	AGuardianAI_Runner();

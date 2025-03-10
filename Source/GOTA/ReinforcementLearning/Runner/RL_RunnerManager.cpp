@@ -99,3 +99,9 @@ void ARL_RunnerManager::S_RegisterAgent(UObject* Agent)
 	if (!ManagerComponent || !Agent) return;
 	ManagerComponent->AddAgent(Agent);
 }
+
+bool ARL_RunnerManager::IsRegistered(UObject* Agent)
+{
+	if (!ManagerComponent || !Agent) return false;
+	return ManagerComponent->HasAgentObject(Agent);
+}

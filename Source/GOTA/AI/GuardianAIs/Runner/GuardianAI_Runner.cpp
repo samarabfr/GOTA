@@ -29,22 +29,24 @@ void AGuardianAI_Runner::Tick(float DeltaSeconds)
 	}
 }
 
-void AGuardianAI_Runner::BeginPlay()
+void AGuardianAI_Runner::OnPossess(APawn* InPawn)
 {
-	Super::BeginPlay();
+	Super::OnPossess(InPawn);
 	if (HasAuthority())
 	{
 		GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
 		ARL_RunnerManager* Manager = GameState->S_GetRLManager<ARL_RunnerManager>(ManagerClass);
 		if (!Manager)
 		{
-			Manager = GetWorld()->SpawnActor<ARL_RunnerManager>(ManagerClass,
-				FVector::Zero(), FRotator::ZeroRotator);
+			Manager = GetWorld()->SpawnActor<ARL_RunnerManager>(ManagerClass);
 			Manager->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic);
 			AddTickPrerequisiteActor(Manager); // make the manager tick before this
 			GameState->S_AddManager(ManagerClass, Manager);
 		}
-		Manager->S_RegisterAgent(this);
+		if (!Manager->IsRegistered(this))
+		{
+			Manager->S_RegisterAgent(this);
+		}
 	}
 }
 
