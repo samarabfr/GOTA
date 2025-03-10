@@ -207,31 +207,23 @@ private:
 
 	void InitTileContent();
 
-	UPROPERTY(ReplicatedUsing=ClientInitTileRotation)
+	UPROPERTY(ReplicatedUsing=InitTileRotation)
 	float TileRotation = 0.0;
 
 	UFUNCTION()
-	void ClientInitTileRotation();
-	void ServerInitTileRotation();
+	void InitTileRotation();
+	void S_InitTileRotation();
 
 	// ---------------------TileLayout--------------------
 
 	FTileLayout* TileLayout;
 
 	void InitTileLayout();
-
-	FTileLayout* FindTileLayout();
-
-	bool IsValidTileLayout(const FTileLayout* Layout) const;
-
-	// Returns -1 when none found, returns rotation ID (0-5) if one is found
-	int32 FindAValidRiverConnectionRotation(const TArray<bool> Connections) const;
-
+	
 	// ---------------------SpawnLayout--------------------
-
-	UPROPERTY(VisibleInstanceOnly, Category="Tile")
-	USpawnLayoutDataAsset* SpawnLayoutDataAsset;
-
+	
+	FSpawnLayoutStruct* SpawnLayoutStruct;
+	
 public:
 	UPROPERTY(VisibleInstanceOnly, ReplicatedUsing=OnRep_SpawnPointLayout, Category="Tile")
 	FSpawnLayout SpawnLayout;
@@ -246,5 +238,5 @@ private:
 
 	void ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints);
 
-	USpawnLayoutDataAsset* FindSpawnLayoutDataAsset();
+	FSpawnLayoutStruct* FindSpawnLayoutDataAsset();
 };

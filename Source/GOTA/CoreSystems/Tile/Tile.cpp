@@ -3,6 +3,7 @@
 
 #include "Tile.h"
 
+#include "TileLayoutProvider.h"
 #include "TileMap.h"
 #include "Algo/RandomShuffle.h"
 #include "GOTA/CoreSystems/Entity/Army.h"
@@ -312,7 +313,7 @@ bool ATile::S_TryForceBuild(UBuildingSettings* BuildingDataAsset, ASettlement* B
 
 	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, GameplayTags, this);
 	MARK_PROPERTY_DIRTY_FROM_NAME(ATile, Building, this);
-	
+
 	Builder->S_RegisterTile(this, Building);
 
 	OnGameplayTagsChanged.Broadcast();
@@ -503,7 +504,7 @@ void ATile::InitTileContent()
 	TileContent->Init(this, GameState);
 }
 
-void ATile::ClientInitTileRotation()
+void ATile::InitTileRotation()
 {
 	if (!TileContent) InitTileContent();
 	const FRotator Rotator = FRotator(0, TileRotation, 0);
@@ -511,78 +512,33 @@ void ATile::ClientInitTileRotation()
 	SM_Hexagon->SetRelativeRotation(Rotator);
 }
 
-void ATile::ServerInitTileRotation()
+void ATile::S_InitTileRotation()
 {
 	int32 Rotation = 0;
 	if (Terrain.bIsRiver)
 	{
-		Rotation = FindAValidRiverConnectionRotation(TileLayout->RiverConnections);
+		Rotation = TileLayout->GetValidRotation(Terrain.RiverConnections);
 	}
 	else
 	{
 		Rotation = FMath::RandRange(0, 5);
 	}
-	TileRotation = Rotation * -60;
-	ClientInitTileRotation();
+	TileRotation = Rotation * 60;
+	InitTileRotation();
 }
 
 // ---------------------TileLayout--------------------
 
 void ATile::InitTileLayout()
 {
-	FTileLayout* NewLayout = FindTileLayout();
+	FTileLayout* NewLayout = GetGameInstance()->GetSubsystem<UTileLayoutProvider>()->GetFittingTileLayout(Terrain);
 	if (!NewLayout) return;
 	TileLayout = NewLayout;
 	HexagonMesh = NewLayout->HexagonMesh;
 	GameplayTags.AddTag(TileLayout->LayoutTag);
 	InitHexagonMesh();
-	ServerInitTileRotation();
+	S_InitTileRotation();
 	ValidateSpawnLayout();
-}
-
-FTileLayout* ATile::FindTileLayout()
-{
-	FString _;
-	TArray<FTileLayout*> AllRows;
-	Settings->TileLayouts->GetAllRows<FTileLayout>(_, AllRows);
-
-	for (FTileLayout* Row : AllRows)
-	{
-		if (IsValidTileLayout(Row))
-		{
-			return Row;
-		}
-	}
-	return nullptr;
-}
-
-bool ATile::IsValidTileLayout(const FTileLayout* Layout) const
-{
-	// Tile has River but Row doesn't allow that
-	if (Terrain.bIsRiver != Layout->HasRiver) return false;
-	// Is a river but can't find a working Rotation
-	if (Terrain.bIsRiver && FindAValidRiverConnectionRotation(Layout->RiverConnections) < 0)
-		return false;
-	return true;
-}
-
-int32 ATile::FindAValidRiverConnectionRotation(const TArray<bool> Connections) const
-{
-	if (Connections.Num() != 6) return -1;
-	for (int32 Rotation = 0; Rotation < 6; ++Rotation)
-	{
-		bool ThisRotationWorks = true;
-		for (int i = 0; i < 6; ++i)
-		{
-			if (Terrain.RiverConnections[i] != Connections[(i + Rotation) % 6])
-			{
-				ThisRotationWorks = false;
-				break;
-			}
-		}
-		if (ThisRotationWorks) return Rotation;
-	}
-	return -1;
 }
 
 // ---------------------SpawnLayout--------------------
@@ -604,11 +560,12 @@ void ATile::OnRep_SpawnPointLayout()
 void ATile::ValidateSpawnLayout()
 {
 	// check if current SpawnPointLayout still works
-	if (SpawnLayoutDataAsset && SpawnLayoutDataAsset->IsValidFor(GameplayTags)) return;
-	SpawnLayoutDataAsset = FindSpawnLayoutDataAsset();
+	if (SpawnLayoutStruct && SpawnLayoutStruct->IsValidFor(GameplayTags)) return;
+	
+	SpawnLayoutStruct = FindSpawnLayoutDataAsset();
 	FSpawnLayout SL;
-	if (SpawnLayoutDataAsset)
-		SL = SpawnLayoutDataAsset->SpawnLayout;
+	if (SpawnLayoutStruct)
+		SL = SpawnLayoutStruct->SpawnLayout;
 	else
 		SL = FSpawnLayout();
 
@@ -643,34 +600,34 @@ void ATile::ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints)
 	}
 }
 
-USpawnLayoutDataAsset* ATile::FindSpawnLayoutDataAsset()
+FSpawnLayoutStruct* ATile::FindSpawnLayoutDataAsset()
 {
 	if (!TileLayout)
 		return nullptr;
 	// Find Valid Spawn Layouts
-	TArray<USpawnLayoutDataAsset*> PossibleLayouts;
-	for (USpawnLayoutDataAsset* DA_SpawnLayout : TileLayout->SpawnLayouts)
+	TArray<FSpawnLayoutStruct*> PossibleLayouts;
+	for (FSpawnLayoutStruct& Struct : TileLayout->SpawnLayoutStructs)
 	{
-		if (DA_SpawnLayout && DA_SpawnLayout->IsValidFor(GameplayTags))
+		if (Struct.IsValidFor(GameplayTags))
 		{
-			if (DA_SpawnLayout->GuaranteedIfPossible) return DA_SpawnLayout;
-			PossibleLayouts.Add(DA_SpawnLayout);
+			if (Struct.GuaranteedIfPossible) return &Struct;
+			PossibleLayouts.Add(&Struct);
 		}
 	}
 	if (PossibleLayouts.Num() <= 0) return nullptr;
 	// Weighted Random to select a SpawnLayout
 	int32 TotalBias = 0;
-	for (USpawnLayoutDataAsset* DA_SpawnLayout : PossibleLayouts)
+	for (FSpawnLayoutStruct* Struct : PossibleLayouts)
 	{
-		TotalBias += DA_SpawnLayout->SpawnBias.GetBiasAfterMultipliers(Terrain);
+		TotalBias += Struct->SpawnBias.GetBiasAfterMultipliers(Terrain);
 	}
 	int Count = FMath::RandRange(0, TotalBias - 1);
-	for (USpawnLayoutDataAsset* DA_SpawnLayout : PossibleLayouts)
+	for (FSpawnLayoutStruct* Struct : PossibleLayouts)
 	{
-		int32 Bias = DA_SpawnLayout->SpawnBias.GetBiasAfterMultipliers(Terrain);
+		int32 Bias = Struct->SpawnBias.GetBiasAfterMultipliers(Terrain);
 		if (Count < Bias)
 		{
-			return DA_SpawnLayout;
+			return Struct;
 		}
 		Count -= Bias;
 	}

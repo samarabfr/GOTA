@@ -2,31 +2,36 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
 #include "SpawnPoint.h"
-#include "GameFramework/Actor.h"
 #include "SpawnLayout.generated.h"
 
-USTRUCT(BlueprintType)
+class UTileAssetSpawnComponent;
+
+USTRUCT()
 struct FSpawnLayout
 {
 	GENERATED_BODY()
-	
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+
+	UPROPERTY(EditDefaultsOnly)
 	FSpawnPoint MainBuilding;
 
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	TArray<FSpawnPoint> Trees;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly)
+	TArray<FSpawnPoint> MainBuildings;
+	
+	UPROPERTY(EditDefaultsOnly)
 	TArray<FSpawnPoint> Buildings;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
-	TArray<FSpawnPoint> Props;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	
+	UPROPERTY(EditDefaultsOnly)
+	TArray<FSpawnPoint> Trees;
+	
+	UPROPERTY(EditDefaultsOnly)
 	TArray<FSpawnPoint> Forage;
-
-	UPROPERTY(BlueprintReadOnly, EditDefaultsOnly)
+	
+	UPROPERTY(EditDefaultsOnly)
+	TArray<FSpawnPoint> Props;
+	
+	UPROPERTY(EditDefaultsOnly)
 	TArray<FSpawnPoint> Foliage;
+
+	void AddSpawnPoint(ETileAssetCategory Category, FSpawnPoint SpawnPoint);
 };
