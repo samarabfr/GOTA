@@ -645,6 +645,8 @@ void ATile::ApplySpawnChances(TArray<FSpawnPoint>& SpawnPoints)
 
 USpawnLayoutDataAsset* ATile::FindSpawnLayoutDataAsset()
 {
+	if (!TileLayout)
+		return nullptr;
 	// Find Valid Spawn Layouts
 	TArray<USpawnLayoutDataAsset*> PossibleLayouts;
 	for (USpawnLayoutDataAsset* DA_SpawnLayout : TileLayout->SpawnLayouts)
