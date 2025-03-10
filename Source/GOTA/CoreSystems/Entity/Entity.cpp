@@ -199,6 +199,7 @@ ATile* AEntity::GetCurrentTile() const
 void AEntity::S_SetPath(const TArray<ATile*>& NewPath)
 {
 	Path = NewPath;
+	RefreshSpline();
 }
 
 void AEntity::S_SetMovementRate(float NewMovementRate)
@@ -220,6 +221,7 @@ void AEntity::S_MoveToNextTileOnPath()
 	SetNetLocation(NewLocation);
 	CurrentTile = NewCurrent;
 	MARK_PROPERTY_DIRTY_FROM_NAME(AEntity, CurrentTile, this)
+	RefreshSpline();
 }
 
 float AEntity::GetMovementRate() const
@@ -229,7 +231,6 @@ float AEntity::GetMovementRate() const
 
 bool AEntity::IsPathValid()
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("IsPathValid");
 	if (Path.IsEmpty()) return false;
 	ATile* Goal = Path[Path.Num() - 1];
 	if (!Goal) return false;
@@ -238,7 +239,6 @@ bool AEntity::IsPathValid()
 
 bool AEntity::IsPathEmpty() const
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("IsPathEmpty");
 	return Path.IsEmpty();
 }
 
@@ -253,7 +253,7 @@ void AEntity::RefreshSpline()
 		NiagaraPath->SetHiddenInGame(true);
 		return;
 	}
-	Spline->AddSplinePoint(CurrentTile->GetActorLocation() + FVector(0, 0, 300),
+	Spline->AddSplinePoint(GetActorLocation() + FVector(0, 0, 300),
 	                       ESplineCoordinateSpace::World, false);
 	const int32 MaxSteps = 2 * MovementRate;
 	for (int32 i = 0; i < Path.Num(); ++i)

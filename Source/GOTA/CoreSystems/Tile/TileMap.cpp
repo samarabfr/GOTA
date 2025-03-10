@@ -271,7 +271,6 @@ TArray<ATile*> ATileMap::FindTilesInRange(const TArray<ATile*>& Origin, TArray<i
                                           const EEntityType EntityType, bool bTerminateEarly,
                                           const std::function<bool(const ATile*)>& Condition) const
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("ATileMap::FindTilesInRange");
 	if (Origin.IsEmpty()) return TArray<ATile*>();
 	TArray<ATile*> Frontier = Origin;
 
@@ -353,7 +352,6 @@ TArray<ATile*> ATileMap::FindPathToNearestTileInRangeFromSearchOrigin(const TArr
                                                                       const std::function<bool(const ATile*)>&
                                                                       Condition) const
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("ATileMap::FindPathToNearestTileInRangeFromSearchOrigin");
 	if (SearchOrigin.IsEmpty() || PathOrigin.IsEmpty()) return TArray<ATile*>();
 	return FindPathToTile(PathOrigin, FindNearestTileInRange(SearchOrigin, Range, EntityType, Condition), EntityType);
 }
