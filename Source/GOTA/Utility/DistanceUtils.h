@@ -19,7 +19,7 @@ class GOTA_API ADistanceUtils : public AActor
 
 	virtual void Tick(float DeltaSeconds) override;
 
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly)
 	UDistanceUtilsSettings* Settings;
 
 protected:

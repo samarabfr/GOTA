@@ -28,7 +28,7 @@ UEcoValues::UEcoValues()
 {
 	// Load DA_EcoSystem
 	static ConstructorHelpers::FObjectFinder<UEcoSystemDataAsset> DataAsset(
-		TEXT("/Game/CoreSystems/Tile/DA_EcoSystem"));
+		TEXT("/Game/Tile/DA_EcoSystem"));
 	if (DataAsset.Succeeded())
 	{
 		DA_EcoSystem = DataAsset.Object;

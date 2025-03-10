@@ -23,9 +23,7 @@
 
 AGM_Ingame::AGM_Ingame()
 {
-	ConstructorHelpers::FObjectFinder<UGameBalanceDataAsset> DataAssetFinder(
-		TEXT("/Game/CoreSystems/GameplayFramework/DA_GameBalance"));
-	GameBalance = DataAssetFinder.Object;
+	
 }
 
 // ---------------------------------------------------------

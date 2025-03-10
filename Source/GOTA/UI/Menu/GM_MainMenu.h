@@ -14,7 +14,7 @@ class GOTA_API AGM_MainMenu : public AGameModeBase
 
 private:
 	UPROPERTY(EditDefaultsOnly)
-	FString IslandPath = "/Game/CoreSystems/GameplayFramework/Island";
+	FString IslandPath = "/Game/GameplayFramework/Island";
 	
 	UPROPERTY(EditDefaultsOnly)
 	FString SelfPlayLevelPath = "/Game/SelfPlay/SelfPlay_Island";

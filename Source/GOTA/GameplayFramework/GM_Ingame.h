@@ -20,7 +20,7 @@ protected:
 	AGM_Ingame();
 
 public:
-	UPROPERTY()
+	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	UGameBalanceDataAsset* GameBalance;
 
 	UPROPERTY(BlueprintReadWrite, Category="GOTA GameMode")

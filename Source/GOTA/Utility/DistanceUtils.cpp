@@ -14,18 +14,7 @@ ADistanceUtils::ADistanceUtils()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 	PrimaryActorTick.TickInterval = 0.2f;
-
-	// Load Settings DataAsset
-	static ConstructorHelpers::FObjectFinder<UDistanceUtilsSettings> DataAsset2(
-		TEXT("/Game/CoreSystems/Utility/DistanceUtilsSettings"));
-	if (DataAsset2.Succeeded())
-	{
-		Settings = DataAsset2.Object;
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("DistanceUtils couldn't load Settings Data Asset"))
-	}
+	
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 }
 

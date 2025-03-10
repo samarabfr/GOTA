@@ -82,7 +82,7 @@ void APC_Ingame::S_Init()
 void APC_Ingame::C_Init()
 {
 	CreateLobbyUI();
-	DistanceUtils = GetWorld()->SpawnActor<ADistanceUtils>();
+	DistanceUtils = GetWorld()->SpawnActor<ADistanceUtils>(DistanceUtilsClass);
 }
 
 // ---------------------------------------- Utility ----------------------------------------

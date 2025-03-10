@@ -38,12 +38,16 @@ public:
 
 	// -------------------------------------------- Utility --------------------------------------------
 private:
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<ADistanceUtils> DistanceUtilsClass;
+	
 	UPROPERTY()
 	ADistanceUtils* DistanceUtils;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AAbilityIndicator> AbilityIndicatorClass;
-
+	
 	UPROPERTY(Replicated)
 	TWeakObjectPtr<AAbilityIndicator> AbilityIndicator;
 
