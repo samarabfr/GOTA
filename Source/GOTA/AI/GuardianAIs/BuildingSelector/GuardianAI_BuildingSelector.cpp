@@ -34,6 +34,7 @@ void AGuardianAI_BuildingSelector::Tick(float DeltaSeconds)
 		if (CurrentTime - RealTimeLastSnapshotSave >= SaveSnapshotsIntervalTime)
 		{
 			RealTimeLastSnapshotSave = CurrentTime;
+			SaveModel(FDateTime::Now().ToString());
 		}
 	}
 }
@@ -130,6 +131,7 @@ void AGuardianAI_BuildingSelector::SaveModel(const FString& ModelName)
 	NN_Policy->SaveNetworkToSnapshot(FullSnapshotPath);
 	FullSnapshotPath.FilePath = ModelPath.FilePath + "Decoder";
 	NN_Decoder->SaveNetworkToSnapshot(FullSnapshotPath);
+	UE_LOG(LogTemp, Warning, TEXT("Saving Model to: %s"), *ModelPath.FilePath)
 }
 
 void AGuardianAI_BuildingSelector::LoadModel(const FString& ModelName)
@@ -145,6 +147,7 @@ void AGuardianAI_BuildingSelector::LoadModel(const FString& ModelName)
 	NN_Policy->LoadNetworkFromSnapshot(FullSnapshotPath);
 	FullSnapshotPath.FilePath = ModelPath.FilePath + "Decoder";
 	NN_Decoder->LoadNetworkFromSnapshot(FullSnapshotPath);
+	UE_LOG(LogTemp, Warning, TEXT("Loading Model from: %s"), *ModelPath.FilePath)
 }
 
 FString AGuardianAI_BuildingSelector::GetAgentName()
