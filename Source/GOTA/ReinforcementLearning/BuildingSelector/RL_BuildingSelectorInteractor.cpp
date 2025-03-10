@@ -5,7 +5,7 @@
 
 #include "RL_BuildingSelectorAgent.h"
 #include "LearningAgentsObservations.h"
-#include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
+#include "GOTA/Settlement/Settlement.h"
 
 // ----------------------- LifeCycle -----------------------
 

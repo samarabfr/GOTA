@@ -2,8 +2,8 @@
 
 #include "BuildingMenuSlot.h"
 #include "Components/WrapBox.h"
-#include "GOTA/CoreSystems/GameplayFramework/PC_Ingame.h"
-#include "GOTA/CoreSystems/Guardian/Guardian.h"
+#include "GOTA/GameplayFramework/PC_Ingame.h"
+#include "GOTA/Guardian/Guardian.h"
 
 void UBuildingMenu::NativeConstruct()
 {

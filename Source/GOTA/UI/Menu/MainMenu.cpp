@@ -1,10 +1,10 @@
 ﻿#include "MainMenu.h"
 
+#include "GM_MainMenu.h"
 #include "MultiplayerMenu.h"
 #include "Options.h"
 #include "Components/Button.h"
 #include "Components/VerticalBox.h"
-#include "GOTA/Content/MainMenu/GM_MainMenu.h"
 #include "Kismet/KismetSystemLibrary.h"
 
 // ------------------- LifeCycle -------------------

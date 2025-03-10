@@ -1,8 +1,8 @@
 ﻿#include "BuildingMenuSlot.h"
 
 #include "Components/TextBlock.h"
-#include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
-#include "GOTA/CoreSystems/GameplayFramework/PC_Ingame.h"
+#include "GOTA/Tile/Building/BuildingSettings.h"
+#include "GOTA/GameplayFramework/PC_Ingame.h"
 
 void UBuildingMenuSlot::NativeConstruct()
 {

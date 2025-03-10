@@ -1,8 +1,8 @@
 ﻿#include "MultiplayerMenu.h"
 
+#include "GM_MainMenu.h"
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
-#include "GOTA/Content/MainMenu/GM_MainMenu.h"
 
 void UMultiplayerMenu::NativeConstruct()
 {

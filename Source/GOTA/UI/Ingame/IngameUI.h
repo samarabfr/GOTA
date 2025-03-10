@@ -2,7 +2,7 @@
 
 
 #include "Blueprint/UserWidget.h"
-#include "GOTA/CoreSystems/Utility/Enums.h"
+#include "GOTA/Utility/Enums.h"
 #include "IngameUI.generated.h"
 
 class UDebugMenu;

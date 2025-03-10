@@ -1,0 +1,29 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "Kismet/BlueprintFunctionLibrary.h"
+#include "HexCoordsFunctions.generated.h"
+
+struct FHexCoords;
+/**
+ * 
+ */
+UCLASS()
+class GOTA_API UHexCoordsFunctions : public UBlueprintFunctionLibrary
+{
+	GENERATED_BODY()
+	
+public:
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HexCoords")
+	static FVector2D HexCoordsToVector2D(FHexCoords HexCoords);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HexCoords")
+	static FHexCoords Vector2DToHexCoords(FVector2D Vector);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "HexCoords")
+	static FHexCoords VectorToHexCoords(FVector Vector);
+
+	UFUNCTION(BlueprintCallable, Category = "HexCoords")
+	static TArray<FHexCoords> GetAllCoordsInRange(FHexCoords Origin, int32 Range);
+};

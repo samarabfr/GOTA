@@ -5,7 +5,7 @@
 
 class UEditableTextBox;
 class UToggleButton;
-class UGOTAGameUserSettings;
+class UGotaGameUserSettings;
 class UButton;
 class UComboBoxString;
 
@@ -24,7 +24,7 @@ public:
 	UButton* BTN_Back;
 
 private:
-	TWeakObjectPtr<UGOTAGameUserSettings> UserSettings;
+	TWeakObjectPtr<UGotaGameUserSettings> UserSettings;
 
 	void FillComboBoxOptions();
 

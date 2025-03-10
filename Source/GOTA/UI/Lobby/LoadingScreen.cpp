@@ -1,8 +1,9 @@
 ﻿#include "LoadingScreen.h"
 
 #include "LoadingProgress.h"
-#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
-#include "GOTA/CoreSystems/GameplayFramework/LoadingManager.h"
+#include "GOTA/GameplayFramework/GS_Ingame.h"
+#include "GOTA/Utility/LoadingManager.h"
+#include "GOTA/Utility/LoadingStatusActor.h"
 
 void ULoadingScreen::NativeConstruct()
 {

@@ -4,11 +4,13 @@
 #include "GuardianAI_BuildingSelector.h"
 
 #include "LearningAgentsNeuralNetwork.h"
-#include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
-#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
-#include "GOTA/CoreSystems/Guardian/Guardian.h"
-#include "GOTA/CoreSystems/Tile/TileMap.h"
+#include "GOTA/GameplayFramework/GS_Ingame.h"
+#include "GOTA/Guardian/Guardian.h"
 #include "GOTA/ReinforcementLearning/BuildingSelector/RL_BuildingSelectorManager.h"
+#include "GOTA/Settlement/Settlement.h"
+#include "GOTA/Settlement/Tribe.h"
+#include "GOTA/Tile/Tile.h"
+#include "GOTA/Utility/Enums.h"
 
 
 void AGuardianAI_BuildingSelector::Tick(float DeltaSeconds)

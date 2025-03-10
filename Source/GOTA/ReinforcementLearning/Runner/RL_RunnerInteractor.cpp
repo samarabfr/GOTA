@@ -4,7 +4,7 @@
 #include "RL_RunnerInteractor.h"
 
 #include "RL_RunnerAgent.h"
-#include "GOTA/CoreSystems/Tile/Tile.h"
+#include "GOTA/Tile/Tile.h"
 
 URL_RunnerInteractor::URL_RunnerInteractor()
 {

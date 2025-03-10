@@ -2,8 +2,8 @@
 
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
-#include "GOTA/CoreSystems/Guardian/Guardian.h"
-#include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
+#include "GOTA/Guardian/Guardian.h"
+#include "GOTA/Guardian/GuardianSettings.h"
 
 void UGuardianInfo::NativeConstruct()
 {

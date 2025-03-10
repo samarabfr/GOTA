@@ -5,7 +5,7 @@
 #include "Components/Button.h"
 #include "Components/SpinBox.h"
 #include "Blueprint/UserWidget.h"
-#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
+#include "GOTA/GameplayFramework/GS_Ingame.h"
 #include "Lobby.generated.h"
 
 UCLASS(Blueprintable)

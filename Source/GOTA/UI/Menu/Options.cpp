@@ -1,10 +1,9 @@
 ﻿#include "Options.h"
 
-#include "Components/Button.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
 #include "GameFramework/GameUserSettings.h"
-#include "GOTA/CoreSystems/GameplayFramework/GOTAGameUserSettings.h"
+#include "GOTA/GameplayFramework/GotaGameUserSettings.h"
 #include "GOTA/UI/Widgets/ToggleButton.h"
 
 
@@ -13,7 +12,7 @@
 void UOptions::NativeConstruct()
 {
 	Super::NativeConstruct();
-	UserSettings = Cast<UGOTAGameUserSettings>(UGameUserSettings::GetGameUserSettings());
+	UserSettings = Cast<UGotaGameUserSettings>(UGameUserSettings::GetGameUserSettings());
 
 	FillResolutionsArray();
 

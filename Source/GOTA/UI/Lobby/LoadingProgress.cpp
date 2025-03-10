@@ -1,7 +1,7 @@
 ﻿#include "LoadingProgress.h"
 
 #include "Components/TextBlock.h"
-#include "GOTA/CoreSystems/GameplayFramework/LoadingStatusActor.h"
+#include "GOTA/Utility/LoadingStatusActor.h"
 
 
 void ULoadingProgress::Init(ALoadingStatusActor* InLoadingStatus)
