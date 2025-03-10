@@ -3,10 +3,9 @@
 
 #include "RL_BuildingSelectorTrainingEnv.h"
 
-#include "LearningAgentsRewards.h"
 #include "RL_BuildingSelectorAgent.h"
-#include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
-#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
+#include "GOTA/Settlement/Settlement.h"
+#include "GOTA/GameplayFramework/GS_Ingame.h"
 
 URL_BuildingSelectorTrainingEnv::URL_BuildingSelectorTrainingEnv()
 {

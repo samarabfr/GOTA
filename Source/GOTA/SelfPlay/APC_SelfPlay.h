@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GOTA/CoreSystems/GameplayFramework/PC_Ingame.h"
+#include "GOTA/GameplayFramework/PC_Ingame.h"
 #include "APC_SelfPlay.generated.h"
 
 /**

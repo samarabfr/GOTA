@@ -1,7 +1,7 @@
 ﻿#include "Lobby.h"
-#include "GOTA/CoreSystems/GameplayFramework/GM_Ingame.h"
-#include "GOTA/CoreSystems/GameplayFramework/PS_Ingame.h"
-#include "GOTA/CoreSystems/GameplayFramework/StartParameter.h"
+#include "GOTA/GameplayFramework/GM_Ingame.h"
+#include "GOTA/GameplayFramework/PS_Ingame.h"
+#include "GOTA/GameplayFramework/StartParameter.h"
 
 void ULobby::NativeConstruct()
 {

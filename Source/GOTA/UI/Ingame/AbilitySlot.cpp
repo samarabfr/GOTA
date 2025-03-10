@@ -1,11 +1,10 @@
 ﻿#include "AbilitySlot.h"
 
-#include "GOTA/CoreSystems/Guardian/AbilitySlotRegister.h"
-#include "GOTA/CoreSystems/Guardian/Ability.h"
+#include "GOTA/Guardian/AbilitySlotRegister.h"
+#include "GOTA/Guardian/Ability.h"
 #include "Blueprint/DragDropOperation.h"
-#include "Components/CanvasPanel.h"
 #include "Components/Image.h"
-#include "GOTA/CoreSystems/Guardian/AbilitySettings.h"
+#include "GOTA/Guardian/AbilitySettings.h"
 
 // ---------------------------------------- Lifecycle ----------------------------------------
 

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GOTA/CoreSystems/Faction/Settlement/ConstructionResources.h"
+#include "GOTA/Utility/Enums.h"
 #include "UObject/Interface.h"
 #include "RL_BuildingSelectorAgent.generated.h"
 

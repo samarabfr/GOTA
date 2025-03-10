@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include "CoreMinimal.h"
-#include "GOTA/CoreSystems/Faction/Settlement/Settlement.h"
-#include "GOTA/CoreSystems/GameplayFramework/GM_Ingame.h"
+#include "GOTA/Settlement/Settlement.h"
+#include "GOTA/GameplayFramework/GM_Ingame.h"
 
 #include "GM_SelfPlay.generated.h"
 

@@ -10,11 +10,8 @@
 #include "LearningAgentsPolicy.h"
 #include "LearningAgentsPPOTrainer.h"
 #include "LearningAgentsTrainingEnvironment.h"
-#include "RL_RunnerAgent.h"
 #include "RL_RunnerInteractor.h"
 #include "RL_RunnerTrainingEnv.h"
-#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
-#include "Kismet/GameplayStatics.h"
 
 ARL_RunnerManager::ARL_RunnerManager()
 {

@@ -2,11 +2,11 @@
 
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
-#include "GOTA/CoreSystems/Faction/Settlement/Colony.h"
-#include "GOTA/CoreSystems/Faction/Settlement/SettlementPopulation.h"
-#include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
-#include "GOTA/CoreSystems/GameplayFramework/DaytimeManager.h"
-#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
+#include "GOTA/AI/SettlementAIs/Colony.h"
+#include "GOTA/Settlement/SettlementPopulation.h"
+#include "GOTA/Settlement/Tribe.h"
+#include "GOTA/Utility/DaytimeManager.h"
+#include "GOTA/GameplayFramework/GS_Ingame.h"
 
 
 void UTopBar::NativeConstruct()

@@ -3,11 +3,11 @@
 
 #include "GuardianAI_Runner.h"
 
-#include "LearningAgentsManager.h"
 #include "LearningAgentsNeuralNetwork.h"
-#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
-#include "GOTA/CoreSystems/Tile/TileMap.h"
+#include "GOTA/GameplayFramework/GS_Ingame.h"
+#include "GOTA/Tilemap/TileMap.h"
 #include "GOTA/ReinforcementLearning/Runner/RL_RunnerManager.h"
+#include "GOTA/Tile/Tile.h"
 
 AGuardianAI_Runner::AGuardianAI_Runner()
 {

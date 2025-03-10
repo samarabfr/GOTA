@@ -3,6 +3,8 @@
 
 #include "RL_BuildingSelectorAgent.h"
 
+#include "GOTA/Utility/Enums.h"
+
 ASettlement* IRL_BuildingSelectorAgent::GetSettlement()
 {
 	return nullptr;

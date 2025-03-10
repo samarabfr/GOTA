@@ -2,8 +2,8 @@
 
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
-#include "GOTA/CoreSystems/Tile/EcoValues.h"
-#include "GOTA/CoreSystems/Tile/Tile.h"
+#include "GOTA/Tile/EcoValues.h"
+#include "GOTA/Tile/Tile.h"
 
 void UTileInfo::NativeConstruct()
 {

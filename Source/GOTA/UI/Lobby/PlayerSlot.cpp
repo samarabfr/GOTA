@@ -2,8 +2,8 @@
 
 #include "Components/ComboBoxString.h"
 #include "Components/TextBlock.h"
-#include "GOTA/CoreSystems/GameplayFramework/PS_Ingame.h"
-#include "GOTA/CoreSystems/Guardian/GuardianSettings.h"
+#include "GOTA/GameplayFramework/PS_Ingame.h"
+#include "GOTA/Guardian/GuardianSettings.h"
 
 void UPlayerSlot::NativeConstruct()
 {

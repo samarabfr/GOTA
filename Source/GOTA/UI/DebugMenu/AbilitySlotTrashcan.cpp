@@ -1,7 +1,7 @@
 ﻿#include "AbilitySlotTrashcan.h"
 
-#include "GOTA/CoreSystems/Guardian/Ability.h"
-#include "GOTA/CoreSystems/Guardian/AbilitySlotRegister.h"
+#include "GOTA/Guardian/Ability.h"
+#include "GOTA/Guardian/AbilitySlotRegister.h"
 
 void UAbilitySlotTrashcan::OnSuccessfulDrop(UAbilitySlot* OriginSlot)
 {

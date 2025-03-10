@@ -2,7 +2,7 @@
 
 #include "BuildingInfo.h"
 #include "TileInfo.h"
-#include "GOTA/CoreSystems/Tile/Tile.h"
+#include "GOTA/Tile/Tile.h"
 
 void UClickedInfo::NativeConstruct()
 {

@@ -2,8 +2,8 @@
 
 #include "Components/Image.h"
 #include "Components/TextBlock.h"
-#include "GOTA/CoreSystems/GameplayFramework/PC_Ingame.h"
-#include "GOTA/CoreSystems/Guardian/AbilitySettings.h"
+#include "GOTA/GameplayFramework/PC_Ingame.h"
+#include "GOTA/Guardian/AbilitySettings.h"
 
 FReply UDebugMenuAbilityEntry::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {

@@ -2,7 +2,6 @@
 
 #pragma once
 #include "LearningAgentsInteractor.h"
-#include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
 
 #include "RL_BuildingSelectorInteractor.generated.h"
 

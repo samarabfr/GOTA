@@ -3,8 +3,8 @@
 #include "Components/Button.h"
 #include "Components/EditableTextBox.h"
 #include "Components/Slider.h"
-#include "GOTA/CoreSystems/GameplayFramework/DaytimeManager.h"
-#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
+#include "GOTA/Utility/DaytimeManager.h"
+#include "GOTA/GameplayFramework/GS_Ingame.h"
 #include "Kismet/GameplayStatics.h"
 
 // -------------------------------------------- LifeCycle --------------------------------------------

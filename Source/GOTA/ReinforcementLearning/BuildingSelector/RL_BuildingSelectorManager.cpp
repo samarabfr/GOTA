@@ -12,7 +12,7 @@
 #include "LearningAgentsTrainingEnvironment.h"
 #include "RL_BuildingSelectorInteractor.h"
 #include "RL_BuildingSelectorTrainingEnv.h"
-#include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
+#include "GOTA/GameplayFramework/GS_Ingame.h"
 
 ARL_BuildingSelectorManager::ARL_BuildingSelectorManager()
 {

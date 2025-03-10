@@ -3,9 +3,9 @@
 #include "Components/HorizontalBox.h"
 #include "Components/ProgressBar.h"
 #include "Components/TextBlock.h"
-#include "GOTA/CoreSystems/Faction/Building/Building.h"
-#include "GOTA/CoreSystems/Faction/Building/BuildingSettings.h"
-#include "GOTA/CoreSystems/Faction/Building/Population.h"
+#include "GOTA/Tile/Building/Building.h"
+#include "GOTA/Tile/Building/BuildingSettings.h"
+#include "GOTA/Tile/Building/Population.h"
 
 void UBuildingInfo::NativeConstruct()
 {
