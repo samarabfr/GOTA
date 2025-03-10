@@ -9,7 +9,7 @@
 ASpawnLayoutActor::ASpawnLayoutActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
-	
+
 	Hexagon = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Hexagon"));
 	RootComponent = Hexagon;
 }
@@ -32,6 +32,6 @@ FSpawnLayoutStruct ASpawnLayoutActor::GetSpawnLayoutStruct()
 				SpawnComponent->GetSpawnPoint());
 		}
 	}
-	
+
 	return LayoutStruct;
 }

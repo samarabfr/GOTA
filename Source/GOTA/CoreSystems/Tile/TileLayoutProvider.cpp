@@ -1,8 +1,6 @@
 ﻿// Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "TileLayoutProvider.h"
-
 #include "SpawnLayoutActor.h"
 #include "SpawnLayoutRegisterEntry.h"
 #include "GOTA/CoreSystems/GameplayFramework/GOTAGameInstance.h"
@@ -33,8 +31,10 @@ void UTileLayoutProvider::Initialize(FSubsystemCollectionBase& Collection)
 			[&](const FName& RowName, const FSpawnLayoutRegisterEntry& RowData)
 			{
 				ASpawnLayoutActor* Actor = RowData.SpawnLayoutActorClass->GetDefaultObject<ASpawnLayoutActor>();
-				ASpawnLayoutActor* SpawnedActor = GetWorld()->SpawnActor<ASpawnLayoutActor>(RowData.SpawnLayoutActorClass);
-				GetTileLayout(SpawnedActor->GetTileLayout())->SpawnLayoutStructs.Add(SpawnedActor->GetSpawnLayoutStruct());
+				ASpawnLayoutActor* SpawnedActor = GetWorld()->SpawnActor<ASpawnLayoutActor>(
+					RowData.SpawnLayoutActorClass);
+				GetTileLayout(SpawnedActor->GetTileLayout())->SpawnLayoutStructs.Add(
+					SpawnedActor->GetSpawnLayoutStruct());
 				SpawnedActor->Destroy();
 			});
 	}

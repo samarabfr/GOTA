@@ -4,11 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "TileLayout.h"
-#include "UObject/Object.h"
 #include "TileLayoutProvider.generated.h"
 
 /**
- * 
+ * Imports TileLayouts and SpawnLayouts from Assets and Provides them
  */
 UCLASS()
 class GOTA_API UTileLayoutProvider : public UGameInstanceSubsystem
@@ -24,7 +23,9 @@ private:
 	TArray<FTileLayout> TileLayouts;
 
 	void GenerateSpawnLayoutStructsFromDataAssets(FTileLayout& TileLayout);
+
 public:
 	FTileLayout* GetTileLayout(ETileLayout Layout);
+
 	FTileLayout* GetFittingTileLayout(const FTerrain& Terrain);
 };

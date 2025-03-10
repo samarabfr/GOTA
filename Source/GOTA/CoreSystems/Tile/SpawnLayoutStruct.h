@@ -7,9 +7,6 @@
 #include "UObject/Object.h"
 #include "SpawnLayoutStruct.generated.h"
 
-/**
- * 
- */
 USTRUCT()
 struct GOTA_API FSpawnLayoutStruct
 {
