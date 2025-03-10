@@ -3,7 +3,6 @@
 
 #include "GuardianAI_BuildingSelector.h"
 
-#include "LearningAgentsManager.h"
 #include "LearningAgentsNeuralNetwork.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
@@ -46,6 +45,8 @@ AGuardianAI_BuildingSelector::AGuardianAI_BuildingSelector()
 void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
+	RealTimeLastSnapshotSave = FPlatformTime::Seconds();
+	SendArmiesIntervalTimeLeft = SendArmiesIntervalTime;
 	if (HasAuthority())
 	{
 		GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
