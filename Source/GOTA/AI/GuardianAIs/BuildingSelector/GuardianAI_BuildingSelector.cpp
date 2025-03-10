@@ -4,6 +4,7 @@
 #include "GuardianAI_BuildingSelector.h"
 
 #include "LearningAgentsManager.h"
+#include "LearningAgentsNeuralNetwork.h"
 #include "GOTA/CoreSystems/Faction/Settlement/Tribe.h"
 #include "GOTA/CoreSystems/GameplayFramework/GS_Ingame.h"
 #include "GOTA/CoreSystems/Guardian/Guardian.h"
@@ -28,6 +29,14 @@ void AGuardianAI_BuildingSelector::Tick(float DeltaSeconds)
 	{
 		BuildingSelector->SelectBuilding();
 	}
+	if (bSaveSnapshotsAtIntervals && BuildingSelector && !BuildingSelector->IsPaused())
+	{
+		const double CurrentTime = FPlatformTime::Seconds();
+		if (CurrentTime - RealTimeLastSnapshotSave >= SaveSnapshotsIntervalTime)
+		{
+			RealTimeLastSnapshotSave = CurrentTime;
+		}
+	}
 }
 
 AGuardianAI_BuildingSelector::AGuardianAI_BuildingSelector()
@@ -47,10 +56,9 @@ void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 		if (!BuildingSelector)
 		{
 			BuildingSelector = GetWorld()->SpawnActor<ARL_BuildingSelectorManager>(ManagerClass,
-			                                                              FVector::Zero(),
-			                                                              FRotator::ZeroRotator);
-			BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic,
-			                PossessedGuardian->GetPossibleBuildings().Num());
+				FVector::Zero(),
+				FRotator::ZeroRotator);
+			BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic);
 			AddTickPrerequisiteActor(BuildingSelector); // make the manager tick before this
 			GameState->S_AddManager(ManagerClass, BuildingSelector);
 		}
@@ -106,4 +114,39 @@ void AGuardianAI_BuildingSelector::IncrementMilestone(int32 MilestoneIndex)
 {
 	if (MilestoneIndex >= MilestonesReached.Num()) return;
 	MilestonesReached[MilestoneIndex] += 1;
+}
+
+void AGuardianAI_BuildingSelector::SaveModel(const FString& ModelName)
+{
+	FFilePath ModelPath;
+	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / ModelName;
+	FFilePath FullSnapshotPath;
+	FullSnapshotPath.FilePath = ModelPath.FilePath + "Critic";
+	NN_Critic->SaveNetworkToSnapshot(FullSnapshotPath);
+	FullSnapshotPath.FilePath = ModelPath.FilePath + "Encoder";
+	NN_Encoder->SaveNetworkToSnapshot(FullSnapshotPath);
+	FullSnapshotPath.FilePath = ModelPath.FilePath + "Policy";
+	NN_Policy->SaveNetworkToSnapshot(FullSnapshotPath);
+	FullSnapshotPath.FilePath = ModelPath.FilePath + "Decoder";
+	NN_Decoder->SaveNetworkToSnapshot(FullSnapshotPath);
+}
+
+void AGuardianAI_BuildingSelector::LoadModel(const FString& ModelName)
+{
+	FFilePath ModelPath;
+	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / ModelName;
+	FFilePath FullSnapshotPath;
+	FullSnapshotPath.FilePath = ModelPath.FilePath + "Critic";
+	NN_Critic->LoadNetworkFromSnapshot(FullSnapshotPath);
+	FullSnapshotPath.FilePath = ModelPath.FilePath + "Encoder";
+	NN_Encoder->LoadNetworkFromSnapshot(FullSnapshotPath);
+	FullSnapshotPath.FilePath = ModelPath.FilePath + "Policy";
+	NN_Policy->LoadNetworkFromSnapshot(FullSnapshotPath);
+	FullSnapshotPath.FilePath = ModelPath.FilePath + "Decoder";
+	NN_Decoder->LoadNetworkFromSnapshot(FullSnapshotPath);
+}
+
+FString AGuardianAI_BuildingSelector::GetAgentName()
+{
+	return SnapshotAgentName;
 }

@@ -3,6 +3,7 @@
 #pragma once
 #include "AIController.h"
 #include "GOTA/ReinforcementLearning/Runner/RL_RunnerAgent.h"
+#include "GOTA/ReinforcementLearning/SnapshotSystem/SnapshotAgent.h"
 
 #include "GuardianAI_Runner.generated.h"
 
@@ -13,7 +14,7 @@ class ULearningAgentsNeuralNetwork;
 class ATile;
 
 UCLASS(Blueprintable)
-class GOTA_API AGuardianAI_Runner : public AAIController, public IRL_RunnerAgent
+class GOTA_API AGuardianAI_Runner : public AAIController, public IRL_RunnerAgent, public ISnapshotAgent
 {
 	GENERATED_BODY()
 
@@ -33,16 +34,26 @@ private:
 
 	// ----------------------- Movement control -----------------------
 private:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category="Snapshot")
+	FString SnapshotAgentName = "Unnamed";
+	UPROPERTY(EditDefaultsOnly, Category="Snapshot")
+	bool bSaveSnapshotsAtIntervals = true;
+	UPROPERTY(EditDefaultsOnly, Category="Snapshot")
+	double SaveSnapshotsIntervalTime = 900.0f;
+	UPROPERTY(EditDefaultsOnly, Category="Snapshot")
+	FFilePath SnapshotsFolderFilePath;
+	
+	UPROPERTY(EditDefaultsOnly, Category="LearningAgents")
 	ULearningAgentsNeuralNetwork* NN_Encoder;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category="LearningAgents")
 	ULearningAgentsNeuralNetwork* NN_Policy;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category="LearningAgents")
 	ULearningAgentsNeuralNetwork* NN_Decoder;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category="LearningAgents")
 	ULearningAgentsNeuralNetwork* NN_Critic;
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category="LearningAgents")
 	TSubclassOf<ARL_RunnerManager> ManagerClass;
+	
 	UPROPERTY(EditDefaultsOnly)
 	FVector ResetOffset = FVector(0, 0, 50);
 	
@@ -57,4 +68,7 @@ public:
 	virtual ATile* S_GetTargetTile() const override;
 	virtual void S_ResetToRandomTile() override;
 	virtual void S_Steer(float SteeringAngle) override;
+	virtual void SaveModel(const FString& ModelName) override;
+	virtual void LoadModel(const FString& ModelName) override;
+	virtual FString GetAgentName() override;
 };

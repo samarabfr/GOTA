@@ -1,11 +1,10 @@
 ﻿#include "DebugMenuGotaRL.h"
 
-#include "LearningAgentsNeuralNetwork.h"
 #include "Components/Button.h"
 #include "Components/ComboBoxString.h"
 #include "Components/EditableTextBox.h"
-#include "GOTA/ReinforcementLearning/SnapshotSystem/SnapshotAgentData.h"
-#include "GOTA/ReinforcementLearning/SnapshotSystem/SnapshotAgents.h"
+#include "GOTA/ReinforcementLearning/SnapshotSystem/SnapshotAgent.h"
+#include "Kismet/GameplayStatics.h"
 
 // -------------------------------------------- LifeCycle --------------------------------------------
 
@@ -14,9 +13,18 @@ void UDebugMenuGotaRL::NativeConstruct()
 	Super::NativeConstruct();
 	BTN_SaveModel->OnClicked.AddDynamic(this, &UDebugMenuGotaRL::SaveModel);
 	BTN_LoadModel->OnClicked.AddDynamic(this, &UDebugMenuGotaRL::LoadModel);
-	CB_AgentSelection->OnSelectionChanged.AddDynamic(this, &UDebugMenuGotaRL::RefreshNeuralNetworkOptions);
-	if (SnapshotAgents == nullptr) return;
-	for (FString AgentName : SnapshotAgents->GetAllAgentNames())
+	// get all snapshot agents
+	TArray<AActor*> SnapshotAgentsActors;
+	UGameplayStatics::GetAllActorsWithInterface(GetWorld(), USnapshotAgent::StaticClass(), SnapshotAgentsActors);
+	for (AActor* SnapshotAgentsActor : SnapshotAgentsActors)
+	{
+		if (SnapshotAgentsActor && SnapshotAgentsActor->Implements<USnapshotAgent>())
+		{
+			SnapshotAgents.Add(SnapshotAgentsActor);
+		}
+	}
+	// snapshot agent selection
+	for (FString AgentName : GetAllAgentNames())
 	{
 		CB_AgentSelection->AddOption(AgentName);
 	}
@@ -29,60 +37,40 @@ void UDebugMenuGotaRL::NativeConstruct()
 
 void UDebugMenuGotaRL::SaveModel()
 {
-	if (SnapshotAgents == nullptr) return;
-	USnapshotAgentData* Agent = SnapshotAgents->GetAgentByName(CB_AgentSelection->GetSelectedOption());
+	TScriptInterface<ISnapshotAgent> Agent = GetAgentByName(CB_AgentSelection->GetSelectedOption());
 	if (Agent == nullptr) return;
 	const FString ModelName = TB_ModelName->GetText().ToString();
-	const FString NeuralNetworkName = CB_NeuralNetworkSelection->GetSelectedOption();
-	const FSnapshotNeuralNetworkData NeuralNetwork = Agent->GetNeuralNetworkByName(NeuralNetworkName);
-	if (NeuralNetwork.Name == "Unnamed") return;
-	FFilePath ModelPath;
-	ModelPath.FilePath = FPaths::ProjectContentDir() /
-		SnapshotAgents->GetSnapshotsFolderFilePath().FilePath /
-		ModelName;
-	FFilePath FullSnapshotPath;
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Critic";
-	NeuralNetwork.Critic->SaveNetworkToSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Encoder";
-	NeuralNetwork.Encoder->SaveNetworkToSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Policy";
-	NeuralNetwork.Policy->SaveNetworkToSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Decoder";
-	NeuralNetwork.Decoder->SaveNetworkToSnapshot(FullSnapshotPath);
+	Agent->SaveModel(ModelName);
 }
 
 void UDebugMenuGotaRL::LoadModel()
 {
-	if (SnapshotAgents == nullptr) return;
-	USnapshotAgentData* Agent = SnapshotAgents->GetAgentByName(CB_AgentSelection->GetSelectedOption());
+	if (SnapshotAgents.IsEmpty()) return;
+	TScriptInterface<ISnapshotAgent> Agent = GetAgentByName(CB_AgentSelection->GetSelectedOption());
 	if (Agent == nullptr) return;
 	const FString ModelName = TB_ModelName->GetText().ToString();
-	const FString NeuralNetworkName = CB_NeuralNetworkSelection->GetSelectedOption();
-	const FSnapshotNeuralNetworkData NeuralNetwork = Agent->GetNeuralNetworkByName(NeuralNetworkName);
-	if (NeuralNetwork.Name == "Unnamed") return;
-	FFilePath ModelPath;
-	ModelPath.FilePath = FPaths::ProjectContentDir() /
-		SnapshotAgents->GetSnapshotsFolderFilePath().FilePath /
-		ModelName;
-	FFilePath FullSnapshotPath;
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Critic";
-	NeuralNetwork.Critic->LoadNetworkFromSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Encoder";
-	NeuralNetwork.Encoder->LoadNetworkFromSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Policy";
-	NeuralNetwork.Policy->LoadNetworkFromSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Decoder";
-	NeuralNetwork.Decoder->LoadNetworkFromSnapshot(FullSnapshotPath);
+	Agent->LoadModel(ModelName);
 }
 
-void UDebugMenuGotaRL::RefreshNeuralNetworkOptions(FString AgentName, ESelectInfo::Type SelectInfo)
+TScriptInterface<ISnapshotAgent> UDebugMenuGotaRL::GetAgentByName(const FString& AgentName)
 {
-	CB_NeuralNetworkSelection->ClearOptions();
-	USnapshotAgentData* Agent = SnapshotAgents->GetAgentByName(AgentName);
-	if (Agent == nullptr) return;
-	for (FString NeuralNetworkName : Agent->GetAllNeuralNetworkNames())
+	if (SnapshotAgents.IsEmpty()) return nullptr;
+	for (TScriptInterface Agent : SnapshotAgents)
 	{
-		CB_NeuralNetworkSelection->AddOption(NeuralNetworkName);
+		if (Agent->GetAgentName() == AgentName)
+		{
+			return Agent;
+		}
 	}
-	CB_NeuralNetworkSelection->SetSelectedOption(CB_NeuralNetworkSelection->GetOptionAtIndex(0));
+	return nullptr;
+}
+
+TArray<FString> UDebugMenuGotaRL::GetAllAgentNames()
+{
+	TArray<FString> AgentNames;
+	for (TScriptInterface Agent : SnapshotAgents)
+	{
+		AgentNames.Add(Agent->GetAgentName());
+	}
+	return AgentNames;
 }

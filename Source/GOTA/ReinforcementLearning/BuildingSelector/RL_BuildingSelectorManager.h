@@ -38,8 +38,6 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	bool bResetNNsWhenStartingTraining = false;
 	UPROPERTY(EditDefaultsOnly)
-	bool bSaveSnapshotsContinuously = false;
-	UPROPERTY(EditDefaultsOnly)
 	bool bUseTensorboard = false;
 	UPROPERTY(EditDefaultsOnly)
 	FString NonEditorEngineRelativePath = "../../../../Program Files/Epic Games/UE_5.5/Engine";
@@ -85,8 +83,7 @@ private:
 public:
 	void S_RegisterAgent(UObject* Agent);
 	void S_Init(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
-	            ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic,
-	            int32 AvailableBuildingsCount);
+	            ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic);
 	bool IsPaused();
 	void Pause();
 	void Unpause();
