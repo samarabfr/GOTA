@@ -225,7 +225,12 @@ void AGM_SelfPlay::EndGame(EGameEnding Ending, const FString& EndingMessage)
 	else
 		++CountNativesWon;
 	UE_LOG(LogTemp, Warning, TEXT("Count Colonists won: %d, Count Natives won: %d, Count Soft-locked: %d"),
-	       CountColonistsWon, CountNativesWon, CountSoftLocked)
+	CountColonistsWon, CountNativesWon, CountSoftLocked)
+	const float TotalGames = CountColonistsWon + CountNativesWon + CountSoftLocked;
+	UE_LOG(LogTemp, Warning, TEXT("Colonists winrate: %f, Natives winrate: %f, Soft-locked rate: %f"),
+		   static_cast<float>(CountColonistsWon) / TotalGames,
+		   static_cast<float>(CountNativesWon) / TotalGames,
+		   static_cast<float>(CountSoftLocked) / TotalGames)
 	S_RestartSelfPlay();
 }
 
