@@ -114,6 +114,8 @@ void AGM_Ingame::EndGame(EGameEnding Ending, const FString& EndingMessage)
 
 void AGM_Ingame::CheckGameEndingConditions()
 {
+	if (!GOTAGameState || !GameBalance)
+		return;
 	if (GOTAGameState->GameEnded) return;
 	if (GOTAGameState->GameStatus == EGameStatus::Loading) return;
 	if (!GOTAGameState->GetColony()) return;
