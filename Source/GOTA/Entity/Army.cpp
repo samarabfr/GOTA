@@ -251,10 +251,15 @@ bool AArmy::HasEnemyInGarrisonModeRange() const
 	Origin.Add(GetCurrentTile());
 	ATile* EnemyOnTile = S_GetGameState()->GetTileMap()->FindNearestTileInRange(
 		Origin, GarrisonModeInterceptingRange,
-		GetEntityType(), [this](const ATile* Tile)
+		EEntityType::None, [this](const ATile* Tile)
 		{
-			return Tile && Tile->GetArmy() && Tile->GetArmy()
-			                                      ->GetAffiliation() != GetAffiliation();
+			if (!Tile)
+				return false;
+			if (!Tile->GetArmy())
+				return false;
+			if (Tile->GetArmy()->GetAffiliation() == GetAffiliation())
+				return false;
+			return true;
 		});
 	return EnemyOnTile != nullptr;
 }
@@ -424,7 +429,7 @@ bool AArmy::HasEnemyInGuardTileRange()
 	Origin.Add(GuardTile.Get());
 	ATile* EnemyOnTile = S_GetGameState()->GetTileMap()->FindNearestTileInRange(
 	Origin, GuardModeInterceptingRange,
-		GetEntityType(), [this](const ATile* Tile)
+		EEntityType::None, [this](const ATile* Tile)
 		{
 			return Tile && Tile->GetArmy() && Tile->GetArmy()->GetAffiliation() != GetAffiliation();
 		});
