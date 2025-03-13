@@ -7,7 +7,6 @@
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
 #include "GOTA/Settlement/Settlement.h"
-#include "GOTA/Settlement/Tribe.h"
 #include "GOTA/UI/Menu/IngameMenu.h"
 #include "GOTA/GameplayFramework/GS_Ingame.h"
 #include "GOTA/UI/DebugMenu/DebugMenu.h"

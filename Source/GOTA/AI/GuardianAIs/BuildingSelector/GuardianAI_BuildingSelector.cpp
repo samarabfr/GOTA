@@ -8,7 +8,6 @@
 #include "GOTA/Guardian/Guardian.h"
 #include "GOTA/ReinforcementLearning/BuildingSelector/RL_BuildingSelectorManager.h"
 #include "GOTA/Settlement/Settlement.h"
-#include "GOTA/Settlement/Tribe.h"
 #include "GOTA/Tile/Tile.h"
 #include "GOTA/Utility/Enums.h"
 
