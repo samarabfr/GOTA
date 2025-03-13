@@ -3,11 +3,14 @@
 #pragma once
 
 #include "GameBalance.h"
-#include "CoreMinimal.h"
-#include "GS_Ingame.h"
 #include "GameFramework/GameMode.h"
 #include "GM_Ingame.generated.h"
 
+enum class EGameEnding : uint8;
+class ASettlementAIController;
+class ASettlement;
+class AGS_Ingame;
+class ATileMap;
 class UBuildingSettings;
 class AMouseUtils;
 
@@ -30,10 +33,13 @@ public:
 	TSubclassOf<ATileMap> TileMapClass;
 
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
-	TSubclassOf<AColony> ColonyClass;
+	TSubclassOf<ASettlement> ColonyClass;
 
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
-	TSubclassOf<ATribe> TribeClass;
+	TSubclassOf<ASettlementAIController> ColonyAIControllerClass;
+
+	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
+	TSubclassOf<ASettlement> TribeClass;
 
 	UPROPERTY(EditDefaultsOnly, Category="GOTA GameMode")
 	TArray<UBuildingSettings*> PossibleBuildingsForPlayers;

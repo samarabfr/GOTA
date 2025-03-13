@@ -4,6 +4,7 @@
 #include "GM_Ingame.h"
 
 #include "GotaGameInstance.h"
+#include "GS_Ingame.h"
 #include "GOTA/Utility/LoadingManager.h"
 #include "PC_Ingame.h"
 #include "PS_Ingame.h"
@@ -11,9 +12,9 @@
 #include "GameFramework/GameStateBase.h"
 #include "GOTA/Utility/GOTAAttribute.h"
 #include "GOTA/Settlement/Settlement.h"
-#include "GOTA/AI/SettlementAIs/Colony.h"
+#include "GOTA/AI/SettlementAIs/ColonyAIController.h"
+#include "GOTA/AI/SettlementAIs/SettlementAIController.h"
 #include "GOTA/Settlement/SettlementPopulation.h"
-#include "GOTA/Settlement/Tribe.h"
 #include "GOTA/Guardian/Guardian.h"
 #include "GOTA/Guardian/GuardianSettings.h"
 #include "GOTA/Tile/Tile.h"
@@ -165,11 +166,13 @@ void AGM_Ingame::CreateWorld()
 
 void AGM_Ingame::CreateSettlements()
 {
-	AColony* Colony = GetWorld()->SpawnActor<AColony>(ColonyClass);
+	ASettlement* Colony = GetWorld()->SpawnActor<ASettlement>(ColonyClass);
 	Colony->S_Init(GOTAGameState->GetTileMap()->GetColonistsStart().Get());
 	GOTAGameState->SetColony(Colony);
+	ASettlementAIController* ColonyAIController = GetWorld()->SpawnActor<ASettlementAIController>(ColonyAIControllerClass);
+	ColonyAIController->Possess(Colony);
 
-	ATribe* Tribe = GetWorld()->SpawnActor<ATribe>(TribeClass);
+	ASettlement* Tribe = GetWorld()->SpawnActor<ASettlement>(TribeClass);
 	Tribe->S_Init(GOTAGameState->GetTileMap()->GetNativesStart().Get());
 	GOTAGameState->SetTribe(Tribe);
 }

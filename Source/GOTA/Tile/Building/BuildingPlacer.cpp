@@ -4,8 +4,6 @@
 #include "BuildingPlacer.h"
 
 #include "BuildingSettings.h"
-#include "GOTA/Settlement/Settlement.h"
-#include "GOTA/Settlement/Tribe.h"
 #include "GOTA/GameplayFramework/GS_Ingame.h"
 #include "GOTA/Tile/Tile.h"
 #include "GOTA/Utility/MouseUtils.h"
