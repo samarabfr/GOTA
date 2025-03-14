@@ -12,13 +12,14 @@ AColonyAI_T1::AColonyAI_T1()
 void AColonyAI_T1::S_Tick(const float DeltaSeconds)
 {
 	C_Tick(DeltaSeconds);
-	if (!GetPossessedSettlement())
-		return;
 	FigureOutBuilding();
 	if (SendArmiesIntervalTimeLeft <= 0.0f)
 	{
 		SendArmiesIntervalTimeLeft = SendArmiesIntervalTime;
-		GetPossessedSettlement()->SetAllArmiesOnAttack();
+		if (GetPossessedSettlement())
+		{
+			GetPossessedSettlement()->SetAllArmiesOnAttack();
+		}
 	}
 	else
 	{
@@ -46,7 +47,7 @@ void AColonyAI_T1::Tick(float DeltaSeconds)
 
 void AColonyAI_T1::FigureOutBuilding()
 {
-	if (!GetPossessedSettlement())
+	if (!IsValid(GetPossessedSettlement())) // valid check because the settlement might be pending kill
 		return;
 	if (!ShouldBuild()) return;
 	ATile* Tile = FindBuildableTile();
@@ -61,7 +62,7 @@ void AColonyAI_T1::FigureOutBuilding()
 
 bool AColonyAI_T1::ShouldBuild() const
 {
-	if (!GetPossessedSettlement())
+	if (!IsValid(GetPossessedSettlement())) // valid check because the settlement might be pending kill
 			return false;
 	for (const ATile* Tile : GetPossessedSettlement()->ClaimedTiles)
 	{
@@ -73,7 +74,7 @@ bool AColonyAI_T1::ShouldBuild() const
 
 ATile* AColonyAI_T1::FindBuildableTile() const
 {
-	if (!GetPossessedSettlement())
+	if (!IsValid(GetPossessedSettlement())) // valid check because the settlement might be pending kill
 		return nullptr;
 	if (GetPossessedSettlement()->BorderingUnclaimedTiles.Num() <= 0)
 		return nullptr;
