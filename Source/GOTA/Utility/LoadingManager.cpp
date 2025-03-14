@@ -6,7 +6,7 @@
 #include "DaytimeManager.h"
 #include "LoadingStatusActor.h"
 #include "GameFramework/GameUserSettings.h"
-#include "GOTA/AI/SettlementAIs/ColonyAIController.h"
+#include "GOTA/AI/SettlementAIs/ColonyAI_T1.h"
 #include "GOTA/GameplayFramework/GM_Ingame.h"
 #include "GOTA/GameplayFramework/GS_Ingame.h"
 #include "GOTA/GameplayFramework/PC_Ingame.h"

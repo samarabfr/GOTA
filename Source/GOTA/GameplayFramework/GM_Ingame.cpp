@@ -12,7 +12,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "GOTA/Utility/GOTAAttribute.h"
 #include "GOTA/Settlement/Settlement.h"
-#include "GOTA/AI/SettlementAIs/ColonyAIController.h"
+#include "GOTA/AI/SettlementAIs/ColonyAI_T1.h"
 #include "GOTA/AI/SettlementAIs/SettlementAIController.h"
 #include "GOTA/Settlement/SettlementPopulation.h"
 #include "GOTA/Guardian/Guardian.h"

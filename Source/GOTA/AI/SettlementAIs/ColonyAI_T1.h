@@ -2,7 +2,7 @@
 
 #include "SettlementAIController.h"
 
-#include "ColonyAIController.generated.h"
+#include "ColonyAI_T1.generated.h"
 
 
 class ATile;
@@ -10,7 +10,7 @@ class AArmy;
 class UBuildingSettings;
 
 UCLASS()
-class AColonyAIController : public ASettlementAIController
+class AColonyAI_T1 : public ASettlementAIController
 {
 	GENERATED_BODY()
 
@@ -21,7 +21,7 @@ private:
 	virtual void Tick(float DeltaSeconds) override;
 
 protected:
-	AColonyAIController();
+	AColonyAI_T1();
 
 public:
 	void S_Tick(const float DeltaSeconds);

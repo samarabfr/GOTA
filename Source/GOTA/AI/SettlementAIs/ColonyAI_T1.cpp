@@ -1,15 +1,15 @@
-﻿#include "ColonyAIController.h"
+﻿#include "ColonyAI_T1.h"
 
 #include "GOTA/Settlement/Settlement.h"
 #include "GOTA/Tile/Building/Building.h"
 #include "GOTA/Tile/Building/BuildingSettings.h"
 #include "GOTA/Tile/Tile.h"
 
-AColonyAIController::AColonyAIController()
+AColonyAI_T1::AColonyAI_T1()
 {
 }
 
-void AColonyAIController::S_Tick(const float DeltaSeconds)
+void AColonyAI_T1::S_Tick(const float DeltaSeconds)
 {
 	C_Tick(DeltaSeconds);
 	if (!GetPossessedSettlement())
@@ -26,16 +26,16 @@ void AColonyAIController::S_Tick(const float DeltaSeconds)
 	}
 }
 
-void AColonyAIController::C_Tick(const float DeltaSeconds)
+void AColonyAI_T1::C_Tick(const float DeltaSeconds)
 {
 }
 
-void AColonyAIController::BeginDestroy()
+void AColonyAI_T1::BeginDestroy()
 {
 	Super::BeginDestroy();
 }
 
-void AColonyAIController::Tick(float DeltaSeconds)
+void AColonyAI_T1::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	if (HasAuthority())
@@ -44,7 +44,7 @@ void AColonyAIController::Tick(float DeltaSeconds)
 		C_Tick(DeltaSeconds);
 }
 
-void AColonyAIController::FigureOutBuilding()
+void AColonyAI_T1::FigureOutBuilding()
 {
 	if (!GetPossessedSettlement())
 		return;
@@ -59,7 +59,7 @@ void AColonyAIController::FigureOutBuilding()
 	}
 }
 
-bool AColonyAIController::ShouldBuild() const
+bool AColonyAI_T1::ShouldBuild() const
 {
 	if (!GetPossessedSettlement())
 			return false;
@@ -71,7 +71,7 @@ bool AColonyAIController::ShouldBuild() const
 	return true;
 }
 
-ATile* AColonyAIController::FindBuildableTile() const
+ATile* AColonyAI_T1::FindBuildableTile() const
 {
 	if (!GetPossessedSettlement())
 		return nullptr;
@@ -81,7 +81,7 @@ ATile* AColonyAIController::FindBuildableTile() const
 	return GetPossessedSettlement()->BorderingUnclaimedTiles[Index];
 }
 
-UBuildingSettings* AColonyAIController::SelectNewBuilding() const
+UBuildingSettings* AColonyAI_T1::SelectNewBuilding() const
 {
 	TArray<UBuildingSettings*> ViableBuildings = PossibleBuildings;
 	// prevent soft-locking
