@@ -273,11 +273,14 @@ TArray<ATile*> ATileMap::FindTilesInRange(const TArray<ATile*>& Origin, TArray<i
                                           const EEntityType EntityType, bool bTerminateEarly,
                                           const std::function<bool(const ATile*)>& Condition) const
 {
-	if (Origin.IsEmpty()) return TArray<ATile*>();
+	if (Origin.IsEmpty())
+		return TArray<ATile*>();
 	TArray<ATile*> Frontier = Origin;
 
 	TArray<int8> DistanceMap;
 	DistanceMap.SetNumZeroed(Tiles.Num()); // Distances need to seen as +1 because i cant do setnum with -1
+	if (DistanceMap.Num() == 0)
+		return TArray<ATile*>();
 	for (const ATile* FrontierTile : Frontier)
 	{
 		if (!FrontierTile)
