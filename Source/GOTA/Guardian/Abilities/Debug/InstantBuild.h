@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "GOTA/Guardian/Ability.h"
+#include "GOTA/Guardian/AbilityFramework/Ability.h"
 #include "InstantBuild.generated.h"
 
 UCLASS()

@@ -2,12 +2,13 @@
 
 #include "AbilityIndicator.h"
 
-#include "Ability.h"
-#include "AbilitySettings.h"
+
+#include "AbilityFramework/AbilitySettings.h"
 #include "Guardian.h"
 #include "GuardianSettings.h"
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
+#include "AbilityFramework/Ability.h"
 #include "Components/WidgetComponent.h"
 #include "GOTA/Entity/Army.h"
 #include "GOTA/Entity/Civilian.h"

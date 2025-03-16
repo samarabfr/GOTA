@@ -3,9 +3,9 @@
 
 #include "Guardian.h"
 
-#include "Ability.h"
-#include "AbilitySettings.h"
 #include "GuardianSettings.h"
+#include "AbilityFramework/Ability.h"
+#include "AbilityFramework/AbilitySettings.h"
 #include "GOTA/GameplayFramework/GS_Ingame.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"

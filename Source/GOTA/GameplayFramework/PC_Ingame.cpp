@@ -7,7 +7,7 @@
 #include "InputDataAsset.h"
 #include "GOTA/Entity/Army.h"
 #include "GOTA/Entity/Civilian.h"
-#include "GOTA/Guardian/Ability.h"
+#include "GOTA/Guardian/AbilityFramework/Ability.h"
 #include "GOTA/Guardian/AbilityIndicator.h"
 #include "GOTA/UI/Ingame/AbilitySlot.h"
 #include "GOTA/Guardian/AbilitySlotRegister.h"

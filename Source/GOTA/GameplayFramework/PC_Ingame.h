@@ -5,7 +5,7 @@
 
 #include "GameFramework/PlayerController.h"
 #include "GOTA/Tile/Building/BuildingPlacer.h"
-#include "GOTA/Guardian/AbilitySettings.h"
+#include "GOTA/Guardian/AbilityFramework/AbilitySettings.h"
 #include "PC_Ingame.generated.h"
 
 class UInputDataAsset;

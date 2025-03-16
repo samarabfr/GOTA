@@ -3,7 +3,7 @@
 #include "Ability.h"
 
 #include "AbilitySettings.h"
-#include "AbilitySlotRegister.h"
+#include "GOTA/Guardian/AbilitySlotRegister.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
 

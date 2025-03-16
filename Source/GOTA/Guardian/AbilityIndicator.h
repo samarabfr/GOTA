@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "AbilityTarget.h"
+#include "AbilityFramework/AbilityTarget.h"
 #include "GameFramework/Actor.h"
 #include "AbilityIndicator.generated.h"
 

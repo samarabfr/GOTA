@@ -3,7 +3,7 @@
 
 #include "InstantBuild.h"
 
-#include "GOTA/Guardian/AbilityTarget.h"
+#include "GOTA/Guardian/AbilityFramework/AbilityTarget.h"
 #include "GOTA/Tile/Tile.h"
 #include "GOTA/Tile/Building/Building.h"
 

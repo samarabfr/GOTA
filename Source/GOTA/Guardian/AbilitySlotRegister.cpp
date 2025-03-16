@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "AbilitySlotRegister.h"
-#include "Ability.h"
+#include "AbilityFramework/Ability.h"
 #include "GOTA/UI/Ingame/AbilitySlot.h"
 
 // ---------------------------------------- AbilitySlots ----------------------------------------

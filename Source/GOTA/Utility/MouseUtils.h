@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameFramework/Actor.h"
-#include "GOTA/Guardian/AbilityTarget.h"
+#include "GOTA/Guardian/AbilityFramework/AbilityTarget.h"
 #include "MouseUtils.generated.h"
 
 class ATile;

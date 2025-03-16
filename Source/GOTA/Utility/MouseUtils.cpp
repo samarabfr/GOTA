@@ -7,7 +7,7 @@
 #include "GOTA/Entity/Civilian.h"
 #include "GOTA/GameplayFramework/GS_Ingame.h"
 #include "GOTA/GameplayFramework/PC_Ingame.h"
-#include "GOTA/Guardian/AbilityTarget.h"
+#include "GOTA/Guardian/AbilityFramework/AbilityTarget.h"
 #include "GOTA/Guardian/Guardian.h"
 #include "GOTA/Tile/Tile.h"
 #include "Net/UnrealNetwork.h"

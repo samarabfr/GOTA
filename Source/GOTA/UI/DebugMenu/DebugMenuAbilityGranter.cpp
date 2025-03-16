@@ -2,7 +2,7 @@
 
 #include "DebugMenuAbilityEntry.h"
 #include "Components/UniformGridPanel.h"
-#include "GOTA/Guardian/AbilityProvider.h"
+#include "GOTA/Guardian/AbilityFramework/AbilityProvider.h"
 
 // -------------------------------------------- LifeCycle --------------------------------------------
 
