@@ -353,16 +353,9 @@ float AArmy::GetRavageSpeed() const
 
 void AArmy::S_RavageEnemyBuilding()
 {
-	TRACE_CPUPROFILER_EVENT_SCOPE_STR("AArmy::S_RavageEnemyBuilding");
-	if (!GetCurrentTile() || !GetCurrentTile()->GetBuilding() || !IsOnEnemyBuilding() || IsBuildingProtected()) return;
-	if (GetCurrentTile()->GetBuilding()->GetPopulation()->GetSize() > 0)
-	{
-		GetCurrentTile()->GetBuilding()->GetPopulation()->S_DecreaseSize(1);
-	}
-	else
-	{
-		GetCurrentTile()->S_Unbuild();
-	}
+	if (!GetCurrentTile() || !GetCurrentTile()->GetBuilding() || !IsOnEnemyBuilding() || IsBuildingProtected())
+		return;
+	GetCurrentTile()->S_Unbuild();
 }
 
 // -----------------Guarding------------------------
@@ -428,7 +421,7 @@ bool AArmy::HasEnemyInGuardTileRange()
 	TArray<ATile*> Origin;
 	Origin.Add(GuardTile.Get());
 	ATile* EnemyOnTile = S_GetGameState()->GetTileMap()->FindNearestTileInRange(
-	Origin, GuardModeInterceptingRange,
+		Origin, GuardModeInterceptingRange,
 		EEntityType::None, [this](const ATile* Tile)
 		{
 			return Tile && Tile->GetArmy() && Tile->GetArmy()->GetAffiliation() != GetAffiliation();
