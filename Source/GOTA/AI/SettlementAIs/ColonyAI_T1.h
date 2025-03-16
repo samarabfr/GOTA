@@ -33,11 +33,8 @@ private:
 	TArray<UBuildingSettings*> PossibleBuildings;
 
 	void FigureOutBuilding();
-
 	bool ShouldBuild() const;
-
 	ATile* FindBuildableTile() const;
-
 	UBuildingSettings* SelectNewBuilding() const;
 
 	// --------------------Army----------------------
