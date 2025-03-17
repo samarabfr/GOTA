@@ -170,6 +170,7 @@ void AGM_Ingame::CreateSettlements()
 	Colony->S_Init(GOTAGameState->GetTileMap()->GetColonistsStart().Get());
 	GOTAGameState->SetColony(Colony);
 	ASettlementAIController* ColonyAIController = GetWorld()->SpawnActor<ASettlementAIController>(ColonyAIControllerClass);
+	GOTAGameState->AddSettlementAIController(ColonyAIController);
 	ColonyAIController->Possess(Colony);
 
 	ASettlement* Tribe = GetWorld()->SpawnActor<ASettlement>(TribeClass);

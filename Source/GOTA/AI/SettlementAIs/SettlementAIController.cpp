@@ -3,6 +3,8 @@
 
 #include "SettlementAIController.h"
 
+#include "GOTA/Settlement/Settlement.h"
+
 
 ASettlementAIController::ASettlementAIController()
 {
@@ -30,5 +32,9 @@ void ASettlementAIController::Possess(ASettlement* Settlement)
 
 ASettlement* ASettlementAIController::GetPossessedSettlement() const
 {
-	return PossessedSettlement;
+	return PossessedSettlement.Get();
+}
+
+void ASettlementAIController::Log()
+{
 }

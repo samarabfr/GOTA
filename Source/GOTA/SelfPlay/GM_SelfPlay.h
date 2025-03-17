@@ -8,7 +8,7 @@
 #include "GM_SelfPlay.generated.h"
 
 
-class AAIController;
+class AGuardianAIController;
 class AGS_SelfPlay;
 class AGuardianSimulator;
 class ASimulatedGuardianManager;
@@ -18,31 +18,42 @@ UCLASS(Blueprintable)
 class GOTA_API AGM_SelfPlay : public AGM_Ingame
 {
 	GENERATED_BODY()
+
+	// ------------------------------------ Lifecycle ------------------------------------
+protected:
 	AGM_SelfPlay();
 
+	// ------------------------------------ Game ------------------------------------
+private:
+	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
+	
+	virtual void LoadGame() override;
+	virtual void EndGame(EGameEnding Ending, const FString& EndingMessage) override;
+	void S_RestartSelfPlay();
+	
 	virtual void CreateGuardians() override;
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UGuardianSettings*> GuardianSettings;
 
 	UPROPERTY(EditDefaultsOnly)
-	TSubclassOf<AAIController> GuardianAIClass;
+	TSubclassOf<AGuardianAIController> GuardianAIClass;
 
 	UPROPERTY(EditDefaultsOnly)
 	float FixedDeltaSeconds = 0.1f;
-	float LearningAgentsFixedDeltaSeconds = 1.0f/60.0f;
+	float LearningAgentsFixedDeltaSeconds = 1.0f / 60.0f;
 
-	virtual void Tick(float DeltaSeconds) override;
-	virtual void LoadGame() override;
-
-	// soft lock
+private:
 	UPROPERTY(EditDefaultsOnly)
 	float SoftLockTime = 18000.0f; // GameTime in seconds
 	float SoftLockTimeLeft = 0.0f;
 
-	// Logging
+	
+private:
 	UPROPERTY(EditDefaultsOnly)
 	float RegularLogDataInterval = 900.0f; // GameTime in seconds
+
 	float RegularLogDataCooldown = 0.0f;
 	void LogSettlementData(ASettlement* Settlement, FString SettlementName);
 	int32 CountColonistsWon = 0;
@@ -62,9 +73,6 @@ class GOTA_API AGM_SelfPlay : public AGM_Ingame
 	double LastRealTime = 0.0f;
 	double MaxRealTime = 0.0f;
 	double MinRealTime = DBL_MAX;
-
-	virtual void BeginPlay() override;
-	virtual void EndGame(EGameEnding Ending, const FString& EndingMessage) override;
-
-	void S_RestartSelfPlay();
+	// AI
+	void LogAIControllers();
 };

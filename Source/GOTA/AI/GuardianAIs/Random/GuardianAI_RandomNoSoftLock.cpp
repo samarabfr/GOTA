@@ -53,6 +53,14 @@ void AGuardianAI_RandomNoSoftLock::OnPossess(APawn* InPawn)
 		GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
 		PossessedGuardian = Cast<AGuardian>(InPawn);
 		Settlement = GameState->GetTribe();
+		// Buildingscounter
+		if (!PossessedGuardian)
+			return;
+		BuildingsCounter.Empty();
+		for (UBuildingSettings* Building : PossessedGuardian->GetPossibleBuildings())
+		{
+			BuildingsCounter.Add(Building->Name, 0);
+		}
 	}
 }
 
@@ -67,7 +75,10 @@ void AGuardianAI_RandomNoSoftLock::FigureOutBuilding()
 	if (!NewBuilding) return;
 	if (Tile && Tile->CanBuild(NewBuilding, Settlement))
 	{
-		Tile->S_TryBuild(NewBuilding, Settlement);
+		if (Tile->S_TryBuild(NewBuilding, Settlement))
+		{
+			BuildingsCounter[NewBuilding->Name]++;
+		}
 	}
 }
 
@@ -125,4 +136,18 @@ UBuildingSettings* AGuardianAI_RandomNoSoftLock::SelectNewBuilding() const
 	}
 	if (ViableBuildings.Num() <= 0) return nullptr;
 	return ViableBuildings[FMath::RandRange(0, ViableBuildings.Num() - 1)];
+}
+
+void AGuardianAI_RandomNoSoftLock::LogBuildings()
+{
+	for (auto Counter : BuildingsCounter)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s: %d"), *Counter.Key.ToString(), Counter.Value)
+	}
+}
+
+void AGuardianAI_RandomNoSoftLock::Log()
+{
+	UE_LOG(LogTemp, Warning, TEXT("-------------------------- Guardian AI - Random No SoftLock--------------------------"))
+	LogBuildings();
 }

@@ -4,6 +4,8 @@
 #include "GM_SelfPlay.h"
 
 #include "AIController.h"
+#include "GOTA/AI/GuardianAIs/GuardianAIController.h"
+#include "GOTA/AI/SettlementAIs/SettlementAIController.h"
 #include "GOTA/Entity/Builder.h"
 #include "GOTA/Entity/Forager.h"
 #include "GOTA/Entity/Woodcutter.h"
@@ -17,44 +19,20 @@
 #include "GOTA/Tile/Tile.h"
 #include "GOTA/Tilemap/TileMap.h"
 #include "Kismet/GameplayStatics.h"
+// ------------------------------------ Lifecycle ------------------------------------
 
 AGM_SelfPlay::AGM_SelfPlay()
 {
 }
 
-void AGM_SelfPlay::CreateGuardians()
+// ------------------------------------ Game ------------------------------------
+
+void AGM_SelfPlay::BeginPlay()
 {
-	ATile* TribeStartingTile = GOTAGameState->GetTileMap()->GetNativesStart().Get();
-	for (int32 i = 0; i < GuardianSettings.Num(); ++i)
-	{
-		FVector SpawnLocation = FVector(0, 0, 1000);
-		int32 TileIndex = i % TribeStartingTile->Neighbors.Num();
-		if (TribeStartingTile->Neighbors[TileIndex])
-		{
-			SpawnLocation = TribeStartingTile->Neighbors[TileIndex]->GetActorLocation() + FVector(0, 0, 100);
-		}
-		else
-		{
-			SpawnLocation = TribeStartingTile->GetActorLocation() + FVector(0, 0, 100);
-		}
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(
-			GuardianSettings[i]->GuardianBlueprint, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
-		GOTAGameState->SetGuardian(1, Guardian);
-		Guardian->S_Init(GuardianSettings[i], PossibleBuildingsForPlayers);
-		if (AAIController* GuardianAI = GOTAGameState->GetGuardianAIController(i))
-		{
-			GuardianAI->Possess(Guardian);
-		}
-		else if (GuardianAIClass)
-		{
-			GuardianAI = GetWorld()->SpawnActor<AAIController>(
-				GuardianAIClass, SpawnLocation, FRotator::ZeroRotator);
-			GuardianAI->Possess(Guardian);
-			GOTAGameState->SetGuardianAIController(i, GuardianAI);
-		}
-	}
+	Super::BeginPlay();
+	LoadGame();
+	UGameplayStatics::SetGlobalTimeDilation(this,
+											FixedDeltaSeconds / LearningAgentsFixedDeltaSeconds);
 }
 
 void AGM_SelfPlay::Tick(float DeltaSeconds)
@@ -88,6 +66,7 @@ void AGM_SelfPlay::Tick(float DeltaSeconds)
 		LogTimeData();
 		LogSettlementData(GOTAGameState->GetColony(), "Colonists");
 		LogSettlementData(GOTAGameState->GetTribe(), "Natives");
+		LogAIControllers();
 		GameTimeLastLog = GetWorld()->GetTimeSeconds();
 		RealTimeLastLog = CurrentRealTime;
 	}
@@ -129,6 +108,76 @@ void AGM_SelfPlay::LoadGame()
 	MaxRealTime = 0.0f;
 	MinRealTime = DBL_MAX;
 }
+
+void AGM_SelfPlay::EndGame(EGameEnding Ending, const FString& EndingMessage)
+{
+	Super::EndGame(Ending, EndingMessage);
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *EndingMessage)
+	LogTimeData();
+	LogSettlementData(GOTAGameState->GetColony(), "Colonists");
+	LogSettlementData(GOTAGameState->GetTribe(), "Natives");
+	LogAIControllers();
+	UE_LOG(LogTemp, Warning, TEXT("--------------------------Training Data--------------------------"))
+	if (Ending == EGameEnding::ColonistsWon)
+		++CountColonistsWon;
+	else
+		++CountNativesWon;
+	UE_LOG(LogTemp, Warning, TEXT("Count Colonists won: %d, Count Natives won: %d, Count Soft-locked: %d"),
+	CountColonistsWon, CountNativesWon, CountSoftLocked)
+	const float TotalGames = CountColonistsWon + CountNativesWon + CountSoftLocked;
+	UE_LOG(LogTemp, Warning, TEXT("Colonists winrate: %f, Natives winrate: %f, Soft-locked rate: %f"),
+		   static_cast<float>(CountColonistsWon) / TotalGames,
+		   static_cast<float>(CountNativesWon) / TotalGames,
+		   static_cast<float>(CountSoftLocked) / TotalGames)
+	S_RestartSelfPlay();
+}
+
+void AGM_SelfPlay::S_RestartSelfPlay()
+{
+	// Delete Everything
+	GOTAGameState->DeleteEverything();
+	// Load from the beginning
+	LoadGame();
+}
+
+void AGM_SelfPlay::CreateGuardians()
+{
+	ATile* TribeStartingTile = GOTAGameState->GetTileMap()->GetNativesStart().Get();
+	for (int32 i = 0; i < GuardianSettings.Num(); ++i)
+	{
+		FVector SpawnLocation = FVector(0, 0, 1000);
+		int32 TileIndex = i % TribeStartingTile->Neighbors.Num();
+		if (TribeStartingTile->Neighbors[TileIndex])
+		{
+			SpawnLocation = TribeStartingTile->Neighbors[TileIndex]->GetActorLocation() + FVector(0, 0, 100);
+		}
+		else
+		{
+			SpawnLocation = TribeStartingTile->GetActorLocation() + FVector(0, 0, 100);
+		}
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+		AGuardian* Guardian = GetWorld()->SpawnActor<AGuardian>(
+			GuardianSettings[i]->GuardianBlueprint, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
+		GOTAGameState->SetGuardian(1, Guardian);
+		Guardian->S_Init(GuardianSettings[i], PossibleBuildingsForPlayers);
+		if (AGuardianAIController* GuardianAI = GOTAGameState->GetGuardianAIController(i))
+		{
+			GuardianAI->Possess(Guardian);
+		}
+		else if (GuardianAIClass)
+		{
+			GuardianAI = GetWorld()->SpawnActor<AGuardianAIController>(
+				GuardianAIClass, SpawnLocation, FRotator::ZeroRotator);
+			GuardianAI->Possess(Guardian);
+			GOTAGameState->SetGuardianAIController(i, GuardianAI);
+		}
+	}
+}
+
+// ------------------------------------ soft lock ------------------------------------
+
+// ------------------------------------ Logging ------------------------------------
 
 void AGM_SelfPlay::LogSettlementData(ASettlement* Settlement, FString SettlementName)
 {
@@ -204,40 +253,16 @@ void AGM_SelfPlay::LogTimeData()
 		   GameTimeSinceStart, RealTimeSinceStart, GameTimeSinceStart / RealTimeSinceStart)
 }
 
-void AGM_SelfPlay::BeginPlay()
+void AGM_SelfPlay::LogAIControllers()
 {
-	Super::BeginPlay();
-	LoadGame();
-	UGameplayStatics::SetGlobalTimeDilation(this,
-	                                        FixedDeltaSeconds / LearningAgentsFixedDeltaSeconds);
-}
-
-void AGM_SelfPlay::EndGame(EGameEnding Ending, const FString& EndingMessage)
-{
-	Super::EndGame(Ending, EndingMessage);
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *EndingMessage)
-	LogTimeData();
-	LogSettlementData(GOTAGameState->GetColony(), "Colonists");
-	LogSettlementData(GOTAGameState->GetTribe(), "Natives");
-	UE_LOG(LogTemp, Warning, TEXT("--------------------------Training Data--------------------------"))
-	if (Ending == EGameEnding::ColonistsWon)
-		++CountColonistsWon;
-	else
-		++CountNativesWon;
-	UE_LOG(LogTemp, Warning, TEXT("Count Colonists won: %d, Count Natives won: %d, Count Soft-locked: %d"),
-	CountColonistsWon, CountNativesWon, CountSoftLocked)
-	const float TotalGames = CountColonistsWon + CountNativesWon + CountSoftLocked;
-	UE_LOG(LogTemp, Warning, TEXT("Colonists winrate: %f, Natives winrate: %f, Soft-locked rate: %f"),
-		   static_cast<float>(CountColonistsWon) / TotalGames,
-		   static_cast<float>(CountNativesWon) / TotalGames,
-		   static_cast<float>(CountSoftLocked) / TotalGames)
-	S_RestartSelfPlay();
-}
-
-void AGM_SelfPlay::S_RestartSelfPlay()
-{
-	// Delete Everything
-	GOTAGameState->DeleteEverything();
-	// Load from the beginning
-	LoadGame();
+	for (ASettlementAIController* SettlementAIController : GOTAGameState->GetSettlementAIControllers())
+	{
+		if (SettlementAIController)
+			SettlementAIController->Log();
+	}
+	for (AGuardianAIController* GuardianAIController : GOTAGameState->GetGuardianAIControllers())
+	{
+		if (GuardianAIController)
+			GuardianAIController->Log();
+	}
 }

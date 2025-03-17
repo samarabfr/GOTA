@@ -30,6 +30,16 @@ void AColonyAI_T1::C_Tick(const float DeltaSeconds)
 {
 }
 
+void AColonyAI_T1::Possess(ASettlement* Settlement)
+{
+	Super::Possess(Settlement);
+	BuildingsCounter.Empty();
+	for (UBuildingSettings* Building : PossibleBuildings)
+	{
+		BuildingsCounter.Add(Building->Name, 0);
+	}
+}
+
 void AColonyAI_T1::BeginDestroy()
 {
 	Super::BeginDestroy();
@@ -46,7 +56,7 @@ void AColonyAI_T1::Tick(float DeltaSeconds)
 
 void AColonyAI_T1::FigureOutBuilding()
 {
-	if (!IsValid(GetPossessedSettlement())) // valid check because the settlement might be pending kill
+	if (!GetPossessedSettlement())
 		return;
 	if (!ShouldBuild()) return;
 	ATile* Tile = FindBuildableTile();
@@ -55,13 +65,16 @@ void AColonyAI_T1::FigureOutBuilding()
 	if (!NewBuilding) return;
 	if (Tile && Tile->CanBuild(NewBuilding, GetPossessedSettlement()))
 	{
-		Tile->S_TryBuild(NewBuilding, GetPossessedSettlement());
+		if (Tile->S_TryBuild(NewBuilding, GetPossessedSettlement()))
+		{
+			BuildingsCounter[NewBuilding->Name]++;
+		}
 	}
 }
 
 bool AColonyAI_T1::ShouldBuild() const
 {
-	if (!IsValid(GetPossessedSettlement())) // valid check because the settlement might be pending kill
+	if (!GetPossessedSettlement())
 			return false;
 	for (const ATile* Tile : GetPossessedSettlement()->ClaimedTiles)
 	{
@@ -73,7 +86,7 @@ bool AColonyAI_T1::ShouldBuild() const
 
 ATile* AColonyAI_T1::FindBuildableTile() const
 {
-	if (!IsValid(GetPossessedSettlement())) // valid check because the settlement might be pending kill
+	if (!GetPossessedSettlement())
 		return nullptr;
 	if (GetPossessedSettlement()->BorderingUnclaimedTiles.Num() <= 0)
 		return nullptr;
@@ -111,4 +124,18 @@ UBuildingSettings* AColonyAI_T1::SelectNewBuilding() const
 	}
 	if (ViableBuildings.Num() <= 0) return nullptr;
 	return ViableBuildings[FMath::RandRange(0, ViableBuildings.Num() - 1)];
+}
+
+void AColonyAI_T1::LogBuildings()
+{
+	for (auto Counter : BuildingsCounter)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s: %d"), *Counter.Key.ToString(), Counter.Value)
+	}
+}
+
+void AColonyAI_T1::Log()
+{
+	UE_LOG(LogTemp, Warning, TEXT("-------------------------- Colony AI - T1--------------------------"))
+	LogBuildings();
 }

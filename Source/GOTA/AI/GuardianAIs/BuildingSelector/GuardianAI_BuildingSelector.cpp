@@ -9,6 +9,7 @@
 #include "GOTA/ReinforcementLearning/BuildingSelector/RL_BuildingSelectorManager.h"
 #include "GOTA/Settlement/Settlement.h"
 #include "GOTA/Tile/Tile.h"
+#include "GOTA/Tile/Building/BuildingSettings.h"
 #include "GOTA/Utility/Enums.h"
 
 
@@ -72,6 +73,15 @@ void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 		{
 			BuildingSelector->Unpause();
 		}
+		// Buildingscounter
+		if (PossessedGuardian)
+		{
+			BuildingsCounter.Empty();
+			for (UBuildingSettings* Building : PossessedGuardian->GetPossibleBuildings())
+			{
+				BuildingsCounter.Add(Building->Name, 0);
+			}
+		}
 	}
 }
 
@@ -82,7 +92,10 @@ void AGuardianAI_BuildingSelector::RandomlyPlaceBuilding(UBuildingSettings* Buil
 	ATile* Tile = Settlement->BorderingUnclaimedTiles[RandomIndex];
 	if (Tile && Tile->CanBuild(Building, Settlement))
 	{
-		Tile->S_TryBuild(Building, Settlement);
+		if (Tile->S_TryBuild(Building, Settlement))
+		{
+			BuildingsCounter[Building->Name]++;
+		}
 	}
 }
 
@@ -153,4 +166,18 @@ void AGuardianAI_BuildingSelector::LoadModel(const FString& ModelName)
 FString AGuardianAI_BuildingSelector::GetAgentName()
 {
 	return SnapshotAgentName;
+}
+
+void AGuardianAI_BuildingSelector::LogBuildings()
+{
+	for (auto Counter : BuildingsCounter)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("%s: %d"), *Counter.Key.ToString(), Counter.Value)
+	}
+}
+
+void AGuardianAI_BuildingSelector::Log()
+{
+	UE_LOG(LogTemp, Warning, TEXT("-------------------------- Guardian AI - Random No SoftLock--------------------------"))
+	LogBuildings();
 }

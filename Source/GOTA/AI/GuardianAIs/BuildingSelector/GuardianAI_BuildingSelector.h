@@ -2,6 +2,7 @@
 
 #pragma once
 #include "AIController.h"
+#include "GOTA/AI/GuardianAIs/GuardianAIController.h"
 #include "GOTA/ReinforcementLearning/BuildingSelector/RL_BuildingSelectorAgent.h"
 #include "GOTA/ReinforcementLearning/SnapshotSystem/SnapshotAgent.h"
 
@@ -16,7 +17,7 @@ class ULearningAgentsNeuralNetwork;
 class ATile;
 
 UCLASS(Blueprintable)
-class GOTA_API AGuardianAI_BuildingSelector : public AAIController, public IRL_BuildingSelectorAgent, public ISnapshotAgent
+class GOTA_API AGuardianAI_BuildingSelector : public AGuardianAIController, public IRL_BuildingSelectorAgent, public ISnapshotAgent
 {
 	GENERATED_BODY()
 
@@ -86,4 +87,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float SendArmiesIntervalTime = 90.0f;
+	
+	// --------------------Logging----------------------
+private:
+	TMap<FName, int32> BuildingsCounter;
+	void LogBuildings();
+
+public:
+	virtual void Log() override;
 };

@@ -194,21 +194,34 @@ void AGS_Ingame::S_EndGame_Implementation(::EGameEnding Ending, const FString& E
 
 // ------------------- Reinforcement Learning Manager -------------------
 
-TArray<AAIController*> AGS_Ingame::GetGuardianAIControllers() const
+TArray<AGuardianAIController*> AGS_Ingame::GetGuardianAIControllers() const
 {
 	return GuardianAIControllers;
 }
 
-AAIController* AGS_Ingame::GetGuardianAIController(int32 GOTAPlayerID) const
+TArray<ASettlementAIController*> AGS_Ingame::GetSettlementAIControllers() const
+{
+	return SettlementAIControllers;
+}
+
+AGuardianAIController* AGS_Ingame::GetGuardianAIController(int32 GOTAPlayerID) const
 {
 	if (!Guardians.IsValidIndex(GOTAPlayerID)) return nullptr;
 	return GuardianAIControllers[GOTAPlayerID];
 }
 
-void AGS_Ingame::SetGuardianAIController(int32 GOTAPlayerID, AAIController* GuardianAIController) 
+void AGS_Ingame::SetGuardianAIController(int32 GOTAPlayerID, AGuardianAIController* GuardianAIController) 
 {
 	if (!Guardians.IsValidIndex(GOTAPlayerID)) return;
 	GuardianAIControllers[GOTAPlayerID] = GuardianAIController;
+}
+
+void AGS_Ingame::AddSettlementAIController(ASettlementAIController* SettlementAIController)
+{
+	if (SettlementAIController)
+	{
+		SettlementAIControllers.Add(SettlementAIController);
+	}
 }
 
 void AGS_Ingame::S_AddManager(TSubclassOf<AActor> ManagerClass, AActor* Manager)

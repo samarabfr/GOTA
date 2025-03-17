@@ -26,6 +26,7 @@ protected:
 public:
 	void S_Tick(const float DeltaSeconds);
 	void C_Tick(const float DeltaSeconds);
+	virtual void Possess(ASettlement* Settlement) override;
 
 	// --------------------Building----------------------
 private:
@@ -44,4 +45,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float SendArmiesIntervalTime = 60.0f;
+
+	// -------------------- Logging ----------------------
+private:
+	TMap<FName, int32> BuildingsCounter;
+	void LogBuildings();
+
+public:
+	virtual void Log() override;
 };

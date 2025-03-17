@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "AIController.h"
 #include "GameFramework/Actor.h"
+#include "GOTA/AI/GuardianAIs/GuardianAIController.h"
 #include "GuardianAI_RandomNoSoftLock.generated.h"
 
 class ATile;
@@ -14,7 +15,7 @@ class ASettlement;
 class UBuildingSettings;
 
 UCLASS()
-class GOTA_API AGuardianAI_RandomNoSoftLock : public AAIController
+class GOTA_API AGuardianAI_RandomNoSoftLock : public AGuardianAIController
 {
 	GENERATED_BODY()
 	
@@ -54,4 +55,12 @@ private:
 
 	UPROPERTY(EditDefaultsOnly)
 	float SendArmiesIntervalTime = 90.0f;
+	
+	// --------------------Logging----------------------
+private:
+	TMap<FName, int32> BuildingsCounter;
+	void LogBuildings();
+
+public:
+	virtual void Log() override;
 };

@@ -6,6 +6,8 @@
 #include "GOTA/Utility/Enums.h"
 #include "GS_Ingame.generated.h"
 
+class ASettlementAIController;
+class AGuardianAIController;
 class ASettlement;
 class AAIController;
 class ULearningAgentsManager;
@@ -167,16 +169,18 @@ public:
 	EGameEnding GetGameEnding() const { return GameEnding; }
 
 
-	// ------------------- Reinforcement Learning Manager -------------------
+	// ------------------- AI controllers -------------------
 
 private:
-	TArray<AAIController*> GuardianAIControllers;
+	TArray<AGuardianAIController*> GuardianAIControllers;
+	TArray<ASettlementAIController*> SettlementAIControllers;
 
 public:
-	TArray<AAIController*> GetGuardianAIControllers() const;
-	AAIController* GetGuardianAIController(int32 GOTAPlayerID) const;
-	void SetGuardianAIController(int32 GOTAPlayerID, AAIController* GuardianAIController);
-
+	TArray<AGuardianAIController*> GetGuardianAIControllers() const;
+	TArray<ASettlementAIController*> GetSettlementAIControllers() const;
+	AGuardianAIController* GetGuardianAIController(int32 GOTAPlayerID) const;
+	void SetGuardianAIController(int32 GOTAPlayerID, AGuardianAIController* GuardianAIController);
+	void AddSettlementAIController(ASettlementAIController* SettlementAIController);
 
 	// ------------------- Reinforcement Learning Manager -------------------
 private:
