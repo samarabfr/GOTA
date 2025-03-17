@@ -173,14 +173,15 @@ public:
 
 private:
 	TArray<AGuardianAIController*> GuardianAIControllers;
-	TArray<ASettlementAIController*> SettlementAIControllers;
+	UPROPERTY()
+	ASettlementAIController* ColonyAIController;
 
 public:
 	TArray<AGuardianAIController*> GetGuardianAIControllers() const;
-	TArray<ASettlementAIController*> GetSettlementAIControllers() const;
+	ASettlementAIController* GetColonyAIController() const;
 	AGuardianAIController* GetGuardianAIController(int32 GOTAPlayerID) const;
 	void SetGuardianAIController(int32 GOTAPlayerID, AGuardianAIController* GuardianAIController);
-	void AddSettlementAIController(ASettlementAIController* SettlementAIController);
+	void SetColonyAIController(ASettlementAIController* SettlementAIController);
 
 	// ------------------- Reinforcement Learning Manager -------------------
 private:

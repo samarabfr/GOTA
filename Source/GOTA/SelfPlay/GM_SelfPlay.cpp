@@ -32,7 +32,7 @@ void AGM_SelfPlay::BeginPlay()
 	Super::BeginPlay();
 	LoadGame();
 	UGameplayStatics::SetGlobalTimeDilation(this,
-											FixedDeltaSeconds / LearningAgentsFixedDeltaSeconds);
+	                                        FixedDeltaSeconds / LearningAgentsFixedDeltaSeconds);
 }
 
 void AGM_SelfPlay::Tick(float DeltaSeconds)
@@ -80,7 +80,7 @@ void AGM_SelfPlay::Tick(float DeltaSeconds)
 		SoftLockTimeLeft = SoftLockTime;
 		++CountSoftLocked;
 		UE_LOG(LogTemp, Warning, TEXT("Game soft locked after %f seconds. Soft locked %d in total. Resetting..."),
-		   SoftLockTime, CountSoftLocked)
+		       SoftLockTime, CountSoftLocked)
 		S_RestartSelfPlay();
 	}
 	else
@@ -123,12 +123,12 @@ void AGM_SelfPlay::EndGame(EGameEnding Ending, const FString& EndingMessage)
 	else
 		++CountNativesWon;
 	UE_LOG(LogTemp, Warning, TEXT("Count Colonists won: %d, Count Natives won: %d, Count Soft-locked: %d"),
-	CountColonistsWon, CountNativesWon, CountSoftLocked)
+	       CountColonistsWon, CountNativesWon, CountSoftLocked)
 	const float TotalGames = CountColonistsWon + CountNativesWon + CountSoftLocked;
 	UE_LOG(LogTemp, Warning, TEXT("Colonists winrate: %f, Natives winrate: %f, Soft-locked rate: %f"),
-		   static_cast<float>(CountColonistsWon) / TotalGames,
-		   static_cast<float>(CountNativesWon) / TotalGames,
-		   static_cast<float>(CountSoftLocked) / TotalGames)
+	       static_cast<float>(CountColonistsWon) / TotalGames,
+	       static_cast<float>(CountNativesWon) / TotalGames,
+	       static_cast<float>(CountSoftLocked) / TotalGames)
 	S_RestartSelfPlay();
 }
 
@@ -167,8 +167,7 @@ void AGM_SelfPlay::CreateGuardians()
 		}
 		else if (GuardianAIClass)
 		{
-			GuardianAI = GetWorld()->SpawnActor<AGuardianAIController>(
-				GuardianAIClass, SpawnLocation, FRotator::ZeroRotator);
+			GuardianAI = GetWorld()->SpawnActor<AGuardianAIController>(GuardianAIClass);
 			GuardianAI->Possess(Guardian);
 			GOTAGameState->SetGuardianAIController(i, GuardianAI);
 		}
@@ -239,27 +238,24 @@ void AGM_SelfPlay::LogTimeData()
 	UE_LOG(LogTemp, Warning, TEXT("GameTime average delta: %f, Max: %f, Min: %f"),
 	       GameTimeSinceLast / static_cast<float>(TickCount), MaxDeltaSeconds, MinDeltaSeconds)
 	UE_LOG(LogTemp, Warning, TEXT("Realtime average delta: %f, Max: %f, Min: %f"),
-		RealTimeSinceLast / static_cast<double>(TickCount), MaxRealTime, MinRealTime)
+	       RealTimeSinceLast / static_cast<double>(TickCount), MaxRealTime, MinRealTime)
 	UE_LOG(LogTemp, Warning, TEXT("GameTime total: %f, Realtime total: %f, GameSpeedFactor: %f"),
-		   GameTimeSinceLast, RealTimeSinceLast, GameTimeSinceLast / RealTimeSinceLast)
+	       GameTimeSinceLast, RealTimeSinceLast, GameTimeSinceLast / RealTimeSinceLast)
 	UE_LOG(LogTemp, Warning, TEXT("--------------------------Time Data since start--------------------------"))
 	const float GameTimeSinceStart = GameTimeCurrent - GameTimeStart;
 	const double RealTimeSinceStart = RealTimeCurrent - RealTimeStart;
 	UE_LOG(LogTemp, Warning, TEXT("GameTime average delta: %f, Max: %f, Min: %f"),
-		   GameTimeSinceStart / static_cast<float>(TickCount), MaxDeltaSeconds, MinDeltaSeconds)
+	       GameTimeSinceStart / static_cast<float>(TickCount), MaxDeltaSeconds, MinDeltaSeconds)
 	UE_LOG(LogTemp, Warning, TEXT("Realtime average delta: %f, Max: %f, Min: %f"),
-		RealTimeSinceStart / static_cast<double>(TickCount), MaxRealTime, MinRealTime)
+	       RealTimeSinceStart / static_cast<double>(TickCount), MaxRealTime, MinRealTime)
 	UE_LOG(LogTemp, Warning, TEXT("GameTime total: %f, Realtime total: %f, GameSpeedFactor: %f"),
-		   GameTimeSinceStart, RealTimeSinceStart, GameTimeSinceStart / RealTimeSinceStart)
+	       GameTimeSinceStart, RealTimeSinceStart, GameTimeSinceStart / RealTimeSinceStart)
 }
 
 void AGM_SelfPlay::LogAIControllers()
 {
-	for (ASettlementAIController* SettlementAIController : GOTAGameState->GetSettlementAIControllers())
-	{
-		if (SettlementAIController)
-			SettlementAIController->Log();
-	}
+	if (GOTAGameState->GetColonyAIController())
+		GOTAGameState->GetColonyAIController()->Log();
 	for (AGuardianAIController* GuardianAIController : GOTAGameState->GetGuardianAIControllers())
 	{
 		if (GuardianAIController)

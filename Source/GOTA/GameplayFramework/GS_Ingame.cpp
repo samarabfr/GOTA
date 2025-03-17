@@ -199,9 +199,9 @@ TArray<AGuardianAIController*> AGS_Ingame::GetGuardianAIControllers() const
 	return GuardianAIControllers;
 }
 
-TArray<ASettlementAIController*> AGS_Ingame::GetSettlementAIControllers() const
+ASettlementAIController* AGS_Ingame::GetColonyAIController() const
 {
-	return SettlementAIControllers;
+	return ColonyAIController;
 }
 
 AGuardianAIController* AGS_Ingame::GetGuardianAIController(int32 GOTAPlayerID) const
@@ -210,18 +210,15 @@ AGuardianAIController* AGS_Ingame::GetGuardianAIController(int32 GOTAPlayerID) c
 	return GuardianAIControllers[GOTAPlayerID];
 }
 
-void AGS_Ingame::SetGuardianAIController(int32 GOTAPlayerID, AGuardianAIController* GuardianAIController) 
+void AGS_Ingame::SetGuardianAIController(int32 GOTAPlayerID, AGuardianAIController* GuardianAIController)
 {
 	if (!Guardians.IsValidIndex(GOTAPlayerID)) return;
 	GuardianAIControllers[GOTAPlayerID] = GuardianAIController;
 }
 
-void AGS_Ingame::AddSettlementAIController(ASettlementAIController* SettlementAIController)
+void AGS_Ingame::SetColonyAIController(ASettlementAIController* SettlementAIController)
 {
-	if (SettlementAIController)
-	{
-		SettlementAIControllers.Add(SettlementAIController);
-	}
+	ColonyAIController = SettlementAIController;
 }
 
 void AGS_Ingame::S_AddManager(TSubclassOf<AActor> ManagerClass, AActor* Manager)

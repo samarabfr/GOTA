@@ -24,7 +24,6 @@
 
 AGM_Ingame::AGM_Ingame()
 {
-	
 }
 
 // ---------------------------------------------------------
@@ -169,9 +168,17 @@ void AGM_Ingame::CreateSettlements()
 	ASettlement* Colony = GetWorld()->SpawnActor<ASettlement>(ColonyClass);
 	Colony->S_Init(GOTAGameState->GetTileMap()->GetColonistsStart().Get());
 	GOTAGameState->SetColony(Colony);
-	ASettlementAIController* ColonyAIController = GetWorld()->SpawnActor<ASettlementAIController>(ColonyAIControllerClass);
-	GOTAGameState->AddSettlementAIController(ColonyAIController);
-	ColonyAIController->Possess(Colony);
+	if (ASettlementAIController* ColonyAIController = GOTAGameState->GetColonyAIController())
+	{
+		ColonyAIController->Possess(Colony);
+	}
+	else if (ColonyAIControllerClass)
+	{
+		ColonyAIController = GetWorld()->SpawnActor<ASettlementAIController>(ColonyAIControllerClass);
+		ColonyAIController->Possess(Colony);
+		GOTAGameState->SetColonyAIController(ColonyAIController);
+	}
+
 
 	ASettlement* Tribe = GetWorld()->SpawnActor<ASettlement>(TribeClass);
 	Tribe->S_Init(GOTAGameState->GetTileMap()->GetNativesStart().Get());
