@@ -29,6 +29,7 @@ protected:
 
 public:
 	virtual void S_Init(UBuilding* InBuilding, ATile* SpawnTile) override;
+	virtual void S_Tick(const float DeltaSeconds) override;
 
 	// ----------------------- Utility -----------------------
 
@@ -52,6 +53,9 @@ public:
 private:
 	UPROPERTY(EditInstanceOnly, Replicated)
 	EArmyMode Mode = EArmyMode::GarrisonMode;
+
+	UPROPERTY(VisibleInstanceOnly)
+	float GoAttackModeTimeLeft = 0.0f;
 
 public:
 	EArmyMode GetMode() const;

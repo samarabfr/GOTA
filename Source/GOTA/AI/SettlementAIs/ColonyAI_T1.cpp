@@ -12,18 +12,6 @@ AColonyAI_T1::AColonyAI_T1()
 void AColonyAI_T1::S_Tick(const float DeltaSeconds)
 {
 	FigureOutBuilding();
-	if (SendArmiesIntervalTimeLeft <= 0.0f)
-	{
-		SendArmiesIntervalTimeLeft = SendArmiesIntervalTime;
-		if (GetPossessedSettlement())
-		{
-			GetPossessedSettlement()->SetAllArmiesOnAttack();
-		}
-	}
-	else
-	{
-		SendArmiesIntervalTimeLeft -= DeltaSeconds;
-	}
 }
 
 void AColonyAI_T1::C_Tick(const float DeltaSeconds)

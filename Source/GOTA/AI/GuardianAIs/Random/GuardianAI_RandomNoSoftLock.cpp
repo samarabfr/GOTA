@@ -26,18 +26,6 @@ AGuardianAI_RandomNoSoftLock::AGuardianAI_RandomNoSoftLock()
 void AGuardianAI_RandomNoSoftLock::S_Tick(const float DeltaSeconds)
 {
 	FigureOutBuilding();
-	if (SendArmiesIntervalTimeLeft <= 0.0f)
-	{
-		SendArmiesIntervalTimeLeft = SendArmiesIntervalTime;
-		if (Settlement)
-		{
-			Settlement->SetAllArmiesOnAttack();
-		}
-	}
-	else
-	{
-		SendArmiesIntervalTimeLeft -= DeltaSeconds;
-	}
 }
 
 void AGuardianAI_RandomNoSoftLock::C_Tick(const float DeltaSeconds)
@@ -47,7 +35,6 @@ void AGuardianAI_RandomNoSoftLock::C_Tick(const float DeltaSeconds)
 void AGuardianAI_RandomNoSoftLock::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	SendArmiesIntervalTimeLeft = SendArmiesIntervalTime;
 	if (HasAuthority())
 	{
 		GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());

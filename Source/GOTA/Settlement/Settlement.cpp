@@ -284,17 +284,6 @@ TArray<AArmy*> ASettlement::GetAllArmies() const
 	return Result;
 }
 
-void ASettlement::SetAllArmiesOnAttack()
-{
-	for (AArmy* Army : GetAllArmies())
-	{
-		if (Army)
-		{
-			Army->SetMode(EArmyMode::AttackMode);
-		}
-	}
-}
-
 int32 ASettlement::GetCountOfConstructionSites() const
 {
 	int32 Count = 0;

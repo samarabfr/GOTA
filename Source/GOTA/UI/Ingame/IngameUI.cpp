@@ -21,7 +21,6 @@ void UIngameUI::NativeConstruct()
 	GameState->OnGuardiansChanged.AddDynamic(this, &UIngameUI::RefreshGuardianWidgets);
 	RefreshGuardianWidgets();
 	BTN_Build->OnPressed.AddDynamic(this, &UIngameUI::ToggleBuildMenu);
-	BTN_Attack->OnPressed.AddDynamic(this, &UIngameUI::SetAllNativeArmiesToAttack);
 }
 
 // ------------------------------- Utility -------------------------------
@@ -104,16 +103,5 @@ void UIngameUI::ToggleDebugMenu()
 	else
 	{
 		DebugMenu->SetVisibility(ESlateVisibility::Hidden);
-	}
-}
-
-// ------------------------------- Attack -------------------------------
-
-void UIngameUI::SetAllNativeArmiesToAttack()
-{
-	ASettlement* NativeSettlement = GameState->GetTribe();
-	if (NativeSettlement)
-	{
-		NativeSettlement->SetAllArmiesOnAttack();
 	}
 }
