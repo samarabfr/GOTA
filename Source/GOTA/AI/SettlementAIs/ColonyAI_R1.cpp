@@ -162,6 +162,6 @@ void AColonyAI_R1::LogBuildings()
 void AColonyAI_R1::Log()
 {
 	UE_LOG(LogTemp, Warning,
-	       TEXT("-------------------------- Guardian AI - Random No SoftLock--------------------------"))
+	       TEXT("-------------------------- Colony AI - R1 --------------------------"))
 	LogBuildings();
 }
