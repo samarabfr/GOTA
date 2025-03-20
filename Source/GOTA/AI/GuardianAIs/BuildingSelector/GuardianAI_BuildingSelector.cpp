@@ -17,15 +17,6 @@ void AGuardianAI_BuildingSelector::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	if (!Settlement) return;
-	if (SendArmiesIntervalTimeLeft <= 0.0f)
-	{
-		Settlement->SetAllArmiesOnAttack();
-		SendArmiesIntervalTimeLeft = SendArmiesIntervalTime;
-	}
-	else
-	{
-		SendArmiesIntervalTimeLeft -= DeltaSeconds;
-	}
 	if (Settlement->CanAddConstructionSite())
 	{
 		BuildingSelector->SelectBuilding();
@@ -48,7 +39,6 @@ AGuardianAI_BuildingSelector::AGuardianAI_BuildingSelector()
 void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	SendArmiesIntervalTimeLeft = SendArmiesIntervalTime;
 	if (HasAuthority())
 	{
 		GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());

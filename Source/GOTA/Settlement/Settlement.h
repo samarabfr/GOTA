@@ -173,5 +173,4 @@ public:
 	// --------------------------- Armies ---------------------------
 public:
 	TArray<AArmy*> GetAllArmies() const;
-	void SetAllArmiesOnAttack();
 };

@@ -38,14 +38,6 @@ private:
 	ATile* FindBuildableTile() const;
 	UBuildingSettings* SelectNewBuilding() const;
 
-	// --------------------Army----------------------
-private:
-	UPROPERTY(VisibleInstanceOnly)
-	float SendArmiesIntervalTimeLeft = 0.0f;
-
-	UPROPERTY(EditDefaultsOnly)
-	float SendArmiesIntervalTime = 60.0f;
-
 	// -------------------- Logging ----------------------
 private:
 	TMap<FName, int32> BuildingsCounter;

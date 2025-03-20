@@ -79,14 +79,6 @@ public:
 	virtual void SaveModel(const FString& ModelName) override;
 	virtual void LoadModel(const FString& ModelName) override;
 	virtual FString GetAgentName() override;
-
-	// --------------------Army----------------------
-private:
-	UPROPERTY(VisibleInstanceOnly)
-	float SendArmiesIntervalTimeLeft = 0.0f;
-
-	UPROPERTY(EditDefaultsOnly)
-	float SendArmiesIntervalTime = 90.0f;
 	
 	// --------------------Logging----------------------
 private:

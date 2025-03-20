@@ -63,12 +63,27 @@ void AArmy::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	RecruitRate = 100 / BuildingSettings->SecondsPerRecruitCycle;
 	S_SetMovementRate(100 / BuildingSettings->ArmyMoveTime);
 	RavageSpeed = 100 / BuildingSettings->ArmyRavageTime;
+	GoAttackModeTimeLeft =  BuildingSettings->ArmyGoAttackModeTime;
 	CombatValues->SetIndividualAttack(BuildingSettings->ArmyIndividualAttack);
 	CombatValues->SetIndividualMaxHP(BuildingSettings->ArmyIndividualMaxHP);
 	CombatValues->SetIndividualCount(BuildingSettings->ArmyIndividualCount);
 	CombatValues->SetAttackSpeed(100 / BuildingSettings->ArmyAttackTime);
 	CombatValues->OnDeath.AddDynamic(this, &AArmy::Delete);
 	RefreshMesh();
+}
+
+void AArmy::S_Tick(const float DeltaSeconds)
+{
+	Super::S_Tick(DeltaSeconds);
+	if (GoAttackModeTimeLeft <= 0.0f)
+	{
+		GoAttackModeTimeLeft = 0.0f;
+		SetMode(EArmyMode::AttackMode);
+	}
+	else
+	{
+		GoAttackModeTimeLeft -= DeltaSeconds;
+	}
 }
 
 void AArmy::OnRep_Affiliation()

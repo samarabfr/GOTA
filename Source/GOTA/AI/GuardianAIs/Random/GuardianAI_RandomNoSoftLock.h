@@ -47,14 +47,6 @@ private:
 	bool ShouldBuild() const;
 	ATile* FindBuildableTile() const;
 	UBuildingSettings* SelectNewBuilding() const;
-
-	// --------------------Army----------------------
-private:
-	UPROPERTY(VisibleInstanceOnly)
-	float SendArmiesIntervalTimeLeft = 0.0f;
-
-	UPROPERTY(EditDefaultsOnly)
-	float SendArmiesIntervalTime = 90.0f;
 	
 	// --------------------Logging----------------------
 private:
