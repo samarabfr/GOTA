@@ -334,6 +334,10 @@ void ATile::S_Unbuild()
 	{
 		GameplayTags.RemoveTag(Settings->BuildingUnderConstructionTag);
 	}
+	if (Building->GetSettlement())
+	{
+		GameplayTags.RemoveTags(Building->GetSettlement()->GetGameplayTags());
+	}
 	OnGameplayTagsChanged.Broadcast();
 	RemoveReplicatedSubObject(Building);
 	RemoveReplicatedSubObject(Building->GetPopulation());
