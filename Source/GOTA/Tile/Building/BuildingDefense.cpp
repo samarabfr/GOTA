@@ -39,7 +39,8 @@ UBuildingDefense::UBuildingDefense()
 	CombatValues = CreateDefaultSubobject<UCombatValues>("Combat Values");
 }
 
-void UBuildingDefense::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement, AGS_Ingame* InGameState)
+void UBuildingDefense::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASettlement* InSettlement,
+                              AGS_Ingame* InGameState)
 {
 	Super::S_Init(InSettings, InTile, InSettlement, InGameState);
 	CombatValues->SetIndividualAttack(GetSettings()->DefenseIndividualAttack);
@@ -47,6 +48,7 @@ void UBuildingDefense::S_Init(UBuildingSettings* InSettings, ATile* InTile, ASet
 	CombatValues->SetIndividualCount(GetSettings()->DefenseIndividualCount);
 	CombatValues->SetAttackSpeed(100 / GetSettings()->DefenseAttackTime);
 	CombatValues->OnDeath.AddDynamic(this, &UBuildingDefense::S_HandleDeath);
+	CombatValues->OnDeath.AddDynamic(this, &UBuildingDefense::S_HandleCombatValuesChanged);
 	GetPopulation()->OnSizeChanged.AddDynamic(this, &UBuildingDefense::S_HandlePopSizeChanged);
 }
 
@@ -175,8 +177,16 @@ void UBuildingDefense::S_HandleDeath()
 	GetTile()->S_Unbuild();
 }
 
+void UBuildingDefense::S_HandleCombatValuesChanged()
+{
+	if (!CombatValues || CombatValues->GetIndividualCount() == GetPopulation()->GetSize())
+		return;
+	GetPopulation()->S_ChangeSize(CombatValues->GetIndividualCount() - GetPopulation()->GetSize());
+}
+
 void UBuildingDefense::S_HandlePopSizeChanged(int16 ChangedBy)
 {
-	if (!CombatValues) return;
+	if (!CombatValues || ChangedBy == 0)
+		return;
 	CombatValues->SetIndividualCount(GetPopulation()->GetSize());
 }
