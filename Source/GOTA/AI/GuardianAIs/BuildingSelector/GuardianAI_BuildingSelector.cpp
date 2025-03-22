@@ -21,7 +21,7 @@ void AGuardianAI_BuildingSelector::Tick(float DeltaSeconds)
 	{
 		BuildingSelector->SelectBuilding();
 	}
-	if (bSaveSnapshotsAtIntervals && BuildingSelector && !BuildingSelector->IsPaused())
+	if (bRunTraining && bSaveSnapshotsAtIntervals && BuildingSelector && !BuildingSelector->IsPaused())
 	{
 		const double CurrentTime = FPlatformTime::Seconds();
 		if (CurrentTime - RealTimeLastSnapshotSave >= SaveSnapshotsIntervalTime)
@@ -42,6 +42,7 @@ void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 	if (HasAuthority())
 	{
 		GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
+		bRunTraining = GameState->S_GetRunGuardianAITraining();
 		BuildingSelector = GameState->S_GetRLManager<ARL_BuildingSelectorManager>(ManagerClass);
 		PossessedGuardian = Cast<AGuardian>(InPawn);
 		Settlement = GameState->GetTribe();
@@ -51,8 +52,7 @@ void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 			BuildingSelector = GetWorld()->SpawnActor<ARL_BuildingSelectorManager>(ManagerClass,
 				FVector::Zero(),
 				FRotator::ZeroRotator);
-			BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic,
-			                         GameState->S_GetRunGuardianAITraining());
+			BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic, bRunTraining);
 			AddTickPrerequisiteActor(BuildingSelector); // make the manager tick before this
 			GameState->S_AddManager(ManagerClass, BuildingSelector);
 		}

@@ -20,7 +20,7 @@ void AColonyAI_R1::Tick(float DeltaSeconds)
 	{
 		BuildingSelector->SelectBuilding();
 	}
-	if (bSaveSnapshotsAtIntervals && BuildingSelector && !BuildingSelector->IsPaused())
+	if (bRunTraining && bSaveSnapshotsAtIntervals && BuildingSelector && !BuildingSelector->IsPaused())
 	{
 		const double CurrentTime = FPlatformTime::Seconds();
 		if (CurrentTime - RealTimeLastSnapshotSave >= SaveSnapshotsIntervalTime)
@@ -41,6 +41,7 @@ void AColonyAI_R1::Possess(ASettlement* Settlement)
 	if (HasAuthority())
 	{
 		GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
+		bRunTraining = GameState->S_GetRunGuardianAITraining();
 		BuildingSelector = GameState->S_GetRLManager<ARL_BuildingSelectorManager>(ManagerClass);
 		MilestonesReached.SetNumZeroed(6);
 		if (!BuildingSelector)

@@ -35,6 +35,7 @@ void AGuardianAI_Runner::OnPossess(APawn* InPawn)
 	if (HasAuthority())
 	{
 		GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
+		bRunTraining = GameState->S_GetRunGuardianAITraining();
 		ARL_RunnerManager* Manager = GameState->S_GetRLManager<ARL_RunnerManager>(ManagerClass);
 		if (!Manager)
 		{

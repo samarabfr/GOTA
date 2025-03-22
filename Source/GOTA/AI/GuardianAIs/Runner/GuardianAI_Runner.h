@@ -44,6 +44,8 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="Snapshot")
 	FFilePath SnapshotsFolderFilePath;
 	
+	bool bRunTraining = false;
+	
 	UPROPERTY(EditDefaultsOnly, Category="LearningAgents")
 	ULearningAgentsNeuralNetwork* NN_Encoder;
 	UPROPERTY(EditDefaultsOnly, Category="LearningAgents")
