@@ -19,6 +19,7 @@ protected:
 
 public:
 	virtual void Delete();
+	virtual void S_Init(bool RunTraining = false);
 
 	// --------------------------- Possessing ---------------------------
 private:
@@ -28,6 +29,10 @@ private:
 public:
 	virtual void Possess(ASettlement* Settlement);
 	ASettlement* GetPossessedSettlement() const;
+	
+	// ----------------------- Reinforcment Learning -----------------------
+protected:
+	bool bRunTraining = false;
 	
 	// --------------------------- Log ---------------------------
 public:

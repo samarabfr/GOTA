@@ -25,6 +25,7 @@ protected:
 	AColonyAI_R1();
 
 public:
+	virtual void S_Init(bool RunTraining = false) override;
 	virtual void Possess(ASettlement* Settlement) override;
 
 	// ----------------------- Utility -----------------------
@@ -45,8 +46,6 @@ private:
 	double SaveSnapshotsIntervalTime = 900.0f;
 	UPROPERTY(EditDefaultsOnly, Category="Snapshot")
 	FFilePath SnapshotsFolderFilePath;
-	
-	bool bRunTraining = false;
 
 	UPROPERTY(EditDefaultsOnly, Category="LearningAgents")
 	ULearningAgentsNeuralNetwork* NN_Encoder;

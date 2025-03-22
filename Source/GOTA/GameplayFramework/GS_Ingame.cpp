@@ -211,26 +211,6 @@ AGuardianAIController* AGS_Ingame::S_GetGuardianAIController(int32 GOTAPlayerID)
 	return GuardianAIControllers[GOTAPlayerID];
 }
 
-bool AGS_Ingame::S_GetRunGuardianAITraining() const
-{
-	return bRunGuardianAITraining;
-}
-
-bool AGS_Ingame::S_GetRunColonyAITraining() const
-{
-	return bRunColonyAItraining;
-}
-
-void AGS_Ingame::S_SetRunGuardianAITraining(bool NewRunGuardianAItraining)
-{
-	bRunGuardianAITraining = NewRunGuardianAItraining;
-}
-
-void AGS_Ingame::S_SetRunColonyAITraining(bool NewRunColonyAItraining)
-{
-	bRunColonyAItraining = NewRunColonyAItraining;
-}
-
 void AGS_Ingame::S_SetGuardianAIController(int32 GOTAPlayerID, AGuardianAIController* GuardianAIController)
 {
 	if (!Guardians.IsValidIndex(GOTAPlayerID)) return;

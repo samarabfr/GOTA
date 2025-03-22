@@ -35,33 +35,38 @@ AColonyAI_R1::AColonyAI_R1()
 {
 }
 
+void AColonyAI_R1::S_Init(bool RunTraining)
+{
+	Super::S_Init(RunTraining);
+	if (!GameState)
+		return;
+	BuildingSelector = GameState->S_GetRLManager<ARL_BuildingSelectorManager>(ManagerClass);
+	if (!BuildingSelector)
+	{
+		BuildingSelector = GetWorld()->SpawnActor<ARL_BuildingSelectorManager>(ManagerClass,
+			FVector::Zero(),
+			FRotator::ZeroRotator);
+		BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic, bRunTraining);
+		AddTickPrerequisiteActor(BuildingSelector); // make the manager tick before this
+		GameState->S_AddManager(ManagerClass, BuildingSelector);
+	}
+	if (!BuildingSelector->IsRegistered(this))
+	{
+		BuildingSelector->S_RegisterAgent(this);
+	}
+	if (BuildingSelector->IsPaused())
+	{
+		BuildingSelector->Unpause();
+	}
+}
+
 void AColonyAI_R1::Possess(ASettlement* Settlement)
 {
 	Super::Possess(Settlement);
 	if (HasAuthority())
 	{
 		GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
-		bRunTraining = GameState->S_GetRunGuardianAITraining();
-		BuildingSelector = GameState->S_GetRLManager<ARL_BuildingSelectorManager>(ManagerClass);
 		MilestonesReached.SetNumZeroed(6);
-		if (!BuildingSelector)
-		{
-			BuildingSelector = GetWorld()->SpawnActor<ARL_BuildingSelectorManager>(ManagerClass,
-				FVector::Zero(),
-				FRotator::ZeroRotator);
-			BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic,
-			                         GameState->S_GetRunColonyAITraining());
-			AddTickPrerequisiteActor(BuildingSelector); // make the manager tick before this
-			GameState->S_AddManager(ManagerClass, BuildingSelector);
-		}
-		if (!BuildingSelector->IsRegistered(this))
-		{
-			BuildingSelector->S_RegisterAgent(this);
-		}
-		if (BuildingSelector->IsPaused())
-		{
-			BuildingSelector->Unpause();
-		}
 		// Buildingscounter
 		BuildingsCounter.Empty();
 		for (UBuildingSettings* Building : PossibleBuildings)

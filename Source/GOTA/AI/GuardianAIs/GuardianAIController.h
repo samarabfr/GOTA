@@ -15,6 +15,13 @@ class GOTA_API AGuardianAIController : public AAIController
 protected:
 	AGuardianAIController();
 
+public:
+	virtual void S_Init(bool RunTraining = false);
+	
+	// ----------------------- Reinforcment Learning -----------------------
+protected:
+	bool bRunTraining = false;
+	
 	// ----------------------- Logging -----------------------
 public:
 	virtual void Log();

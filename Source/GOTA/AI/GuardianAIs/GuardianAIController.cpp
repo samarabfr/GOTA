@@ -7,6 +7,11 @@ AGuardianAIController::AGuardianAIController()
 {
 }
 
+void AGuardianAIController::S_Init(bool RunTraining)
+{
+	bRunTraining = RunTraining;
+}
+
 void AGuardianAIController::Log()
 {
 }

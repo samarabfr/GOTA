@@ -176,9 +176,9 @@ void AGM_Ingame::CreateSettlements()
 	{
 		ColonyAIController = GetWorld()->SpawnActor<ASettlementAIController>(ColonyAIControllerClass);
 		ColonyAIController->Possess(Colony);
+		ColonyAIController->S_Init(false);
 		GOTAGameState->S_SetColonyAIController(ColonyAIController);
 	}
-	GOTAGameState->S_SetRunColonyAITraining(false);
 	
 	ASettlement* Tribe = GetWorld()->SpawnActor<ASettlement>(TribeClass);
 	Tribe->S_Init(GOTAGameState->GetTileMap()->GetNativesStart().Get());
@@ -204,7 +204,6 @@ void AGM_Ingame::CreateGuardians()
 		                                                        SpawnLocation, FRotator::ZeroRotator);
 		GOTAGameState->SetGuardian(PlayerStateIngame->GOTAPlayerID, Guardian);
 		Guardian->S_Init(PlayerStateIngame->SelectedGuardian, PossibleBuildingsForPlayers);
-		GOTAGameState->S_SetRunGuardianAITraining(false);
 	}
 }
 

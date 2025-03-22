@@ -169,16 +169,32 @@ void AGM_SelfPlay::CreateGuardians()
 		{
 			GuardianAI = GetWorld()->SpawnActor<AGuardianAIController>(GuardianAIClass);
 			GuardianAI->Possess(Guardian);
+			GuardianAI->S_Init(bRunGuardianAITraining);
 			GOTAGameState->S_SetGuardianAIController(i, GuardianAI);
 		}
-		GOTAGameState->S_SetRunGuardianAITraining(bRunGuardianAITraining);
 	}
 }
 
 void AGM_SelfPlay::CreateSettlements()
 {
-	Super::CreateSettlements();
-	GOTAGameState->S_SetRunColonyAITraining(bRunGuardianAITraining);
+	ASettlement* Colony = GetWorld()->SpawnActor<ASettlement>(ColonyClass);
+	Colony->S_Init(GOTAGameState->GetTileMap()->GetColonistsStart().Get());
+	GOTAGameState->SetColony(Colony);
+	if (ASettlementAIController* ColonyAIController = GOTAGameState->S_GetColonyAIController())
+	{
+		ColonyAIController->Possess(Colony);
+	}
+	else if (ColonyAIControllerClass)
+	{
+		ColonyAIController = GetWorld()->SpawnActor<ASettlementAIController>(ColonyAIControllerClass);
+		ColonyAIController->Possess(Colony);
+		ColonyAIController->S_Init(bRunColonyAITraining);
+		GOTAGameState->S_SetColonyAIController(ColonyAIController);
+	}
+	
+	ASettlement* Tribe = GetWorld()->SpawnActor<ASettlement>(TribeClass);
+	Tribe->S_Init(GOTAGameState->GetTileMap()->GetNativesStart().Get());
+	GOTAGameState->SetTribe(Tribe);
 }
 
 // ------------------------------------ soft lock ------------------------------------

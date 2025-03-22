@@ -36,34 +36,40 @@ AGuardianAI_BuildingSelector::AGuardianAI_BuildingSelector()
 {
 }
 
+void AGuardianAI_BuildingSelector::S_Init(bool RunTraining)
+{
+	Super::S_Init(RunTraining);
+	if (!GameState)
+		return;
+	BuildingSelector = GameState->S_GetRLManager<ARL_BuildingSelectorManager>(ManagerClass);
+	MilestonesReached.SetNumZeroed(6);
+	if (!BuildingSelector)
+	{
+		BuildingSelector = GetWorld()->SpawnActor<ARL_BuildingSelectorManager>(ManagerClass,
+			FVector::Zero(),
+			FRotator::ZeroRotator);
+		BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic, bRunTraining);
+		AddTickPrerequisiteActor(BuildingSelector); // make the manager tick before this
+		GameState->S_AddManager(ManagerClass, BuildingSelector);
+	}
+	if (!BuildingSelector->IsRegistered(this))
+	{
+		BuildingSelector->S_RegisterAgent(this);
+	}
+	if (BuildingSelector->IsPaused())
+	{
+		BuildingSelector->Unpause();
+	}
+}
+
 void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 	if (HasAuthority())
 	{
 		GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
-		bRunTraining = GameState->S_GetRunGuardianAITraining();
-		BuildingSelector = GameState->S_GetRLManager<ARL_BuildingSelectorManager>(ManagerClass);
 		PossessedGuardian = Cast<AGuardian>(InPawn);
 		Settlement = GameState->GetTribe();
-		MilestonesReached.SetNumZeroed(6);
-		if (!BuildingSelector)
-		{
-			BuildingSelector = GetWorld()->SpawnActor<ARL_BuildingSelectorManager>(ManagerClass,
-				FVector::Zero(),
-				FRotator::ZeroRotator);
-			BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic, bRunTraining);
-			AddTickPrerequisiteActor(BuildingSelector); // make the manager tick before this
-			GameState->S_AddManager(ManagerClass, BuildingSelector);
-		}
-		if (!BuildingSelector->IsRegistered(this))
-		{
-			BuildingSelector->S_RegisterAgent(this);
-		}
-		if (BuildingSelector->IsPaused())
-		{
-			BuildingSelector->Unpause();
-		}
 		// Buildingscounter
 		if (PossessedGuardian)
 		{

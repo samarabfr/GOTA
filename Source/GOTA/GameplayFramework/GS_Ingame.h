@@ -174,19 +174,13 @@ public:
 private:
 	TArray<AGuardianAIController*> GuardianAIControllers;
 	TWeakObjectPtr<ASettlementAIController> ColonyAIController;
-	bool bRunGuardianAITraining = false;
-	bool bRunColonyAItraining = false;
 
 public:
 	TArray<AGuardianAIController*> S_GetGuardianAIControllers() const;
 	ASettlementAIController* S_GetColonyAIController() const;
 	AGuardianAIController* S_GetGuardianAIController(int32 GOTAPlayerID) const;
-	bool S_GetRunGuardianAITraining() const;
-	bool S_GetRunColonyAITraining() const;
 	void S_SetGuardianAIController(int32 GOTAPlayerID, AGuardianAIController* GuardianAIController);
 	void S_SetColonyAIController(ASettlementAIController* SettlementAIController);
-	void S_SetRunGuardianAITraining(bool NewRunGuardianAItraining);
-	void S_SetRunColonyAITraining(bool NewRunColonyAItraining);
 
 	// ------------------- Reinforcement Learning Manager -------------------
 private:

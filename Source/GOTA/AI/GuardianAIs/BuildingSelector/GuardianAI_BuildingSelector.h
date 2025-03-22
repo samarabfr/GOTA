@@ -29,6 +29,9 @@ private:
 protected:
 	AGuardianAI_BuildingSelector();
 
+public:
+	virtual void S_Init(bool RunTraining = false) override;
+
 
 	// ----------------------- Utility -----------------------
 private:
@@ -50,8 +53,6 @@ private:
 	double SaveSnapshotsIntervalTime = 900.0f;
 	UPROPERTY(EditDefaultsOnly, Category="Snapshot")
 	FFilePath SnapshotsFolderFilePath;
-
-	bool bRunTraining = false;
 	
 	UPROPERTY(EditDefaultsOnly, Category="LearningAgents")
 	ULearningAgentsNeuralNetwork* NN_Encoder;
