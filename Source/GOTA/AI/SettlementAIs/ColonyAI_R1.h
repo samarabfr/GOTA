@@ -25,6 +25,7 @@ protected:
 	AColonyAI_R1();
 
 public:
+	virtual void S_Init(bool RunTraining = false) override;
 	virtual void Possess(ASettlement* Settlement) override;
 
 	// ----------------------- Utility -----------------------

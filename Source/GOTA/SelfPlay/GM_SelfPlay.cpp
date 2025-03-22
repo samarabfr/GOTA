@@ -161,7 +161,7 @@ void AGM_SelfPlay::CreateGuardians()
 			GuardianSettings[i]->GuardianBlueprint, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
 		GOTAGameState->SetGuardian(1, Guardian);
 		Guardian->S_Init(GuardianSettings[i], PossibleBuildingsForPlayers);
-		if (AGuardianAIController* GuardianAI = GOTAGameState->GetGuardianAIController(i))
+		if (AGuardianAIController* GuardianAI = GOTAGameState->S_GetGuardianAIController(i))
 		{
 			GuardianAI->Possess(Guardian);
 		}
@@ -169,9 +169,32 @@ void AGM_SelfPlay::CreateGuardians()
 		{
 			GuardianAI = GetWorld()->SpawnActor<AGuardianAIController>(GuardianAIClass);
 			GuardianAI->Possess(Guardian);
-			GOTAGameState->SetGuardianAIController(i, GuardianAI);
+			GuardianAI->S_Init(bRunGuardianAITraining);
+			GOTAGameState->S_SetGuardianAIController(i, GuardianAI);
 		}
 	}
+}
+
+void AGM_SelfPlay::CreateSettlements()
+{
+	ASettlement* Colony = GetWorld()->SpawnActor<ASettlement>(ColonyClass);
+	Colony->S_Init(GOTAGameState->GetTileMap()->GetColonistsStart().Get());
+	GOTAGameState->SetColony(Colony);
+	if (ASettlementAIController* ColonyAIController = GOTAGameState->S_GetColonyAIController())
+	{
+		ColonyAIController->Possess(Colony);
+	}
+	else if (ColonyAIControllerClass)
+	{
+		ColonyAIController = GetWorld()->SpawnActor<ASettlementAIController>(ColonyAIControllerClass);
+		ColonyAIController->Possess(Colony);
+		ColonyAIController->S_Init(bRunColonyAITraining);
+		GOTAGameState->S_SetColonyAIController(ColonyAIController);
+	}
+	
+	ASettlement* Tribe = GetWorld()->SpawnActor<ASettlement>(TribeClass);
+	Tribe->S_Init(GOTAGameState->GetTileMap()->GetNativesStart().Get());
+	GOTAGameState->SetTribe(Tribe);
 }
 
 // ------------------------------------ soft lock ------------------------------------
@@ -254,9 +277,9 @@ void AGM_SelfPlay::LogTimeData()
 
 void AGM_SelfPlay::LogAIControllers()
 {
-	if (GOTAGameState->GetColonyAIController())
-		GOTAGameState->GetColonyAIController()->Log();
-	for (AGuardianAIController* GuardianAIController : GOTAGameState->GetGuardianAIControllers())
+	if (GOTAGameState->S_GetColonyAIController())
+		GOTAGameState->S_GetColonyAIController()->Log();
+	for (AGuardianAIController* GuardianAIController : GOTAGameState->S_GetGuardianAIControllers())
 	{
 		if (GuardianAIController)
 			GuardianAIController->Log();

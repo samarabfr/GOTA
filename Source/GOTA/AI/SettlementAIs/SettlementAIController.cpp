@@ -25,6 +25,11 @@ void ASettlementAIController::Delete()
 	}
 }
 
+void ASettlementAIController::S_Init(bool RunTraining)
+{
+	bRunTraining = RunTraining;
+}
+
 void ASettlementAIController::Possess(ASettlement* Settlement)
 {
 	PossessedSettlement = Settlement;

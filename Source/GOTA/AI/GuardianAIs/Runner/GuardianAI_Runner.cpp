@@ -13,6 +13,25 @@ AGuardianAI_Runner::AGuardianAI_Runner()
 {
 }
 
+void AGuardianAI_Runner::S_Init(bool RunTraining)
+{
+	Super::S_Init(RunTraining);
+	if (!GameState.IsValid())
+		return;
+	ARL_RunnerManager* Manager = GameState->S_GetRLManager<ARL_RunnerManager>(ManagerClass);
+	if (!Manager)
+	{
+		Manager = GetWorld()->SpawnActor<ARL_RunnerManager>(ManagerClass);
+		Manager->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic, bRunTraining);
+		AddTickPrerequisiteActor(Manager); // make the manager tick before this
+		GameState->S_AddManager(ManagerClass, Manager);
+	}
+	if (!Manager->IsRegistered(this))
+	{
+		Manager->S_RegisterAgent(this);
+	}
+}
+
 
 void AGuardianAI_Runner::Tick(float DeltaSeconds)
 {
@@ -35,18 +54,6 @@ void AGuardianAI_Runner::OnPossess(APawn* InPawn)
 	if (HasAuthority())
 	{
 		GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
-		ARL_RunnerManager* Manager = GameState->S_GetRLManager<ARL_RunnerManager>(ManagerClass);
-		if (!Manager)
-		{
-			Manager = GetWorld()->SpawnActor<ARL_RunnerManager>(ManagerClass);
-			Manager->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic);
-			AddTickPrerequisiteActor(Manager); // make the manager tick before this
-			GameState->S_AddManager(ManagerClass, Manager);
-		}
-		if (!Manager->IsRegistered(this))
-		{
-			Manager->S_RegisterAgent(this);
-		}
 	}
 }
 

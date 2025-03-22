@@ -28,7 +28,7 @@ ARL_RunnerManager::ARL_RunnerManager()
 void ARL_RunnerManager::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	if (bRunInference)
+	if (!bRunTraining)
 	{
 		Policy->RunInference(0.0f);
 	}
@@ -42,8 +42,10 @@ void ARL_RunnerManager::Tick(float DeltaSeconds)
 }
 
 void ARL_RunnerManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
-                                   ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic)
+                               ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic,
+                               bool RunTraining)
 {
+	bRunTraining = RunTraining;
 	// Interactor
 	Interactor = ULearningAgentsInteractor::MakeInteractor(
 		ManagerComponent, URL_RunnerInteractor::StaticClass(), FName("RunnerInteractor"));
@@ -56,9 +58,9 @@ void ARL_RunnerManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encoder, ULearni
 	                                           NN_Encoder,
 	                                           NN_Policy,
 	                                           NN_Decoder,
-	                                           !bRunInference && bResetNNsWhenStartingTraining,
-	                                           !bRunInference && bResetNNsWhenStartingTraining,
-	                                           !bRunInference && bResetNNsWhenStartingTraining,
+	                                           bRunTraining && bResetNNsWhenStartingTraining,
+	                                           bRunTraining && bResetNNsWhenStartingTraining,
+	                                           bRunTraining && bResetNNsWhenStartingTraining,
 	                                           PolicySettings,
 	                                           PolicySeed);
 	// Critic
@@ -68,7 +70,7 @@ void ARL_RunnerManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encoder, ULearni
 	                                           ULearningAgentsCritic::StaticClass(),
 	                                           FName("RunnerCritic"),
 	                                           NN_Critic,
-	                                           !bRunInference && bResetNNsWhenStartingTraining,
+	                                           bRunTraining && bResetNNsWhenStartingTraining,
 	                                           CriticSettings,
 	                                           CriticSeed);
 	// Training Environment

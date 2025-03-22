@@ -65,7 +65,7 @@ void UBuildingDefense::S_Tick(float DeltaSeconds)
 	}
 	else if (bIsAttacking && !HasEnemyOnNeighboringTile())
 	{
-		bIsAttacking = true;
+		bIsAttacking = false;
 		AttackProgress = 0.0f;
 	}
 	if (bIsAttacking && AttackProgress >= 100)

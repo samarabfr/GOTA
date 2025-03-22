@@ -81,7 +81,7 @@ private:
 public:
 	void CreateWorld();
 
-	void CreateSettlements();
+	virtual void CreateSettlements();
 
 	virtual void CreateGuardians();
 

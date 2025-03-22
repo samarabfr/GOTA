@@ -29,6 +29,9 @@ private:
 protected:
 	AGuardianAI_BuildingSelector();
 
+public:
+	virtual void S_Init(bool RunTraining = false) override;
+
 
 	// ----------------------- Utility -----------------------
 private:

@@ -33,22 +33,30 @@ private:
 	void S_RestartSelfPlay();
 	
 	virtual void CreateGuardians() override;
+	virtual void CreateSettlements() override;
 
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UGuardianSettings*> GuardianSettings;
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AGuardianAIController> GuardianAIClass;
+	UPROPERTY(EditDefaultsOnly)
+	bool bRunGuardianAITraining = true;
+	UPROPERTY(EditDefaultsOnly)
+	bool bRunColonyAITraining = true;
 
 	UPROPERTY(EditDefaultsOnly)
 	float FixedDeltaSeconds = 0.1f;
 	float LearningAgentsFixedDeltaSeconds = 1.0f / 60.0f;
 
+	// ------------------------------------ soft lock ------------------------------------
+	
 private:
 	UPROPERTY(EditDefaultsOnly)
 	float SoftLockTime = 18000.0f; // GameTime in seconds
 	float SoftLockTimeLeft = 0.0f;
-
+	
+	// ------------------------------------ Logging ------------------------------------
 	
 private:
 	UPROPERTY(EditDefaultsOnly)

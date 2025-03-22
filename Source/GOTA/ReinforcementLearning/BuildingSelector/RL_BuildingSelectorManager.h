@@ -34,10 +34,6 @@ protected:
 	// ----------------------- Learning Agents plugin -----------------------
 private:
 	UPROPERTY(EditDefaultsOnly)
-	bool bRunInference = false;
-	UPROPERTY(EditDefaultsOnly)
-	bool bResetNNsWhenStartingTraining = false;
-	UPROPERTY(EditDefaultsOnly)
 	bool bUseTensorboard = false;
 	UPROPERTY(EditDefaultsOnly)
 	FString NonEditorEngineRelativePath = "../../../../Program Files/Epic Games/UE_5.5/Engine";
@@ -45,6 +41,9 @@ private:
 	FString NonEditorIntermediateRelativePath = "../../../GOTAFunzt/Intermediate";
 	UPROPERTY(EditDefaultsOnly)
 	ULearningAgentsManager* ManagerComponent;
+
+	bool bRunTraining = false;
+	bool bResetNNsWhenStartingTraining = false;
 
 	UPROPERTY()
 	ULearningAgentsInteractor* Interactor;
@@ -83,7 +82,7 @@ private:
 public:
 	void S_RegisterAgent(UObject* Agent);
 	void S_Init(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
-	            ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic);
+	            ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic, bool RunTraining);
 	bool IsPaused();
 	void Pause();
 	void Unpause();
