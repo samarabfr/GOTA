@@ -63,11 +63,11 @@ void AArmy::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	RecruitRate = 100 / BuildingSettings->SecondsPerRecruitCycle;
 	S_SetMovementRate(100 / BuildingSettings->ArmyMoveTime);
 	RavageSpeed = 100 / BuildingSettings->ArmyRavageTime;
-	GoAttackModeTimeLeft =  BuildingSettings->ArmyGoAttackModeTime;
-	CombatValues->SetIndividualAttack(BuildingSettings->ArmyIndividualAttack);
-	CombatValues->SetIndividualMaxHP(BuildingSettings->ArmyIndividualMaxHP);
-	CombatValues->SetIndividualCount(BuildingSettings->ArmyIndividualCount);
-	CombatValues->SetAttackSpeed(100 / BuildingSettings->ArmyAttackTime);
+	GoAttackModeTimeLeft = BuildingSettings->ArmyGoAttackModeTime;
+	CombatValues->S_Init(BuildingSettings->ArmyIndividualAttack,
+	                     BuildingSettings->ArmyIndividualMaxHP,
+	                     BuildingSettings->ArmyIndividualCount,
+	                     100 / BuildingSettings->ArmyAttackTime);
 	CombatValues->OnDeath.AddDynamic(this, &AArmy::Delete);
 	RefreshMesh();
 }
@@ -125,7 +125,7 @@ void AArmy::S_TakePopFromTile()
 {
 	if (GetCurrentTile()->GetBuilding()->GetPopulation()->GetSize() <= 0)
 		return;
-	CombatValues->SetIndividualCount(CombatValues->GetIndividualCount() + 1);
+	CombatValues->S_SetIndividualCount(CombatValues->GetIndividualCount() + 1);
 	GetCurrentTile()->GetBuilding()->GetPopulation()->S_DecreaseSize(1);
 }
 
@@ -221,7 +221,8 @@ bool AArmy::S_TryFindPathToNearestEnemyUnprotectedNormalBuilding()
 				Tile->GetClaimant()->GetAffiliation() !=
 				GetAffiliation() &&
 				Tile->GetBuilding() &&
-				!Tile->GetBuilding()->IsProtected();
+				!Tile->GetBuilding()->IsProtected() &&
+				!Tile->GetBuilding()->GetIsUnderConstruction();
 		});
 	if (ResultPath.IsEmpty())
 		return false;
@@ -246,8 +247,8 @@ bool AArmy::S_TryFindPathToNearestEnemyDefenseBuilding()
 					Neighbor->GetClaimant()->GetAffiliation() !=
 					GetAffiliation() &&
 					Neighbor->GetBuilding() &&
-					Neighbor->GetBuilding()->GetSettings()->
-					          bDefenseEnabled)
+					Neighbor->GetBuilding()->GetSettings()->bDefenseEnabled &&
+					!Neighbor->GetBuilding()->GetIsUnderConstruction())
 				{
 					return true;
 				}
@@ -310,7 +311,8 @@ TArray<UBuilding*> AArmy::GetNeighboringEnemyDefenseBuildings() const
 			Neighbor->GetClaimant() &&
 			Neighbor->GetClaimant()->GetAffiliation() != GetAffiliation() &&
 			Neighbor->GetBuilding() &&
-			Neighbor->GetBuilding()->GetSettings()->bDefenseEnabled)
+			Neighbor->GetBuilding()->GetSettings()->bDefenseEnabled &&
+			!Neighbor->GetBuilding()->GetIsUnderConstruction())
 		{
 			NeighboringDefenseBuildings.Add(Neighbor->GetBuilding());
 		}
@@ -320,7 +322,7 @@ TArray<UBuilding*> AArmy::GetNeighboringEnemyDefenseBuildings() const
 
 void AArmy::S_ArmyTakeDamage(int32 Damage)
 {
-	CombatValues->SetCurrentTotalHP(CombatValues->GetCurrentTotalHP() - Damage);
+	CombatValues->S_ReceiveDamage(Damage);
 }
 
 void AArmy::S_AttackEnemy()
@@ -351,7 +353,8 @@ bool AArmy::IsOnEnemyBuilding() const
 	return GetCurrentTile() &&
 		GetCurrentTile()->GetBuilding() &&
 		GetCurrentTile()->GetClaimant() &&
-		GetCurrentTile()->GetClaimant()->GetAffiliation() != GetAffiliation();
+		GetCurrentTile()->GetClaimant()->GetAffiliation() != GetAffiliation() &&
+		!GetCurrentTile()->GetBuilding()->GetIsUnderConstruction();
 }
 
 bool AArmy::IsBuildingProtected() const

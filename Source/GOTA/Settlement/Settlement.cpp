@@ -90,8 +90,12 @@ void ASettlement::S_Init(ATile* SpawnTile)
 	}
 	for (ATile* Tile : ClaimedTiles)
 	{
-		Tile->GetBuilding()->GetPopulation()->S_ChangeSize(100);
-		Tile->GetBuilding()->GetResourceStorage()->S_Fill();
+		if (Tile &&
+			Tile->GetBuilding())
+		{
+			Tile->GetBuilding()->GetPopulation()->S_ChangeSize(100);
+			Tile->GetBuilding()->GetResourceStorage()->S_Fill();
+		}
 	}
 }
 
