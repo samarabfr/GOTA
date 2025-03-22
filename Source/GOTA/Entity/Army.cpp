@@ -64,10 +64,10 @@ void AArmy::S_Init(UBuilding* InBuilding, ATile* SpawnTile)
 	S_SetMovementRate(100 / BuildingSettings->ArmyMoveTime);
 	RavageSpeed = 100 / BuildingSettings->ArmyRavageTime;
 	GoAttackModeTimeLeft = BuildingSettings->ArmyGoAttackModeTime;
-	CombatValues->SetIndividualAttack(BuildingSettings->ArmyIndividualAttack);
-	CombatValues->SetIndividualMaxHP(BuildingSettings->ArmyIndividualMaxHP);
-	CombatValues->SetIndividualCount(BuildingSettings->ArmyIndividualCount);
-	CombatValues->SetAttackSpeed(100 / BuildingSettings->ArmyAttackTime);
+	CombatValues->S_Init(BuildingSettings->ArmyIndividualAttack,
+	                     BuildingSettings->ArmyIndividualMaxHP,
+	                     BuildingSettings->ArmyIndividualCount,
+	                     100 / BuildingSettings->ArmyAttackTime);
 	CombatValues->OnDeath.AddDynamic(this, &AArmy::Delete);
 	RefreshMesh();
 }
@@ -125,7 +125,7 @@ void AArmy::S_TakePopFromTile()
 {
 	if (GetCurrentTile()->GetBuilding()->GetPopulation()->GetSize() <= 0)
 		return;
-	CombatValues->SetIndividualCount(CombatValues->GetIndividualCount() + 1);
+	CombatValues->S_SetIndividualCount(CombatValues->GetIndividualCount() + 1);
 	GetCurrentTile()->GetBuilding()->GetPopulation()->S_DecreaseSize(1);
 }
 
@@ -322,7 +322,7 @@ TArray<UBuilding*> AArmy::GetNeighboringEnemyDefenseBuildings() const
 
 void AArmy::S_ArmyTakeDamage(int32 Damage)
 {
-	CombatValues->SetCurrentTotalHP(CombatValues->GetCurrentTotalHP() - Damage);
+	CombatValues->S_ReceiveDamage(Damage);
 }
 
 void AArmy::S_AttackEnemy()
