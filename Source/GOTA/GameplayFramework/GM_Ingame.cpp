@@ -171,6 +171,7 @@ void AGM_Ingame::CreateSettlements()
 	if (ASettlementAIController* ColonyAIController = GOTAGameState->S_GetColonyAIController())
 	{
 		ColonyAIController->Possess(Colony);
+		ColonyAIController->S_Init(false);
 	}
 	else if (ColonyAIControllerClass)
 	{

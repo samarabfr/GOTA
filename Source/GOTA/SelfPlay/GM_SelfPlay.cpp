@@ -164,6 +164,7 @@ void AGM_SelfPlay::CreateGuardians()
 		if (AGuardianAIController* GuardianAI = GOTAGameState->S_GetGuardianAIController(i))
 		{
 			GuardianAI->Possess(Guardian);
+			GuardianAI->S_Init(bRunGuardianAITraining);
 		}
 		else if (GuardianAIClass)
 		{
@@ -183,6 +184,7 @@ void AGM_SelfPlay::CreateSettlements()
 	if (ASettlementAIController* ColonyAIController = GOTAGameState->S_GetColonyAIController())
 	{
 		ColonyAIController->Possess(Colony);
+		ColonyAIController->S_Init(bRunColonyAITraining);
 	}
 	else if (ColonyAIControllerClass)
 	{
