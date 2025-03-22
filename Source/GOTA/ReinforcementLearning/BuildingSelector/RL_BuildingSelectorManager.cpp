@@ -35,8 +35,10 @@ void ARL_BuildingSelectorManager::DoLastTrainingRound(const EGameEnding Ending, 
 void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encoder,
                                          ULearningAgentsNeuralNetwork* NN_Policy,
                                          ULearningAgentsNeuralNetwork* NN_Decoder,
-                                         ULearningAgentsNeuralNetwork* NN_Critic)
+                                         ULearningAgentsNeuralNetwork* NN_Critic,
+                                         bool RunTraining)
 {
+	bRunTraining = RunTraining;
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	if (GameState) GameState->OnGameEnding.AddDynamic(this, &ARL_BuildingSelectorManager::DoLastTrainingRound);
 	// Interactor
@@ -51,9 +53,9 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	                                           NN_Encoder,
 	                                           NN_Policy,
 	                                           NN_Decoder,
-	                                           !bRunInference && bResetNNsWhenStartingTraining,
-	                                           !bRunInference && bResetNNsWhenStartingTraining,
-	                                           !bRunInference && bResetNNsWhenStartingTraining,
+	                                           bRunTraining && bResetNNsWhenStartingTraining,
+	                                           bRunTraining && bResetNNsWhenStartingTraining,
+	                                           bRunTraining && bResetNNsWhenStartingTraining,
 	                                           PolicySettings,
 	                                           PolicySeed);
 	// Critic
@@ -63,7 +65,7 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	                                           ULearningAgentsCritic::StaticClass(),
 	                                           FName("BuildingSelectorCritic"),
 	                                           NN_Critic,
-	                                           !bRunInference && bResetNNsWhenStartingTraining,
+	                                           bRunTraining && bResetNNsWhenStartingTraining,
 	                                           CriticSettings,
 	                                           CriticSeed);
 	// Training Environment
@@ -77,8 +79,8 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	}
 	// Shared Memory
 	FLearningAgentsTrainerProcessSettings TrainerProcessSettings = FLearningAgentsTrainerProcessSettings();
-	TrainerProcessSettings.NonEditorEngineRelativePath =  NonEditorEngineRelativePath;
-	TrainerProcessSettings.NonEditorIntermediateRelativePath =  NonEditorIntermediateRelativePath;
+	TrainerProcessSettings.NonEditorEngineRelativePath = NonEditorEngineRelativePath;
+	TrainerProcessSettings.NonEditorIntermediateRelativePath = NonEditorIntermediateRelativePath;
 	FLearningAgentsSharedMemoryCommunicatorSettings SharedMemorySettings =
 		FLearningAgentsSharedMemoryCommunicatorSettings();
 	TrainerProcess = ULearningAgentsCommunicatorLibrary::SpawnSharedMemoryTrainingProcess(
@@ -125,7 +127,7 @@ bool ARL_BuildingSelectorManager::IsRegistered(UObject* Agent)
 void ARL_BuildingSelectorManager::SelectBuilding()
 {
 	if (IsPaused()) return;
-	if (bRunInference)
+	if (!bRunTraining)
 	{
 		Policy->RunInference(0.0f);
 	}

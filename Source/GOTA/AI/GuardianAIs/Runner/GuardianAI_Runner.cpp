@@ -39,7 +39,7 @@ void AGuardianAI_Runner::OnPossess(APawn* InPawn)
 		if (!Manager)
 		{
 			Manager = GetWorld()->SpawnActor<ARL_RunnerManager>(ManagerClass);
-			Manager->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic);
+			Manager->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic, GameState->S_GetRunGuardianAITraining());
 			AddTickPrerequisiteActor(Manager); // make the manager tick before this
 			GameState->S_AddManager(ManagerClass, Manager);
 		}

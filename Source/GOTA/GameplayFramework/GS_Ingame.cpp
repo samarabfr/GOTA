@@ -5,6 +5,7 @@
 
 #include "GOTA/Utility/LoadingManager.h"
 #include "StartParameter.h"
+#include "GOTA/AI/SettlementAIs/SettlementAIController.h"
 #include "GOTA/Utility/GOTAAttribute.h"
 #include "GOTA/Guardian/Guardian.h"
 #include "GOTA/Settlement/Settlement.h"
@@ -194,29 +195,49 @@ void AGS_Ingame::S_EndGame_Implementation(::EGameEnding Ending, const FString& E
 
 // ------------------- Reinforcement Learning Manager -------------------
 
-TArray<AGuardianAIController*> AGS_Ingame::GetGuardianAIControllers() const
+TArray<AGuardianAIController*> AGS_Ingame::S_GetGuardianAIControllers() const
 {
 	return GuardianAIControllers;
 }
 
-ASettlementAIController* AGS_Ingame::GetColonyAIController() const
+ASettlementAIController* AGS_Ingame::S_GetColonyAIController() const
 {
-	return ColonyAIController;
+	return ColonyAIController.Get();
 }
 
-AGuardianAIController* AGS_Ingame::GetGuardianAIController(int32 GOTAPlayerID) const
+AGuardianAIController* AGS_Ingame::S_GetGuardianAIController(int32 GOTAPlayerID) const
 {
 	if (!Guardians.IsValidIndex(GOTAPlayerID)) return nullptr;
 	return GuardianAIControllers[GOTAPlayerID];
 }
 
-void AGS_Ingame::SetGuardianAIController(int32 GOTAPlayerID, AGuardianAIController* GuardianAIController)
+bool AGS_Ingame::S_GetRunGuardianAITraining() const
+{
+	return bRunGuardianAITraining;
+}
+
+bool AGS_Ingame::S_GetRunColonyAITraining() const
+{
+	return bRunColonyAItraining;
+}
+
+void AGS_Ingame::S_SetRunGuardianAITraining(bool NewRunGuardianAItraining)
+{
+	bRunGuardianAITraining = NewRunGuardianAItraining;
+}
+
+void AGS_Ingame::S_SetRunColonyAITraining(bool NewRunColonyAItraining)
+{
+	bRunColonyAItraining = NewRunColonyAItraining;
+}
+
+void AGS_Ingame::S_SetGuardianAIController(int32 GOTAPlayerID, AGuardianAIController* GuardianAIController)
 {
 	if (!Guardians.IsValidIndex(GOTAPlayerID)) return;
 	GuardianAIControllers[GOTAPlayerID] = GuardianAIController;
 }
 
-void AGS_Ingame::SetColonyAIController(ASettlementAIController* SettlementAIController)
+void AGS_Ingame::S_SetColonyAIController(ASettlementAIController* SettlementAIController)
 {
 	ColonyAIController = SettlementAIController;
 }

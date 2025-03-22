@@ -161,7 +161,7 @@ void AGM_SelfPlay::CreateGuardians()
 			GuardianSettings[i]->GuardianBlueprint, SpawnLocation, FRotator::ZeroRotator, SpawnParams);
 		GOTAGameState->SetGuardian(1, Guardian);
 		Guardian->S_Init(GuardianSettings[i], PossibleBuildingsForPlayers);
-		if (AGuardianAIController* GuardianAI = GOTAGameState->GetGuardianAIController(i))
+		if (AGuardianAIController* GuardianAI = GOTAGameState->S_GetGuardianAIController(i))
 		{
 			GuardianAI->Possess(Guardian);
 		}
@@ -169,9 +169,16 @@ void AGM_SelfPlay::CreateGuardians()
 		{
 			GuardianAI = GetWorld()->SpawnActor<AGuardianAIController>(GuardianAIClass);
 			GuardianAI->Possess(Guardian);
-			GOTAGameState->SetGuardianAIController(i, GuardianAI);
+			GOTAGameState->S_SetGuardianAIController(i, GuardianAI);
 		}
+		GOTAGameState->S_SetRunGuardianAITraining(bRunGuardianAITraining);
 	}
+}
+
+void AGM_SelfPlay::CreateSettlements()
+{
+	Super::CreateSettlements();
+	GOTAGameState->S_SetRunColonyAITraining(bRunGuardianAITraining);
 }
 
 // ------------------------------------ soft lock ------------------------------------
@@ -254,9 +261,9 @@ void AGM_SelfPlay::LogTimeData()
 
 void AGM_SelfPlay::LogAIControllers()
 {
-	if (GOTAGameState->GetColonyAIController())
-		GOTAGameState->GetColonyAIController()->Log();
-	for (AGuardianAIController* GuardianAIController : GOTAGameState->GetGuardianAIControllers())
+	if (GOTAGameState->S_GetColonyAIController())
+		GOTAGameState->S_GetColonyAIController()->Log();
+	for (AGuardianAIController* GuardianAIController : GOTAGameState->S_GetGuardianAIControllers())
 	{
 		if (GuardianAIController)
 			GuardianAIController->Log();

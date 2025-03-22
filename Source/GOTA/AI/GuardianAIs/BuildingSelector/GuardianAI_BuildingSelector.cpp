@@ -51,7 +51,8 @@ void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 			BuildingSelector = GetWorld()->SpawnActor<ARL_BuildingSelectorManager>(ManagerClass,
 				FVector::Zero(),
 				FRotator::ZeroRotator);
-			BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic);
+			BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic,
+			                         GameState->S_GetRunGuardianAITraining());
 			AddTickPrerequisiteActor(BuildingSelector); // make the manager tick before this
 			GameState->S_AddManager(ManagerClass, BuildingSelector);
 		}
@@ -168,6 +169,7 @@ void AGuardianAI_BuildingSelector::LogBuildings()
 
 void AGuardianAI_BuildingSelector::Log()
 {
-	UE_LOG(LogTemp, Warning, TEXT("-------------------------- Guardian AI - Random No SoftLock--------------------------"))
+	UE_LOG(LogTemp, Warning,
+	       TEXT("-------------------------- Guardian AI - Random No SoftLock--------------------------"))
 	LogBuildings();
 }

@@ -48,7 +48,8 @@ void AColonyAI_R1::Possess(ASettlement* Settlement)
 			BuildingSelector = GetWorld()->SpawnActor<ARL_BuildingSelectorManager>(ManagerClass,
 				FVector::Zero(),
 				FRotator::ZeroRotator);
-			BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic);
+			BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic,
+			                         GameState->S_GetRunColonyAITraining());
 			AddTickPrerequisiteActor(BuildingSelector); // make the manager tick before this
 			GameState->S_AddManager(ManagerClass, BuildingSelector);
 		}
