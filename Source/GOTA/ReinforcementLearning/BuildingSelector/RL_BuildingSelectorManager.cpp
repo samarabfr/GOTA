@@ -40,7 +40,10 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 {
 	bRunTraining = RunTraining;
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
-	if (GameState) GameState->OnGameEnding.AddDynamic(this, &ARL_BuildingSelectorManager::DoLastTrainingRound);
+	if (GameState && bRunTraining)
+	{
+		GameState->OnGameEnding.AddDynamic(this, &ARL_BuildingSelectorManager::DoLastTrainingRound);
+	}
 	// Interactor
 	Interactor = ULearningAgentsInteractor::MakeInteractor(
 		ManagerComponent, URL_BuildingSelectorInteractor::StaticClass(), FName("BuildingSelectorInteractor"));
