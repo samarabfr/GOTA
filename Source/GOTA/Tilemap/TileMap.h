@@ -31,6 +31,9 @@ private:
 
 	UPROPERTY(EditDefaultsOnly, Category="TileMap")
 	int32 TileTicksPerFrame;
+	
+	UPROPERTY(EditDefaultsOnly, Category="TileMap")
+	bool bEnableTileTickSplit = false;
 
 	int32 IndexPosition = 0;
 	virtual void Tick(float DeltaSeconds) override;
