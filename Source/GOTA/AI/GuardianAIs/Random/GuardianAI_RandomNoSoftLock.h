@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AIController.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/AI/GuardianAIs/GuardianAIController.h"
 #include "GuardianAI_RandomNoSoftLock.generated.h"
@@ -42,6 +41,9 @@ private:
 	virtual void OnPossess(APawn* InPawn) override;
 
 	// ----------------------- Building Selection -----------------------
+private:
+	UPROPERTY(EditDefaultsOnly)
+	float FoodThreshold = 300.0f;
 	
 	void FigureOutBuilding();
 	bool ShouldBuild() const;
