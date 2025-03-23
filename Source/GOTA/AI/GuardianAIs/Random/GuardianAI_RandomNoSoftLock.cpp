@@ -107,7 +107,6 @@ UBuildingSettings* AGuardianAI_RandomNoSoftLock::SelectNewBuilding() const
 	for (int i = ViableBuildings.Num() - 1; i >= 0; --i)
 	{
 		const auto [FoodIncome, WoodIncome, StoneIncome] = Settlement->GetEffectiveProduction();
-		const int32 FoodThreshhold = 300;
 		if (!ViableBuildings[i] ||
 			(ViableBuildings[i]->Cost.Food > 0 &&
 				ViableBuildings[i]->Cost.Food > Settlement->GetResources().Food && FoodIncome <= 0) ||
@@ -115,7 +114,7 @@ UBuildingSettings* AGuardianAI_RandomNoSoftLock::SelectNewBuilding() const
 				ViableBuildings[i]->Cost.Stone > Settlement->GetResources().Stone && StoneIncome <= 0) ||
 			(ViableBuildings[i]->Cost.Wood > 0 &&
 				ViableBuildings[i]->Cost.Wood > Settlement->GetResources().Wood && WoodIncome <= 0) ||
-			((FoodIncome <= 0 || Settlement->GetResources().Food < FoodThreshhold) &&
+			((FoodIncome <= 0 || Settlement->GetResources().Food < FoodThreshold) &&
 				ViableBuildings[i]->ProductionType != EProductionType::Food))
 		{
 			ViableBuildings.RemoveAt(i);

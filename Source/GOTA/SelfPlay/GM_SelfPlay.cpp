@@ -4,6 +4,7 @@
 #include "GM_SelfPlay.h"
 
 #include "AIController.h"
+#include "GameFramework/GameUserSettings.h"
 #include "GOTA/AI/GuardianAIs/GuardianAIController.h"
 #include "GOTA/AI/SettlementAIs/SettlementAIController.h"
 #include "GOTA/Entity/Builder.h"
@@ -18,7 +19,12 @@
 #include "GOTA/Guardian/GuardianSettings.h"
 #include "GOTA/Tile/Tile.h"
 #include "GOTA/Tilemap/TileMap.h"
-#include "Kismet/GameplayStatics.h"
+#include "PhysicsEngine/PhysicsSettings.h"
+
+#if WITH_EDITOR
+#include "Editor/EditorPerformanceSettings.h"
+#endif
+
 // ------------------------------------ Lifecycle ------------------------------------
 
 AGM_SelfPlay::AGM_SelfPlay()
@@ -30,9 +36,8 @@ AGM_SelfPlay::AGM_SelfPlay()
 void AGM_SelfPlay::BeginPlay()
 {
 	Super::BeginPlay();
+	SetGameSettings();
 	LoadGame();
-	UGameplayStatics::SetGlobalTimeDilation(this,
-	                                        FixedDeltaSeconds / LearningAgentsFixedDeltaSeconds);
 }
 
 void AGM_SelfPlay::Tick(float DeltaSeconds)
@@ -40,6 +45,7 @@ void AGM_SelfPlay::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	// calculate time data
 	TickCount++;
+	TickCountSinceLastLog++;
 	if (DeltaSeconds > MaxDeltaSeconds)
 	{
 		MaxDeltaSeconds = DeltaSeconds;
@@ -67,8 +73,6 @@ void AGM_SelfPlay::Tick(float DeltaSeconds)
 		LogSettlementData(GOTAGameState->GetColony(), "Colonists");
 		LogSettlementData(GOTAGameState->GetTribe(), "Natives");
 		LogAIControllers();
-		GameTimeLastLog = GetWorld()->GetTimeSeconds();
-		RealTimeLastLog = CurrentRealTime;
 	}
 	else
 	{
@@ -193,7 +197,7 @@ void AGM_SelfPlay::CreateSettlements()
 		ColonyAIController->S_Init(bRunColonyAITraining);
 		GOTAGameState->S_SetColonyAIController(ColonyAIController);
 	}
-	
+
 	ASettlement* Tribe = GetWorld()->SpawnActor<ASettlement>(TribeClass);
 	Tribe->S_Init(GOTAGameState->GetTileMap()->GetNativesStart().Get());
 	GOTAGameState->SetTribe(Tribe);
@@ -202,6 +206,38 @@ void AGM_SelfPlay::CreateSettlements()
 // ------------------------------------ soft lock ------------------------------------
 
 // ------------------------------------ Logging ------------------------------------
+
+void AGM_SelfPlay::SetGameSettings()
+{
+	FApp::SetUseFixedTimeStep(true);
+	FApp::SetFixedDeltaTime(FixedDeltaSeconds);
+	if (UPhysicsSettings* PhysicsSettings = UPhysicsSettings::Get())
+	{
+		PhysicsSettings->MaxPhysicsDeltaTime = FixedDeltaSeconds;
+	}
+	if (IConsoleVariable* MaxFPSCVar = IConsoleManager::Get().FindConsoleVariable(TEXT("t.MaxFPS")))
+	{
+		MaxFPSCVar->Set(0);
+	}
+	if (UGameUserSettings* GameSettings = UGameUserSettings::GetGameUserSettings())
+	{
+		GameSettings->SetVSyncEnabled(false);
+		GameSettings->ApplySettings(false);
+	}
+	if (UGameViewportClient* ViewportClient = GetWorld() ? GetWorld()->GetGameViewport() : nullptr)
+	{
+		ViewportClient->ViewModeIndex = EViewModeIndex::VMI_Unlit;
+	}
+
+#if WITH_EDITOR
+	if (UEditorPerformanceSettings* EditorPerformanceSettings = GetMutableDefault<UEditorPerformanceSettings>())
+	{
+		EditorPerformanceSettings->bThrottleCPUWhenNotForeground = false;
+		EditorPerformanceSettings->bEnableVSync = false;
+		EditorPerformanceSettings->PostEditChange();
+	}
+#endif
+}
 
 void AGM_SelfPlay::LogSettlementData(ASettlement* Settlement, FString SettlementName)
 {
@@ -255,26 +291,32 @@ void AGM_SelfPlay::LogSettlementData(ASettlement* Settlement, FString Settlement
 
 void AGM_SelfPlay::LogTimeData()
 {
+	// get times
 	const float GameTimeCurrent = GetWorld()->GetTimeSeconds();
 	const float GameTimeSinceLast = GameTimeCurrent - GameTimeLastLog;
+	const float GameTimeSinceStart = GameTimeCurrent - GameTimeStart;
 	const double RealTimeCurrent = FPlatformTime::Seconds();
 	const double RealTimeSinceLast = RealTimeCurrent - RealTimeLastLog;
-	UE_LOG(LogTemp, Warning, TEXT("--------------------------Time Data since last--------------------------"))
+	const double RealTimeSinceStart = RealTimeCurrent - RealTimeStart;
+	// logging
+	UE_LOG(LogTemp, Warning, TEXT("-------------------------- Time Data since last log --------------------------"))
 	UE_LOG(LogTemp, Warning, TEXT("GameTime average delta: %f, Max: %f, Min: %f"),
-	       GameTimeSinceLast / static_cast<float>(TickCount), MaxDeltaSeconds, MinDeltaSeconds)
+	       GameTimeSinceLast / static_cast<float>(TickCountSinceLastLog), MaxDeltaSeconds, MinDeltaSeconds)
 	UE_LOG(LogTemp, Warning, TEXT("Realtime average delta: %f, Max: %f, Min: %f"),
-	       RealTimeSinceLast / static_cast<double>(TickCount), MaxRealTime, MinRealTime)
+	       RealTimeSinceLast / static_cast<double>(TickCountSinceLastLog), MaxRealTime, MinRealTime)
 	UE_LOG(LogTemp, Warning, TEXT("GameTime total: %f, Realtime total: %f, GameSpeedFactor: %f"),
 	       GameTimeSinceLast, RealTimeSinceLast, GameTimeSinceLast / RealTimeSinceLast)
-	UE_LOG(LogTemp, Warning, TEXT("--------------------------Time Data since start--------------------------"))
-	const float GameTimeSinceStart = GameTimeCurrent - GameTimeStart;
-	const double RealTimeSinceStart = RealTimeCurrent - RealTimeStart;
+	UE_LOG(LogTemp, Warning, TEXT("-------------------------- Time Data since start --------------------------"))
 	UE_LOG(LogTemp, Warning, TEXT("GameTime average delta: %f, Max: %f, Min: %f"),
 	       GameTimeSinceStart / static_cast<float>(TickCount), MaxDeltaSeconds, MinDeltaSeconds)
 	UE_LOG(LogTemp, Warning, TEXT("Realtime average delta: %f, Max: %f, Min: %f"),
 	       RealTimeSinceStart / static_cast<double>(TickCount), MaxRealTime, MinRealTime)
 	UE_LOG(LogTemp, Warning, TEXT("GameTime total: %f, Realtime total: %f, GameSpeedFactor: %f"),
 	       GameTimeSinceStart, RealTimeSinceStart, GameTimeSinceStart / RealTimeSinceStart)
+	// reset timers
+	GameTimeLastLog = GameTimeCurrent;
+	RealTimeLastLog = RealTimeCurrent;
+	TickCountSinceLastLog = 0;
 }
 
 void AGM_SelfPlay::LogAIControllers()

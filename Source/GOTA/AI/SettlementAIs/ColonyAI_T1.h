@@ -31,6 +31,9 @@ public:
 	// --------------------Building----------------------
 private:
 	UPROPERTY(EditDefaultsOnly)
+	float FoodThreshold = 300.0f;
+	
+	UPROPERTY(EditDefaultsOnly)
 	TArray<UBuildingSettings*> PossibleBuildings;
 
 	void FigureOutBuilding();
