@@ -45,6 +45,7 @@ void AGM_SelfPlay::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	// calculate time data
 	TickCount++;
+	TickCountSinceLastLog++;
 	if (DeltaSeconds > MaxDeltaSeconds)
 	{
 		MaxDeltaSeconds = DeltaSeconds;
@@ -72,8 +73,6 @@ void AGM_SelfPlay::Tick(float DeltaSeconds)
 		LogSettlementData(GOTAGameState->GetColony(), "Colonists");
 		LogSettlementData(GOTAGameState->GetTribe(), "Natives");
 		LogAIControllers();
-		GameTimeLastLog = GetWorld()->GetTimeSeconds();
-		RealTimeLastLog = CurrentRealTime;
 	}
 	else
 	{
@@ -292,26 +291,32 @@ void AGM_SelfPlay::LogSettlementData(ASettlement* Settlement, FString Settlement
 
 void AGM_SelfPlay::LogTimeData()
 {
+	// get times
 	const float GameTimeCurrent = GetWorld()->GetTimeSeconds();
 	const float GameTimeSinceLast = GameTimeCurrent - GameTimeLastLog;
+	const float GameTimeSinceStart = GameTimeCurrent - GameTimeStart;
 	const double RealTimeCurrent = FPlatformTime::Seconds();
 	const double RealTimeSinceLast = RealTimeCurrent - RealTimeLastLog;
-	UE_LOG(LogTemp, Warning, TEXT("--------------------------Time Data since last--------------------------"))
+	const double RealTimeSinceStart = RealTimeCurrent - RealTimeStart;
+	// logging
+	UE_LOG(LogTemp, Warning, TEXT("-------------------------- Time Data since last log --------------------------"))
 	UE_LOG(LogTemp, Warning, TEXT("GameTime average delta: %f, Max: %f, Min: %f"),
-	       GameTimeSinceLast / static_cast<float>(TickCount), MaxDeltaSeconds, MinDeltaSeconds)
+	       GameTimeSinceLast / static_cast<float>(TickCountSinceLastLog), MaxDeltaSeconds, MinDeltaSeconds)
 	UE_LOG(LogTemp, Warning, TEXT("Realtime average delta: %f, Max: %f, Min: %f"),
-	       RealTimeSinceLast / static_cast<double>(TickCount), MaxRealTime, MinRealTime)
+	       RealTimeSinceLast / static_cast<double>(TickCountSinceLastLog), MaxRealTime, MinRealTime)
 	UE_LOG(LogTemp, Warning, TEXT("GameTime total: %f, Realtime total: %f, GameSpeedFactor: %f"),
 	       GameTimeSinceLast, RealTimeSinceLast, GameTimeSinceLast / RealTimeSinceLast)
-	UE_LOG(LogTemp, Warning, TEXT("--------------------------Time Data since start--------------------------"))
-	const float GameTimeSinceStart = GameTimeCurrent - GameTimeStart;
-	const double RealTimeSinceStart = RealTimeCurrent - RealTimeStart;
+	UE_LOG(LogTemp, Warning, TEXT("-------------------------- Time Data since start --------------------------"))
 	UE_LOG(LogTemp, Warning, TEXT("GameTime average delta: %f, Max: %f, Min: %f"),
 	       GameTimeSinceStart / static_cast<float>(TickCount), MaxDeltaSeconds, MinDeltaSeconds)
 	UE_LOG(LogTemp, Warning, TEXT("Realtime average delta: %f, Max: %f, Min: %f"),
 	       RealTimeSinceStart / static_cast<double>(TickCount), MaxRealTime, MinRealTime)
 	UE_LOG(LogTemp, Warning, TEXT("GameTime total: %f, Realtime total: %f, GameSpeedFactor: %f"),
 	       GameTimeSinceStart, RealTimeSinceStart, GameTimeSinceStart / RealTimeSinceStart)
+	// reset timers
+	GameTimeLastLog = GameTimeCurrent;
+	RealTimeLastLog = RealTimeCurrent;
+	TickCountSinceLastLog = 0;
 }
 
 void AGM_SelfPlay::LogAIControllers()

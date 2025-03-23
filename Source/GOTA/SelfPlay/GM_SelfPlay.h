@@ -75,6 +75,7 @@ private:
 	// Time data
 	void LogTimeData();
 	int32 TickCount = 0;
+	int32 TickCountSinceLastLog = 0;
 	// GameTime
 	float GameTimeLastLog = 0.0f;
 	float GameTimeStart = 0.0f;
