@@ -4,6 +4,7 @@
 #include "GM_SelfPlay.h"
 
 #include "AIController.h"
+#include "GameFramework/GameUserSettings.h"
 #include "GOTA/AI/GuardianAIs/GuardianAIController.h"
 #include "GOTA/AI/SettlementAIs/SettlementAIController.h"
 #include "GOTA/Entity/Builder.h"
@@ -18,7 +19,12 @@
 #include "GOTA/Guardian/GuardianSettings.h"
 #include "GOTA/Tile/Tile.h"
 #include "GOTA/Tilemap/TileMap.h"
-#include "Kismet/GameplayStatics.h"
+#include "PhysicsEngine/PhysicsSettings.h"
+
+#if WITH_EDITOR
+#include "Editor/EditorPerformanceSettings.h"
+#endif
+
 // ------------------------------------ Lifecycle ------------------------------------
 
 AGM_SelfPlay::AGM_SelfPlay()
@@ -30,9 +36,8 @@ AGM_SelfPlay::AGM_SelfPlay()
 void AGM_SelfPlay::BeginPlay()
 {
 	Super::BeginPlay();
+	SetGameSettings();
 	LoadGame();
-	UGameplayStatics::SetGlobalTimeDilation(this,
-	                                        FixedDeltaSeconds / LearningAgentsFixedDeltaSeconds);
 }
 
 void AGM_SelfPlay::Tick(float DeltaSeconds)
@@ -193,7 +198,7 @@ void AGM_SelfPlay::CreateSettlements()
 		ColonyAIController->S_Init(bRunColonyAITraining);
 		GOTAGameState->S_SetColonyAIController(ColonyAIController);
 	}
-	
+
 	ASettlement* Tribe = GetWorld()->SpawnActor<ASettlement>(TribeClass);
 	Tribe->S_Init(GOTAGameState->GetTileMap()->GetNativesStart().Get());
 	GOTAGameState->SetTribe(Tribe);
@@ -202,6 +207,38 @@ void AGM_SelfPlay::CreateSettlements()
 // ------------------------------------ soft lock ------------------------------------
 
 // ------------------------------------ Logging ------------------------------------
+
+void AGM_SelfPlay::SetGameSettings()
+{
+	FApp::SetUseFixedTimeStep(true);
+	FApp::SetFixedDeltaTime(FixedDeltaSeconds);
+	if (UPhysicsSettings* PhysicsSettings = UPhysicsSettings::Get())
+	{
+		PhysicsSettings->MaxPhysicsDeltaTime = FixedDeltaSeconds;
+	}
+	if (IConsoleVariable* MaxFPSCVar = IConsoleManager::Get().FindConsoleVariable(TEXT("t.MaxFPS")))
+	{
+		MaxFPSCVar->Set(0);
+	}
+	if (UGameUserSettings* GameSettings = UGameUserSettings::GetGameUserSettings())
+	{
+		GameSettings->SetVSyncEnabled(false);
+		GameSettings->ApplySettings(false);
+	}
+	if (UGameViewportClient* ViewportClient = GetWorld() ? GetWorld()->GetGameViewport() : nullptr)
+	{
+		ViewportClient->ViewModeIndex = EViewModeIndex::VMI_Unlit;
+	}
+
+#if WITH_EDITOR
+	if (UEditorPerformanceSettings* EditorPerformanceSettings = GetMutableDefault<UEditorPerformanceSettings>())
+	{
+		EditorPerformanceSettings->bThrottleCPUWhenNotForeground = false;
+		EditorPerformanceSettings->bEnableVSync = false;
+		EditorPerformanceSettings->PostEditChange();
+	}
+#endif
+}
 
 void AGM_SelfPlay::LogSettlementData(ASettlement* Settlement, FString SettlementName)
 {

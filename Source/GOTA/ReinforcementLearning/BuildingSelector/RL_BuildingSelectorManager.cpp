@@ -43,7 +43,9 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 {
 	bRunTraining = RunTraining;
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
-	if (GameState && bRunTraining)
+	if (!GameState)
+		return;
+	if (bRunTraining)
 	{
 		GameState->OnGameEnding.AddDynamic(this, &ARL_BuildingSelectorManager::HandleGameEnding);
 	}
@@ -101,6 +103,11 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	TrainingSettings = FLearningAgentsPPOTrainingSettings();
 	TrainingSettings.bUseTensorboard = bUseTensorboard;
 	TrainingGameSettings = FLearningAgentsTrainingGameSettings();
+	// even though fixed time step is managed in the selfPlay GameMode,
+	// we have to set the fixed time step here because it always overwrites
+	TrainingGameSettings.bUseFixedTimeStep = true;
+	const float FixedDeltaTime = FApp::GetFixedDeltaTime();
+	TrainingGameSettings.FixedTimeStepFrequency = 1.0f / FixedDeltaTime;
 }
 
 bool ARL_BuildingSelectorManager::IsPaused() const
