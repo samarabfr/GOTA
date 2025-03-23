@@ -28,6 +28,7 @@ ARL_BuildingSelectorManager::ARL_BuildingSelectorManager()
 
 void ARL_BuildingSelectorManager::DoLastTrainingRound(const EGameEnding Ending, const FString& EndMessage)
 {
+	// TODO: make own training loop. With RunTraining the model does an action
 	PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings);
 	Pause();
 }
@@ -72,11 +73,11 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	                                           CriticSettings,
 	                                           CriticSeed);
 	// Training Environment
-	TrainingEnv = ULearningAgentsTrainingEnvironment::MakeTrainingEnvironment(
+	TrainingEnvironment = ULearningAgentsTrainingEnvironment::MakeTrainingEnvironment(
 		ManagerComponent,
 		URL_BuildingSelectorTrainingEnv::StaticClass(),
 		FName("BuildingSelectorTrainingEnvironment"));
-	if (URL_BuildingSelectorTrainingEnv* BSTrainingEnv = Cast<URL_BuildingSelectorTrainingEnv>(TrainingEnv))
+	if (URL_BuildingSelectorTrainingEnv* BSTrainingEnv = Cast<URL_BuildingSelectorTrainingEnv>(TrainingEnvironment))
 	{
 		BSTrainingEnv->Init(GameState, VictoryReward, LooseReward, IncomeRewardMilestones, ResourcesRewardMilestones);
 	}
@@ -93,14 +94,14 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	// PPO Trainer
 	FLearningAgentsPPOTrainerSettings TrainerSettings = FLearningAgentsPPOTrainerSettings();
 	PPOTrainer = ULearningAgentsPPOTrainer::MakePPOTrainer(
-		ManagerComponent, Interactor, TrainingEnv, Policy, Critic, Communicator,
+		ManagerComponent, Interactor, TrainingEnvironment, Policy, Critic, Communicator,
 		ULearningAgentsPPOTrainer::StaticClass(), FName("PPOTrainer"), TrainerSettings);
 	TrainingSettings = FLearningAgentsPPOTrainingSettings();
 	TrainingSettings.bUseTensorboard = bUseTensorboard;
 	TrainingGameSettings = FLearningAgentsTrainingGameSettings();
 }
 
-bool ARL_BuildingSelectorManager::IsPaused()
+bool ARL_BuildingSelectorManager::IsPaused() const
 {
 	return bPaused;
 }
@@ -121,7 +122,7 @@ void ARL_BuildingSelectorManager::S_RegisterAgent(UObject* Agent)
 	ManagerComponent->AddAgent(Agent);
 }
 
-bool ARL_BuildingSelectorManager::IsRegistered(UObject* Agent)
+bool ARL_BuildingSelectorManager::IsRegistered(UObject* Agent) const
 {
 	if (!ManagerComponent || !Agent) return false;
 	return ManagerComponent->HasAgentObject(Agent);
@@ -138,4 +139,9 @@ void ARL_BuildingSelectorManager::SelectBuilding()
 	{
 		PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings);
 	}
+}
+
+int32 ARL_BuildingSelectorManager::GetStepNum(UObject* Agent) const
+{
+	return PPOTrainer->GetEpisodeStepNum(ManagerComponent->GetAgentId(Agent));
 }

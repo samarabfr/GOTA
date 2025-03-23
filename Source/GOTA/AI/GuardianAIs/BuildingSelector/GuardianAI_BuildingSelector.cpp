@@ -46,8 +46,8 @@ void AGuardianAI_BuildingSelector::S_Init(bool RunTraining)
 	if (!BuildingSelector)
 	{
 		BuildingSelector = GetWorld()->SpawnActor<ARL_BuildingSelectorManager>(ManagerClass,
-			FVector::Zero(),
-			FRotator::ZeroRotator);
+		                                                                       FVector::Zero(),
+		                                                                       FRotator::ZeroRotator);
 		BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic, bRunTraining);
 		AddTickPrerequisiteActor(BuildingSelector); // make the manager tick before this
 		GameState->S_AddManager(ManagerClass, BuildingSelector);
@@ -167,15 +167,23 @@ FString AGuardianAI_BuildingSelector::GetAgentName()
 
 void AGuardianAI_BuildingSelector::LogBuildings()
 {
+	UE_LOG(LogTemp, Warning, TEXT("--------- Building Counts ---------"))
 	for (auto Counter : BuildingsCounter)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s: %d"), *Counter.Key.ToString(), Counter.Value)
 	}
 }
 
+void AGuardianAI_BuildingSelector::LogBuildingSelector()
+{
+	UE_LOG(LogTemp, Warning, TEXT("--------- Building Selector ---------"))
+	UE_LOG(LogTemp, Warning, TEXT("Step num: %d"), BuildingSelector->GetStepNum(this))
+}
+
 void AGuardianAI_BuildingSelector::Log()
 {
 	UE_LOG(LogTemp, Warning,
-	       TEXT("-------------------------- Guardian AI - Random No SoftLock--------------------------"))
+	       TEXT("-------------------------- Guardian AI - Building Selector --------------------------"))
 	LogBuildings();
+	LogBuildingSelector();
 }

@@ -87,6 +87,7 @@ public:
 private:
 	TMap<FName, int32> BuildingsCounter;
 	void LogBuildings();
+	void LogBuildingSelector();
 
 public:
 	virtual void Log() override;

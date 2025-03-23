@@ -81,12 +81,13 @@ void AColonyAI_R1::RandomlyPlaceBuilding(UBuildingSettings* Building)
 	if (!GetPossessedSettlement() || GetPossessedSettlement()->BorderingUnclaimedTiles.Num() <= 0) return;
 	const int32 RandomIndex = FMath::RandRange(0, GetPossessedSettlement()->BorderingUnclaimedTiles.Num() - 1);
 	ATile* Tile = GetPossessedSettlement()->BorderingUnclaimedTiles[RandomIndex];
-	if (Tile && Tile->CanBuild(Building, GetPossessedSettlement()))
+	if (!Tile || !Tile->CanBuild(Building, GetPossessedSettlement()))
 	{
-		if (Tile->S_TryBuild(Building, GetPossessedSettlement()))
-		{
-			BuildingsCounter[Building->Name]++;
-		}
+		return;
+	}
+	if (Tile->S_TryBuild(Building, GetPossessedSettlement()))
+	{
+		BuildingsCounter[Building->Name]++;
 	}
 }
 
@@ -160,10 +161,17 @@ FString AColonyAI_R1::GetAgentName()
 
 void AColonyAI_R1::LogBuildings()
 {
+	UE_LOG(LogTemp, Warning, TEXT("--------- Building Counts ---------"))
 	for (auto Counter : BuildingsCounter)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s: %d"), *Counter.Key.ToString(), Counter.Value)
 	}
+}
+
+void AColonyAI_R1::LogBuildingSelector()
+{
+	UE_LOG(LogTemp, Warning, TEXT("--------- Building Selector ---------"))
+	UE_LOG(LogTemp, Warning, TEXT("Step num: %d"), BuildingSelector->GetStepNum(this))
 }
 
 void AColonyAI_R1::Log()
@@ -171,4 +179,5 @@ void AColonyAI_R1::Log()
 	UE_LOG(LogTemp, Warning,
 	       TEXT("-------------------------- Colony AI - R1 --------------------------"))
 	LogBuildings();
+	LogBuildingSelector();
 }

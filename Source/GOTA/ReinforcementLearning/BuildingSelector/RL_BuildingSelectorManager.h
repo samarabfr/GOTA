@@ -59,7 +59,7 @@ private:
 	int32 CriticSeed = 1234;
 
 	UPROPERTY()
-	ULearningAgentsTrainingEnvironment* TrainingEnv;
+	ULearningAgentsTrainingEnvironment* TrainingEnvironment;
 	UPROPERTY(EditDefaultsOnly)
 	float VictoryReward = 1000;
 	UPROPERTY(EditDefaultsOnly)
@@ -83,9 +83,10 @@ public:
 	void S_RegisterAgent(UObject* Agent);
 	void S_Init(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
 	            ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic, bool RunTraining);
-	bool IsPaused();
+	bool IsPaused() const;
 	void Pause();
 	void Unpause();
-	bool IsRegistered(UObject* Agent);
+	bool IsRegistered(UObject* Agent) const;
 	void SelectBuilding();
+	int32 GetStepNum(UObject* Agent) const;
 };
