@@ -26,10 +26,12 @@ ARL_BuildingSelectorManager::ARL_BuildingSelectorManager()
 	Tags.Add("LearningAgentsManager");
 }
 
-void ARL_BuildingSelectorManager::DoLastTrainingRound(const EGameEnding Ending, const FString& EndMessage)
+void ARL_BuildingSelectorManager::HandleGameEnding(const EGameEnding Ending, const FString& EndMessage)
 {
-	// TODO: make own training loop. With RunTraining the model does an action
-	PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings);
+	TrainingEnvironment->GatherCompletions();
+	TrainingEnvironment->GatherRewards();
+	PPOTrainer->ProcessExperience(false);
+	bIsFirstStepAfterReset = true;
 	Pause();
 }
 
@@ -43,7 +45,7 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
 	if (GameState && bRunTraining)
 	{
-		GameState->OnGameEnding.AddDynamic(this, &ARL_BuildingSelectorManager::DoLastTrainingRound);
+		GameState->OnGameEnding.AddDynamic(this, &ARL_BuildingSelectorManager::HandleGameEnding);
 	}
 	// Interactor
 	Interactor = ULearningAgentsInteractor::MakeInteractor(
@@ -137,7 +139,15 @@ void ARL_BuildingSelectorManager::SelectBuilding()
 	}
 	else
 	{
-		PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings);
+		if (bIsFirstStepAfterReset)
+		{
+			Policy->RunInference(0.0f);
+			bIsFirstStepAfterReset = false;
+		}
+		else
+		{
+			PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings, false, false);
+		}
 	}
 }
 

@@ -29,7 +29,7 @@ protected:
 	ARL_BuildingSelectorManager();
 
 	UFUNCTION()
-	void DoLastTrainingRound(const EGameEnding Ending, const FString& EndMessage);
+	void HandleGameEnding(const EGameEnding Ending, const FString& EndMessage);
 
 	// ----------------------- Learning Agents plugin -----------------------
 private:
@@ -78,6 +78,7 @@ private:
 	FLearningAgentsTrainingGameSettings TrainingGameSettings;
 
 	bool bPaused = false;
+	bool bIsFirstStepAfterReset = false;
 
 public:
 	void S_RegisterAgent(UObject* Agent);
