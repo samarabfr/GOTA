@@ -6,6 +6,7 @@
 #include "Blueprint/StateTreeTaskBlueprintBase.h"
 #include "StateTreeCivilianTasks.generated.h"
 
+class ATile;
 class ACivilian;
 
 USTRUCT()
@@ -26,10 +27,11 @@ struct GOTA_API FCivilianFindPathInstanceData
 	// automatically takes from the context
 	UPROPERTY(EditAnywhere, Category=Context)
 	TObjectPtr<ACivilian> CivilianRef = nullptr;
-
-
+	
 	UPROPERTY(EditAnywhere, Category=Parameter)
 	bool bOverridePathIn = true;
+
+	UE::Tasks::TTask<TArray<ATile*>> PathfindingTask;
 };
 
 USTRUCT(DisplayName="Civilian move to next Tile")
@@ -69,6 +71,7 @@ struct GOTA_API FSTT_FindPathToBestWorkTile : public FStateTreeTaskCommonBase
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
 };
 
 USTRUCT(DisplayName="Find path to priority tile")
@@ -80,6 +83,7 @@ struct GOTA_API FSTT_FindPathToPriorityTile : public FStateTreeTaskCommonBase
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
 };
 
 USTRUCT(DisplayName="Find path to origin building")
@@ -91,6 +95,7 @@ struct GOTA_API FSTT_FindPathToOriginBuilding : public FStateTreeTaskCommonBase
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
 };
 
 USTRUCT(DisplayName="Unload Resources")

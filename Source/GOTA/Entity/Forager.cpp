@@ -18,7 +18,7 @@ bool AForager::IsTileValidForWork(const ATile* Tile) const
 	return Tile->EcoValues->GetForage() > 0;
 }
 
-bool AForager::S_TryFindPathToBestWorkTile()
+TArray<ATile*> AForager::FindPathToBestWorkTile() const
 {
-	return S_TryFindPathToWorkTileClosestToSettlement();
+	return FindPathToWorkTileClosestToSettlement();
 }
