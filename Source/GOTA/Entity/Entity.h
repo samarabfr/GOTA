@@ -107,12 +107,12 @@ protected:
 	void SetNetLocation(const FVector& NewNetLocation);
 
 	ATile* GetCurrentTile() const;
-	void S_SetPath(const TArray<ATile*>& NewPath);
 	void S_SetMovementRate(float NewMovementRate);
 
 public:
 	void S_MoveToNextTileOnPath();
 	float GetMovementRate() const;
+	void S_SetPath(const TArray<ATile*>& NewPath);
 	bool IsPathValid();
 	bool IsPathEmpty() const;
 

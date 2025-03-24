@@ -72,7 +72,7 @@ public:
 	float GetRecruitRate() const;
 	void S_TakePopFromTile();
 	bool IsCurrentTileValidForRecruiting() const;
-	bool S_TryFindPathToNearestRecruitable();
+	TArray<ATile*> FindPathToNearestRecruitable() const;
 
 	// -----------------Combat------------------------
 private:
@@ -87,9 +87,9 @@ public:
 	TArray<AArmy*> GetNeighboringEnemyArmies() const;
 	TArray<UBuilding*> GetNeighboringEnemyDefenseBuildings() const;
 	bool HasEnemyOnNeighboringTile() const;
-	bool S_TryFindPathToNearestEnemy();
-	bool S_TryFindPathToNearestEnemyUnprotectedNormalBuilding();
-	bool S_TryFindPathToNearestEnemyDefenseBuilding();
+	TArray<ATile*> FindPathToNearestEnemy() const;
+	TArray<ATile*> FindPathToNearestEnemyUnprotectedNormalBuilding() const;
+	TArray<ATile*> FindPathToNearestEnemyDefenseBuilding() const;
 	bool HasEnemyInGarrisonModeRange() const;
 	void S_ArmyTakeDamage(int32 Damage);
 	void S_AttackEnemy();
@@ -116,8 +116,8 @@ public:
 	ATile* GetGuardTile() const;
 	void S_SetGuardTile(ATile* NewGuardTile);
 	bool IsOnGuardTile() const;
-	bool S_TryFindPathToGuardTile();
-	bool S_TryFindPathToNearestEnemyToGuardTile();
+	TArray<ATile*> FindPathToGuardTile() const;
+	TArray<ATile*> FindPathToNearestEnemyToGuardTile() const;
 	bool HasEnemyInGuardTileRange();
 
 	// -----------------Intercepting------------------------
@@ -132,5 +132,5 @@ private:
 public:
 	TWeakObjectPtr<AArmy> GetInterceptArmy() const;
 	void S_SetInterceptArmy(TWeakObjectPtr<AArmy> NewInterceptArmy);
-	bool S_TryFindPathToInterceptArmy();
+	TArray<ATile*> FindPathToInterceptArmy() const;
 };

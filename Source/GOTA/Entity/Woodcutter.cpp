@@ -18,7 +18,7 @@ bool AWoodcutter::IsTileValidForWork(const ATile* Tile) const
 	return Tile->EcoValues->GetTrees() > 0;
 }
 
-bool AWoodcutter::S_TryFindPathToBestWorkTile()
+TArray<ATile*> AWoodcutter::FindPathToBestWorkTile() const
 {
-	return S_TryFindPathToWorkTileClosestToSettlement();
+	return FindPathToWorkTileClosestToSettlement();
 }

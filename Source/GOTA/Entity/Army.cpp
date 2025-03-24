@@ -149,10 +149,10 @@ bool AArmy::IsCurrentTileValidForRecruiting() const
 	return IsTileValidForRecruiting(GetCurrentTile());
 }
 
-bool AArmy::S_TryFindPathToNearestRecruitable()
+TArray<ATile*> AArmy::FindPathToNearestRecruitable() const
 {
 	bool HasValidTiles = false;
-	if (!GetOriginBuilding()) return false;
+	if (!GetOriginBuilding()) return TArray<ATile*>();
 	for (ATile* Tile : GetOriginBuilding()->GetSettlement()->ClaimedTiles)
 	{
 		if (IsTileValidForRecruiting(Tile))
@@ -161,7 +161,7 @@ bool AArmy::S_TryFindPathToNearestRecruitable()
 			break;
 		}
 	}
-	if (!HasValidTiles) return false;
+	if (!HasValidTiles) return TArray<ATile*>();
 	TArray<ATile*> Origin;
 	Origin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTile(
@@ -170,10 +170,7 @@ bool AArmy::S_TryFindPathToNearestRecruitable()
 		{
 			return IsTileValidForRecruiting(Tile);
 		});
-	if (ResultPath.IsEmpty())
-		return false;
-	S_SetPath(ResultPath);
-	return true;
+	return ResultPath;
 }
 
 
@@ -183,9 +180,9 @@ bool AArmy::HasEnemyOnNeighboringTile() const
 	return GetNeighboringEnemyArmies().Num() > 0 || GetNeighboringEnemyDefenseBuildings().Num() > 0;
 }
 
-bool AArmy::S_TryFindPathToNearestEnemy()
+TArray<ATile*> AArmy::FindPathToNearestEnemy() const
 {
-	if (!S_GetGameState()->GetTileMap()) return false;
+	if (!S_GetGameState()->GetTileMap()) return TArray<ATile*>();
 	TArray<ATile*> Origin;
 	Origin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTile(
@@ -201,15 +198,12 @@ bool AArmy::S_TryFindPathToNearestEnemy()
 			}
 			return false;
 		});
-	if (ResultPath.IsEmpty())
-		return false;
-	S_SetPath(ResultPath);
-	return true;
+	return ResultPath;
 }
 
-bool AArmy::S_TryFindPathToNearestEnemyUnprotectedNormalBuilding()
+TArray<ATile*> AArmy::FindPathToNearestEnemyUnprotectedNormalBuilding() const
 {
-	if (!S_GetGameState()->GetTileMap()) return false;
+	if (!S_GetGameState()->GetTileMap()) return TArray<ATile*>();
 	TArray<ATile*> Origin;
 	Origin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTile(
@@ -224,15 +218,12 @@ bool AArmy::S_TryFindPathToNearestEnemyUnprotectedNormalBuilding()
 				!Tile->GetBuilding()->IsProtected() &&
 				!Tile->GetBuilding()->GetIsUnderConstruction();
 		});
-	if (ResultPath.IsEmpty())
-		return false;
-	S_SetPath(ResultPath);
-	return true;
+	return ResultPath;
 }
 
-bool AArmy::S_TryFindPathToNearestEnemyDefenseBuilding()
+TArray<ATile*> AArmy::FindPathToNearestEnemyDefenseBuilding() const
 {
-	if (!S_GetGameState()->GetTileMap()) return false;
+	if (!S_GetGameState()->GetTileMap()) return TArray<ATile*>();
 	TArray<ATile*> Origin;
 	Origin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTile(
@@ -255,10 +246,7 @@ bool AArmy::S_TryFindPathToNearestEnemyDefenseBuilding()
 			}
 			return false;
 		});
-	if (ResultPath.IsEmpty())
-		return false;
-	S_SetPath(ResultPath);
-	return true;
+	return ResultPath;
 }
 
 bool AArmy::HasEnemyInGarrisonModeRange() const
@@ -393,9 +381,9 @@ bool AArmy::IsOnGuardTile() const
 	return GuardTile == GetCurrentTile();
 }
 
-bool AArmy::S_TryFindPathToGuardTile()
+TArray<ATile*> AArmy::FindPathToGuardTile() const
 {
-	if (!S_GetGameState()->GetTileMap()) return false;
+	if (!S_GetGameState()->GetTileMap()) return TArray<ATile*>();
 	TArray<ATile*> Origin;
 	Origin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTile(
@@ -404,15 +392,12 @@ bool AArmy::S_TryFindPathToGuardTile()
 		{
 			return Tile && Tile == GuardTile;
 		});
-	if (ResultPath.IsEmpty())
-		return false;
-	S_SetPath(ResultPath);
-	return true;
+	return ResultPath;
 }
 
-bool AArmy::S_TryFindPathToNearestEnemyToGuardTile()
+TArray<ATile*> AArmy::FindPathToNearestEnemyToGuardTile() const
 {
-	if (!S_GetGameState()->GetTileMap()) return false;
+	if (!S_GetGameState()->GetTileMap()) return TArray<ATile*>();
 	TArray<ATile*> SearchOrigin;
 	SearchOrigin.Add(GuardTile.Get());
 	TArray<ATile*> PathOrigin;
@@ -428,10 +413,7 @@ bool AArmy::S_TryFindPathToNearestEnemyToGuardTile()
 			}
 			return false;
 		});
-	if (ResultPath.IsEmpty())
-		return false;
-	S_SetPath(ResultPath);
-	return true;
+	return ResultPath;
 }
 
 bool AArmy::HasEnemyInGuardTileRange()
@@ -459,9 +441,9 @@ void AArmy::S_SetInterceptArmy(TWeakObjectPtr<AArmy> NewInterceptArmy)
 	InterceptArmy = NewInterceptArmy;
 }
 
-bool AArmy::S_TryFindPathToInterceptArmy()
+TArray<ATile*> AArmy::FindPathToInterceptArmy() const
 {
-	if (!S_GetGameState()->GetTileMap()) return false;
+	if (!S_GetGameState()->GetTileMap()) return TArray<ATile*>();
 	TArray<ATile*> Origin;
 	Origin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTile(
@@ -477,8 +459,5 @@ bool AArmy::S_TryFindPathToInterceptArmy()
 			}
 			return false;
 		});
-	if (ResultPath.IsEmpty())
-		return false;
-	S_SetPath(ResultPath);
-	return true;
+	return ResultPath;
 }
