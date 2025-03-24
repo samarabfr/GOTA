@@ -163,7 +163,8 @@ bool ATile::AcceptsArmy() const
 {
 	if (Terrain.Biome == EBiome::Volcano ||
 		GetBuilding() &&
-		GetBuilding()->GetSettings()->bDefenseEnabled)
+		GetBuilding()->GetSettings()->bDefenseEnabled &&
+		!GetBuilding()->GetIsUnderConstruction())
 		return false;
 	return !Army.IsValid();
 }
