@@ -133,13 +133,13 @@ void AGuardianAI_BuildingSelector::SaveModel(const FString& ModelName)
 	FFilePath ModelPath;
 	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / ModelName;
 	FFilePath FullSnapshotPath;
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Critic";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Critic";
 	NN_Critic->SaveNetworkToSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Encoder";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Encoder";
 	NN_Encoder->SaveNetworkToSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Policy";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Policy";
 	NN_Policy->SaveNetworkToSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Decoder";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Decoder";
 	NN_Decoder->SaveNetworkToSnapshot(FullSnapshotPath);
 	UE_LOG(LogTemp, Warning, TEXT("Saving Model to: %s"), *ModelPath.FilePath)
 }
@@ -149,13 +149,13 @@ void AGuardianAI_BuildingSelector::LoadModel(const FString& ModelName)
 	FFilePath ModelPath;
 	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / ModelName;
 	FFilePath FullSnapshotPath;
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Critic";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Critic";
 	NN_Critic->LoadNetworkFromSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Encoder";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Encoder";
 	NN_Encoder->LoadNetworkFromSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Policy";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Policy";
 	NN_Policy->LoadNetworkFromSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Decoder";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Decoder";
 	NN_Decoder->LoadNetworkFromSnapshot(FullSnapshotPath);
 	UE_LOG(LogTemp, Warning, TEXT("Loading Model from: %s"), *ModelPath.FilePath)
 }
