@@ -195,7 +195,7 @@ void AGM_SelfPlay::SaveRoundDataToJson()
 	FJsonSerializer::Serialize(NewLog.ToSharedRef(), Writer);
 
 	// Append new line to log file
-	FFileHelper::SaveStringToFile(OutputString, *FilePath, FFileHelper::EEncodingOptions::AutoDetect,
+	FFileHelper::SaveStringToFile(OutputString + TEXT("\n"), *FilePath, FFileHelper::EEncodingOptions::AutoDetect,
 	                              &IFileManager::Get(), FILEWRITE_Append);
 
 	SavingLastLogTime = FPlatformTime::Seconds() - RealTimeBeforeSave;
