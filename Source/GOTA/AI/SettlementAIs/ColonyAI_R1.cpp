@@ -159,25 +159,13 @@ FString AColonyAI_R1::GetAgentName()
 	return SnapshotAgentName;
 }
 
-void AColonyAI_R1::LogBuildings()
+TSharedPtr<FJsonObject> AColonyAI_R1::Log()
 {
-	UE_LOG(LogTemp, Warning, TEXT("--------- Building Counts ---------"))
+	TSharedPtr<FJsonObject> NewLog = MakeShareable(new FJsonObject());
 	for (auto Counter : BuildingsCounter)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s: %d"), *Counter.Key.ToString(), Counter.Value)
+		NewLog->SetNumberField(Counter.Key.ToString(), Counter.Value);
 	}
-}
-
-void AColonyAI_R1::LogBuildingSelector()
-{
-	UE_LOG(LogTemp, Warning, TEXT("--------- Building Selector ---------"))
-	UE_LOG(LogTemp, Warning, TEXT("Step num: %d"), BuildingSelector->GetStepNum(this))
-}
-
-void AColonyAI_R1::Log()
-{
-	UE_LOG(LogTemp, Warning,
-	       TEXT("-------------------------- Colony AI - R1 --------------------------"))
-	LogBuildings();
-	LogBuildingSelector();
+	NewLog->SetNumberField(TEXT("StepNum"), BuildingSelector->GetStepNum(this));
+	return NewLog;
 }

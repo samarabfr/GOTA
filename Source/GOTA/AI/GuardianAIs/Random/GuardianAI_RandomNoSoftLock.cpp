@@ -124,16 +124,13 @@ UBuildingSettings* AGuardianAI_RandomNoSoftLock::SelectNewBuilding() const
 	return ViableBuildings[FMath::RandRange(0, ViableBuildings.Num() - 1)];
 }
 
-void AGuardianAI_RandomNoSoftLock::LogBuildings()
+TSharedPtr<FJsonObject> AGuardianAI_RandomNoSoftLock::Log()
 {
+	TSharedPtr<FJsonObject> NewLog = MakeShareable(new FJsonObject());
+	// TODO: Add GotaID
 	for (auto Counter : BuildingsCounter)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s: %d"), *Counter.Key.ToString(), Counter.Value)
+		NewLog->SetNumberField(Counter.Key.ToString(), Counter.Value);
 	}
-}
-
-void AGuardianAI_RandomNoSoftLock::Log()
-{
-	UE_LOG(LogTemp, Warning, TEXT("-------------------------- Guardian AI - Random No SoftLock--------------------------"))
-	LogBuildings();
+	return NewLog;
 }

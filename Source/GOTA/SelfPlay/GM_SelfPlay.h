@@ -30,7 +30,6 @@ private:
 
 	virtual void LoadGame() override;
 	virtual void EndGame(EGameEnding Ending, const FString& EndingMessage) override;
-	void S_RestartSelfPlay();
 
 	virtual void CreateGuardians() override;
 	virtual void CreateSettlements() override;
@@ -63,30 +62,23 @@ private:
 
 	// ------------------------------------ Logging ------------------------------------
 
-private:
+	// save data only in c++ until the end of the round and then write it to the JSON file
+
+	double RealTimeLastTick = 0.0f;
+	
+	// -------------------- Round --------------------
+	void SaveRoundDataToJson();
+	void SetupNewRoundLog();
+	int32 RoundNumber = 0;
+	TArray<TSharedPtr<FJsonValue>> RoundLogs = TArray<TSharedPtr<FJsonValue>>();
+	
+	// -------- Since Last Log --------
+	void LogData();
+	int32 TickCountSinceLastLog = 0;
+	float GameTimeLastLog = 0.0f;
+	double RealTimeLastLog = 0.0f;
+	
 	UPROPERTY(EditDefaultsOnly)
 	float RegularLogDataInterval = 900.0f; // GameTime in seconds
-
 	float RegularLogDataCooldown = 0.0f;
-	void LogSettlementData(ASettlement* Settlement, FString SettlementName);
-	int32 CountColonistsWon = 0;
-	int32 CountNativesWon = 0;
-	int32 CountSoftLocked = 0;
-	// Time data
-	void LogTimeData();
-	int32 TickCount = 0;
-	int32 TickCountSinceLastLog = 0;
-	// GameTime
-	float GameTimeLastLog = 0.0f;
-	float GameTimeStart = 0.0f;
-	float MaxDeltaSeconds = 0.0f;
-	float MinDeltaSeconds = FLT_MAX;
-	// RealTime
-	double RealTimeStart = 0.0f;
-	double RealTimeLastLog = 0.0f;
-	double LastRealTime = 0.0f;
-	double MaxRealTime = 0.0f;
-	double MinRealTime = DBL_MAX;
-	// AI
-	void LogAIControllers();
 };

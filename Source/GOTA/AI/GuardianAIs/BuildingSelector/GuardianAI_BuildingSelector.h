@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-#include "AIController.h"
 #include "GOTA/AI/GuardianAIs/GuardianAIController.h"
 #include "GOTA/ReinforcementLearning/BuildingSelector/RL_BuildingSelectorAgent.h"
 #include "GOTA/ReinforcementLearning/SnapshotSystem/SnapshotAgent.h"
@@ -86,9 +85,7 @@ public:
 	// --------------------Logging----------------------
 private:
 	TMap<FName, int32> BuildingsCounter;
-	void LogBuildings();
-	void LogBuildingSelector();
 
 public:
-	virtual void Log() override;
+	virtual TSharedPtr<FJsonObject> Log() override;
 };

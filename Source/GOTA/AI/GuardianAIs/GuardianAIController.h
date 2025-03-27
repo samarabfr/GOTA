@@ -17,12 +17,12 @@ protected:
 
 public:
 	virtual void S_Init(bool RunTraining = false);
-	
-	// ----------------------- Reinforcment Learning -----------------------
+
+	// ----------------------- Reinforcement Learning -----------------------
 protected:
 	bool bRunTraining = false;
-	
+
 	// ----------------------- Logging -----------------------
 public:
-	virtual void Log();
+	virtual TSharedPtr<FJsonObject> Log();
 };

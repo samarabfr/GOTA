@@ -165,25 +165,14 @@ FString AGuardianAI_BuildingSelector::GetAgentName()
 	return SnapshotAgentName;
 }
 
-void AGuardianAI_BuildingSelector::LogBuildings()
+TSharedPtr<FJsonObject> AGuardianAI_BuildingSelector::Log()
 {
-	UE_LOG(LogTemp, Warning, TEXT("--------- Building Counts ---------"))
+	TSharedPtr<FJsonObject> NewLog = MakeShareable(new FJsonObject());
+	// TODO: Add GotaID
 	for (auto Counter : BuildingsCounter)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s: %d"), *Counter.Key.ToString(), Counter.Value)
+		NewLog->SetNumberField(Counter.Key.ToString(), Counter.Value);
 	}
-}
-
-void AGuardianAI_BuildingSelector::LogBuildingSelector()
-{
-	UE_LOG(LogTemp, Warning, TEXT("--------- Building Selector ---------"))
-	UE_LOG(LogTemp, Warning, TEXT("Step num: %d"), BuildingSelector->GetStepNum(this))
-}
-
-void AGuardianAI_BuildingSelector::Log()
-{
-	UE_LOG(LogTemp, Warning,
-	       TEXT("-------------------------- Guardian AI - Building Selector --------------------------"))
-	LogBuildings();
-	LogBuildingSelector();
+	NewLog->SetNumberField(TEXT("StepNum"), BuildingSelector->GetStepNum(this));
+	return NewLog;
 }

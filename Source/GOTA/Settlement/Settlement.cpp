@@ -5,12 +5,16 @@
 #include "SettlementPopulation.h"
 #include "GOTA/Entity/Army.h"
 #include "GOTA/Entity/Builder.h"
+#include "GOTA/Entity/Forager.h"
+#include "GOTA/Entity/Woodcutter.h"
 #include "GOTA/Tile/Building/Building.h"
 #include "GOTA/Tile/Building/BuildingCivilian.h"
 #include "GOTA/Tile/Building/BuildingSettings.h"
 #include "GOTA/Utility/ResourceStorage.h"
 #include "GOTA/GameplayFramework/GS_Ingame.h"
 #include "GOTA/Tile/Tile.h"
+#include "GOTA/Tile/Building/BuildingArmy.h"
+#include "GOTA/Tile/Building/BuildingDefense.h"
 #include "GOTA/Tile/Building/Population.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
@@ -303,7 +307,7 @@ int32 ASettlement::GetCountOfConstructionSites() const
 	return Count;
 }
 
-TArray<UBuilding*> ASettlement::GetAllBuildings()
+TArray<UBuilding*> ASettlement::GetAllBuildings() const
 {
 	TArray<UBuilding*> Result;
 	for (ATile* ClaimedTile : ClaimedTiles)
@@ -380,4 +384,66 @@ void ASettlement::S_UpdateConsumption(const float Change, const float _, const E
 void ASettlement::S_UpdateConsumptionFromPopulation(int16 Change)
 {
 	Consumption.Add(Change * GetPopEatingPerSecond(), EResource::Food);
+}
+
+// ----------------------- Logging -----------------------
+
+TSharedPtr<FJsonObject> ASettlement::Log() const
+{
+	TSharedPtr<FJsonObject> NewLog = MakeShareable(new FJsonObject());
+	// buildings
+	int32 CountBuildings = GetAllBuildings().Num();
+	int32 CountCivilianBuildings = 0;
+	int32 CountArmyBuildings = 0;
+	int32 CountDefenseBuildings = 0;
+	for (UBuilding* Building : GetAllBuildings())
+	{
+		if (Cast<UBuildingCivilian>(Building))
+			++CountCivilianBuildings;
+		else if (Cast<UBuildingDefense>(Building))
+			++CountDefenseBuildings;
+		else if (Cast<UBuildingArmy>(Building))
+			++CountArmyBuildings;
+	}
+	// log
+	NewLog->SetNumberField(TEXT("CountBuildings"), CountBuildings);
+	NewLog->SetNumberField(TEXT("CountCivilianBuildings"), CountCivilianBuildings);
+	NewLog->SetNumberField(TEXT("CountArmyBuildings"), CountArmyBuildings);
+	NewLog->SetNumberField(TEXT("CountDefenseBuildings"), CountDefenseBuildings);
+
+	// Civilians
+	int32 CountCivilians = GetAllCivilians().Num();
+	int32 CountWoodcutter = 0;
+	int32 CountForager = 0;
+	int32 CountBuilder = 0;
+	for (ACivilian* Civilian : GetAllCivilians())
+	{
+		if (Cast<AWoodcutter>(Civilian))
+			++CountWoodcutter;
+		else if (Cast<AForager>(Civilian))
+			++CountForager;
+		else if (Cast<ABuilder>(Civilian))
+			++CountBuilder;
+	}
+	// log
+	NewLog->SetNumberField(TEXT("CountCivilians"), CountCivilians);
+	NewLog->SetNumberField(TEXT("CountWoodcutter"), CountWoodcutter);
+	NewLog->SetNumberField(TEXT("CountForager"), CountForager);
+	NewLog->SetNumberField(TEXT("CountBuilder"), CountBuilder);
+
+	// Armies
+	NewLog->SetNumberField(TEXT("Armies"), GetAllArmies().Num());
+
+	// Pop
+	NewLog->SetNumberField(TEXT("Pop"), Population->GetSize());
+
+	// Resources
+	NewLog->SetNumberField(TEXT("Food"), GetResources().Food);
+	NewLog->SetNumberField(TEXT("Wood"), GetResources().Wood);
+	NewLog->SetNumberField(TEXT("Stone"), GetResources().Stone);
+	NewLog->SetNumberField(TEXT("FoodIncome"), GetEffectiveProduction().Food);
+	NewLog->SetNumberField(TEXT("WoodIncome"), GetEffectiveProduction().Wood);
+	NewLog->SetNumberField(TEXT("StoneIncome"), GetEffectiveProduction().Stone);
+
+	return NewLog;
 }
