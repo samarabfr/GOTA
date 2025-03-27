@@ -27,8 +27,8 @@ protected:
 private:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
-
-	virtual void LoadGame() override;
+	
+	virtual void StartGame() override;
 	virtual void EndGame(EGameEnding Ending, const FString& EndingMessage) override;
 
 	virtual void CreateGuardians() override;
@@ -43,8 +43,6 @@ private:
 	bool bRunGuardianAITraining = true;
 	UPROPERTY(EditDefaultsOnly)
 	bool bRunColonyAITraining = true;
-
-	;
 
 	// ------------------------------------ Game Settings ------------------------------------
 private:

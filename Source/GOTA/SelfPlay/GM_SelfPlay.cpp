@@ -36,6 +36,8 @@ void AGM_SelfPlay::BeginPlay()
 void AGM_SelfPlay::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
+	if (GOTAGameState->GameStatus != EGameStatus::Running)
+		return;
 	// logging
 	TickCountSinceLastLog++;
 	RealTimeLastTick = FPlatformTime::Seconds();
@@ -60,10 +62,11 @@ void AGM_SelfPlay::Tick(float DeltaSeconds)
 	}
 }
 
-void AGM_SelfPlay::LoadGame()
+void AGM_SelfPlay::StartGame()
 {
-	Super::LoadGame();
+	Super::StartGame();
 	SetupNewRoundLog();
+	LogData();
 	// reset timers
 	SoftLockTimeLeft = SoftLockTime;
 }
