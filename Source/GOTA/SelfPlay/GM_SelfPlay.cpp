@@ -29,6 +29,7 @@ void AGM_SelfPlay::BeginPlay()
 {
 	Super::BeginPlay();
 	SetGameSettings();
+	LogName = FDateTime::Now().ToString();
 	LoadGame();
 }
 
@@ -173,7 +174,7 @@ void AGM_SelfPlay::SetGameSettings()
 
 void AGM_SelfPlay::SaveRoundDataToJson()
 {
-	FString FilePath = FPaths::ProjectSavedDir() + TEXT("Data/RoundData.log");
+	FString FilePath = FPaths::ProjectSavedDir() + TEXT("Data/") + LogName + TEXT(".log");
 
 	// Create new round JSON object
 	TSharedPtr<FJsonObject> NewRound = MakeShareable(new FJsonObject());

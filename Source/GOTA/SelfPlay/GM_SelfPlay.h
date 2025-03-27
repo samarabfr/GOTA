@@ -65,6 +65,7 @@ private:
 	// save data only in c++ until the end of the round and then write it to the JSON file
 
 	double RealTimeLastTick = 0.0f;
+	FString LogName = "UnnamedLog";
 	
 	// -------------------- Round --------------------
 	void SaveRoundDataToJson();
