@@ -76,6 +76,7 @@ private:
 	int32 TickCountSinceLastLog = 0;
 	float GameTimeLastLog = 0.0f;
 	double RealTimeLastLog = 0.0f;
+	double SavingLastLogTime = 0.0f;
 	
 	UPROPERTY(EditDefaultsOnly)
 	float RegularLogDataInterval = 900.0f; // GameTime in seconds

@@ -177,23 +177,27 @@ void AGM_SelfPlay::SetGameSettings()
 
 void AGM_SelfPlay::SaveRoundDataToJson()
 {
+	const double RealTimeBeforeSave = FPlatformTime::Seconds();
 	FString FilePath = FPaths::ProjectSavedDir() + TEXT("Data/") + LogName + TEXT(".log");
 
 	// Create new round JSON object
-	TSharedPtr<FJsonObject> NewRound = MakeShareable(new FJsonObject());
+	TSharedPtr<FJsonObject> NewLog = MakeShareable(new FJsonObject());
 	
-	NewRound->SetNumberField(TEXT("RoundNumber"), RoundNumber);
-	NewRound->SetStringField(TEXT("GameEnding"), UEnum::GetValueAsString(GOTAGameState->GetGameEnding()));
-	NewRound->SetArrayField(TEXT("Logs"), RoundLogs);
+	NewLog->SetNumberField(TEXT("RoundNumber"), RoundNumber);
+	NewLog->SetStringField(TEXT("GameEnding"), UEnum::GetValueAsString(GOTAGameState->GetGameEnding()));
+	NewLog->SetNumberField(TEXT("SavingLastLogTime"), SavingLastLogTime);
+	NewLog->SetArrayField(TEXT("Logs"), RoundLogs);
 
 	// Convert JSON object to string
 	FString OutputString;
 	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
-	FJsonSerializer::Serialize(NewRound.ToSharedRef(), Writer);
+	FJsonSerializer::Serialize(NewLog.ToSharedRef(), Writer);
 
 	// Append new line to log file
-	FFileHelper::SaveStringToFile(OutputString + TEXT("\n"), *FilePath, FFileHelper::EEncodingOptions::AutoDetect,
+	FFileHelper::SaveStringToFile(OutputString, *FilePath, FFileHelper::EEncodingOptions::AutoDetect,
 	                              &IFileManager::Get(), FILEWRITE_Append);
+
+	SavingLastLogTime = FPlatformTime::Seconds() - RealTimeBeforeSave;
 }
 
 void AGM_SelfPlay::SetupNewRoundLog()
