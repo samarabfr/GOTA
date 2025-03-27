@@ -182,7 +182,7 @@ void AGM_SelfPlay::SaveRoundDataToJson()
 
 	// Create new round JSON object
 	TSharedPtr<FJsonObject> NewLog = MakeShareable(new FJsonObject());
-	
+
 	NewLog->SetNumberField(TEXT("RoundNumber"), RoundNumber);
 	NewLog->SetStringField(TEXT("GameEnding"), UEnum::GetValueAsString(GOTAGameState->GetGameEnding()));
 	NewLog->SetNumberField(TEXT("SavingLastLogTime"), SavingLastLogTime);
@@ -190,7 +190,8 @@ void AGM_SelfPlay::SaveRoundDataToJson()
 
 	// Convert JSON object to string
 	FString OutputString;
-	TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&OutputString);
+	TSharedRef<TJsonWriter<TCHAR, TCondensedJsonPrintPolicy<TCHAR>>> Writer = TJsonWriterFactory<
+		TCHAR, TCondensedJsonPrintPolicy<TCHAR>>::Create(&OutputString);
 	FJsonSerializer::Serialize(NewLog.ToSharedRef(), Writer);
 
 	// Append new line to log file
@@ -212,7 +213,7 @@ void AGM_SelfPlay::SetupNewRoundLog()
 void AGM_SelfPlay::LogData()
 {
 	TSharedPtr<FJsonObject> NewLog = MakeShareable(new FJsonObject());
-	
+
 	// times
 	const float GameTimeCurrent = GetWorld()->GetTimeSeconds();
 	const float GameTimeSinceLast = GameTimeCurrent - GameTimeLastLog;
