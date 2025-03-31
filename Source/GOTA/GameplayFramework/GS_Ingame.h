@@ -6,6 +6,7 @@
 #include "GOTA/Utility/Enums.h"
 #include "GS_Ingame.generated.h"
 
+class ASettlement;
 class AAIController;
 class ULearningAgentsManager;
 class ULearningAgentsNeuralNetwork;
@@ -13,8 +14,6 @@ class ATile;
 class UGOTAAttribute;
 class AEntity;
 class AGuardian;
-class ATribe;
-class AColony;
 class UStartParameter;
 class AStaticMeshBatcher;
 class ATileMap;
@@ -88,19 +87,19 @@ public:
 	// ------------------- Settlements -------------------
 private:
 	UPROPERTY(Replicated)
-	AColony* Colony;
+	ASettlement* Colony;
 
 	UPROPERTY(Replicated)
-	ATribe* Tribe;
+	ASettlement* Tribe;
 
 public:
-	AColony* GetColony() const { return Colony; }
+	ASettlement* GetColony() const { return Colony; }
 
-	void SetColony(AColony* NewColony);
+	void SetColony(ASettlement* NewColony);
 
-	ATribe* GetTribe() const { return Tribe; }
+	ASettlement* GetTribe() const { return Tribe; }
 
-	void SetTribe(ATribe* NewTribe);
+	void SetTribe(ASettlement* NewTribe);
 
 	// ------------------- Guardians -------------------
 private:

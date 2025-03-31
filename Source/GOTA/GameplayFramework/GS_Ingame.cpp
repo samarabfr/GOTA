@@ -6,9 +6,8 @@
 #include "GOTA/Utility/LoadingManager.h"
 #include "StartParameter.h"
 #include "GOTA/Utility/GOTAAttribute.h"
-#include "GOTA/AI/SettlementAIs/Colony.h"
-#include "GOTA/Settlement/Tribe.h"
 #include "GOTA/Guardian/Guardian.h"
+#include "GOTA/Settlement/Settlement.h"
 #include "GOTA/Tilemap/TileMap.h"
 #include "GOTA/Utility/StaticMeshBatcher.h"
 #include "Net/UnrealNetwork.h"
@@ -134,13 +133,13 @@ void AGS_Ingame::SpawnStaticMeshBatcher()
 
 // ------------------- Settlements -------------------
 
-void AGS_Ingame::SetColony(AColony* NewColony)
+void AGS_Ingame::SetColony(ASettlement* NewColony)
 {
 	Colony = NewColony;
 	MARK_PROPERTY_DIRTY_FROM_NAME(AGS_Ingame, Colony, this)
 }
 
-void AGS_Ingame::SetTribe(ATribe* NewTribe)
+void AGS_Ingame::SetTribe(ASettlement* NewTribe)
 {
 	Tribe = NewTribe;
 	MARK_PROPERTY_DIRTY_FROM_NAME(AGS_Ingame, Tribe, this)
