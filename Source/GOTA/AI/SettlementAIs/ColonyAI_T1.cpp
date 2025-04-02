@@ -113,16 +113,12 @@ UBuildingSettings* AColonyAI_T1::SelectNewBuilding() const
 	return ViableBuildings[FMath::RandRange(0, ViableBuildings.Num() - 1)];
 }
 
-void AColonyAI_T1::LogBuildings()
+TSharedPtr<FJsonObject> AColonyAI_T1::Log()
 {
+	TSharedPtr<FJsonObject> NewLog = MakeShareable(new FJsonObject());
 	for (auto Counter : BuildingsCounter)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("%s: %d"), *Counter.Key.ToString(), Counter.Value)
+		NewLog->SetNumberField(Counter.Key.ToString(), Counter.Value);
 	}
-}
-
-void AColonyAI_T1::Log()
-{
-	UE_LOG(LogTemp, Warning, TEXT("-------------------------- Colony AI - T1--------------------------"))
-	LogBuildings();
+	return NewLog;
 }

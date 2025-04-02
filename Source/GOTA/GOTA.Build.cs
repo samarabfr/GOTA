@@ -28,7 +28,8 @@ public class GOTA : ModuleRules
 			"GameplayStateTreeModule",
 			"AIModule",
 			"NetCore",
-			"RHI"
+			"RHI",
+			"Json"
 		});
 		
 		if (Target.bBuildEditor)

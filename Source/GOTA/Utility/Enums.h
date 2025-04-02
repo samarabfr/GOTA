@@ -65,7 +65,8 @@ UENUM()
 enum class EGameEnding : uint8
 {
 	NativesWon UMETA(DisplayName = "NativesWon"),
-	ColonistsWon UMETA(DisplayName = "ColonistsWon")
+	ColonistsWon UMETA(DisplayName = "ColonistsWon"),
+	SoftLocked UMETA(DisplayName = "SoftLocked")
 };
 
 UENUM()

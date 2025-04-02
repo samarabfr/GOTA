@@ -36,5 +36,5 @@ protected:
 	
 	// --------------------------- Log ---------------------------
 public:
-	virtual void Log();
+	virtual TSharedPtr<FJsonObject> Log();
 };

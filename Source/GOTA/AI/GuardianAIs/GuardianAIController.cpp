@@ -12,7 +12,8 @@ void AGuardianAIController::S_Init(bool RunTraining)
 	bRunTraining = RunTraining;
 }
 
-void AGuardianAIController::Log()
+TSharedPtr<FJsonObject> AGuardianAIController::Log()
 {
+	return MakeShareable(new FJsonObject());
 }
 

@@ -44,8 +44,7 @@ private:
 	// -------------------- Logging ----------------------
 private:
 	TMap<FName, int32> BuildingsCounter;
-	void LogBuildings();
 
 public:
-	virtual void Log() override;
+	virtual TSharedPtr<FJsonObject> Log() override;
 };

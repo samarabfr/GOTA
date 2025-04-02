@@ -40,6 +40,7 @@ ASettlement* ASettlementAIController::GetPossessedSettlement() const
 	return PossessedSettlement.Get();
 }
 
-void ASettlementAIController::Log()
+TSharedPtr<FJsonObject> ASettlementAIController::Log()
 {
+	return MakeShareable(new FJsonObject());
 }
