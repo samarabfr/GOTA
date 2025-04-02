@@ -13,12 +13,12 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import time
 from IPython.display import display, clear_output
 import numpy as np
+import threading
 
 # Path to your log file
 folder_path = "..\\..\\..\\Saved\\Data"
 files = os.listdir(folder_path)
-endlessLoopActive = True
-deactivateLoopAfterFirst = False # MAKE False WHEN GOING TO PRODUCTION
+loopEndlessly = True # MAKE False WHEN GOING TO PRODUCTION
 
 # Create main window
 root = tk.Tk()
@@ -60,6 +60,7 @@ def MakeHistogramm(graphRow, graphCol, data, label, title):
     axs[graphRow, graphCol].grid(True)
 
 def visualizeRounds(rounds):
+    print("Gather data...")
     # with softlock
     roundNumbers = []
     savingLastLogTimes = []
@@ -212,31 +213,46 @@ def visualizeRounds(rounds):
     MakeBarGraph(3, 6, roundNumbers, nativesPop, "Pop", "NativesPop")
     MakeHistogramm(3, 7, nativesPop, "Pop", "NativesPop")
 
-try:
-    while endlessLoopActive:
-        endlessLoopActive = not deactivateLoopAfterFirst
-        if files:
-            firstfile = os.path.join(folder_path, files[0])  # Ensure full path
-            print(f"Opening file: {firstfile}")
-            with open(firstfile, 'r') as file:
-                rounds = []
-                for line in file:
-                    # Try to load each line as a separate JSON object
-                    try:
-                        json_obj = json.loads(line.strip())  # Strip any extra whitespace or newlines
-                        rounds.append(json_obj)
-                    except json.JSONDecodeError as e:
-                        print(f"Error parsing line: {line}. Error: {e}")
+    canvas.draw()
 
-                visualizeRounds(rounds)
-                 # Refresh the canvas
-                canvas.draw()
-        else:
-            print("No files found in the directory!")
-        time.sleep(5)  # Wait for 5 seconds before updating
-except KeyboardInterrupt:
-    print("Graph update stopped by user.")
+def update_graph():
+    print("Updating Graph...")
+    """ Runs the update logic in a separate thread to avoid freezing Tkinter. """
+    thread = threading.Thread(target=process_data, daemon=True)
+    thread.start()
 
+def process_data():
+    print("Processing data...")
+    """ Handles file processing and sends data to UI thread. """
+    if not files:
+        print("No files found in the directory!")
+        return
+
+    firstfile = os.path.join(folder_path, files[0])  # Ensure full path
+    print(f"Opening file: {firstfile}")
+
+    rounds = []
+    try:
+        with open(firstfile, 'r') as file:
+            for line in file:
+                try:
+                    rounds.append(json.loads(line.strip()))
+                except json.JSONDecodeError as e:
+                    print(f"Error parsing line: {line}. Error: {e}")
+    except Exception as e:
+        print(f"Error reading file: {e}")
+        return
+
+    # Schedule UI update on the main Tkinter thread
+    root.after(0, lambda: visualizeRounds(rounds))
+
+    if loopEndlessly:
+        root.after(300000, update_graph)  # Schedule next update
+
+# Start the first update
+update_graph()
+
+# Start Tkinter main loop
 root.mainloop()
 
 
