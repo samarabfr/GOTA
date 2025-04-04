@@ -30,6 +30,7 @@ protected:
 
 	UFUNCTION()
 	void HandleGameEnding(const EGameEnding Ending, const FString& EndMessage);
+	virtual void Tick(float DeltaSeconds) override;
 
 	// ----------------------- Learning Agents plugin -----------------------
 private:
@@ -72,8 +73,11 @@ private:
 	FLearningAgentsCommunicator Communicator;
 	FLearningAgentsTrainerProcess TrainerProcess;
 
+	UPROPERTY(EditDefaultsOnly)
+	float MaxEpisodeStepNum = 10000;
 	UPROPERTY()
 	ULearningAgentsPPOTrainer* PPOTrainer;
+	FLearningAgentsPPOTrainerSettings TrainerSettings;
 	FLearningAgentsPPOTrainingSettings TrainingSettings;
 	FLearningAgentsTrainingGameSettings TrainingGameSettings;
 
@@ -88,6 +92,6 @@ public:
 	void Pause();
 	void Unpause();
 	bool IsRegistered(UObject* Agent) const;
-	void SelectBuilding();
+	void SelectBuildingAction();
 	int32 GetStepNum(UObject* Agent) const;
 };

@@ -17,8 +17,7 @@
 ARL_BuildingSelectorManager::ARL_BuildingSelectorManager()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	PrimaryActorTick.bStartWithTickEnabled = true;
-	SetActorTickInterval(0.1f);
+	PrimaryActorTick.bStartWithTickEnabled = false;
 
 	RootComponent = CreateDefaultSubobject<USceneComponent>("ROOT");
 	ManagerComponent = CreateDefaultSubobject<ULearningAgentsManager>("LearningAgentsManager");
@@ -33,6 +32,14 @@ void ARL_BuildingSelectorManager::HandleGameEnding(const EGameEnding Ending, con
 	PPOTrainer->ProcessExperience(false);
 	bIsFirstStepAfterReset = true;
 	Pause();
+}
+
+void ARL_BuildingSelectorManager::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	if (IsPaused())
+		return;
+	SelectBuildingAction();
 }
 
 void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encoder,
@@ -96,7 +103,8 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	Communicator = ULearningAgentsCommunicatorLibrary::MakeSharedMemoryCommunicator(
 		TrainerProcess, SharedMemorySettings);
 	// PPO Trainer
-	FLearningAgentsPPOTrainerSettings TrainerSettings = FLearningAgentsPPOTrainerSettings();
+	TrainerSettings = FLearningAgentsPPOTrainerSettings();
+	TrainerSettings.MaxEpisodeStepNum = MaxEpisodeStepNum;
 	PPOTrainer = ULearningAgentsPPOTrainer::MakePPOTrainer(
 		ManagerComponent, Interactor, TrainingEnvironment, Policy, Critic, Communicator,
 		ULearningAgentsPPOTrainer::StaticClass(), FName("PPOTrainer"), TrainerSettings);
@@ -108,6 +116,7 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	TrainingGameSettings.bUseFixedTimeStep = true;
 	const float FixedDeltaTime = FApp::GetFixedDeltaTime();
 	TrainingGameSettings.FixedTimeStepFrequency = 1.0f / FixedDeltaTime;
+	SetActorTickEnabled(true);
 }
 
 bool ARL_BuildingSelectorManager::IsPaused() const
@@ -137,9 +146,10 @@ bool ARL_BuildingSelectorManager::IsRegistered(UObject* Agent) const
 	return ManagerComponent->HasAgentObject(Agent);
 }
 
-void ARL_BuildingSelectorManager::SelectBuilding()
+void ARL_BuildingSelectorManager::SelectBuildingAction()
 {
-	if (IsPaused()) return;
+	if (!Policy || !PPOTrainer)
+		return;
 	if (!bRunTraining)
 	{
 		Policy->RunInference(0.0f);
@@ -160,5 +170,7 @@ void ARL_BuildingSelectorManager::SelectBuilding()
 
 int32 ARL_BuildingSelectorManager::GetStepNum(UObject* Agent) const
 {
+	if (!PPOTrainer)
+		return 0;
 	return PPOTrainer->GetEpisodeStepNum(ManagerComponent->GetAgentId(Agent));
 }

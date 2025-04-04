@@ -68,13 +68,14 @@ private:
 public:
 	virtual ASettlement* GetSettlement() override;
 	virtual TArray<UBuildingSettings*> GetAvailableBuildings() override;
-	virtual void HandleBuildingSelected(UBuildingSettings* Building) override;
+	virtual void HandleBuildingActionSelected(UBuildingSettings* Building) override;
 	virtual EAffiliation GetAffiliation() override;
 	virtual TArray<int32> GetMilestonesReached() override;
 	virtual void IncrementMilestone(int32 MilestoneIndex) override;
 	virtual void SaveModel(const FString& ModelName) override;
 	virtual void LoadModel(const FString& ModelName) override;
 	virtual FString GetAgentName() override;
+	virtual bool CanBuild() override;
 
 	// -------------------- Logging ----------------------
 private:

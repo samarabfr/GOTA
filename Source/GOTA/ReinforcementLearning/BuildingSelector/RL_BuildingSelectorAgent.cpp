@@ -15,7 +15,7 @@ TArray<UBuildingSettings*> IRL_BuildingSelectorAgent::GetAvailableBuildings()
 	return TArray<UBuildingSettings*>();
 }
 
-void IRL_BuildingSelectorAgent::HandleBuildingSelected(UBuildingSettings* Building)
+void IRL_BuildingSelectorAgent::HandleBuildingActionSelected(UBuildingSettings* Building)
 {
 }
 
@@ -31,4 +31,9 @@ TArray<int32> IRL_BuildingSelectorAgent::GetMilestonesReached()
 
 void IRL_BuildingSelectorAgent::IncrementMilestone(int32 MilestoneIndex)
 {
+}
+
+bool IRL_BuildingSelectorAgent::CanBuild()
+{
+	return false;
 }
