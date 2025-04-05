@@ -17,6 +17,10 @@ void AColonyAI_R1::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	if (!GetPossessedSettlement())
 		return;
+	if (GetPossessedSettlement()->CanAddConstructionSite())
+	{
+		BuildingSelector->SelectBuildingAction();
+	}
 	if (bRunTraining && bSaveSnapshotsAtIntervals && BuildingSelector && !BuildingSelector->IsPaused())
 	{
 		const double CurrentTime = FPlatformTime::Seconds();
@@ -195,13 +199,6 @@ void AColonyAI_R1::LoadModel(const FString& ModelName)
 FString AColonyAI_R1::GetAgentName()
 {
 	return SnapshotAgentName;
-}
-
-bool AColonyAI_R1::CanBuild()
-{
-	if (!GetPossessedSettlement())
-		return false;
-	return GetPossessedSettlement()->CanAddConstructionSite();
 }
 
 TSharedPtr<FJsonObject> AColonyAI_R1::Log()

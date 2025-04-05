@@ -34,14 +34,6 @@ void ARL_BuildingSelectorManager::HandleGameEnding(const EGameEnding Ending, con
 	Pause();
 }
 
-void ARL_BuildingSelectorManager::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-	if (IsPaused())
-		return;
-	SelectBuildingAction();
-}
-
 void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encoder,
                                          ULearningAgentsNeuralNetwork* NN_Policy,
                                          ULearningAgentsNeuralNetwork* NN_Decoder,
@@ -116,7 +108,6 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	TrainingGameSettings.bUseFixedTimeStep = true;
 	const float FixedDeltaTime = FApp::GetFixedDeltaTime();
 	TrainingGameSettings.FixedTimeStepFrequency = 1.0f / FixedDeltaTime;
-	SetActorTickEnabled(true);
 }
 
 bool ARL_BuildingSelectorManager::IsPaused() const
@@ -148,6 +139,8 @@ bool ARL_BuildingSelectorManager::IsRegistered(UObject* Agent) const
 
 void ARL_BuildingSelectorManager::SelectBuildingAction()
 {
+	if (IsPaused())
+		return;
 	if (!Policy || !PPOTrainer)
 		return;
 	if (!bRunTraining)

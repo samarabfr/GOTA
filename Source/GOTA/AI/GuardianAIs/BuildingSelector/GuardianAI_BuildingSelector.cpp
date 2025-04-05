@@ -18,6 +18,10 @@ void AGuardianAI_BuildingSelector::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	if (!Settlement) return;
+	if (Settlement->CanAddConstructionSite())
+	{
+		BuildingSelector->SelectBuildingAction();
+	}
 	if (bRunTraining && bSaveSnapshotsAtIntervals && BuildingSelector && !BuildingSelector->IsPaused())
 	{
 		const double CurrentTime = FPlatformTime::Seconds();
@@ -201,13 +205,6 @@ void AGuardianAI_BuildingSelector::LoadModel(const FString& ModelName)
 FString AGuardianAI_BuildingSelector::GetAgentName()
 {
 	return SnapshotAgentName;
-}
-
-bool AGuardianAI_BuildingSelector::CanBuild()
-{
-	if (!Settlement)
-		return false;
-	return Settlement->CanAddConstructionSite();
 }
 
 TSharedPtr<FJsonObject> AGuardianAI_BuildingSelector::Log()

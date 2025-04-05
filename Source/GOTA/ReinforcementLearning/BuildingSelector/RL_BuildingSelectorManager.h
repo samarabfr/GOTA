@@ -30,7 +30,6 @@ protected:
 
 	UFUNCTION()
 	void HandleGameEnding(const EGameEnding Ending, const FString& EndMessage);
-	virtual void Tick(float DeltaSeconds) override;
 
 	// ----------------------- Learning Agents plugin -----------------------
 private:

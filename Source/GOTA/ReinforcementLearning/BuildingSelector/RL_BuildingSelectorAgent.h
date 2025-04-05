@@ -32,5 +32,4 @@ public:
 	virtual EAffiliation GetAffiliation();
 	virtual TArray<int32> GetMilestonesReached();
 	virtual void IncrementMilestone(int32 MilestoneIndex);
-	virtual bool CanBuild();
 };

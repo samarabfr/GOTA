@@ -83,7 +83,6 @@ public:
 	virtual void SaveModel(const FString& ModelName) override;
 	virtual void LoadModel(const FString& ModelName) override;
 	virtual FString GetAgentName() override;
-	virtual bool CanBuild() override;
 	
 	// --------------------Logging----------------------
 private:

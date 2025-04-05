@@ -70,7 +70,6 @@ FLearningAgentsObservationSchemaElement URL_BuildingSelectorInteractor::SpecifyS
 	TMap<FName, FLearningAgentsObservationSchemaElement> Map;
 	Map.Add("Settlement", SpecifySettlementObservation(InObservationSchema, "Settlement"));
 	Map.Add("EnemySettlement", SpecifySettlementObservation(InObservationSchema, "EnemySettlement"));
-	Map.Add("CanBuild", ULearningAgentsObservations::SpecifyBoolObservation(InObservationSchema, L"CanBuild"));
 	return ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, Map);
 }
 
@@ -147,10 +146,6 @@ FLearningAgentsObservationObjectElement URL_BuildingSelectorInteractor::MakeStat
 	Map.Add("EnemySettlement",
 	        MakeSettlementObservation(InObservationObject, Agent ? Agent->GetEnemySettlement() : nullptr,
 	                                  "EnemySettlement", AgentId));
-	Map.Add("CanBuild",
-	        ULearningAgentsObservations::MakeBoolObservation(InObservationObject, Agent ? Agent->CanBuild() : false,
-	                                                         L"CanBuild", true,
-	                                                         this, AgentId));
 	return ULearningAgentsObservations::MakeStructObservation(InObservationObject, Map);
 }
 
@@ -174,10 +169,7 @@ void URL_BuildingSelectorInteractor::SpecifyAgentAction_Implementation(
 	FLearningAgentsActionSchemaElement ChooseBuildingAction =
 		ULearningAgentsActions::SpecifyExclusiveDiscreteAction(InActionSchema, PossibleBuildingsCount, _,
 		                                                       L"ChooseBuilding");
-	FLearningAgentsActionSchemaElement ChooseBuildingOptionalAction =
-		ULearningAgentsActions::SpecifyOptionalAction(InActionSchema, ChooseBuildingAction, 0.5,
-		                                              L"ChooseBuildingOptional");
-	OutActionSchemaElement = ChooseBuildingOptionalAction;
+	OutActionSchemaElement = ChooseBuildingAction;
 }
 
 void URL_BuildingSelectorInteractor::PerformAgentAction_Implementation(
@@ -188,16 +180,11 @@ void URL_BuildingSelectorInteractor::PerformAgentAction_Implementation(
 	// how the actions are done
 	IRL_BuildingSelectorAgent* Agent = Cast<IRL_BuildingSelectorAgent>(GetAgent(AgentId));
 	if (!Agent) return;
-	ELearningAgentsOptionalAction ExecuteChooseBuilding;
-	FLearningAgentsActionObjectElement ChooseBuildingAction;
-	ULearningAgentsActions::GetOptionalAction(ExecuteChooseBuilding, ChooseBuildingAction, InActionObject,
-	                                          InActionObjectElement, L"ChooseBuildingOptional");
-	if (ExecuteChooseBuilding == ELearningAgentsOptionalAction::Null) return;
 	int32 Index = 0;
-	ULearningAgentsActions::GetExclusiveDiscreteAction(Index, InActionObject, ChooseBuildingAction,
+	ULearningAgentsActions::GetExclusiveDiscreteAction(Index, InActionObject, InActionObjectElement,
 	                                                   L"ChooseBuilding");
 	TArray<UBuildingSettings*> AvailableBuildings = Agent->GetAvailableBuildings();
-	if (AvailableBuildings.Num() <= Index || !Agent->CanBuild())
+	if (AvailableBuildings.Num() <= Index)
 		return;
 	Agent->HandleBuildingActionSelected(AvailableBuildings[Index]);
 }
