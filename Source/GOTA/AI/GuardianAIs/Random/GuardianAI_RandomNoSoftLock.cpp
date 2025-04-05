@@ -8,6 +8,7 @@
 #include "GOTA/Settlement/Settlement.h"
 #include "GOTA/Tile/Tile.h"
 #include "GOTA/Tile/Building/BuildingSettings.h"
+#include "GOTA/Tile/Building/Population.h"
 
 
 void AGuardianAI_RandomNoSoftLock::Tick(float DeltaSeconds)
@@ -87,8 +88,43 @@ ATile* AGuardianAI_RandomNoSoftLock::FindBuildableTile() const
 		return nullptr;
 	if (Settlement->BorderingUnclaimedTiles.Num() <= 0)
 		return nullptr;
-	const int32 Index = FMath::RandRange(0, Settlement->BorderingUnclaimedTiles.Num() - 1);
-	return Settlement->BorderingUnclaimedTiles[Index];
+	TArray<ATile*> BestTiles = FindTilesWithMostNeighborPop();
+	return BestTiles[FMath::RandRange(0, BestTiles.Num() - 1)];
+}
+
+TArray<ATile*> AGuardianAI_RandomNoSoftLock::FindTilesWithMostNeighborPop() const
+{
+	TMap<ATile*, int32> NeighborPops;
+	// Find max Neighbor pop
+	int32 MaxNeighborPop = 0;
+	for (ATile* BorderingUnclaimedTile : Settlement->BorderingUnclaimedTiles)
+	{
+		int32 NeighborPop = 0;
+		for (ATile* Neighbor : BorderingUnclaimedTile->Neighbors)
+		{
+			if (Neighbor && Neighbor->GetClaimant() &&
+				Neighbor->GetClaimant()->GetAffiliation() == Settlement->GetAffiliation() &&
+				Neighbor->GetBuilding()->GetPopulation()->GetSize() > MaxNeighborPop)
+			{
+				NeighborPop += Neighbor->GetBuilding()->GetPopulation()->GetSize();
+			}
+		}
+		NeighborPops.Add(BorderingUnclaimedTile, NeighborPop);
+		if (NeighborPop > MaxNeighborPop)
+		{
+			MaxNeighborPop = NeighborPop;
+		}
+	}
+	// Get all tiles with max neighbor pop
+	TArray<ATile*> TilesWithMostNeighborPop;
+	for (auto NeighborPopTile : NeighborPops)
+	{
+		if (NeighborPopTile.Value == MaxNeighborPop)
+		{
+			TilesWithMostNeighborPop.Add(NeighborPopTile.Key);
+		}
+	}
+	return TilesWithMostNeighborPop;
 }
 
 UBuildingSettings* AGuardianAI_RandomNoSoftLock::SelectNewBuilding() const

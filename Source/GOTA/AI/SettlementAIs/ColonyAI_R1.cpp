@@ -9,6 +9,7 @@
 #include "GOTA/Settlement/Settlement.h"
 #include "GOTA/Tile/Tile.h"
 #include "GOTA/Tile/Building/BuildingSettings.h"
+#include "GOTA/Tile/Building/Population.h"
 
 
 void AColonyAI_R1::Tick(float DeltaSeconds)
@@ -72,11 +73,47 @@ void AColonyAI_R1::Possess(ASettlement* Settlement)
 	}
 }
 
+TArray<ATile*> AColonyAI_R1::FindTilesWithMostNeighborPop() const
+{
+	TMap<ATile*, int32> NeighborPops;
+	// Find max Neighbor pop
+	int32 MaxNeighborPop = 0;
+	for (ATile* BorderingUnclaimedTile : GetPossessedSettlement()->BorderingUnclaimedTiles)
+	{
+		int32 NeighborPop = 0;
+		for (ATile* Neighbor : BorderingUnclaimedTile->Neighbors)
+		{
+			if (Neighbor && Neighbor->GetClaimant() &&
+				Neighbor->GetClaimant()->GetAffiliation() == GetPossessedSettlement()->GetAffiliation() &&
+				Neighbor->GetBuilding()->GetPopulation()->GetSize() > MaxNeighborPop)
+			{
+				NeighborPop += Neighbor->GetBuilding()->GetPopulation()->GetSize();
+			}
+		}
+		NeighborPops.Add(BorderingUnclaimedTile, NeighborPop);
+		if (NeighborPop > MaxNeighborPop)
+		{
+			MaxNeighborPop = NeighborPop;
+		}
+	}
+	// Get all tiles with max neighbor pop
+	TArray<ATile*> TilesWithMostNeighborPop;
+	for (auto NeighborPopTile : NeighborPops)
+	{
+		if (NeighborPopTile.Value == MaxNeighborPop)
+		{
+			TilesWithMostNeighborPop.Add(NeighborPopTile.Key);
+		}
+	}
+	return TilesWithMostNeighborPop;
+}
+
 void AColonyAI_R1::RandomlyPlaceBuilding(UBuildingSettings* Building)
 {
-	if (!GetPossessedSettlement() || GetPossessedSettlement()->BorderingUnclaimedTiles.Num() <= 0) return;
-	const int32 RandomIndex = FMath::RandRange(0, GetPossessedSettlement()->BorderingUnclaimedTiles.Num() - 1);
-	ATile* Tile = GetPossessedSettlement()->BorderingUnclaimedTiles[RandomIndex];
+	if (!GetPossessedSettlement() || GetPossessedSettlement()->BorderingUnclaimedTiles.Num() <= 0)
+		return;
+	TArray<ATile*> BestTiles = FindTilesWithMostNeighborPop();
+	ATile* Tile = BestTiles[FMath::RandRange(0, BestTiles.Num() - 1)];
 	if (!Tile || !Tile->CanBuild(Building, GetPossessedSettlement()))
 	{
 		return;

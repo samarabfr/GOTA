@@ -4,6 +4,7 @@
 #include "GOTA/Tile/Building/Building.h"
 #include "GOTA/Tile/Building/BuildingSettings.h"
 #include "GOTA/Tile/Tile.h"
+#include "GOTA/Tile/Building/Population.h"
 
 AColonyAI_T1::AColonyAI_T1()
 {
@@ -63,7 +64,7 @@ void AColonyAI_T1::FigureOutBuilding()
 bool AColonyAI_T1::ShouldBuild() const
 {
 	if (!GetPossessedSettlement())
-			return false;
+		return false;
 	for (const ATile* Tile : GetPossessedSettlement()->ClaimedTiles)
 	{
 		if (Tile && Tile->GetBuilding()->GetIsUnderConstruction())
@@ -78,8 +79,43 @@ ATile* AColonyAI_T1::FindBuildableTile() const
 		return nullptr;
 	if (GetPossessedSettlement()->BorderingUnclaimedTiles.Num() <= 0)
 		return nullptr;
-	const int32 Index = FMath::RandRange(0, GetPossessedSettlement()->BorderingUnclaimedTiles.Num() - 1);
-	return GetPossessedSettlement()->BorderingUnclaimedTiles[Index];
+	TArray<ATile*> BestTiles = FindTilesWithMostNeighborPop();
+	return BestTiles[FMath::RandRange(0, BestTiles.Num() - 1)];
+}
+
+TArray<ATile*> AColonyAI_T1::FindTilesWithMostNeighborPop() const
+{
+	TMap<ATile*, int32> NeighborPops;
+	// Find max Neighbor pop
+	int32 MaxNeighborPop = 0;
+	for (ATile* BorderingUnclaimedTile : GetPossessedSettlement()->BorderingUnclaimedTiles)
+	{
+		int32 NeighborPop = 0;
+		for (ATile* Neighbor : BorderingUnclaimedTile->Neighbors)
+		{
+			if (Neighbor && Neighbor->GetClaimant() &&
+				Neighbor->GetClaimant()->GetAffiliation() == GetPossessedSettlement()->GetAffiliation() &&
+				Neighbor->GetBuilding()->GetPopulation()->GetSize() > MaxNeighborPop)
+			{
+				NeighborPop += Neighbor->GetBuilding()->GetPopulation()->GetSize();
+			}
+		}
+		NeighborPops.Add(BorderingUnclaimedTile, NeighborPop);
+		if (NeighborPop > MaxNeighborPop)
+		{
+			MaxNeighborPop = NeighborPop;
+		}
+	}
+	// Get all tiles with max neighbor pop
+	TArray<ATile*> TilesWithMostNeighborPop;
+	for (auto NeighborPopTile : NeighborPops)
+	{
+		if (NeighborPopTile.Value == MaxNeighborPop)
+		{
+			TilesWithMostNeighborPop.Add(NeighborPopTile.Key);
+		}
+	}
+	return TilesWithMostNeighborPop;
 }
 
 UBuildingSettings* AColonyAI_T1::SelectNewBuilding() const

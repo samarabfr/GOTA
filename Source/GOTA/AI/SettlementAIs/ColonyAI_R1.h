@@ -61,7 +61,8 @@ private:
 	UPROPERTY()
 	ARL_BuildingSelectorManager* BuildingSelector;
 	double RealTimeLastSnapshotSave = 0.0f;
-
+	
+	TArray<ATile*> FindTilesWithMostNeighborPop() const;
 	void RandomlyPlaceBuilding(UBuildingSettings* Building);
 	TArray<int32> MilestonesReached;
 

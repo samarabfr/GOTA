@@ -69,6 +69,7 @@ private:
 	double RealTimeLastSnapshotSave = 0.0f;
 
 	void RandomlyPlaceBuilding(UBuildingSettings* Building);
+	TArray<ATile*> FindTilesWithMostNeighborPop() const;
 	TArray<int32> MilestonesReached;
 
 public:

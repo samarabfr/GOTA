@@ -10,6 +10,7 @@
 #include "GOTA/Settlement/Settlement.h"
 #include "GOTA/Tile/Tile.h"
 #include "GOTA/Tile/Building/BuildingSettings.h"
+#include "GOTA/Tile/Building/Population.h"
 #include "GOTA/Utility/Enums.h"
 
 
@@ -80,9 +81,10 @@ void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 
 void AGuardianAI_BuildingSelector::RandomlyPlaceBuilding(UBuildingSettings* Building)
 {
-	if (!Settlement || Settlement->BorderingUnclaimedTiles.Num() <= 0) return;
-	const int32 RandomIndex = FMath::RandRange(0, Settlement->BorderingUnclaimedTiles.Num() - 1);
-	ATile* Tile = Settlement->BorderingUnclaimedTiles[RandomIndex];
+	if (!Settlement || Settlement->BorderingUnclaimedTiles.Num() <= 0)
+		return;
+	TArray<ATile*> BestTiles = FindTilesWithMostNeighborPop();
+	ATile* Tile =  BestTiles[FMath::RandRange(0, BestTiles.Num() - 1)];
 	if (Tile && Tile->CanBuild(Building, Settlement))
 	{
 		if (Tile->S_TryBuild(Building, Settlement))
@@ -90,6 +92,41 @@ void AGuardianAI_BuildingSelector::RandomlyPlaceBuilding(UBuildingSettings* Buil
 			BuildingsCounter[Building->Name]++;
 		}
 	}
+}
+
+TArray<ATile*> AGuardianAI_BuildingSelector::FindTilesWithMostNeighborPop() const
+{
+	TMap<ATile*, int32> NeighborPops;
+	// Find max Neighbor pop
+	int32 MaxNeighborPop = 0;
+	for (ATile* BorderingUnclaimedTile : Settlement->BorderingUnclaimedTiles)
+	{
+		int32 NeighborPop = 0;
+		for (ATile* Neighbor : BorderingUnclaimedTile->Neighbors)
+		{
+			if (Neighbor && Neighbor->GetClaimant() &&
+				Neighbor->GetClaimant()->GetAffiliation() == Settlement->GetAffiliation() &&
+				Neighbor->GetBuilding()->GetPopulation()->GetSize() > MaxNeighborPop)
+			{
+				NeighborPop += Neighbor->GetBuilding()->GetPopulation()->GetSize();
+			}
+		}
+		NeighborPops.Add(BorderingUnclaimedTile, NeighborPop);
+		if (NeighborPop > MaxNeighborPop)
+		{
+			MaxNeighborPop = NeighborPop;
+		}
+	}
+	// Get all tiles with max neighbor pop
+	TArray<ATile*> TilesWithMostNeighborPop;
+	for (auto NeighborPopTile : NeighborPops)
+	{
+		if (NeighborPopTile.Value == MaxNeighborPop)
+		{
+			TilesWithMostNeighborPop.Add(NeighborPopTile.Key);
+		}
+	}
+	return TilesWithMostNeighborPop;
 }
 
 ASettlement* AGuardianAI_BuildingSelector::GetSettlement()

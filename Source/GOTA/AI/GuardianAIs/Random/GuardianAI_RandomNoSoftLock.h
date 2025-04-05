@@ -48,6 +48,7 @@ private:
 	void FigureOutBuilding();
 	bool ShouldBuild() const;
 	ATile* FindBuildableTile() const;
+	TArray<ATile*> FindTilesWithMostNeighborPop() const;
 	UBuildingSettings* SelectNewBuilding() const;
 	
 	// --------------------Logging----------------------
