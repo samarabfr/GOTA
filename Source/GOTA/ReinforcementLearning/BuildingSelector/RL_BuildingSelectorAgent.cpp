@@ -10,6 +10,11 @@ ASettlement* IRL_BuildingSelectorAgent::GetSettlement()
 	return nullptr;
 }
 
+ASettlement* IRL_BuildingSelectorAgent::GetEnemySettlement()
+{
+	return nullptr;
+}
+
 TArray<UBuildingSettings*> IRL_BuildingSelectorAgent::GetAvailableBuildings()
 {
 	return TArray<UBuildingSettings*>();

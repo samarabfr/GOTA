@@ -95,7 +95,7 @@ public:
 	// --------------------------- Building ---------------------------
 protected:
 	void S_RefreshBorderingUnclaimedTiles();
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UBuildingSettings*> StartingBuildings;
 
@@ -116,12 +116,16 @@ public:
 	int32 GetCountOfConstructionSites() const;
 	TArray<UBuilding*> GetAllBuildings() const;
 	bool CanAddConstructionSite() const;
+	int32 GetCountOfBuildings() const;
+	int32 GetCountOfCivilianBuildings() const;
+	int32 GetCountOfArmyBuildings() const;
+	int32 GetCountOfDefenseBuildings() const;
 
 	// --------------------------- Resources ---------------------------
 private:
 	UPROPERTY(EditDefaultsOnly)
 	FConstructionResources StartingResources;
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	int32 ExtraAllowedConstructionSites = 2;
 
@@ -173,7 +177,7 @@ public:
 	// --------------------------- Armies ---------------------------
 public:
 	TArray<AArmy*> GetAllArmies() const;
-	
+
 	// ----------------------- Logging -----------------------
 public:
 	virtual TSharedPtr<FJsonObject> Log() const;

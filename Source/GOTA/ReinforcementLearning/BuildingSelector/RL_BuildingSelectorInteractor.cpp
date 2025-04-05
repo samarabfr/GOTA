@@ -16,21 +16,47 @@ URL_BuildingSelectorInteractor::URL_BuildingSelectorInteractor()
 // ----------------------- Specify Observations -----------------------
 
 FLearningAgentsObservationSchemaElement URL_BuildingSelectorInteractor::SpecifyResourceObservation(
-	ULearningAgentsObservationSchema* InObservationSchema)
+	ULearningAgentsObservationSchema* InObservationSchema, FString Name)
 {
 	TMap<FName, FLearningAgentsObservationSchemaElement> ResourceMap;
-	ResourceMap.Add("Food", ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema));
-	ResourceMap.Add("Wood", ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema));
-	ResourceMap.Add("Stone", ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema));
+	ResourceMap.Add(
+		"Food", ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema, 1,
+		                                                             FName(Name + "FoodResource")));
+	ResourceMap.Add(
+		"Wood", ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema, 1,
+		                                                             FName(Name + "WoodResource")));
+	ResourceMap.Add(
+		"Stone", ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema, 1,
+		                                                              FName(Name + "StoneResource")));
+	return ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, ResourceMap);
+}
+
+FLearningAgentsObservationSchemaElement URL_BuildingSelectorInteractor::SpecifyBuildingsObservation(
+	ULearningAgentsObservationSchema* InObservationSchema, FString Name)
+{
+	TMap<FName, FLearningAgentsObservationSchemaElement> ResourceMap;
+	ResourceMap.Add("CountBuildings",
+	                ULearningAgentsObservations::SpecifyFloatObservation(
+		                InObservationSchema, 1, FName(Name + "CountBuildings")));
+	ResourceMap.Add("CountCivilianBuildings",
+	                ULearningAgentsObservations::SpecifyFloatObservation(
+		                InObservationSchema, 1, FName(Name + "CountCivilianBuildings")));
+	ResourceMap.Add("CountArmyBuildings",
+	                ULearningAgentsObservations::SpecifyFloatObservation(
+		                InObservationSchema, 1, FName(Name + "CountArmyBuildings")));
+	ResourceMap.Add("CountDefenseBuildings",
+	                ULearningAgentsObservations::SpecifyFloatObservation(
+		                InObservationSchema, 1, FName(Name + "CountDefenseBuildings")));
 	return ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, ResourceMap);
 }
 
 FLearningAgentsObservationSchemaElement URL_BuildingSelectorInteractor::SpecifySettlementObservation(
-	ULearningAgentsObservationSchema* InObservationSchema)
+	ULearningAgentsObservationSchema* InObservationSchema, FString Name)
 {
 	TMap<FName, FLearningAgentsObservationSchemaElement> SettlementMap;
-	SettlementMap.Add("Income", SpecifyResourceObservation(InObservationSchema));
-	SettlementMap.Add("CurrentResources", SpecifyResourceObservation(InObservationSchema));
+	SettlementMap.Add("Income", SpecifyResourceObservation(InObservationSchema, Name + "Income"));
+	SettlementMap.Add("CurrentResources", SpecifyResourceObservation(InObservationSchema, Name + "CurrentResources"));
+	SettlementMap.Add("Buildings", SpecifyBuildingsObservation(InObservationSchema, Name + "Buildings"));
 	return ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, SettlementMap);
 }
 
@@ -38,8 +64,9 @@ FLearningAgentsObservationSchemaElement URL_BuildingSelectorInteractor::SpecifyS
 	ULearningAgentsObservationSchema* InObservationSchema)
 {
 	TMap<FName, FLearningAgentsObservationSchemaElement> Map;
-	Map.Add("Settlement", SpecifySettlementObservation(InObservationSchema));
-	Map.Add("CanBuild", ULearningAgentsObservations::SpecifyBoolObservation(InObservationSchema));
+	Map.Add("Settlement", SpecifySettlementObservation(InObservationSchema, "Settlement"));
+	Map.Add("EnemySettlement", SpecifySettlementObservation(InObservationSchema, "EnemySettlement"));
+	Map.Add("CanBuild", ULearningAgentsObservations::SpecifyBoolObservation(InObservationSchema, L"CanBuild"));
 	return ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, Map);
 }
 
@@ -54,35 +81,65 @@ void URL_BuildingSelectorInteractor::SpecifyAgentObservation_Implementation(
 // ----------------------- Make Observations -----------------------
 
 FLearningAgentsObservationObjectElement URL_BuildingSelectorInteractor::MakeResourceObservation(
-	ULearningAgentsObservationObject* InObservationObject, const FConstructionResources Resources)
+	ULearningAgentsObservationObject* InObservationObject, const FConstructionResources Resources, FString Name, int32
+	AgentId)
 {
 	TMap<FName, FLearningAgentsObservationObjectElement> Map;
 	Map.Add("Food", ULearningAgentsObservations::MakeFloatObservation(
-		        InObservationObject, Resources.Food));
+		        InObservationObject, Resources.Food, FName(Name + "FoodResource"), true, this, AgentId));
 	Map.Add("Wood", ULearningAgentsObservations::MakeFloatObservation(
-		        InObservationObject, Resources.Wood));
+		        InObservationObject, Resources.Wood, FName(Name + "WoodResource"), true, this, AgentId));
 	Map.Add("Stone", ULearningAgentsObservations::MakeFloatObservation(
-		        InObservationObject, Resources.Stone));
+		        InObservationObject, Resources.Stone, FName(Name + "StoneResource"), true, this, AgentId));
+	return ULearningAgentsObservations::MakeStructObservation(InObservationObject, Map);
+}
+
+FLearningAgentsObservationObjectElement URL_BuildingSelectorInteractor::MakeBuildingsObservation(
+	ULearningAgentsObservationObject* InObservationObject, const ASettlement* Settlement, FString Name, int32 AgentId)
+{
+	TMap<FName, FLearningAgentsObservationObjectElement> Map;
+	Map.Add("CountBuildings", ULearningAgentsObservations::MakeFloatObservation(
+		        InObservationObject, Settlement ? Settlement->GetCountOfBuildings() : 0,
+		        FName(Name + "CountBuildings"), true, this, AgentId));
+	Map.Add("CountCivilianBuildings", ULearningAgentsObservations::MakeFloatObservation(
+		        InObservationObject, Settlement ? Settlement->GetCountOfCivilianBuildings() : 0,
+		        FName(Name + "CountCivilianBuildings"), true, this, AgentId));
+	Map.Add("CountArmyBuildings", ULearningAgentsObservations::MakeFloatObservation(
+		        InObservationObject, Settlement ? Settlement->GetCountOfArmyBuildings() : 0,
+		        FName(Name + "CountArmyBuildings"), true, this, AgentId));
+	Map.Add("CountDefenseBuildings", ULearningAgentsObservations::MakeFloatObservation(
+		        InObservationObject, Settlement ? Settlement->GetCountOfDefenseBuildings() : 0,
+		        FName(Name + "CountDefenseBuildings"), true, this, AgentId));
 	return ULearningAgentsObservations::MakeStructObservation(InObservationObject, Map);
 }
 
 FLearningAgentsObservationObjectElement URL_BuildingSelectorInteractor::MakeSettlementObservation(
-	ULearningAgentsObservationObject* InObservationObject, const ASettlement* Settlement)
+	ULearningAgentsObservationObject* InObservationObject, const ASettlement* Settlement, FString Name, int32 AgentId)
 {
 	TMap<FName, FLearningAgentsObservationObjectElement> Map;
 	Map.Add("Income", MakeResourceObservation(
-		        InObservationObject, Settlement ? Settlement->GetEffectiveProduction() : FConstructionResources()));
+		        InObservationObject, Settlement ? Settlement->GetEffectiveProduction() : FConstructionResources(),
+		        Name + "Income", AgentId));
 	Map.Add("CurrentResources", MakeResourceObservation(
-		        InObservationObject, Settlement ? Settlement->GetResources() : FConstructionResources()));
+		        InObservationObject, Settlement ? Settlement->GetResources() : FConstructionResources(),
+		        Name + "CurrentResources", AgentId));
+	Map.Add("Buildings", MakeBuildingsObservation(InObservationObject, Settlement, Name + "Buildings", AgentId));
 	return ULearningAgentsObservations::MakeStructObservation(InObservationObject, Map);
 }
 
 FLearningAgentsObservationObjectElement URL_BuildingSelectorInteractor::MakeStateObservation(
-	ULearningAgentsObservationObject* InObservationObject, IRL_BuildingSelectorAgent* Agent)
+	ULearningAgentsObservationObject* InObservationObject, IRL_BuildingSelectorAgent* Agent, int32 AgentId)
 {
 	TMap<FName, FLearningAgentsObservationObjectElement> Map;
-	Map.Add("Settlement", MakeSettlementObservation(InObservationObject, Agent ? Agent->GetSettlement() : nullptr));
-	Map.Add("CanBuild", ULearningAgentsObservations::MakeBoolObservation(InObservationObject, Agent->CanBuild()));
+	Map.Add("Settlement",
+	        MakeSettlementObservation(InObservationObject, Agent ? Agent->GetSettlement() : nullptr, "Settlement",
+	                                  AgentId));
+	Map.Add("EnemySettlement",
+	        MakeSettlementObservation(InObservationObject, Agent ? Agent->GetEnemySettlement() : nullptr,
+	                                  "EnemySettlement", AgentId));
+	Map.Add("CanBuild",
+	        ULearningAgentsObservations::MakeBoolObservation(InObservationObject, Agent->CanBuild(), L"CanBuild", true,
+	                                                         this, AgentId));
 	return ULearningAgentsObservations::MakeStructObservation(InObservationObject, Map);
 }
 
@@ -93,7 +150,7 @@ void URL_BuildingSelectorInteractor::GatherAgentObservation_Implementation(
 	// how the observations are gathered from the game state
 	IRL_BuildingSelectorAgent* Agent = Cast<IRL_BuildingSelectorAgent>(GetAgent(AgentId));
 	if (!Agent) return;
-	OutObservationObjectElement = MakeStateObservation(InObservationObject, Agent);
+	OutObservationObjectElement = MakeStateObservation(InObservationObject, Agent, AgentId);
 }
 
 // ----------------------- Actions -----------------------

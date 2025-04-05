@@ -74,6 +74,7 @@ private:
 
 public:
 	virtual ASettlement* GetSettlement() override;
+	virtual ASettlement* GetEnemySettlement() override;
 	virtual TArray<UBuildingSettings*> GetAvailableBuildings() override;
 	virtual void HandleBuildingActionSelected(UBuildingSettings* Building) override;
 	virtual EAffiliation GetAffiliation() override;

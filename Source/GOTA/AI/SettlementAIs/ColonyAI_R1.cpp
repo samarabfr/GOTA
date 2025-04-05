@@ -129,6 +129,11 @@ ASettlement* AColonyAI_R1::GetSettlement()
 	return GetPossessedSettlement();
 }
 
+ASettlement* AColonyAI_R1::GetEnemySettlement()
+{
+	return GameState->GetTribe();
+}
+
 TArray<UBuildingSettings*> AColonyAI_R1::GetAvailableBuildings()
 {
 	return PossibleBuildings;

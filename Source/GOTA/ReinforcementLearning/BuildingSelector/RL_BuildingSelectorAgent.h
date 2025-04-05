@@ -26,6 +26,7 @@ class GOTA_API IRL_BuildingSelectorAgent
 
 public:
 	virtual ASettlement* GetSettlement();
+	virtual ASettlement* GetEnemySettlement();
 	virtual TArray<UBuildingSettings*> GetAvailableBuildings();
 	virtual void HandleBuildingActionSelected(UBuildingSettings* Building);
 	virtual EAffiliation GetAffiliation();

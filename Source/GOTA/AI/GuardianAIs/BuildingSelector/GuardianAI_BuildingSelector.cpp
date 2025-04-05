@@ -134,6 +134,11 @@ ASettlement* AGuardianAI_BuildingSelector::GetSettlement()
 	return Settlement;
 }
 
+ASettlement* AGuardianAI_BuildingSelector::GetEnemySettlement()
+{
+	return GameState->GetColony();
+}
+
 TArray<UBuildingSettings*> AGuardianAI_BuildingSelector::GetAvailableBuildings()
 {
 	if (!PossessedGuardian) return TArray<UBuildingSettings*>();

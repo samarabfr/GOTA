@@ -343,6 +343,44 @@ bool ASettlement::CanAddConstructionSite() const
 	return true;
 }
 
+int32 ASettlement::GetCountOfBuildings() const
+{
+	return GetAllBuildings().Num();
+}
+
+int32 ASettlement::GetCountOfCivilianBuildings() const
+{
+	int32 Count = 0;
+	for (UBuilding* Building : GetAllBuildings())
+	{
+		if (Cast<UBuildingCivilian>(Building))
+			++Count;
+	}
+	return Count;
+}
+
+int32 ASettlement::GetCountOfArmyBuildings() const
+{
+	int32 Count = 0;
+	for (UBuilding* Building : GetAllBuildings())
+	{
+		if (Cast<UBuildingArmy>(Building))
+			++Count;
+	}
+	return Count;
+}
+
+int32 ASettlement::GetCountOfDefenseBuildings() const
+{
+	int32 Count = 0;
+	for (UBuilding* Building : GetAllBuildings())
+	{
+		if (Cast<UBuildingDefense>(Building))
+			++Count;
+	}
+	return Count;
+}
+
 void ASettlement::S_RegisterBuildingForIncome(UBuilding* Building)
 {
 	const EProductionType ProductionType = Building->GetProductionType();
@@ -391,25 +429,12 @@ void ASettlement::S_UpdateConsumptionFromPopulation(int16 Change)
 TSharedPtr<FJsonObject> ASettlement::Log() const
 {
 	TSharedPtr<FJsonObject> NewLog = MakeShareable(new FJsonObject());
+	
 	// buildings
-	int32 CountBuildings = GetAllBuildings().Num();
-	int32 CountCivilianBuildings = 0;
-	int32 CountArmyBuildings = 0;
-	int32 CountDefenseBuildings = 0;
-	for (UBuilding* Building : GetAllBuildings())
-	{
-		if (Cast<UBuildingCivilian>(Building))
-			++CountCivilianBuildings;
-		else if (Cast<UBuildingDefense>(Building))
-			++CountDefenseBuildings;
-		else if (Cast<UBuildingArmy>(Building))
-			++CountArmyBuildings;
-	}
-	// log
-	NewLog->SetNumberField(TEXT("CountBuildings"), CountBuildings);
-	NewLog->SetNumberField(TEXT("CountCivilianBuildings"), CountCivilianBuildings);
-	NewLog->SetNumberField(TEXT("CountArmyBuildings"), CountArmyBuildings);
-	NewLog->SetNumberField(TEXT("CountDefenseBuildings"), CountDefenseBuildings);
+	NewLog->SetNumberField(TEXT("CountBuildings"), GetCountOfBuildings());
+	NewLog->SetNumberField(TEXT("CountCivilianBuildings"), GetCountOfCivilianBuildings());
+	NewLog->SetNumberField(TEXT("CountArmyBuildings"), GetCountOfArmyBuildings());
+	NewLog->SetNumberField(TEXT("CountDefenseBuildings"), GetCountOfDefenseBuildings());
 
 	// Civilians
 	int32 CountCivilians = GetAllCivilians().Num();
