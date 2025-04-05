@@ -79,7 +79,7 @@ private:
 	float GrowthPerNeighborPop = 0.0f;
 
 public:
-	USettlementPopulation* GetPopulation() { return Population; }
+	USettlementPopulation* GetPopulation() const { return Population; }
 
 	FOnPopEatingPerSecondChangedSig OnPopEatingPerSecondChanged;
 	float GetPopEatingPerSecond() const { return PopEatingPerSecond; }

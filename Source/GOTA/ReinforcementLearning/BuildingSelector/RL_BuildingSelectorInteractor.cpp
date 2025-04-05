@@ -6,6 +6,7 @@
 #include "RL_BuildingSelectorAgent.h"
 #include "LearningAgentsObservations.h"
 #include "GOTA/Settlement/Settlement.h"
+#include "GOTA/Settlement/SettlementPopulation.h"
 
 // ----------------------- LifeCycle -----------------------
 
@@ -57,6 +58,9 @@ FLearningAgentsObservationSchemaElement URL_BuildingSelectorInteractor::SpecifyS
 	SettlementMap.Add("Income", SpecifyResourceObservation(InObservationSchema, Name + "Income"));
 	SettlementMap.Add("CurrentResources", SpecifyResourceObservation(InObservationSchema, Name + "CurrentResources"));
 	SettlementMap.Add("Buildings", SpecifyBuildingsObservation(InObservationSchema, Name + "Buildings"));
+	SettlementMap.Add("Population",
+	                  ULearningAgentsObservations::SpecifyFloatObservation(
+		                  InObservationSchema, 1, FName(Name + "Population")));
 	return ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, SettlementMap);
 }
 
@@ -124,6 +128,12 @@ FLearningAgentsObservationObjectElement URL_BuildingSelectorInteractor::MakeSett
 		        InObservationObject, Settlement ? Settlement->GetResources() : FConstructionResources(),
 		        Name + "CurrentResources", AgentId));
 	Map.Add("Buildings", MakeBuildingsObservation(InObservationObject, Settlement, Name + "Buildings", AgentId));
+	Map.Add("Population", ULearningAgentsObservations::MakeFloatObservation(InObservationObject,
+	                                                                        Settlement
+		                                                                        ? Settlement->GetPopulation()->GetSize()
+		                                                                        : 0,
+	                                                                        FName(Name + "Population"), true,
+	                                                                        this, AgentId));
 	return ULearningAgentsObservations::MakeStructObservation(InObservationObject, Map);
 }
 
@@ -138,7 +148,8 @@ FLearningAgentsObservationObjectElement URL_BuildingSelectorInteractor::MakeStat
 	        MakeSettlementObservation(InObservationObject, Agent ? Agent->GetEnemySettlement() : nullptr,
 	                                  "EnemySettlement", AgentId));
 	Map.Add("CanBuild",
-	        ULearningAgentsObservations::MakeBoolObservation(InObservationObject, Agent->CanBuild(), L"CanBuild", true,
+	        ULearningAgentsObservations::MakeBoolObservation(InObservationObject, Agent ? Agent->CanBuild() : false,
+	                                                         L"CanBuild", true,
 	                                                         this, AgentId));
 	return ULearningAgentsObservations::MakeStructObservation(InObservationObject, Map);
 }
