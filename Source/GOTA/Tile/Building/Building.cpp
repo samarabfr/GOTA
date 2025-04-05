@@ -147,6 +147,8 @@ FConstructionResources UBuilding::GetConstructionProgress() const
 
 void UBuilding::S_SetConstructionProgress(const FConstructionResources NewConstructionProgress)
 {
+	if (!bIsUnderConstruction)
+		return;
 	ConstructionProgress = NewConstructionProgress;
 	MARK_PROPERTY_DIRTY_FROM_NAME(UBuilding, ConstructionProgress, this)
 	if (ConstructionProgress >= Settings->Cost)
