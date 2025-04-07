@@ -114,12 +114,14 @@ public:
 	void S_UnregisterTile(ATile* Tile, UBuilding* Building);
 	void UnregisterPopulation(UPopulation* InPopulation);
 	int32 GetCountOfConstructionSites() const;
+	int32 GetCountOfUnprotectedBuildings() const;
 	TArray<UBuilding*> GetAllBuildings() const;
 	bool CanAddConstructionSite() const;
 	int32 GetCountOfBuildings() const;
 	int32 GetCountOfCivilianBuildings() const;
 	int32 GetCountOfArmyBuildings() const;
 	int32 GetCountOfDefenseBuildings() const;
+	TArray<ATile*> FindTilesWithMostNeighborBuildings() const;
 
 	// --------------------------- Resources ---------------------------
 private:

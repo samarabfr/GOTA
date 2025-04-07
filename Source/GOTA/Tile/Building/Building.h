@@ -116,6 +116,7 @@ public:
 	bool GetIsUnderConstruction() const { return bIsUnderConstruction; }
 
 	FConstructionResources GetConstructionProgress() const;
+	FConstructionResources GetConstructionCost() const;
 	void S_SetConstructionProgress(const FConstructionResources NewConstructionProgress);
 
 	virtual void S_FinishConstruction();

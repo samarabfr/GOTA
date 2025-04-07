@@ -121,30 +121,81 @@ TArray<ATile*> AColonyAI_T1::FindTilesWithMostNeighborPop() const
 UBuildingSettings* AColonyAI_T1::SelectNewBuilding() const
 {
 	TArray<UBuildingSettings*> ViableBuildings = PossibleBuildings;
-	// prevent soft-locking
-	// 1. short-term: dont place buildings you cant build
-	//		no buildings that require resources that you dont have on you and you have no income for
-	//		build only food buildings when negative income or under certain threshhold
-	// 2. long-term: have enough income of everything as a buffer and to grow fast
-	//		1. prio: food; all buildings need food income
-	//		2. prio: wood; all buildings need wood one time
-	//		3. prio: stone; all military buildings need stone
+	// Remove buildings that cant be build
 	for (int i = ViableBuildings.Num() - 1; i >= 0; --i)
 	{
-		const auto [FoodIncome, WoodIncome, StoneIncome] = GetPossessedSettlement()->GetEffectiveProduction();
-		if (!ViableBuildings[i] ||
-			(ViableBuildings[i]->Cost.Food > 0 &&
-				ViableBuildings[i]->Cost.Food > GetPossessedSettlement()->GetResources().Food && FoodIncome <= 0) ||
-			(ViableBuildings[i]->Cost.Stone > 0 &&
-				ViableBuildings[i]->Cost.Stone > GetPossessedSettlement()->GetResources().Stone && StoneIncome <= 0) ||
-			(ViableBuildings[i]->Cost.Wood > 0 &&
-				ViableBuildings[i]->Cost.Wood > GetPossessedSettlement()->GetResources().Wood && WoodIncome <= 0) ||
-			((FoodIncome <= 0 || GetPossessedSettlement()->GetResources().Food < FoodThreshold) &&
-				ViableBuildings[i]->ProductionType != EProductionType::Food))
+		const FConstructionResources Income = GetPossessedSettlement()->GetEffectiveProduction();
+		if (!ViableBuildings[i])
 		{
 			ViableBuildings.RemoveAt(i);
+			continue;
+		}
+		// doesnt have resources for the building
+		if (ViableBuildings[i]->Cost.Food > 0 &&
+			ViableBuildings[i]->Cost.Food > GetPossessedSettlement()->GetResources().Food &&
+			Income.Food <= 0)
+		{
+			ViableBuildings.RemoveAt(i);
+			continue;
+		}
+		if (ViableBuildings[i]->Cost.Stone > 0 &&
+			ViableBuildings[i]->Cost.Stone > GetPossessedSettlement()->GetResources().Stone &&
+			Income.Stone <= 0)
+		{
+			ViableBuildings.RemoveAt(i);
+			continue;
+		}
+		if (ViableBuildings[i]->Cost.Wood > 0 &&
+			ViableBuildings[i]->Cost.Wood > GetPossessedSettlement()->GetResources().Wood &&
+			Income.Wood <= 0)
+		{
+			ViableBuildings.RemoveAt(i);
+			continue;
+		}
+		// if food income is too low build food buildings
+		if (Income.Food < FoodBuildingFoodIncomeThreshold &&
+			ViableBuildings[i]->ProductionType != EProductionType::Food)
+		{
+			ViableBuildings.RemoveAt(i);
+			continue;
+		}
+		// dont build army buildings, if income is not high enough or there are too many unprotected buildings
+		const int32 CountUnprotectedBuildings = GetPossessedSettlement()->GetCountOfUnprotectedBuildings();
+		if (ViableBuildings[i]->bArmyEnabled &&
+			(!(Income > BarracksIncomeThreshold) || CountUnprotectedBuildings >= BarracksUnprotectedBuildingsThreshold))
+		{
+			ViableBuildings.RemoveAt(i);
+			continue;
+		}
+		// dont build defense buildings, if there are no unprotected buildings
+		if (ViableBuildings[i]->bDefenseEnabled &&
+			CountUnprotectedBuildings <= 0)
+		{
+			ViableBuildings.RemoveAt(i);
+			continue;
 		}
 	}
+	// only build barracks, if they are valid
+	bool bArmyBuildingsValid = false;
+	for (UBuildingSettings* ViableBuilding : ViableBuildings)
+	{
+		if (ViableBuilding->bArmyEnabled)
+		{
+			bArmyBuildingsValid = true;
+			break;
+		}
+	}
+	if (bArmyBuildingsValid)
+	{
+		for (int i = ViableBuildings.Num() - 1; i >= 0; --i)
+		{
+			if (!ViableBuildings[i]->bArmyEnabled)
+			{
+				ViableBuildings.RemoveAt(i);
+			}
+		}
+	}
+	// return random viable building
 	if (ViableBuildings.Num() <= 0) return nullptr;
 	return ViableBuildings[FMath::RandRange(0, ViableBuildings.Num() - 1)];
 }
