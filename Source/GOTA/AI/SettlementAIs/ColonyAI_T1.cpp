@@ -167,6 +167,13 @@ UBuildingSettings* AColonyAI_T1::SelectNewBuilding() const
 			ViableBuildings.RemoveAt(i);
 			continue;
 		}
+		// dont build defense buildings, if there are no unprotected buildings
+		if (ViableBuildings[i]->bDefenseEnabled &&
+			CountUnprotectedBuildings <= 0)
+		{
+			ViableBuildings.RemoveAt(i);
+			continue;
+		}
 	}
 	// only build barracks, if they are valid
 	bool bArmyBuildingsValid = false;
