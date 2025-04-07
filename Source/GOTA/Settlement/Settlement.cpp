@@ -318,6 +318,7 @@ int32 ASettlement::GetCountOfUnprotectedBuildings() const
 	{
 		if (ClaimedTile &&
 			ClaimedTile->GetBuilding() &&
+			!ClaimedTile->GetBuilding()->GetSettings()->bDefenseEnabled &&
 			!ClaimedTile->GetBuilding()->GetIsUnderConstruction() &&
 			!ClaimedTile->GetBuilding()->IsProtected())
 		{
