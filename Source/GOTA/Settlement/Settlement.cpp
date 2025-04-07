@@ -311,6 +311,22 @@ int32 ASettlement::GetCountOfConstructionSites() const
 	return Count;
 }
 
+int32 ASettlement::GetCountOfUnprotectedBuildings() const
+{
+	int32 Count = 0;
+	for (ATile* ClaimedTile : ClaimedTiles)
+	{
+		if (ClaimedTile &&
+			ClaimedTile->GetBuilding() &&
+			!ClaimedTile->GetBuilding()->GetIsUnderConstruction() &&
+			!ClaimedTile->GetBuilding()->IsProtected())
+		{
+			++Count;
+		}
+	}
+	return Count;
+}
+
 TArray<UBuilding*> ASettlement::GetAllBuildings() const
 {
 	TArray<UBuilding*> Result;

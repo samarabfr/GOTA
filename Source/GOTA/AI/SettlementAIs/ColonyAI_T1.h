@@ -1,9 +1,9 @@
 ﻿#pragma once
 
 #include "SettlementAIController.h"
+#include "GOTA/Settlement/ConstructionResources.h"
 
 #include "ColonyAI_T1.generated.h"
-
 
 class ATile;
 class AArmy;
@@ -31,8 +31,14 @@ public:
 	// --------------------Building----------------------
 private:
 	UPROPERTY(EditDefaultsOnly)
-	float FoodThreshold = 300.0f;
-	
+	float FoodBuildingFoodResourceThreshold = 300.0f;
+
+	UPROPERTY(EditDefaultsOnly)
+	FConstructionResources BarracksIncomeThreshold = FConstructionResources(3, 2, 0.5);
+
+	UPROPERTY(EditDefaultsOnly)
+	int32 BarracksUnprotectedBuildingsThreshold = 5;
+
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UBuildingSettings*> PossibleBuildings;
 
@@ -41,6 +47,7 @@ private:
 	ATile* FindBuildableTile() const;
 	TArray<ATile*> FindTilesWithMostNeighborPop() const;
 	UBuildingSettings* SelectNewBuilding() const;
+
 
 	// -------------------- Logging ----------------------
 private:
