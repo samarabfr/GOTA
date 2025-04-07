@@ -145,6 +145,11 @@ FConstructionResources UBuilding::GetConstructionProgress() const
 	return ConstructionProgress;
 }
 
+FConstructionResources UBuilding::GetConstructionCost() const
+{
+	return Settings->Cost;
+}
+
 void UBuilding::S_SetConstructionProgress(const FConstructionResources NewConstructionProgress)
 {
 	if (!bIsUnderConstruction)

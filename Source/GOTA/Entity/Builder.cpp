@@ -5,6 +5,29 @@
 #include "GOTA/Settlement/Settlement.h"
 #include "GOTA/Tile/Tile.h"
 
+bool ABuilder::IsConstructionSiteValid(const UBuilding* ConstructionSite) const
+{
+	if (!ConstructionSite || !ConstructionSite->GetIsUnderConstruction())
+		return false;
+	// if a resource is still needed and there is no income, then the construction site is not valid
+	if (ConstructionSite->GetConstructionProgress().Food < ConstructionSite->GetConstructionCost().Food &&
+		GetOriginBuilding()->GetSettlement()->GetEffectiveProduction().Food <= 0)
+	{
+		return false;
+	}
+	if (ConstructionSite->GetConstructionProgress().Wood < ConstructionSite->GetConstructionCost().Wood &&
+		GetOriginBuilding()->GetSettlement()->GetEffectiveProduction().Wood <= 0)
+	{
+		return false;
+	}
+	if (ConstructionSite->GetConstructionProgress().Stone < ConstructionSite->GetConstructionCost().Stone &&
+		GetOriginBuilding()->GetSettlement()->GetEffectiveProduction().Stone <= 0)
+	{
+		return false;
+	}
+	return true;
+}
+
 void ABuilder::S_Work()
 {
 	if (!GetCurrentTile() || !GetCurrentTile()->GetBuilding())
@@ -52,6 +75,8 @@ bool ABuilder::IsTileValidForWork(const ATile* Tile) const
 	if (Tile->GetClaimant() != GetOriginBuilding()->GetSettlement())
 		return false;
 	if (!Tile->GetBuilding()->GetIsUnderConstruction())
+		return false;
+	if (!IsConstructionSiteValid(Tile->GetBuilding()))
 		return false;
 	return true;
 }
