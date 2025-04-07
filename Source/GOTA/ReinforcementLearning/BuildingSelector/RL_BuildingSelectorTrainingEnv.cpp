@@ -115,7 +115,6 @@ void URL_BuildingSelectorTrainingEnv::GatherAgentReward_Implementation(float& Ou
 	}
 	// result
 	OutReward = Reward;
-	UE_LOG(LogTemp, Warning, TEXT("Reward: %f"), OutReward)
 }
 
 void URL_BuildingSelectorTrainingEnv::GatherAgentCompletion_Implementation(ELearningAgentsCompletion& OutCompletion,
