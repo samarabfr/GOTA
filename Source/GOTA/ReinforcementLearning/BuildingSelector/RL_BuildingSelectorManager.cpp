@@ -151,8 +151,8 @@ void ARL_BuildingSelectorManager::SelectBuildingAction()
 	{
 		if (bIsFirstStepAfterReset)
 		{
-			Policy->RunInference(0.0f);
 			bIsFirstStepAfterReset = false;
+			Policy->RunInference(0.0f);
 		}
 		else
 		{

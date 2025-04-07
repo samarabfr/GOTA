@@ -39,6 +39,8 @@ public:
 private:
 	float VictoryReward = 1000;
 	float LooseReward = -1000;
+	float RewardPerPop = 1;
+	int16 LastPopSize = 0;
 	TArray<FMilestone> IncomeRewardMilestones;
 	TArray<FMilestone> ResourcesRewardMilestones;
 

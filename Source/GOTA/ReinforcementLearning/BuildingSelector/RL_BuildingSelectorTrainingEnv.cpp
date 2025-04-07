@@ -6,6 +6,7 @@
 #include "RL_BuildingSelectorAgent.h"
 #include "GOTA/Settlement/Settlement.h"
 #include "GOTA/GameplayFramework/GS_Ingame.h"
+#include "GOTA/Settlement/SettlementPopulation.h"
 
 URL_BuildingSelectorTrainingEnv::URL_BuildingSelectorTrainingEnv()
 {
@@ -42,6 +43,14 @@ void URL_BuildingSelectorTrainingEnv::GatherAgentReward_Implementation(float& Ou
 		{
 			Reward += LooseReward;
 		}
+	}
+	// progress reward from pop
+	if (ASettlement* Settlement = Agent->GetSettlement())
+	{
+		int16 CurrentPopSize = Settlement->GetPopulation()->GetSize();
+		const float PopReward = (CurrentPopSize - LastPopSize) * RewardPerPop;
+		Reward += PopReward;
+		LastPopSize = CurrentPopSize;
 	}
 	// progress Reward von Milestones
 	TArray<int32> MilestonesReached = Agent->GetMilestonesReached();
@@ -106,6 +115,7 @@ void URL_BuildingSelectorTrainingEnv::GatherAgentReward_Implementation(float& Ou
 	}
 	// result
 	OutReward = Reward;
+	UE_LOG(LogTemp, Warning, TEXT("Reward: %f"), OutReward)
 }
 
 void URL_BuildingSelectorTrainingEnv::GatherAgentCompletion_Implementation(ELearningAgentsCompletion& OutCompletion,
@@ -117,4 +127,5 @@ void URL_BuildingSelectorTrainingEnv::GatherAgentCompletion_Implementation(ELear
 void URL_BuildingSelectorTrainingEnv::ResetAgentEpisode_Implementation(const int32 AgentId)
 {
 	// return to starting conditions
+	LastPopSize = 0;
 }
