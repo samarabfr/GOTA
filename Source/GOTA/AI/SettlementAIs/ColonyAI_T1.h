@@ -31,7 +31,7 @@ public:
 	// --------------------Building----------------------
 private:
 	UPROPERTY(EditDefaultsOnly)
-	float FoodBuildingFoodResourceThreshold = 300.0f;
+	float FoodBuildingFoodIncomeThreshold = 2.0f;
 
 	UPROPERTY(EditDefaultsOnly)
 	FConstructionResources BarracksIncomeThreshold = FConstructionResources(3, 2, 0.5);

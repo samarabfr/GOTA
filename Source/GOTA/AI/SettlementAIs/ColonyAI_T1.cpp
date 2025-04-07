@@ -153,7 +153,7 @@ UBuildingSettings* AColonyAI_T1::SelectNewBuilding() const
 			continue;
 		}
 		// if food income is too low build food buildings
-		if ((Income.Food <= 0 || GetPossessedSettlement()->GetResources().Food < FoodBuildingFoodResourceThreshold) &&
+		if (Income.Food < FoodBuildingFoodIncomeThreshold &&
 			ViableBuildings[i]->ProductionType != EProductionType::Food)
 		{
 			ViableBuildings.RemoveAt(i);
