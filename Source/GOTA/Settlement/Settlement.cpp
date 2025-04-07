@@ -75,10 +75,12 @@ void ASettlement::S_Init(ATile* SpawnTile)
 {
 	S_AddResources(StartingResources);
 
+	// spawn first building
 	if (SpawnTile->S_TryForceBuild(StartingBuildings[0], this))
 	{
 		SpawnTile->GetBuilding()->S_FinishConstruction();
 	}
+	// spawn every other start building
 	for (int32 i = 1; i < StartingBuildings.Num(); ++i)
 	{
 		if (BorderingUnclaimedTiles.Num() <= 0)
@@ -86,12 +88,14 @@ void ASettlement::S_Init(ATile* SpawnTile)
 			UE_LOG(LogTemp, Warning, TEXT("Did not have enough bordering tiles to place starting buildings"))
 			break;
 		}
-		ATile* Tile = BorderingUnclaimedTiles[FMath::RandRange(0, BorderingUnclaimedTiles.Num() - 1)];
+		TArray<ATile*> BestTiles = FindTilesWithMostNeighborBuildings();
+		ATile* Tile = BestTiles[FMath::RandRange(0, BestTiles.Num() - 1)];
 		if (Tile && Tile->S_TryBuild(StartingBuildings[i], this))
 		{
 			Tile->GetBuilding()->S_FinishConstruction();
 		}
 	}
+	// fill up start building
 	for (ATile* Tile : ClaimedTiles)
 	{
 		if (Tile &&
@@ -341,6 +345,40 @@ bool ASettlement::CanAddConstructionSite() const
 		return false;
 	}
 	return true;
+}
+
+TArray<ATile*> ASettlement::FindTilesWithMostNeighborBuildings() const
+{
+	TMap<ATile*, int32> TilesWithNeighborBuildings;
+	// Find max Neighbor pop
+	int32 MaxNeighborBuildings = 0;
+	for (ATile* BorderingUnclaimedTile : BorderingUnclaimedTiles)
+	{
+		int32 BuildingCount = 0;
+		for (ATile* Neighbor : BorderingUnclaimedTile->Neighbors)
+		{
+			if (Neighbor && Neighbor->GetClaimant() &&
+				Neighbor->GetClaimant()->GetAffiliation() == GetAffiliation())
+			{
+				++BuildingCount;
+			}
+		}
+		TilesWithNeighborBuildings.Add(BorderingUnclaimedTile, BuildingCount);
+		if (BuildingCount > MaxNeighborBuildings)
+		{
+			MaxNeighborBuildings = BuildingCount;
+		}
+	}
+	// Get all tiles with max neighbor pop
+	TArray<ATile*> TilesWithMostNeighborBuildings;
+	for (auto TileWithNeighborBuildings : TilesWithNeighborBuildings)
+	{
+		if (TileWithNeighborBuildings.Value == MaxNeighborBuildings)
+		{
+			TilesWithMostNeighborBuildings.Add(TileWithNeighborBuildings.Key);
+		}
+	}
+	return TilesWithMostNeighborBuildings;
 }
 
 void ASettlement::S_RegisterBuildingForIncome(UBuilding* Building)

@@ -116,6 +116,7 @@ public:
 	int32 GetCountOfConstructionSites() const;
 	TArray<UBuilding*> GetAllBuildings() const;
 	bool CanAddConstructionSite() const;
+	TArray<ATile*> FindTilesWithMostNeighborBuildings() const;
 
 	// --------------------------- Resources ---------------------------
 private:
