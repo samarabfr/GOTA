@@ -26,19 +26,29 @@ ARL_BuildingSelectorManager::ARL_BuildingSelectorManager()
 	Tags.Add("LearningAgentsManager");
 }
 
-void ARL_BuildingSelectorManager::DoLastTrainingRound(const EGameEnding Ending, const FString& EndMessage)
+void ARL_BuildingSelectorManager::HandleGameEnding(const EGameEnding Ending, const FString& EndMessage)
 {
-	PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings);
+	TrainingEnvironment->GatherCompletions();
+	TrainingEnvironment->GatherRewards();
+	PPOTrainer->ProcessExperience(false);
+	bIsFirstStepAfterReset = true;
 	Pause();
 }
 
 void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encoder,
                                          ULearningAgentsNeuralNetwork* NN_Policy,
                                          ULearningAgentsNeuralNetwork* NN_Decoder,
-                                         ULearningAgentsNeuralNetwork* NN_Critic)
+                                         ULearningAgentsNeuralNetwork* NN_Critic,
+                                         bool RunTraining)
 {
+	bRunTraining = RunTraining;
 	AGS_Ingame* GameState = GetWorld()->GetGameState<AGS_Ingame>();
-	if (GameState) GameState->OnGameEnding.AddDynamic(this, &ARL_BuildingSelectorManager::DoLastTrainingRound);
+	if (!GameState)
+		return;
+	if (bRunTraining)
+	{
+		GameState->OnGameEnding.AddDynamic(this, &ARL_BuildingSelectorManager::HandleGameEnding);
+	}
 	// Interactor
 	Interactor = ULearningAgentsInteractor::MakeInteractor(
 		ManagerComponent, URL_BuildingSelectorInteractor::StaticClass(), FName("BuildingSelectorInteractor"));
@@ -51,9 +61,9 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	                                           NN_Encoder,
 	                                           NN_Policy,
 	                                           NN_Decoder,
-	                                           !bRunInference && bResetNNsWhenStartingTraining,
-	                                           !bRunInference && bResetNNsWhenStartingTraining,
-	                                           !bRunInference && bResetNNsWhenStartingTraining,
+	                                           bRunTraining && bResetNNsWhenStartingTraining,
+	                                           bRunTraining && bResetNNsWhenStartingTraining,
+	                                           bRunTraining && bResetNNsWhenStartingTraining,
 	                                           PolicySettings,
 	                                           PolicySeed);
 	// Critic
@@ -63,22 +73,22 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	                                           ULearningAgentsCritic::StaticClass(),
 	                                           FName("BuildingSelectorCritic"),
 	                                           NN_Critic,
-	                                           !bRunInference && bResetNNsWhenStartingTraining,
+	                                           bRunTraining && bResetNNsWhenStartingTraining,
 	                                           CriticSettings,
 	                                           CriticSeed);
 	// Training Environment
-	TrainingEnv = ULearningAgentsTrainingEnvironment::MakeTrainingEnvironment(
+	TrainingEnvironment = ULearningAgentsTrainingEnvironment::MakeTrainingEnvironment(
 		ManagerComponent,
 		URL_BuildingSelectorTrainingEnv::StaticClass(),
 		FName("BuildingSelectorTrainingEnvironment"));
-	if (URL_BuildingSelectorTrainingEnv* BSTrainingEnv = Cast<URL_BuildingSelectorTrainingEnv>(TrainingEnv))
+	if (URL_BuildingSelectorTrainingEnv* BSTrainingEnv = Cast<URL_BuildingSelectorTrainingEnv>(TrainingEnvironment))
 	{
 		BSTrainingEnv->Init(GameState, VictoryReward, LooseReward, IncomeRewardMilestones, ResourcesRewardMilestones);
 	}
 	// Shared Memory
 	FLearningAgentsTrainerProcessSettings TrainerProcessSettings = FLearningAgentsTrainerProcessSettings();
-	TrainerProcessSettings.NonEditorEngineRelativePath =  NonEditorEngineRelativePath;
-	TrainerProcessSettings.NonEditorIntermediateRelativePath =  NonEditorIntermediateRelativePath;
+	TrainerProcessSettings.NonEditorEngineRelativePath = NonEditorEngineRelativePath;
+	TrainerProcessSettings.NonEditorIntermediateRelativePath = NonEditorIntermediateRelativePath;
 	FLearningAgentsSharedMemoryCommunicatorSettings SharedMemorySettings =
 		FLearningAgentsSharedMemoryCommunicatorSettings();
 	TrainerProcess = ULearningAgentsCommunicatorLibrary::SpawnSharedMemoryTrainingProcess(
@@ -88,14 +98,19 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	// PPO Trainer
 	FLearningAgentsPPOTrainerSettings TrainerSettings = FLearningAgentsPPOTrainerSettings();
 	PPOTrainer = ULearningAgentsPPOTrainer::MakePPOTrainer(
-		ManagerComponent, Interactor, TrainingEnv, Policy, Critic, Communicator,
+		ManagerComponent, Interactor, TrainingEnvironment, Policy, Critic, Communicator,
 		ULearningAgentsPPOTrainer::StaticClass(), FName("PPOTrainer"), TrainerSettings);
 	TrainingSettings = FLearningAgentsPPOTrainingSettings();
 	TrainingSettings.bUseTensorboard = bUseTensorboard;
 	TrainingGameSettings = FLearningAgentsTrainingGameSettings();
+	// even though fixed time step is managed in the selfPlay GameMode,
+	// we have to set the fixed time step here because it always overwrites
+	TrainingGameSettings.bUseFixedTimeStep = true;
+	const float FixedDeltaTime = FApp::GetFixedDeltaTime();
+	TrainingGameSettings.FixedTimeStepFrequency = 1.0f / FixedDeltaTime;
 }
 
-bool ARL_BuildingSelectorManager::IsPaused()
+bool ARL_BuildingSelectorManager::IsPaused() const
 {
 	return bPaused;
 }
@@ -116,7 +131,7 @@ void ARL_BuildingSelectorManager::S_RegisterAgent(UObject* Agent)
 	ManagerComponent->AddAgent(Agent);
 }
 
-bool ARL_BuildingSelectorManager::IsRegistered(UObject* Agent)
+bool ARL_BuildingSelectorManager::IsRegistered(UObject* Agent) const
 {
 	if (!ManagerComponent || !Agent) return false;
 	return ManagerComponent->HasAgentObject(Agent);
@@ -125,12 +140,25 @@ bool ARL_BuildingSelectorManager::IsRegistered(UObject* Agent)
 void ARL_BuildingSelectorManager::SelectBuilding()
 {
 	if (IsPaused()) return;
-	if (bRunInference)
+	if (!bRunTraining)
 	{
 		Policy->RunInference(0.0f);
 	}
 	else
 	{
-		PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings);
+		if (bIsFirstStepAfterReset)
+		{
+			Policy->RunInference(0.0f);
+			bIsFirstStepAfterReset = false;
+		}
+		else
+		{
+			PPOTrainer->RunTraining(TrainingSettings, TrainingGameSettings, false, false);
+		}
 	}
+}
+
+int32 ARL_BuildingSelectorManager::GetStepNum(UObject* Agent) const
+{
+	return PPOTrainer->GetEpisodeStepNum(ManagerComponent->GetAgentId(Agent));
 }

@@ -66,17 +66,31 @@ void ATileMap::BeginPlay()
 void ATileMap::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-	int32 CountTileTicked = 0;
-	while (CountTileTicked < TileTicksPerFrame)
+	if (bEnableTileTickSplit)
 	{
-		if (ATile* Tile = Tiles[IndexPosition])
+		// tick a set amount of tiles per frame
+		// Has following problem: the higher the deltaSeconds the higher the gameTime distance between tile sections.
+		// This can occur when fps is low or with time dilation, leading up to multiple seconds between each tick for a tile.
+		int32 CountTileTicked = 0;
+		while (CountTileTicked < TileTicksPerFrame)
 		{
-			Tile->GOTATick();
-			++CountTileTicked;
+			if (ATile* Tile = Tiles[IndexPosition])
+			{
+				Tile->GOTATick();
+				++CountTileTicked;
+			}
+			++IndexPosition;
+			if (IndexPosition >= Tiles.Num())
+				IndexPosition = 0;
 		}
-		++IndexPosition;
-		if (IndexPosition >= Tiles.Num())
-			IndexPosition = 0;
+	}
+	else
+	{
+		for (ATile* Tile : Tiles)
+		{
+			if (Tile)
+				Tile->GOTATick();
+		}
 	}
 }
 

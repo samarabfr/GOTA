@@ -19,13 +19,22 @@ protected:
 
 public:
 	virtual void Delete();
+	virtual void S_Init(bool RunTraining = false);
 
 	// --------------------------- Possessing ---------------------------
 private:
 	UPROPERTY(VisibleInstanceOnly)
-	ASettlement* PossessedSettlement = nullptr;
+	TWeakObjectPtr<ASettlement> PossessedSettlement;
 
 public:
-	void Possess(ASettlement* Settlement);
+	virtual void Possess(ASettlement* Settlement);
 	ASettlement* GetPossessedSettlement() const;
+	
+	// ----------------------- Reinforcment Learning -----------------------
+protected:
+	bool bRunTraining = false;
+	
+	// --------------------------- Log ---------------------------
+public:
+	virtual TSharedPtr<FJsonObject> Log();
 };

@@ -28,11 +28,14 @@ public class GOTA : ModuleRules
 			"GameplayStateTreeModule",
 			"AIModule",
 			"NetCore",
-			"RHI"
+			"RHI",
+			"Json"
 		});
-
-		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
+		
+		if (Target.bBuildEditor)
+		{
+			PrivateDependencyModuleNames.Add("UnrealEd");
+		}
 
 		// Uncomment if you are using online features
 		// PrivateDependencyModuleNames.Add("OnlineSubsystem");

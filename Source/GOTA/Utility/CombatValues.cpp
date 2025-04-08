@@ -8,7 +8,7 @@ void UCombatValues::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLif
 	DOREPLIFETIME(UCombatValues, IndividualAttack);
 	DOREPLIFETIME(UCombatValues, IndividualMaxHP);
 	DOREPLIFETIME(UCombatValues, IndividualCount);
-	DOREPLIFETIME(UCombatValues, CurrentTotalHP);
+	DOREPLIFETIME(UCombatValues, CurrentDamage);
 	DOREPLIFETIME(UCombatValues, AttackSpeed);
 }
 
@@ -17,24 +17,24 @@ bool UCombatValues::IsSupportedForNetworking() const
 	return true;
 }
 
-int32 UCombatValues::GetIndividualAttack()
+int32 UCombatValues::GetIndividualAttack() const
 {
 	return IndividualAttack;
 }
 
-int32 UCombatValues::GetIndividualMaxHP()
+int32 UCombatValues::GetIndividualMaxHP() const
 {
 	return IndividualMaxHP;
 }
 
-int32 UCombatValues::GetIndividualCount()
+int32 UCombatValues::GetIndividualCount() const
 {
 	return IndividualCount;
 }
 
-int32 UCombatValues::GetCurrentTotalHP()
+int32 UCombatValues::GetCurrentTotalHP() const
 {
-	return CurrentTotalHP;
+	return GetMaxHP() - GetCurrentDamage();
 }
 
 float UCombatValues::GetAttackSpeed()
@@ -42,54 +42,80 @@ float UCombatValues::GetAttackSpeed()
 	return AttackSpeed;
 }
 
-void UCombatValues::SetIndividualAttack(int32 NewAttack)
+void UCombatValues::S_SetIndividualAttack(int32 NewAttack)
 {
+	if (IndividualAttack == NewAttack || NewAttack < 0)
+		return;
 	IndividualAttack = NewAttack;
-	OnChanged.Broadcast(this);
+	OnChanged.Broadcast();
 }
 
-void UCombatValues::SetIndividualMaxHP(int32 NewIndividualMaxHP)
+void UCombatValues::S_SetIndividualMaxHP(int32 NewIndividualMaxHP)
 {
-	int32 Difference = NewIndividualMaxHP - IndividualMaxHP;
-	SetCurrentTotalHP(GetCurrentTotalHP() + Difference * IndividualCount);
+	if (IndividualMaxHP == NewIndividualMaxHP || NewIndividualMaxHP < 0)
+		return;
 	IndividualMaxHP = NewIndividualMaxHP;
-	OnChanged.Broadcast(this);
+	OnChanged.Broadcast();
 }
 
-void UCombatValues::SetIndividualCount(int32 NewIndividualCount)
+void UCombatValues::S_SetCurrentDamage(int32 NewCurrentDamage)
 {
-	int32 Difference = NewIndividualCount - IndividualCount;
-	SetCurrentTotalHP(GetCurrentTotalHP() + Difference * IndividualMaxHP);
+	if (CurrentDamage == NewCurrentDamage || NewCurrentDamage < 0)
+		return;
+	if (NewCurrentDamage >= GetIndividualMaxHP())
+	{
+		S_SetIndividualCount(GetIndividualCount() - 1);
+		CurrentDamage = 0;
+	}
+	else
+	{
+		CurrentDamage = NewCurrentDamage;
+	}
+	OnChanged.Broadcast();
+}
+
+void UCombatValues::S_SetIndividualCount(int32 NewIndividualCount)
+{
+	if (IndividualCount == NewIndividualCount)
+		return;
 	IndividualCount = NewIndividualCount;
-	OnChanged.Broadcast(this);
-}
-
-void UCombatValues::SetCurrentTotalHP(int32 NewCurrentTotalHP)
-{
-	CurrentTotalHP = NewCurrentTotalHP;
-	OnChanged.Broadcast(this);
-	if(CurrentTotalHP <= 0)
+	OnChanged.Broadcast();
+	if (IndividualCount <= 0)
+	{
 		OnDeath.Broadcast();
+	}
 }
 
-void UCombatValues::SetAttackSpeed(float NewAttackSpeed)
+void UCombatValues::S_SetAttackSpeed(float NewAttackSpeed)
 {
+	if (AttackSpeed == NewAttackSpeed || NewAttackSpeed <= 0.0f)
+		return;
 	AttackSpeed = NewAttackSpeed;
-	OnChanged.Broadcast(this);
+	OnChanged.Broadcast();
 }
 
-void UCombatValues::SetAll(int32 NewAttack, int32 NewIndividualHP, int32 NewIndividuals, float NewAttackSpeed)
+void UCombatValues::S_Init(int32 NewAttack, int32 NewIndividualHP, int32 NewIndividualCount, float NewAttackSpeed)
 {
 	IndividualAttack = NewAttack;
 	IndividualMaxHP = NewIndividualHP;
-	IndividualCount = NewIndividuals;
+	IndividualCount = NewIndividualCount;
 	AttackSpeed = NewAttackSpeed;
-	OnChanged.Broadcast(this);
+	OnChanged.Broadcast();
+}
+
+void UCombatValues::S_ReceiveDamage(int32 DamageAmount)
+{
+	S_SetCurrentDamage(GetCurrentDamage() + DamageAmount);
 }
 
 int32 UCombatValues::GetMaxHP() const
 {
 	return IndividualCount * IndividualMaxHP;
+}
+
+int32 UCombatValues::GetCurrentDamage() const
+{
+	return CurrentDamage;
 }
 
 int32 UCombatValues::GetAttack() const

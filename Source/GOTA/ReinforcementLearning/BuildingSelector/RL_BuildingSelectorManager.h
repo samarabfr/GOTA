@@ -29,14 +29,10 @@ protected:
 	ARL_BuildingSelectorManager();
 
 	UFUNCTION()
-	void DoLastTrainingRound(const EGameEnding Ending, const FString& EndMessage);
+	void HandleGameEnding(const EGameEnding Ending, const FString& EndMessage);
 
 	// ----------------------- Learning Agents plugin -----------------------
 private:
-	UPROPERTY(EditDefaultsOnly)
-	bool bRunInference = false;
-	UPROPERTY(EditDefaultsOnly)
-	bool bResetNNsWhenStartingTraining = false;
 	UPROPERTY(EditDefaultsOnly)
 	bool bUseTensorboard = false;
 	UPROPERTY(EditDefaultsOnly)
@@ -45,6 +41,9 @@ private:
 	FString NonEditorIntermediateRelativePath = "../../../GOTAFunzt/Intermediate";
 	UPROPERTY(EditDefaultsOnly)
 	ULearningAgentsManager* ManagerComponent;
+
+	bool bRunTraining = false;
+	bool bResetNNsWhenStartingTraining = false;
 
 	UPROPERTY()
 	ULearningAgentsInteractor* Interactor;
@@ -60,7 +59,7 @@ private:
 	int32 CriticSeed = 1234;
 
 	UPROPERTY()
-	ULearningAgentsTrainingEnvironment* TrainingEnv;
+	ULearningAgentsTrainingEnvironment* TrainingEnvironment;
 	UPROPERTY(EditDefaultsOnly)
 	float VictoryReward = 1000;
 	UPROPERTY(EditDefaultsOnly)
@@ -79,14 +78,16 @@ private:
 	FLearningAgentsTrainingGameSettings TrainingGameSettings;
 
 	bool bPaused = false;
+	bool bIsFirstStepAfterReset = false;
 
 public:
 	void S_RegisterAgent(UObject* Agent);
 	void S_Init(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
-	            ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic);
-	bool IsPaused();
+	            ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic, bool RunTraining);
+	bool IsPaused() const;
 	void Pause();
 	void Unpause();
-	bool IsRegistered(UObject* Agent);
+	bool IsRegistered(UObject* Agent) const;
 	void SelectBuilding();
+	int32 GetStepNum(UObject* Agent) const;
 };

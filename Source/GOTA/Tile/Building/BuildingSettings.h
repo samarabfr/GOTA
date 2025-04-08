@@ -106,6 +106,9 @@ public:
 	float SecondsPerRecruitCycle = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="SpecialType|Army", meta=(EditCondition = bArmyEnabled))
+	float ArmyGoAttackModeTime = 60.0f;
+
+	UPROPERTY(EditDefaultsOnly, Category="SpecialType|Army", meta=(EditCondition = bArmyEnabled))
 	float ArmyMoveTime = 0.0f;
 
 	UPROPERTY(EditDefaultsOnly, Category="SpecialType|Army", meta=(EditCondition = bArmyEnabled))

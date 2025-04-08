@@ -6,6 +6,7 @@
 #include "Blueprint/StateTreeTaskBlueprintBase.h"
 #include "StateTreeArmyTasks.generated.h"
 
+class ATile;
 class AArmy;
 
 USTRUCT()
@@ -26,10 +27,11 @@ struct GOTA_API FArmyFindPathInstanceData
 	// automatically takes from the context
 	UPROPERTY(EditAnywhere, Category=Context)
 	TObjectPtr<AArmy> ArmyRef = nullptr;
-
-
+	
 	UPROPERTY(EditAnywhere, Category=Parameter)
 	bool bOverridePathIn = true;
+
+	UE::Tasks::TTask<TArray<ATile*>> PathfindingTask;
 };
 
 USTRUCT(DisplayName="AttackEnemy")
@@ -83,6 +85,7 @@ struct GOTA_API FSTT_FindPathToNearestEnemy : public FStateTreeTaskCommonBase
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
 };
 
 USTRUCT(DisplayName="Find path to nearest enemy unprotected normal building")
@@ -94,6 +97,7 @@ struct GOTA_API FSTT_FindPathToNearestEnemyUnprotectedNormalBuilding : public FS
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
 };
 
 USTRUCT(DisplayName="Find path to nearest enemy defense building")
@@ -105,6 +109,7 @@ struct GOTA_API FSTT_FindPathToNearestEnemyDefenseBuilding : public FStateTreeTa
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
 };
 
 USTRUCT(DisplayName="Find Path to nearest Recruitable")
@@ -116,6 +121,7 @@ struct GOTA_API FSTT_FindPathToNearestRecruitable : public FStateTreeTaskCommonB
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
 };
 
 USTRUCT(DisplayName="Ravage enemy building")
@@ -139,6 +145,7 @@ struct GOTA_API FSTT_FindPathToGuardTile : public FStateTreeTaskCommonBase
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
 };
 
 USTRUCT(DisplayName="Find path to nearest enemy to guard tile")
@@ -150,6 +157,7 @@ struct GOTA_API FSTT_FindPathToNearestEnemyToGuardTile : public FStateTreeTaskCo
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
 };
 
 USTRUCT(DisplayName="Find path to intercept army")
@@ -161,4 +169,5 @@ struct GOTA_API FSTT_FindPathToInterceptArmy : public FStateTreeTaskCommonBase
 	virtual const UStruct* GetInstanceDataType() const override { return FInstanceDataType::StaticStruct(); }
 
 	virtual EStateTreeRunStatus Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const override;
+	virtual void ExitState(FStateTreeExecutionContext& Context, const FStateTreeTransitionResult& Transition) const override;
 };

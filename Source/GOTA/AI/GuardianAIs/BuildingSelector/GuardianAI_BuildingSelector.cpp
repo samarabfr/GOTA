@@ -9,6 +9,7 @@
 #include "GOTA/ReinforcementLearning/BuildingSelector/RL_BuildingSelectorManager.h"
 #include "GOTA/Settlement/Settlement.h"
 #include "GOTA/Tile/Tile.h"
+#include "GOTA/Tile/Building/BuildingSettings.h"
 #include "GOTA/Utility/Enums.h"
 
 
@@ -16,20 +17,11 @@ void AGuardianAI_BuildingSelector::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	if (!Settlement) return;
-	if (SendArmiesIntervalTimeLeft <= 0.0f)
-	{
-		Settlement->SetAllArmiesOnAttack();
-		SendArmiesIntervalTimeLeft = SendArmiesIntervalTime;
-	}
-	else
-	{
-		SendArmiesIntervalTimeLeft -= DeltaSeconds;
-	}
 	if (Settlement->CanAddConstructionSite())
 	{
 		BuildingSelector->SelectBuilding();
 	}
-	if (bSaveSnapshotsAtIntervals && BuildingSelector && !BuildingSelector->IsPaused())
+	if (bRunTraining && bSaveSnapshotsAtIntervals && BuildingSelector && !BuildingSelector->IsPaused())
 	{
 		const double CurrentTime = FPlatformTime::Seconds();
 		if (CurrentTime - RealTimeLastSnapshotSave >= SaveSnapshotsIntervalTime)
@@ -44,33 +36,48 @@ AGuardianAI_BuildingSelector::AGuardianAI_BuildingSelector()
 {
 }
 
+void AGuardianAI_BuildingSelector::S_Init(bool RunTraining)
+{
+	Super::S_Init(RunTraining);
+	if (!GameState)
+		return;
+	BuildingSelector = GameState->S_GetRLManager<ARL_BuildingSelectorManager>(ManagerClass);
+	MilestonesReached.SetNumZeroed(6);
+	if (!BuildingSelector)
+	{
+		BuildingSelector = GetWorld()->SpawnActor<ARL_BuildingSelectorManager>(ManagerClass,
+		                                                                       FVector::Zero(),
+		                                                                       FRotator::ZeroRotator);
+		BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic, bRunTraining);
+		AddTickPrerequisiteActor(BuildingSelector); // make the manager tick before this
+		GameState->S_AddManager(ManagerClass, BuildingSelector);
+	}
+	if (!BuildingSelector->IsRegistered(this))
+	{
+		BuildingSelector->S_RegisterAgent(this);
+	}
+	if (BuildingSelector->IsPaused())
+	{
+		BuildingSelector->Unpause();
+	}
+}
+
 void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
-	SendArmiesIntervalTimeLeft = SendArmiesIntervalTime;
 	if (HasAuthority())
 	{
 		GameState = Cast<AGS_Ingame>(GetWorld()->GetGameState());
-		BuildingSelector = GameState->S_GetRLManager<ARL_BuildingSelectorManager>(ManagerClass);
 		PossessedGuardian = Cast<AGuardian>(InPawn);
 		Settlement = GameState->GetTribe();
-		MilestonesReached.SetNumZeroed(6);
-		if (!BuildingSelector)
+		// Buildingscounter
+		if (PossessedGuardian)
 		{
-			BuildingSelector = GetWorld()->SpawnActor<ARL_BuildingSelectorManager>(ManagerClass,
-				FVector::Zero(),
-				FRotator::ZeroRotator);
-			BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic);
-			AddTickPrerequisiteActor(BuildingSelector); // make the manager tick before this
-			GameState->S_AddManager(ManagerClass, BuildingSelector);
-		}
-		if (!BuildingSelector->IsRegistered(this))
-		{
-			BuildingSelector->S_RegisterAgent(this);
-		}
-		if (BuildingSelector->IsPaused())
-		{
-			BuildingSelector->Unpause();
+			BuildingsCounter.Empty();
+			for (UBuildingSettings* Building : PossessedGuardian->GetPossibleBuildings())
+			{
+				BuildingsCounter.Add(Building->Name, 0);
+			}
 		}
 	}
 }
@@ -82,7 +89,10 @@ void AGuardianAI_BuildingSelector::RandomlyPlaceBuilding(UBuildingSettings* Buil
 	ATile* Tile = Settlement->BorderingUnclaimedTiles[RandomIndex];
 	if (Tile && Tile->CanBuild(Building, Settlement))
 	{
-		Tile->S_TryBuild(Building, Settlement);
+		if (Tile->S_TryBuild(Building, Settlement))
+		{
+			BuildingsCounter[Building->Name]++;
+		}
 	}
 }
 
@@ -123,13 +133,13 @@ void AGuardianAI_BuildingSelector::SaveModel(const FString& ModelName)
 	FFilePath ModelPath;
 	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / ModelName;
 	FFilePath FullSnapshotPath;
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Critic";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Critic";
 	NN_Critic->SaveNetworkToSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Encoder";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Encoder";
 	NN_Encoder->SaveNetworkToSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Policy";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Policy";
 	NN_Policy->SaveNetworkToSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Decoder";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Decoder";
 	NN_Decoder->SaveNetworkToSnapshot(FullSnapshotPath);
 	UE_LOG(LogTemp, Warning, TEXT("Saving Model to: %s"), *ModelPath.FilePath)
 }
@@ -139,13 +149,13 @@ void AGuardianAI_BuildingSelector::LoadModel(const FString& ModelName)
 	FFilePath ModelPath;
 	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / ModelName;
 	FFilePath FullSnapshotPath;
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Critic";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Critic";
 	NN_Critic->LoadNetworkFromSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Encoder";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Encoder";
 	NN_Encoder->LoadNetworkFromSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Policy";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Policy";
 	NN_Policy->LoadNetworkFromSnapshot(FullSnapshotPath);
-	FullSnapshotPath.FilePath = ModelPath.FilePath + "Decoder";
+	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Decoder";
 	NN_Decoder->LoadNetworkFromSnapshot(FullSnapshotPath);
 	UE_LOG(LogTemp, Warning, TEXT("Loading Model from: %s"), *ModelPath.FilePath)
 }
@@ -153,4 +163,16 @@ void AGuardianAI_BuildingSelector::LoadModel(const FString& ModelName)
 FString AGuardianAI_BuildingSelector::GetAgentName()
 {
 	return SnapshotAgentName;
+}
+
+TSharedPtr<FJsonObject> AGuardianAI_BuildingSelector::Log()
+{
+	TSharedPtr<FJsonObject> NewLog = MakeShareable(new FJsonObject());
+	// TODO: Add GotaID
+	for (auto Counter : BuildingsCounter)
+	{
+		NewLog->SetNumberField(Counter.Key.ToString(), Counter.Value);
+	}
+	NewLog->SetNumberField(TEXT("StepNum"), BuildingSelector->GetStepNum(this));
+	return NewLog;
 }

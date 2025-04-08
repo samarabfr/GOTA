@@ -3,6 +3,8 @@
 
 #include "SettlementAIController.h"
 
+#include "GOTA/Settlement/Settlement.h"
+
 
 ASettlementAIController::ASettlementAIController()
 {
@@ -23,6 +25,11 @@ void ASettlementAIController::Delete()
 	}
 }
 
+void ASettlementAIController::S_Init(bool RunTraining)
+{
+	bRunTraining = RunTraining;
+}
+
 void ASettlementAIController::Possess(ASettlement* Settlement)
 {
 	PossessedSettlement = Settlement;
@@ -30,5 +37,10 @@ void ASettlementAIController::Possess(ASettlement* Settlement)
 
 ASettlement* ASettlementAIController::GetPossessedSettlement() const
 {
-	return PossessedSettlement;
+	return PossessedSettlement.Get();
+}
+
+TSharedPtr<FJsonObject> ASettlementAIController::Log()
+{
+	return MakeShareable(new FJsonObject());
 }

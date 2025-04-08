@@ -2,6 +2,7 @@
 
 #pragma once
 #include "AIController.h"
+#include "GOTA/AI/GuardianAIs/GuardianAIController.h"
 #include "GOTA/ReinforcementLearning/Runner/RL_RunnerAgent.h"
 #include "GOTA/ReinforcementLearning/SnapshotSystem/SnapshotAgent.h"
 
@@ -14,7 +15,7 @@ class ULearningAgentsNeuralNetwork;
 class ATile;
 
 UCLASS(Blueprintable)
-class GOTA_API AGuardianAI_Runner : public AAIController, public IRL_RunnerAgent, public ISnapshotAgent
+class GOTA_API AGuardianAI_Runner : public AGuardianAIController, public IRL_RunnerAgent, public ISnapshotAgent
 {
 	GENERATED_BODY()
 
@@ -26,7 +27,8 @@ private:
 
 protected:
 	AGuardianAI_Runner();
-
+public:
+	virtual void S_Init(bool RunTraining = false) override;
 	
 	// ----------------------- Utility -----------------------
 private:

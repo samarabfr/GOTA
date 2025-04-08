@@ -45,14 +45,14 @@ protected:
 	virtual bool IsTileValidForWork(const ATile* Tile) const;
 	int32 GetWorkAmount() const;
 	UResourceStorage* GetStorage() const;
-	bool S_TryFindPathToClosestWorkTile();
-	bool S_TryFindPathToWorkTileClosestToSettlement();
+	TArray<ATile*> FindPathToClosestWorkTile() const;
+	TArray<ATile*> FindPathToWorkTileClosestToSettlement() const;
 
 public:
 	virtual void S_Work();
-	virtual bool S_TryFindPathToBestWorkTile();
-	bool S_TryFindPathToPriorityTile();
-	bool S_TryFindPathToOriginBuilding();
+	virtual TArray<ATile*> FindPathToBestWorkTile() const;
+	TArray<ATile*> FindPathToPriorityTile() const;
+	TArray<ATile*> FindPathToOriginBuilding() const;
 	virtual bool IsCurrentTileAmongBestWorkTiles();
 	bool IsCurrentTilePriorityTile() const;
 	float GetWorkRate() const;

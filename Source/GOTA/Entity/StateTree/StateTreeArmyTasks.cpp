@@ -95,59 +95,151 @@ EStateTreeRunStatus FSTT_FindPathToNearestEnemy::Tick(FStateTreeExecutionContext
 {
 	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
 	if (!Army) return EStateTreeRunStatus::Failed;
-
 	const bool bOverridePath = Context.GetInstanceData(*this).bOverridePathIn;
 	if (!bOverridePath && !Army->IsPathEmpty()) return EStateTreeRunStatus::Succeeded;
+	// do pathfinding asynchronously with tasks
+	UE::Tasks::TTask<TArray<ATile*>> PathfindingTask = Context.GetInstanceData(*this).PathfindingTask;
+	// launch task if it isnt yet or has completed unsuccesfully
+	if (!PathfindingTask.IsValid() || PathfindingTask.IsCompleted() && PathfindingTask.GetResult().IsEmpty())
+	{
+		Context.GetInstanceData(*this).PathfindingTask = UE::Tasks::Launch(
+			UE_SOURCE_LOCATION,
+			[Army]
+			{
+				return Army->FindPathToNearestEnemy();
+			}
+		);
+		return EStateTreeRunStatus::Running;
+	}
+	// complete when task has found path
+	if (PathfindingTask.IsCompleted() && !PathfindingTask.GetResult().IsEmpty())
+	{
+		Army->S_SetPath(PathfindingTask.GetResult());
+		return EStateTreeRunStatus::Succeeded;
+	}
+	// task is still computing
+	return EStateTreeRunStatus::Running;
+}
 
-	return Army->S_TryFindPathToNearestEnemy()
-			   ? EStateTreeRunStatus::Succeeded
-			   : EStateTreeRunStatus::Running;
+void FSTT_FindPathToNearestEnemy::ExitState(FStateTreeExecutionContext& Context,
+	const FStateTreeTransitionResult& Transition) const
+{
+	Context.GetInstanceData(*this).PathfindingTask = {};
 }
 
 EStateTreeRunStatus FSTT_FindPathToNearestEnemyUnprotectedNormalBuilding::Tick(FStateTreeExecutionContext& Context,
-	const float DeltaTime) const
+                                                                               const float DeltaTime) const
 {
 	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
 	if (!Army) return EStateTreeRunStatus::Failed;
-
 	const bool bOverridePath = Context.GetInstanceData(*this).bOverridePathIn;
 	if (!bOverridePath && !Army->IsPathEmpty()) return EStateTreeRunStatus::Succeeded;
+	// do pathfinding asynchronously with tasks
+	UE::Tasks::TTask<TArray<ATile*>> PathfindingTask = Context.GetInstanceData(*this).PathfindingTask;
+	// launch task if it isnt yet or has completed unsuccesfully
+	if (!PathfindingTask.IsValid() || PathfindingTask.IsCompleted() && PathfindingTask.GetResult().IsEmpty())
+	{
+		Context.GetInstanceData(*this).PathfindingTask = UE::Tasks::Launch(
+			UE_SOURCE_LOCATION,
+			[Army]
+			{
+				return Army->FindPathToNearestEnemyUnprotectedNormalBuilding();
+			}
+		);
+		return EStateTreeRunStatus::Running;
+	}
+	// complete when task has found path
+	if (PathfindingTask.IsCompleted() && !PathfindingTask.GetResult().IsEmpty())
+	{
+		Army->S_SetPath(PathfindingTask.GetResult());
+		return EStateTreeRunStatus::Succeeded;
+	}
+	// task is still computing
+	return EStateTreeRunStatus::Running;
+}
 
-	return Army->S_TryFindPathToNearestEnemyUnprotectedNormalBuilding()
-			   ? EStateTreeRunStatus::Succeeded
-			   : EStateTreeRunStatus::Running;
+void FSTT_FindPathToNearestEnemyUnprotectedNormalBuilding::ExitState(FStateTreeExecutionContext& Context,
+	const FStateTreeTransitionResult& Transition) const
+{
+	Context.GetInstanceData(*this).PathfindingTask = {};
 }
 
 EStateTreeRunStatus FSTT_FindPathToNearestEnemyDefenseBuilding::Tick(FStateTreeExecutionContext& Context,
-	const float DeltaTime) const
+                                                                     const float DeltaTime) const
 {
 	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
 	if (!Army) return EStateTreeRunStatus::Failed;
-
 	const bool bOverridePath = Context.GetInstanceData(*this).bOverridePathIn;
 	if (!bOverridePath && !Army->IsPathEmpty()) return EStateTreeRunStatus::Succeeded;
+	// do pathfinding asynchronously with tasks
+	UE::Tasks::TTask<TArray<ATile*>> PathfindingTask = Context.GetInstanceData(*this).PathfindingTask;
+	// launch task if it isnt yet or has completed unsuccesfully
+	if (!PathfindingTask.IsValid() || PathfindingTask.IsCompleted() && PathfindingTask.GetResult().IsEmpty())
+	{
+		Context.GetInstanceData(*this).PathfindingTask = UE::Tasks::Launch(
+			UE_SOURCE_LOCATION,
+			[Army]
+			{
+				return Army->FindPathToNearestEnemyDefenseBuilding();
+			}
+		);
+		return EStateTreeRunStatus::Running;
+	}
+	// complete when task has found path
+	if (PathfindingTask.IsCompleted() && !PathfindingTask.GetResult().IsEmpty())
+	{
+		Army->S_SetPath(PathfindingTask.GetResult());
+		return EStateTreeRunStatus::Succeeded;
+	}
+	// task is still computing
+	return EStateTreeRunStatus::Running;
+}
 
-	return Army->S_TryFindPathToNearestEnemyDefenseBuilding()
-			   ? EStateTreeRunStatus::Succeeded
-			   : EStateTreeRunStatus::Running;
+void FSTT_FindPathToNearestEnemyDefenseBuilding::ExitState(FStateTreeExecutionContext& Context,
+	const FStateTreeTransitionResult& Transition) const
+{
+	Context.GetInstanceData(*this).PathfindingTask = {};
 }
 
 EStateTreeRunStatus FSTT_FindPathToNearestRecruitable::Tick(FStateTreeExecutionContext& Context,
-	const float DeltaTime) const
+                                                            const float DeltaTime) const
 {
 	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
 	if (!Army) return EStateTreeRunStatus::Failed;
-
 	const bool bOverridePath = Context.GetInstanceData(*this).bOverridePathIn;
 	if (!bOverridePath && !Army->IsPathEmpty()) return EStateTreeRunStatus::Succeeded;
+	// do pathfinding asynchronously with tasks
+	UE::Tasks::TTask<TArray<ATile*>> PathfindingTask = Context.GetInstanceData(*this).PathfindingTask;
+	// launch task if it isnt yet or has completed unsuccesfully
+	if (!PathfindingTask.IsValid() || PathfindingTask.IsCompleted() && PathfindingTask.GetResult().IsEmpty())
+	{
+		Context.GetInstanceData(*this).PathfindingTask = UE::Tasks::Launch(
+			UE_SOURCE_LOCATION,
+			[Army]
+			{
+				return Army->FindPathToNearestRecruitable();
+			}
+		);
+		return EStateTreeRunStatus::Running;
+	}
+	// complete when task has found path
+	if (PathfindingTask.IsCompleted() && !PathfindingTask.GetResult().IsEmpty())
+	{
+		Army->S_SetPath(PathfindingTask.GetResult());
+		return EStateTreeRunStatus::Succeeded;
+	}
+	// task is still computing
+	return EStateTreeRunStatus::Running;
+}
 
-	return Army->S_TryFindPathToNearestRecruitable()
-			   ? EStateTreeRunStatus::Succeeded
-			   : EStateTreeRunStatus::Running;
+void FSTT_FindPathToNearestRecruitable::ExitState(FStateTreeExecutionContext& Context,
+	const FStateTreeTransitionResult& Transition) const
+{
+	Context.GetInstanceData(*this).PathfindingTask = {};
 }
 
 EStateTreeRunStatus FSTT_RavageEnemyBuilding::EnterState(FStateTreeExecutionContext& Context,
-	const FStateTreeTransitionResult& Transition) const
+                                                         const FStateTreeTransitionResult& Transition) const
 {
 	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
 	if (!Army) return EStateTreeRunStatus::Failed;
@@ -178,13 +270,36 @@ EStateTreeRunStatus FSTT_FindPathToGuardTile::Tick(FStateTreeExecutionContext& C
 {
 	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
 	if (!Army) return EStateTreeRunStatus::Failed;
-
 	const bool bOverridePath = Context.GetInstanceData(*this).bOverridePathIn;
 	if (!bOverridePath && !Army->IsPathEmpty()) return EStateTreeRunStatus::Succeeded;
+	// do pathfinding asynchronously with tasks
+	UE::Tasks::TTask<TArray<ATile*>> PathfindingTask = Context.GetInstanceData(*this).PathfindingTask;
+	// launch task if it isnt yet or has completed unsuccesfully
+	if (!PathfindingTask.IsValid() || PathfindingTask.IsCompleted() && PathfindingTask.GetResult().IsEmpty())
+	{
+		Context.GetInstanceData(*this).PathfindingTask = UE::Tasks::Launch(
+			UE_SOURCE_LOCATION,
+			[Army]
+			{
+				return Army->FindPathToGuardTile();
+			}
+		);
+		return EStateTreeRunStatus::Running;
+	}
+	// complete when task has found path
+	if (PathfindingTask.IsCompleted() && !PathfindingTask.GetResult().IsEmpty())
+	{
+		Army->S_SetPath(PathfindingTask.GetResult());
+		return EStateTreeRunStatus::Succeeded;
+	}
+	// task is still computing
+	return EStateTreeRunStatus::Running;
+}
 
-	return Army->S_TryFindPathToGuardTile()
-			   ? EStateTreeRunStatus::Succeeded
-			   : EStateTreeRunStatus::Running;
+void FSTT_FindPathToGuardTile::ExitState(FStateTreeExecutionContext& Context,
+	const FStateTreeTransitionResult& Transition) const
+{
+	Context.GetInstanceData(*this).PathfindingTask = {};
 }
 
 EStateTreeRunStatus FSTT_FindPathToNearestEnemyToGuardTile::Tick(FStateTreeExecutionContext& Context,
@@ -192,24 +307,70 @@ EStateTreeRunStatus FSTT_FindPathToNearestEnemyToGuardTile::Tick(FStateTreeExecu
 {
 	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
 	if (!Army) return EStateTreeRunStatus::Failed;
-
 	const bool bOverridePath = Context.GetInstanceData(*this).bOverridePathIn;
 	if (!bOverridePath && !Army->IsPathEmpty()) return EStateTreeRunStatus::Succeeded;
+	// do pathfinding asynchronously with tasks
+	UE::Tasks::TTask<TArray<ATile*>> PathfindingTask = Context.GetInstanceData(*this).PathfindingTask;
+	// launch task if it isnt yet or has completed unsuccesfully
+	if (!PathfindingTask.IsValid() || PathfindingTask.IsCompleted() && PathfindingTask.GetResult().IsEmpty())
+	{
+		Context.GetInstanceData(*this).PathfindingTask = UE::Tasks::Launch(
+			UE_SOURCE_LOCATION,
+			[Army]
+			{
+				return Army->FindPathToNearestEnemyToGuardTile();
+			}
+		);
+		return EStateTreeRunStatus::Running;
+	}
+	// complete when task has found path
+	if (PathfindingTask.IsCompleted() && !PathfindingTask.GetResult().IsEmpty())
+	{
+		Army->S_SetPath(PathfindingTask.GetResult());
+		return EStateTreeRunStatus::Succeeded;
+	}
+	// task is still computing
+	return EStateTreeRunStatus::Running;
+}
 
-	return Army->S_TryFindPathToNearestEnemyToGuardTile()
-			   ? EStateTreeRunStatus::Succeeded
-			   : EStateTreeRunStatus::Running;
+void FSTT_FindPathToNearestEnemyToGuardTile::ExitState(FStateTreeExecutionContext& Context,
+	const FStateTreeTransitionResult& Transition) const
+{
+	Context.GetInstanceData(*this).PathfindingTask = {};
 }
 
 EStateTreeRunStatus FSTT_FindPathToInterceptArmy::Tick(FStateTreeExecutionContext& Context, const float DeltaTime) const
-{
+{ 
 	AArmy* Army = Context.GetInstanceData(*this).ArmyRef.Get();
 	if (!Army) return EStateTreeRunStatus::Failed;
-
 	const bool bOverridePath = Context.GetInstanceData(*this).bOverridePathIn;
 	if (!bOverridePath && !Army->IsPathEmpty()) return EStateTreeRunStatus::Succeeded;
+	// do pathfinding asynchronously with tasks
+	UE::Tasks::TTask<TArray<ATile*>> PathfindingTask = Context.GetInstanceData(*this).PathfindingTask;
+	// launch task if it isnt yet or has completed unsuccesfully
+	if (!PathfindingTask.IsValid() || PathfindingTask.IsCompleted() && PathfindingTask.GetResult().IsEmpty())
+	{
+		Context.GetInstanceData(*this).PathfindingTask = UE::Tasks::Launch(
+			UE_SOURCE_LOCATION,
+			[Army]
+			{
+				return Army->FindPathToInterceptArmy();
+			}
+		);
+		return EStateTreeRunStatus::Running;
+	}
+	// complete when task has found path
+	if (PathfindingTask.IsCompleted() && !PathfindingTask.GetResult().IsEmpty())
+	{
+		Army->S_SetPath(PathfindingTask.GetResult());
+		return EStateTreeRunStatus::Succeeded;
+	}
+	// task is still computing
+	return EStateTreeRunStatus::Running;
+}
 
-	return Army->S_TryFindPathToInterceptArmy()
-			   ? EStateTreeRunStatus::Succeeded
-			   : EStateTreeRunStatus::Running;
+void FSTT_FindPathToInterceptArmy::ExitState(FStateTreeExecutionContext& Context,
+	const FStateTreeTransitionResult& Transition) const
+{
+	Context.GetInstanceData(*this).PathfindingTask = {};
 }

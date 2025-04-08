@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
-#include "AIController.h"
+#include "GOTA/AI/GuardianAIs/GuardianAIController.h"
 #include "GOTA/ReinforcementLearning/BuildingSelector/RL_BuildingSelectorAgent.h"
 #include "GOTA/ReinforcementLearning/SnapshotSystem/SnapshotAgent.h"
 
@@ -16,7 +16,7 @@ class ULearningAgentsNeuralNetwork;
 class ATile;
 
 UCLASS(Blueprintable)
-class GOTA_API AGuardianAI_BuildingSelector : public AAIController, public IRL_BuildingSelectorAgent, public ISnapshotAgent
+class GOTA_API AGuardianAI_BuildingSelector : public AGuardianAIController, public IRL_BuildingSelectorAgent, public ISnapshotAgent
 {
 	GENERATED_BODY()
 
@@ -27,6 +27,9 @@ private:
 
 protected:
 	AGuardianAI_BuildingSelector();
+
+public:
+	virtual void S_Init(bool RunTraining = false) override;
 
 
 	// ----------------------- Utility -----------------------
@@ -78,12 +81,11 @@ public:
 	virtual void SaveModel(const FString& ModelName) override;
 	virtual void LoadModel(const FString& ModelName) override;
 	virtual FString GetAgentName() override;
-
-	// --------------------Army----------------------
+	
+	// --------------------Logging----------------------
 private:
-	UPROPERTY(VisibleInstanceOnly)
-	float SendArmiesIntervalTimeLeft = 0.0f;
+	TMap<FName, int32> BuildingsCounter;
 
-	UPROPERTY(EditDefaultsOnly)
-	float SendArmiesIntervalTime = 90.0f;
+public:
+	virtual TSharedPtr<FJsonObject> Log() override;
 };

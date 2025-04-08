@@ -37,12 +37,10 @@ void URL_BuildingSelectorTrainingEnv::GatherAgentReward_Implementation(float& Ou
 			&& Agent->GetAffiliation() == EAffiliation::Ally)
 		{
 			Reward += VictoryReward;
-			UE_LOG(LogTemp, Warning, TEXT("Rewarded %f for winning"), VictoryReward)
 		}
 		else
 		{
 			Reward += LooseReward;
-			UE_LOG(LogTemp, Warning, TEXT("Rewarded %f for loosing"), LooseReward)
 		}
 	}
 	// progress Reward von Milestones

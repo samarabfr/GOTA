@@ -30,9 +30,7 @@ protected:
 
 	// ----------------------- Learning Agents plugin -----------------------
 private:
-	UPROPERTY(EditDefaultsOnly)
-	bool bRunInference = false;
-	UPROPERTY(EditDefaultsOnly)
+	bool bRunTraining = false;
 	bool bResetNNsWhenStartingTraining = false;
 
 	UPROPERTY(EditDefaultsOnly)
@@ -64,5 +62,5 @@ public:
 	void S_RegisterAgent(UObject* Agent);
 	bool IsRegistered(UObject* Agent);
 	void S_Init(ULearningAgentsNeuralNetwork* NN_Encoder, ULearningAgentsNeuralNetwork* NN_Policy,
-	          ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic);
+	            ULearningAgentsNeuralNetwork* NN_Decoder, ULearningAgentsNeuralNetwork* NN_Critic, bool RunTraining);
 };

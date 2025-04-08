@@ -57,10 +57,10 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
-	virtual void LoadGame();
+	void LoadGame();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
-	void StartGame();
+	virtual void StartGame();
 
 	UFUNCTION(BlueprintCallable, BlueprintAuthorityOnly, Category="GOTA GameMode")
 	void TogglePause();
@@ -81,7 +81,7 @@ private:
 public:
 	void CreateWorld();
 
-	void CreateSettlements();
+	virtual void CreateSettlements();
 
 	virtual void CreateGuardians();
 

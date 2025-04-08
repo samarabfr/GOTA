@@ -72,9 +72,9 @@ void ACivilian::S_Work()
 {
 }
 
-bool ACivilian::S_TryFindPathToBestWorkTile()
+TArray<ATile*> ACivilian::FindPathToBestWorkTile() const
 {
-	return S_TryFindPathToClosestWorkTile();
+	return FindPathToClosestWorkTile();
 }
 
 bool ACivilian::IsCurrentTileAmongBestWorkTiles()
@@ -129,10 +129,10 @@ UResourceStorage* ACivilian::GetStorage() const
 	return Storage;
 }
 
-bool ACivilian::S_TryFindPathToClosestWorkTile()
+TArray<ATile*> ACivilian::FindPathToClosestWorkTile() const
 {
-	if (!GetCurrentTile() || !S_GetGameState()->GetTileMap()) return false;
-	if (IsTileValidForWork(GetCurrentTile())) return true;
+	if (!GetCurrentTile() || !S_GetGameState()->GetTileMap()) return TArray<ATile*>();
+	if (IsTileValidForWork(GetCurrentTile())) return TArray<ATile*>();
 	TArray<ATile*> Origin;
 	Origin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToNearestTile(
@@ -141,18 +141,16 @@ bool ACivilian::S_TryFindPathToClosestWorkTile()
 		{
 			return IsTileValidForWork(Tile);
 		});
-	if (ResultPath.IsEmpty()) return false;
-	S_SetPath(ResultPath);
-	return true;
+	return ResultPath;
 }
 
-bool ACivilian::S_TryFindPathToWorkTileClosestToSettlement()
+TArray<ATile*> ACivilian::FindPathToWorkTileClosestToSettlement() const
 {
 	if (!GetOriginBuilding() ||
 		!GetOriginBuilding()->GetSettlement() ||
 		GetOriginBuilding()->GetSettlement()->ClaimedTiles.IsEmpty() ||
 		!S_GetGameState()->GetTileMap())
-		return false;
+		return TArray<ATile*>();
 	for (ATile* ClaimedTile : GetOriginBuilding()->GetSettlement()->ClaimedTiles)
 	{
 		if (IsTileValidForWork(ClaimedTile))
@@ -162,8 +160,7 @@ bool ACivilian::S_TryFindPathToWorkTileClosestToSettlement()
 			const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToTile(Origin, ClaimedTile);
 			if (!ResultPath.IsEmpty())
 			{
-				S_SetPath(ResultPath);
-				return true;
+				return ResultPath;
 			}
 		}
 	}
@@ -176,9 +173,7 @@ bool ACivilian::S_TryFindPathToWorkTileClosestToSettlement()
 		{
 			return IsTileValidForWork(Tile);
 		});
-	if (ResultPath.IsEmpty()) return false;
-	S_SetPath(ResultPath);
-	return true;
+	return ResultPath;
 }
 
 void ACivilian::S_HandleEfficiencyChange(float Change)
@@ -190,38 +185,30 @@ void ACivilian::S_HandleEfficiencyChange(float Change)
 		GetOriginBuilding()->GetSettings()->CivilianStorageLimitIncreasePerEfficiencyPercentage);
 }
 
-bool ACivilian::S_TryFindPathToPriorityTile()
+TArray<ATile*> ACivilian::FindPathToPriorityTile() const
 {
 	if (!GetCurrentTile() ||
 		!PriorityTile.IsValid() ||
 		!S_GetGameState()->GetTileMap())
-	{
-		return false;
-	}
+		return TArray<ATile*>();
 	TArray<ATile*> Origin;
 	Origin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToTile(Origin, GetPriorityTile(),
 		EEntityType::Civilian);
-	if (ResultPath.IsEmpty()) return false;
-	S_SetPath(ResultPath);
-	return true;
+	return ResultPath;
 }
 
-bool ACivilian::S_TryFindPathToOriginBuilding()
+TArray<ATile*> ACivilian::FindPathToOriginBuilding() const
 {
 	if (!GetCurrentTile() ||
 		!GetOriginBuilding() ||
 		!GetOriginBuilding()->GetTile() ||
 		!S_GetGameState()->GetTileMap())
-	{		
-		return false;
-	}
+		return TArray<ATile*>();
 	TArray<ATile*> Origin;
 	Origin.Add(GetCurrentTile());
 	const TArray<ATile*> ResultPath = S_GetGameState()->GetTileMap()->FindPathToTile(
 		Origin, GetOriginBuilding()->GetTile(),
 		EEntityType::Civilian);
-	if (ResultPath.IsEmpty()) return false;
-	S_SetPath(ResultPath);
-	return true;
+	return ResultPath;
 }

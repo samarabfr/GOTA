@@ -113,13 +113,4 @@ protected:
 
 public:
 	void ToggleDebugMenu();
-
-	// ------------------------------- Attack -------------------------------
-private:
-	UFUNCTION()
-	void SetAllNativeArmiesToAttack();
-
-protected:
-	UPROPERTY(meta = (BindWidget))
-	UButton* BTN_Attack;
 };

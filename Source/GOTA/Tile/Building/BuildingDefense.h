@@ -41,6 +41,9 @@ private:
 
 	UFUNCTION()
 	void S_HandleDeath();
+	
+	UFUNCTION()
+	void S_HandleCombatValuesChanged();
 
 	UFUNCTION()
 	void S_HandlePopSizeChanged(int16 ChangedBy);

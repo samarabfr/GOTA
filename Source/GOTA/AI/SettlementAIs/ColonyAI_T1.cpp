@@ -11,23 +11,21 @@ AColonyAI_T1::AColonyAI_T1()
 
 void AColonyAI_T1::S_Tick(const float DeltaSeconds)
 {
-	C_Tick(DeltaSeconds);
-	if (!GetPossessedSettlement())
-		return;
 	FigureOutBuilding();
-	if (SendArmiesIntervalTimeLeft <= 0.0f)
-	{
-		SendArmiesIntervalTimeLeft = SendArmiesIntervalTime;
-		GetPossessedSettlement()->SetAllArmiesOnAttack();
-	}
-	else
-	{
-		SendArmiesIntervalTimeLeft -= DeltaSeconds;
-	}
 }
 
 void AColonyAI_T1::C_Tick(const float DeltaSeconds)
 {
+}
+
+void AColonyAI_T1::Possess(ASettlement* Settlement)
+{
+	Super::Possess(Settlement);
+	BuildingsCounter.Empty();
+	for (UBuildingSettings* Building : PossibleBuildings)
+	{
+		BuildingsCounter.Add(Building->Name, 0);
+	}
 }
 
 void AColonyAI_T1::BeginDestroy()
@@ -55,7 +53,10 @@ void AColonyAI_T1::FigureOutBuilding()
 	if (!NewBuilding) return;
 	if (Tile && Tile->CanBuild(NewBuilding, GetPossessedSettlement()))
 	{
-		Tile->S_TryBuild(NewBuilding, GetPossessedSettlement());
+		if (Tile->S_TryBuild(NewBuilding, GetPossessedSettlement()))
+		{
+			BuildingsCounter[NewBuilding->Name]++;
+		}
 	}
 }
 
@@ -95,7 +96,6 @@ UBuildingSettings* AColonyAI_T1::SelectNewBuilding() const
 	for (int i = ViableBuildings.Num() - 1; i >= 0; --i)
 	{
 		const auto [FoodIncome, WoodIncome, StoneIncome] = GetPossessedSettlement()->GetEffectiveProduction();
-		const int32 FoodThreshhold = 300;
 		if (!ViableBuildings[i] ||
 			(ViableBuildings[i]->Cost.Food > 0 &&
 				ViableBuildings[i]->Cost.Food > GetPossessedSettlement()->GetResources().Food && FoodIncome <= 0) ||
@@ -103,7 +103,7 @@ UBuildingSettings* AColonyAI_T1::SelectNewBuilding() const
 				ViableBuildings[i]->Cost.Stone > GetPossessedSettlement()->GetResources().Stone && StoneIncome <= 0) ||
 			(ViableBuildings[i]->Cost.Wood > 0 &&
 				ViableBuildings[i]->Cost.Wood > GetPossessedSettlement()->GetResources().Wood && WoodIncome <= 0) ||
-			((FoodIncome <= 0 || GetPossessedSettlement()->GetResources().Food < FoodThreshhold) &&
+			((FoodIncome <= 0 || GetPossessedSettlement()->GetResources().Food < FoodThreshold) &&
 				ViableBuildings[i]->ProductionType != EProductionType::Food))
 		{
 			ViableBuildings.RemoveAt(i);
@@ -111,4 +111,14 @@ UBuildingSettings* AColonyAI_T1::SelectNewBuilding() const
 	}
 	if (ViableBuildings.Num() <= 0) return nullptr;
 	return ViableBuildings[FMath::RandRange(0, ViableBuildings.Num() - 1)];
+}
+
+TSharedPtr<FJsonObject> AColonyAI_T1::Log()
+{
+	TSharedPtr<FJsonObject> NewLog = MakeShareable(new FJsonObject());
+	for (auto Counter : BuildingsCounter)
+	{
+		NewLog->SetNumberField(Counter.Key.ToString(), Counter.Value);
+	}
+	return NewLog;
 }

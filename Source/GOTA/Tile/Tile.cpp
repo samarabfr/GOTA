@@ -163,7 +163,8 @@ bool ATile::AcceptsArmy() const
 {
 	if (Terrain.Biome == EBiome::Volcano ||
 		GetBuilding() &&
-		GetBuilding()->GetSettings()->bDefenseEnabled)
+		GetBuilding()->GetSettings()->bDefenseEnabled &&
+		!GetBuilding()->GetIsUnderConstruction())
 		return false;
 	return !Army.IsValid();
 }
@@ -333,6 +334,10 @@ void ATile::S_Unbuild()
 	if (Building->GetIsUnderConstruction())
 	{
 		GameplayTags.RemoveTag(Settings->BuildingUnderConstructionTag);
+	}
+	if (Building->GetSettlement())
+	{
+		GameplayTags.RemoveTags(Building->GetSettlement()->GetGameplayTags());
 	}
 	OnGameplayTagsChanged.Broadcast();
 	RemoveReplicatedSubObject(Building);

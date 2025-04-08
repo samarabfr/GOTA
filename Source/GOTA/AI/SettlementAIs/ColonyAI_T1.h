@@ -26,25 +26,25 @@ protected:
 public:
 	void S_Tick(const float DeltaSeconds);
 	void C_Tick(const float DeltaSeconds);
+	virtual void Possess(ASettlement* Settlement) override;
 
 	// --------------------Building----------------------
 private:
 	UPROPERTY(EditDefaultsOnly)
+	float FoodThreshold = 300.0f;
+	
+	UPROPERTY(EditDefaultsOnly)
 	TArray<UBuildingSettings*> PossibleBuildings;
 
 	void FigureOutBuilding();
-
 	bool ShouldBuild() const;
-
 	ATile* FindBuildableTile() const;
-
 	UBuildingSettings* SelectNewBuilding() const;
 
-	// --------------------Army----------------------
+	// -------------------- Logging ----------------------
 private:
-	UPROPERTY(VisibleInstanceOnly)
-	float SendArmiesIntervalTimeLeft = 0.0f;
+	TMap<FName, int32> BuildingsCounter;
 
-	UPROPERTY(EditDefaultsOnly)
-	float SendArmiesIntervalTime = 60.0f;
+public:
+	virtual TSharedPtr<FJsonObject> Log() override;
 };
