@@ -39,6 +39,7 @@ void ASettlement::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifet
 	DOREPLIFETIME_WITH_PARAMS(ASettlement, GrowthPerNeighborPop, Params)
 	DOREPLIFETIME_WITH_PARAMS(ASettlement, Consumption, Params)
 	DOREPLIFETIME_WITH_PARAMS(ASettlement, Production, Params)
+	DOREPLIFETIME_WITH_PARAMS(ASettlement, MaximumProduction, Params)
 }
 
 // --------------------------- LifeCycle ---------------------------
@@ -175,7 +176,6 @@ void ASettlement::S_RefreshBorderingUnclaimedTiles()
 		for (ATile* Neighbor : ClaimedTile->Neighbors)
 		{
 			if (Neighbor &&
-				!Neighbor->IsClaimed() &&
 				!ClaimedTiles.Contains(Neighbor) &&
 				!BorderingUnclaimedTiles.Contains(Neighbor))
 			{
@@ -223,7 +223,6 @@ void ASettlement::UnregisterPopulation(UPopulation* InPopulation)
 }
 
 // --------------------------- Resources ---------------------------
-
 
 void ASettlement::S_AddResources(const FConstructionResources Amount)
 {
@@ -444,6 +443,7 @@ void ASettlement::S_RegisterBuildingForIncome(UBuilding* Building)
 		|| ProductionType == EProductionType::Stone)
 	{
 		Production.Add(Building->GetProductionPerSecond(), ProductionType);
+		MaximumProduction.Add(Building->GetSettings()->BaseProductionPerSecond, ProductionType);
 		Building->OnProductionPerSecondChanged.AddDynamic(this, &ASettlement::S_UpdateProduction);
 	}
 	Consumption.Add(Building->GetPopulation()->GetSize() * GetPopEatingPerSecond(), EResource::Food);
@@ -458,6 +458,7 @@ void ASettlement::S_UnregisterBuildingForIncome(UBuilding* Building)
 		|| ProductionType == EProductionType::Stone)
 	{
 		Production.Remove(Building->GetProductionPerSecond(), ProductionType);
+		MaximumProduction.Remove(Building->GetSettings()->BaseProductionPerSecond, ProductionType);
 		Building->OnProductionPerSecondChanged.RemoveDynamic(this, &ASettlement::S_UpdateProduction);
 	}
 	Consumption.Remove(Building->GetPopulation()->GetSize() * GetPopEatingPerSecond(), EResource::Food);
