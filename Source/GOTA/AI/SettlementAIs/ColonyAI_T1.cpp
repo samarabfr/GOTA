@@ -125,6 +125,7 @@ UBuildingSettings* AColonyAI_T1::SelectNewBuilding() const
 	for (int i = ViableBuildings.Num() - 1; i >= 0; --i)
 	{
 		const FConstructionResources Income = GetPossessedSettlement()->GetEffectiveProduction();
+		const FConstructionResources MaxIncome = GetPossessedSettlement()->GetMaximumEffectiveProduction();
 		if (!ViableBuildings[i])
 		{
 			ViableBuildings.RemoveAt(i);
@@ -133,27 +134,27 @@ UBuildingSettings* AColonyAI_T1::SelectNewBuilding() const
 		// doesnt have resources for the building
 		if (ViableBuildings[i]->Cost.Food > 0 &&
 			ViableBuildings[i]->Cost.Food > GetPossessedSettlement()->GetResources().Food &&
-			Income.Food <= 0)
+			MaxIncome.Food <= 0)
 		{
 			ViableBuildings.RemoveAt(i);
 			continue;
 		}
 		if (ViableBuildings[i]->Cost.Stone > 0 &&
 			ViableBuildings[i]->Cost.Stone > GetPossessedSettlement()->GetResources().Stone &&
-			Income.Stone <= 0)
+			MaxIncome.Stone <= 0)
 		{
 			ViableBuildings.RemoveAt(i);
 			continue;
 		}
 		if (ViableBuildings[i]->Cost.Wood > 0 &&
 			ViableBuildings[i]->Cost.Wood > GetPossessedSettlement()->GetResources().Wood &&
-			Income.Wood <= 0)
+			MaxIncome.Wood <= 0)
 		{
 			ViableBuildings.RemoveAt(i);
 			continue;
 		}
 		// if food income is too low build food buildings
-		if (Income.Food < FoodBuildingFoodIncomeThreshold &&
+		if ((Income.Food <= 0 || MaxIncome.Food < FoodBuildingFoodIncomeThreshold) &&
 			ViableBuildings[i]->ProductionType != EProductionType::Food)
 		{
 			ViableBuildings.RemoveAt(i);
@@ -162,7 +163,8 @@ UBuildingSettings* AColonyAI_T1::SelectNewBuilding() const
 		// dont build army buildings, if income is not high enough or there are too many unprotected buildings
 		const int32 CountUnprotectedBuildings = GetPossessedSettlement()->GetCountOfUnprotectedBuildings();
 		if (ViableBuildings[i]->bArmyEnabled &&
-			(!(Income > BarracksIncomeThreshold) || CountUnprotectedBuildings >= BarracksUnprotectedBuildingsThreshold))
+			(!(MaxIncome > BarracksIncomeThreshold) ||
+				CountUnprotectedBuildings >= BarracksUnprotectedBuildingsThreshold))
 		{
 			ViableBuildings.RemoveAt(i);
 			continue;
