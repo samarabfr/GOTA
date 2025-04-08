@@ -176,7 +176,6 @@ void ASettlement::S_RefreshBorderingUnclaimedTiles()
 		for (ATile* Neighbor : ClaimedTile->Neighbors)
 		{
 			if (Neighbor &&
-				!Neighbor->IsClaimed() &&
 				!ClaimedTiles.Contains(Neighbor) &&
 				!BorderingUnclaimedTiles.Contains(Neighbor))
 			{
