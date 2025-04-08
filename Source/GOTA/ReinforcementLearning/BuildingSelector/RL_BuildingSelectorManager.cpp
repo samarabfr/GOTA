@@ -82,7 +82,7 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 		FName("BuildingSelectorTrainingEnvironment"));
 	if (URL_BuildingSelectorTrainingEnv* BSTrainingEnv = Cast<URL_BuildingSelectorTrainingEnv>(TrainingEnvironment))
 	{
-		BSTrainingEnv->Init(GameState, VictoryReward, LooseReward, IncomeRewardMilestones, ResourcesRewardMilestones);
+		BSTrainingEnv->Init(GameState, VictoryReward, LooseReward);
 	}
 	// Shared Memory
 	FLearningAgentsTrainerProcessSettings TrainerProcessSettings = FLearningAgentsTrainerProcessSettings();

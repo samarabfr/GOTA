@@ -9,15 +9,6 @@ class AGS_Ingame;
 class IRL_BuildingSelectorAgent;
 class URL_BuildingSelector;
 
-USTRUCT()
-struct FMilestone
-{
-	GENERATED_BODY()
-
-	float Goal;
-	float Reward;
-};
-
 UCLASS(Blueprintable)
 class GOTA_API URL_BuildingSelectorTrainingEnv : public ULearningAgentsTrainingEnvironment
 {
@@ -31,9 +22,7 @@ protected:
 	URL_BuildingSelectorTrainingEnv();
 
 public:
-	void Init(AGS_Ingame* InGameState, float InVictoryReward, float InLooseReward,
-	          TArray<FMilestone> InIncomeRewardMilestones,
-	          TArray<FMilestone> InResourcesRewardMilestones);
+	void Init(AGS_Ingame* InGameState, float InVictoryReward, float InLooseReward);
 
 	// ----------------------- Learning -----------------------
 private:
@@ -41,8 +30,6 @@ private:
 	float LooseReward = -1000;
 	float RewardPerPop = 1;
 	int16 LastPopSize = 0;
-	TArray<FMilestone> IncomeRewardMilestones;
-	TArray<FMilestone> ResourcesRewardMilestones;
 
 public:
 	virtual void GatherAgentReward_Implementation(float& OutReward, const int32 AgentId) override;

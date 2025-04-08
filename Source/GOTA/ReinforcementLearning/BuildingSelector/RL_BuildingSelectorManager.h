@@ -64,10 +64,6 @@ private:
 	float VictoryReward = 1000;
 	UPROPERTY(EditDefaultsOnly)
 	float LooseReward = -1000;
-	UPROPERTY(EditDefaultsOnly)
-	TArray<FMilestone> IncomeRewardMilestones;
-	UPROPERTY(EditDefaultsOnly)
-	TArray<FMilestone> ResourcesRewardMilestones;
 
 	FLearningAgentsCommunicator Communicator;
 	FLearningAgentsTrainerProcess TrainerProcess;
