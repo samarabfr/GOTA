@@ -56,6 +56,7 @@ FLearningAgentsObservationSchemaElement URL_BuildingSelectorInteractor::SpecifyS
 {
 	TMap<FName, FLearningAgentsObservationSchemaElement> SettlementMap;
 	SettlementMap.Add("Income", SpecifyResourceObservation(InObservationSchema, Name + "Income"));
+	SettlementMap.Add("MaximumIncome", SpecifyResourceObservation(InObservationSchema, Name + "MaximumIncome"));
 	SettlementMap.Add("CurrentResources", SpecifyResourceObservation(InObservationSchema, Name + "CurrentResources"));
 	SettlementMap.Add("Buildings", SpecifyBuildingsObservation(InObservationSchema, Name + "Buildings"));
 	SettlementMap.Add("Population",
@@ -123,6 +124,10 @@ FLearningAgentsObservationObjectElement URL_BuildingSelectorInteractor::MakeSett
 	Map.Add("Income", MakeResourceObservation(
 		        InObservationObject, Settlement ? Settlement->GetEffectiveProduction() : FConstructionResources(),
 		        Name + "Income", AgentId));
+	Map.Add("MaximumIncome", MakeResourceObservation(
+		        InObservationObject,
+		        Settlement ? Settlement->GetMaximumEffectiveProduction() : FConstructionResources(),
+		        Name + "MaximumIncome", AgentId));
 	Map.Add("CurrentResources", MakeResourceObservation(
 		        InObservationObject, Settlement ? Settlement->GetResources() : FConstructionResources(),
 		        Name + "CurrentResources", AgentId));
