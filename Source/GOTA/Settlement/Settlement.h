@@ -132,6 +132,9 @@ private:
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
 	FConstructionResources Production;
+	
+	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
+	FConstructionResources MaximumProduction;
 
 	UPROPERTY(VisibleInstanceOnly, Replicated, Category="Settlement")
 	FConstructionResources Consumption;
@@ -150,15 +153,11 @@ private:
 
 public:
 	FConstructionResources GetResources() const { return Resources; }
-
-	// Returns predicted production - predicted consumption
 	FConstructionResources GetEffectiveProduction() const { return Production - Consumption; }
-
-	// Returns raw predicted production
 	FConstructionResources GetProduction() const { return Production; }
-
-	// Returns raw predicted consumption
 	FConstructionResources GetConsumption() const { return Consumption; }
+	FConstructionResources GetMaximumProduction() const { return MaximumProduction; }
+	FConstructionResources GetMaximumEffectiveProduction() const { return MaximumProduction - Consumption; }
 
 	void S_AddResources(FConstructionResources Amount);
 	void S_RemoveResources(FConstructionResources Amount);
