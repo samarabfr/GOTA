@@ -35,7 +35,7 @@ void URL_BuildingSelectorTrainingEnv::GatherAgentReward_Implementation(float& Ou
 		{
 			Reward += VictoryReward;
 		}
-		else
+		else if (GameState->GetGameEnding() != EGameEnding::SoftLocked)
 		{
 			Reward += LooseReward;
 		}
