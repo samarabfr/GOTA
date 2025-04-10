@@ -95,14 +95,9 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	Communicator = ULearningAgentsCommunicatorLibrary::MakeSharedMemoryCommunicator(
 		TrainerProcess, SharedMemorySettings);
 	// PPO Trainer
-	TrainerSettings = FLearningAgentsPPOTrainerSettings();
-	TrainerSettings.MaxEpisodeStepNum = MaxEpisodeStepNum;
 	PPOTrainer = ULearningAgentsPPOTrainer::MakePPOTrainer(
 		ManagerComponent, Interactor, TrainingEnvironment, Policy, Critic, Communicator,
 		ULearningAgentsPPOTrainer::StaticClass(), FName("PPOTrainer"), TrainerSettings);
-	TrainingSettings = FLearningAgentsPPOTrainingSettings();
-	TrainingSettings.bUseTensorboard = bUseTensorboard;
-	TrainingGameSettings = FLearningAgentsTrainingGameSettings();
 	// even though fixed time step is managed in the selfPlay GameMode,
 	// we have to set the fixed time step here because it always overwrites
 	TrainingGameSettings.bUseFixedTimeStep = true;

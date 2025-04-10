@@ -67,13 +67,14 @@ private:
 
 	FLearningAgentsCommunicator Communicator;
 	FLearningAgentsTrainerProcess TrainerProcess;
-
-	UPROPERTY(EditDefaultsOnly)
-	float MaxEpisodeStepNum = 10000;
+	
 	UPROPERTY()
 	ULearningAgentsPPOTrainer* PPOTrainer;
+	UPROPERTY(EditDefaultsOnly)
 	FLearningAgentsPPOTrainerSettings TrainerSettings;
+	UPROPERTY(EditDefaultsOnly)
 	FLearningAgentsPPOTrainingSettings TrainingSettings;
+	UPROPERTY(EditDefaultsOnly)
 	FLearningAgentsTrainingGameSettings TrainingGameSettings;
 
 	bool bPaused = false;
