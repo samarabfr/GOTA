@@ -41,6 +41,7 @@ void URL_BuildingSelectorTrainingEnv::GatherAgentReward_Implementation(float& Ou
 		}
 	}
 	// progress reward from pop
+	/*
 	if (ASettlement* Settlement = Agent->GetSettlement())
 	{
 		int16 CurrentPopSize = Settlement->GetPopulation()->GetSize();
@@ -48,6 +49,7 @@ void URL_BuildingSelectorTrainingEnv::GatherAgentReward_Implementation(float& Ou
 		Reward += PopReward;
 		LastPopSize = CurrentPopSize;
 	}
+	*/
 	// result
 	OutReward = Reward;
 }
