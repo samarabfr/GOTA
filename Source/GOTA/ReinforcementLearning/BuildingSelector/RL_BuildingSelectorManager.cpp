@@ -52,7 +52,6 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	Interactor = ULearningAgentsInteractor::MakeInteractor(
 		ManagerComponent, URL_BuildingSelectorInteractor::StaticClass(), FName("BuildingSelectorInteractor"));
 	// Policy
-	FLearningAgentsPolicySettings PolicySettings = FLearningAgentsPolicySettings();
 	PolicySeed = 1234;
 	Policy = ULearningAgentsPolicy::MakePolicy(ManagerComponent, Interactor,
 	                                           ULearningAgentsPolicy::StaticClass(),
@@ -66,7 +65,6 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	                                           PolicySettings,
 	                                           PolicySeed);
 	// Critic
-	FLearningAgentsCriticSettings CriticSettings = FLearningAgentsCriticSettings();
 	CriticSeed = 1234;
 	Critic = ULearningAgentsCritic::MakeCritic(ManagerComponent, Interactor, Policy,
 	                                           ULearningAgentsCritic::StaticClass(),
@@ -85,11 +83,6 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 		BSTrainingEnv->Init(GameState, VictoryReward, LooseReward);
 	}
 	// Shared Memory
-	FLearningAgentsTrainerProcessSettings TrainerProcessSettings = FLearningAgentsTrainerProcessSettings();
-	TrainerProcessSettings.NonEditorEngineRelativePath = NonEditorEngineRelativePath;
-	TrainerProcessSettings.NonEditorIntermediateRelativePath = NonEditorIntermediateRelativePath;
-	FLearningAgentsSharedMemoryCommunicatorSettings SharedMemorySettings =
-		FLearningAgentsSharedMemoryCommunicatorSettings();
 	TrainerProcess = ULearningAgentsCommunicatorLibrary::SpawnSharedMemoryTrainingProcess(
 		TrainerProcessSettings, SharedMemorySettings);
 	Communicator = ULearningAgentsCommunicatorLibrary::MakeSharedMemoryCommunicator(

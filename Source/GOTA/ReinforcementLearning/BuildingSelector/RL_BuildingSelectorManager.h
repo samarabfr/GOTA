@@ -2,6 +2,8 @@
 
 #pragma once
 #include "LearningAgentsCommunicator.h"
+#include "LearningAgentsCritic.h"
+#include "LearningAgentsPolicy.h"
 #include "LearningAgentsPPOTrainer.h"
 
 #include "RL_BuildingSelectorManager.generated.h"
@@ -34,12 +36,6 @@ protected:
 	// ----------------------- Learning Agents plugin -----------------------
 private:
 	UPROPERTY(EditDefaultsOnly)
-	bool bUseTensorboard = false;
-	UPROPERTY(EditDefaultsOnly)
-	FString NonEditorEngineRelativePath = "../../../../Program Files/Epic Games/UE_5.5/Engine";
-	UPROPERTY(EditDefaultsOnly)
-	FString NonEditorIntermediateRelativePath = "../../../GOTAFunzt/Intermediate";
-	UPROPERTY(EditDefaultsOnly)
 	ULearningAgentsManager* ManagerComponent;
 
 	bool bRunTraining = false;
@@ -52,11 +48,15 @@ private:
 	ULearningAgentsPolicy* Policy;
 	UPROPERTY(EditDefaultsOnly)
 	int32 PolicySeed = 1234;
+	UPROPERTY(EditDefaultsOnly)
+	FLearningAgentsPolicySettings PolicySettings;
 
 	UPROPERTY()
 	ULearningAgentsCritic* Critic;
 	UPROPERTY(EditDefaultsOnly)
 	int32 CriticSeed = 1234;
+	UPROPERTY(EditDefaultsOnly)
+	FLearningAgentsCriticSettings CriticSettings;
 
 	UPROPERTY()
 	ULearningAgentsTrainingEnvironment* TrainingEnvironment;
@@ -67,6 +67,10 @@ private:
 
 	FLearningAgentsCommunicator Communicator;
 	FLearningAgentsTrainerProcess TrainerProcess;
+	UPROPERTY(EditDefaultsOnly)
+	FLearningAgentsTrainerProcessSettings TrainerProcessSettings;
+	UPROPERTY(EditDefaultsOnly)
+	FLearningAgentsSharedMemoryCommunicatorSettings SharedMemorySettings;
 	
 	UPROPERTY()
 	ULearningAgentsPPOTrainer* PPOTrainer;
