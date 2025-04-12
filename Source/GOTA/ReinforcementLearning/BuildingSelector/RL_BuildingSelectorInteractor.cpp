@@ -17,17 +17,17 @@ URL_BuildingSelectorInteractor::URL_BuildingSelectorInteractor()
 // ----------------------- Specify Observations -----------------------
 
 FLearningAgentsObservationSchemaElement URL_BuildingSelectorInteractor::SpecifyResourceObservation(
-	ULearningAgentsObservationSchema* InObservationSchema, FString Name)
+	ULearningAgentsObservationSchema* InObservationSchema, FString Name, float Scale)
 {
 	TMap<FName, FLearningAgentsObservationSchemaElement> ResourceMap;
 	ResourceMap.Add(
-		"Food", ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema, 1,
+		"Food", ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema, Scale,
 		                                                             FName(Name + "FoodResource")));
 	ResourceMap.Add(
-		"Wood", ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema, 1,
+		"Wood", ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema, Scale,
 		                                                             FName(Name + "WoodResource")));
 	ResourceMap.Add(
-		"Stone", ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema, 1,
+		"Stone", ULearningAgentsObservations::SpecifyFloatObservation(InObservationSchema, Scale,
 		                                                              FName(Name + "StoneResource")));
 	return ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, ResourceMap);
 }
@@ -38,16 +38,16 @@ FLearningAgentsObservationSchemaElement URL_BuildingSelectorInteractor::SpecifyB
 	TMap<FName, FLearningAgentsObservationSchemaElement> ResourceMap;
 	ResourceMap.Add("CountBuildings",
 	                ULearningAgentsObservations::SpecifyFloatObservation(
-		                InObservationSchema, 1, FName(Name + "CountBuildings")));
+		                InObservationSchema, BuildingCountScaling, FName(Name + "CountBuildings")));
 	ResourceMap.Add("CountCivilianBuildings",
 	                ULearningAgentsObservations::SpecifyFloatObservation(
-		                InObservationSchema, 1, FName(Name + "CountCivilianBuildings")));
+		                InObservationSchema, BuildingCountScaling, FName(Name + "CountCivilianBuildings")));
 	ResourceMap.Add("CountArmyBuildings",
 	                ULearningAgentsObservations::SpecifyFloatObservation(
-		                InObservationSchema, 1, FName(Name + "CountArmyBuildings")));
+		                InObservationSchema, BuildingCountScaling, FName(Name + "CountArmyBuildings")));
 	ResourceMap.Add("CountDefenseBuildings",
 	                ULearningAgentsObservations::SpecifyFloatObservation(
-		                InObservationSchema, 1, FName(Name + "CountDefenseBuildings")));
+		                InObservationSchema, BuildingCountScaling, FName(Name + "CountDefenseBuildings")));
 	return ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, ResourceMap);
 }
 
@@ -55,13 +55,13 @@ FLearningAgentsObservationSchemaElement URL_BuildingSelectorInteractor::SpecifyS
 	ULearningAgentsObservationSchema* InObservationSchema, FString Name)
 {
 	TMap<FName, FLearningAgentsObservationSchemaElement> SettlementMap;
-	SettlementMap.Add("Income", SpecifyResourceObservation(InObservationSchema, Name + "Income"));
-	SettlementMap.Add("MaximumIncome", SpecifyResourceObservation(InObservationSchema, Name + "MaximumIncome"));
-	SettlementMap.Add("CurrentResources", SpecifyResourceObservation(InObservationSchema, Name + "CurrentResources"));
+	SettlementMap.Add("Income", SpecifyResourceObservation(InObservationSchema, Name + "Income", IncomeScaling));
+	SettlementMap.Add("MaximumIncome", SpecifyResourceObservation(InObservationSchema, Name + "MaximumIncome", IncomeScaling));
+	SettlementMap.Add("CurrentResources", SpecifyResourceObservation(InObservationSchema, Name + "CurrentResources", ResourceStorageScaling));
 	SettlementMap.Add("Buildings", SpecifyBuildingsObservation(InObservationSchema, Name + "Buildings"));
 	SettlementMap.Add("Population",
 	                  ULearningAgentsObservations::SpecifyFloatObservation(
-		                  InObservationSchema, 1, FName(Name + "Population")));
+		                  InObservationSchema, PopulationSizeScaling, FName(Name + "Population")));
 	return ULearningAgentsObservations::SpecifyStructObservation(InObservationSchema, SettlementMap);
 }
 
