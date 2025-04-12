@@ -12,11 +12,9 @@ URL_BuildingSelectorTrainingEnv::URL_BuildingSelectorTrainingEnv()
 {
 }
 
-void URL_BuildingSelectorTrainingEnv::Init(AGS_Ingame* InGameState, float InVictoryReward, float InLooseReward)
+void URL_BuildingSelectorTrainingEnv::Init(AGS_Ingame* InGameState)
 {
 	GameState = InGameState;
-	VictoryReward = InVictoryReward;
-	LooseReward = InLooseReward;
 }
 
 void URL_BuildingSelectorTrainingEnv::GatherAgentReward_Implementation(float& OutReward, const int32 AgentId)
@@ -24,7 +22,7 @@ void URL_BuildingSelectorTrainingEnv::GatherAgentReward_Implementation(float& Ou
 	// specifies rewards
 	IRL_BuildingSelectorAgent* Agent = Cast<IRL_BuildingSelectorAgent>(GetAgent(AgentId));
 	if (!Agent) return;
-	float Reward = 0;
+	float Reward = 0.0f;
 	// completion reward
 	if (GameState->GameEnded)
 	{
@@ -33,11 +31,11 @@ void URL_BuildingSelectorTrainingEnv::GatherAgentReward_Implementation(float& Ou
 			GameState->GetGameEnding() == EGameEnding::NativesWon
 			&& Agent->GetAffiliation() == EAffiliation::Ally)
 		{
-			Reward += VictoryReward;
+			Reward += 1.0f;
 		}
 		else if (GameState->GetGameEnding() != EGameEnding::SoftLocked)
 		{
-			Reward += LooseReward;
+			Reward -= 1.0f;
 		}
 	}
 	// progress reward from pop

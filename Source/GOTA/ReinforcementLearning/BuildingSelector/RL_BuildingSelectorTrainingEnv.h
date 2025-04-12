@@ -22,12 +22,10 @@ protected:
 	URL_BuildingSelectorTrainingEnv();
 
 public:
-	void Init(AGS_Ingame* InGameState, float InVictoryReward, float InLooseReward);
+	void Init(AGS_Ingame* InGameState);
 
 	// ----------------------- Learning -----------------------
 private:
-	float VictoryReward = 1000;
-	float LooseReward = -1000;
 	float RewardPerPop = 1;
 	int16 LastPopSize = 0;
 

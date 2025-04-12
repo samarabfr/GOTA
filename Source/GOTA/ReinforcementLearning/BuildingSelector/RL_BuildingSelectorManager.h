@@ -60,10 +60,6 @@ private:
 
 	UPROPERTY()
 	ULearningAgentsTrainingEnvironment* TrainingEnvironment;
-	UPROPERTY(EditDefaultsOnly)
-	float VictoryReward = 1000;
-	UPROPERTY(EditDefaultsOnly)
-	float LooseReward = -1000;
 
 	FLearningAgentsCommunicator Communicator;
 	FLearningAgentsTrainerProcess TrainerProcess;
