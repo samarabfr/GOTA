@@ -59,8 +59,9 @@ void AEntity::Delete()
 {
 	if (HasAuthority())
 	{
-		if (!GetCurrentTile()) return;
-		GetCurrentTile()->RemoveEntity(this, GetEntityType());
+		if (GetCurrentTile()){
+			GetCurrentTile()->RemoveEntity(this, GetEntityType());
+		}
 		Destroy();
 	}
 }
@@ -210,16 +211,26 @@ void AEntity::S_MoveToNextTileOnPath()
 {
 	if (!CurrentTile.IsValid())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Wanted to move entity, but entity is not on a tile"))
+		UE_LOG(LogTemp, Warning, TEXT("Wanted to move entity, but entity is not on a tile!"))
 		return;
 	}
-	ATile* NewCurrent = nullptr;
-	if (!Path.IsEmpty())
+	if (Path.IsEmpty())
 	{
-		NewCurrent = Path.Pop();
-	}
-	if (!NewCurrent || !NewCurrent->AcceptsEntity(GetEntityType()))
+		UE_LOG(LogTemp, Warning, TEXT("Wanted to move entity, but path is empty!"))
 		return;
+	}
+	ATile* NewCurrent = Path.Last();
+	if (!NewCurrent)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Wanted to move entity to tile, but tile is null!"))
+		return;
+	}
+	if (!NewCurrent->AcceptsEntity(GetEntityType()))
+	{
+		// TODO: should never go into here, but it does anyway
+		return;
+	}
+	Path.Pop();
 	CurrentTile->RemoveEntity(this, GetEntityType());
 	FVector NewLocation = FVector();
 	NewCurrent->AddEntity(this, GetEntityType(), NewLocation);
@@ -238,7 +249,7 @@ bool AEntity::IsPathValid()
 {
 	if (Path.IsEmpty())
 		return false;
-	ATile* NextTile = Path[0];
+	ATile* NextTile = Path.Last();
 	if (!NextTile)
 		return false;
 	return NextTile->AcceptsEntity(GetEntityType());
