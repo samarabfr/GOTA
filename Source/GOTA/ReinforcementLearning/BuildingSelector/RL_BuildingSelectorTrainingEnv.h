@@ -26,7 +26,7 @@ public:
 
 	// ----------------------- Learning -----------------------
 private:
-	float RewardPerPop = 1;
+	float RewardPerPop = 0.001;
 	int16 LastPopSize = 0;
 
 public:
