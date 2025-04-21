@@ -45,8 +45,8 @@ void AColonyAI_R1::S_Init(bool RunTraining)
 	if (!BuildingSelector)
 	{
 		BuildingSelector = GetWorld()->SpawnActor<ARL_BuildingSelectorManager>(ManagerClass,
-			FVector::Zero(),
-			FRotator::ZeroRotator);
+		                                                                       FVector::Zero(),
+		                                                                       FRotator::ZeroRotator);
 		BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic, bRunTraining);
 		AddTickPrerequisiteActor(BuildingSelector); // make the manager tick before this
 		GameState->S_AddManager(ManagerClass, BuildingSelector);
@@ -58,6 +58,10 @@ void AColonyAI_R1::S_Init(bool RunTraining)
 	if (BuildingSelector->IsPaused())
 	{
 		BuildingSelector->Unpause();
+	}
+	if (bRunTraining && bSaveSnapshotsAtIntervals)
+	{
+		TimeBeginningOfTraining = FDateTime::Now().ToString();
 	}
 }
 
@@ -167,7 +171,8 @@ void AColonyAI_R1::IncrementMilestone(int32 MilestoneIndex)
 void AColonyAI_R1::SaveModel(const FString& ModelName)
 {
 	FFilePath ModelPath;
-	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / ModelName;
+	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / TimeBeginningOfTraining /
+		ModelName;
 	FFilePath FullSnapshotPath;
 	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Critic";
 	NN_Critic->SaveNetworkToSnapshot(FullSnapshotPath);
@@ -183,7 +188,8 @@ void AColonyAI_R1::SaveModel(const FString& ModelName)
 void AColonyAI_R1::LoadModel(const FString& ModelName)
 {
 	FFilePath ModelPath;
-	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / ModelName;
+	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / TimeBeginningOfTraining /
+		ModelName;
 	FFilePath FullSnapshotPath;
 	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Critic";
 	NN_Critic->LoadNetworkFromSnapshot(FullSnapshotPath);
