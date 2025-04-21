@@ -52,6 +52,10 @@ void AGuardianAI_BuildingSelector::S_Init(bool RunTraining)
 		BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic, bRunTraining);
 		AddTickPrerequisiteActor(BuildingSelector); // make the manager tick before this
 		GameState->S_AddManager(ManagerClass, BuildingSelector);
+		if (bRunTraining && bSaveSnapshotsAtIntervals)
+		{
+			TimeBeginningOfTraining = FDateTime::Now().ToString();
+		}
 	}
 	if (!BuildingSelector->IsRegistered(this))
 	{
@@ -173,7 +177,7 @@ void AGuardianAI_BuildingSelector::IncrementMilestone(int32 MilestoneIndex)
 void AGuardianAI_BuildingSelector::SaveModel(const FString& ModelName)
 {
 	FFilePath ModelPath;
-	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / ModelName;
+	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / TimeBeginningOfTraining / ModelName;
 	FFilePath FullSnapshotPath;
 	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Critic";
 	NN_Critic->SaveNetworkToSnapshot(FullSnapshotPath);

@@ -50,6 +50,10 @@ void AColonyAI_R1::S_Init(bool RunTraining)
 		BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic, bRunTraining);
 		AddTickPrerequisiteActor(BuildingSelector); // make the manager tick before this
 		GameState->S_AddManager(ManagerClass, BuildingSelector);
+		if (bRunTraining && bSaveSnapshotsAtIntervals)
+		{
+			TimeBeginningOfTraining = FDateTime::Now().ToString();
+		}
 	}
 	if (!BuildingSelector->IsRegistered(this))
 	{
@@ -58,10 +62,6 @@ void AColonyAI_R1::S_Init(bool RunTraining)
 	if (BuildingSelector->IsPaused())
 	{
 		BuildingSelector->Unpause();
-	}
-	if (bRunTraining && bSaveSnapshotsAtIntervals)
-	{
-		TimeBeginningOfTraining = FDateTime::Now().ToString();
 	}
 }
 
@@ -188,8 +188,7 @@ void AColonyAI_R1::SaveModel(const FString& ModelName)
 void AColonyAI_R1::LoadModel(const FString& ModelName)
 {
 	FFilePath ModelPath;
-	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / TimeBeginningOfTraining /
-		ModelName;
+	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / ModelName;
 	FFilePath FullSnapshotPath;
 	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Critic";
 	NN_Critic->LoadNetworkFromSnapshot(FullSnapshotPath);
