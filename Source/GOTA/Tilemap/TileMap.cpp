@@ -314,6 +314,8 @@ TArray<ATile*> ATileMap::FindTilesInRange(const TArray<ATile*>& Origin, TArray<i
 		TArray<ATile*> NewFrontier;
 		for (ATile* Current : Frontier)
 		{
+			if (!Current)
+				continue;
 			// search for the next tiles
 			for (ATile* Neighbor : Current->Neighbors)
 			{
