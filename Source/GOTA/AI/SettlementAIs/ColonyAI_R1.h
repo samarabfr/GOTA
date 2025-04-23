@@ -36,6 +36,8 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UBuildingSettings*> PossibleBuildings;
 
+	bool ShouldBuild() const;
+
 	// ----------------------- Reinforcement Learning -----------------------
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Snapshot")

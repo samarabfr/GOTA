@@ -42,6 +42,8 @@ private:
 	ASettlement* Settlement;
 	virtual void OnPossess(APawn* InPawn) override;
 
+	bool ShouldBuild() const;
+
 	// ----------------------- Reinforcement Learning -----------------------
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Snapshot")

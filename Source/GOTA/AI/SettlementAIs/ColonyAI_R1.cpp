@@ -17,7 +17,7 @@ void AColonyAI_R1::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	if (!GetPossessedSettlement())
 		return;
-	if (GetPossessedSettlement()->CanAddConstructionSite())
+	if (ShouldBuild())
 	{
 		BuildingSelector->SelectBuildingAction();
 	}
@@ -79,6 +79,14 @@ void AColonyAI_R1::Possess(ASettlement* Settlement)
 			BuildingsCounter.Add(Building->Name, 0);
 		}
 	}
+}
+
+bool AColonyAI_R1::ShouldBuild() const
+{
+	if (!GetPossessedSettlement()) // valid check because the settlement might be pending kill
+		return false;
+	return GetPossessedSettlement()->GetCountOfConstructionSites() == 0 &&
+		GetPossessedSettlement()->CanAddConstructionSite();
 }
 
 TArray<ATile*> AColonyAI_R1::FindTilesWithMostNeighborPop() const

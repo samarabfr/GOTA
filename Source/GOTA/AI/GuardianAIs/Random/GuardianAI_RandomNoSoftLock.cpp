@@ -74,12 +74,7 @@ bool AGuardianAI_RandomNoSoftLock::ShouldBuild() const
 {
 	if (!IsValid(Settlement)) // valid check because the settlement might be pending kill
 		return false;
-	for (const ATile* Tile : Settlement->ClaimedTiles)
-	{
-		if (Tile && Tile->GetBuilding()->GetIsUnderConstruction())
-			return false;
-	}
-	return true;
+	return Settlement->GetCountOfConstructionSites() == 0 && Settlement->CanAddConstructionSite();
 }
 
 ATile* AGuardianAI_RandomNoSoftLock::FindBuildableTile() const

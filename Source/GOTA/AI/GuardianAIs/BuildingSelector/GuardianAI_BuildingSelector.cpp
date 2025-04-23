@@ -18,7 +18,7 @@ void AGuardianAI_BuildingSelector::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	if (!Settlement) return;
-	if (Settlement->CanAddConstructionSite())
+	if (ShouldBuild())
 	{
 		BuildingSelector->SelectBuildingAction();
 	}
@@ -85,6 +85,13 @@ void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 			}
 		}
 	}
+}
+
+bool AGuardianAI_BuildingSelector::ShouldBuild() const
+{
+	if (!IsValid(Settlement)) // valid check because the settlement might be pending kill
+		return false;
+	return Settlement->GetCountOfConstructionSites() == 0 && Settlement->CanAddConstructionSite();
 }
 
 void AGuardianAI_BuildingSelector::RandomlyPlaceBuilding(UBuildingSettings* Building)
