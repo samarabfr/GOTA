@@ -20,12 +20,24 @@ protected:
 
 	// ----------------------- Specify Observations -----------------------
 private:
-	static FLearningAgentsObservationSchemaElement SpecifyResourceObservation(
+	FLearningAgentsObservationSchemaElement SpecifyResourceObservation(
+		ULearningAgentsObservationSchema* InObservationSchema, FString Name, float Scale);
+	FLearningAgentsObservationSchemaElement SpecifyBuildingsObservation(
+		ULearningAgentsObservationSchema* InObservationSchema, FString Name);
+	FLearningAgentsObservationSchemaElement SpecifySettlementObservation(
+		ULearningAgentsObservationSchema* InObservationSchema, FString Name);
+	FLearningAgentsObservationSchemaElement SpecifyStateObservation(
 		ULearningAgentsObservationSchema* InObservationSchema);
-	static FLearningAgentsObservationSchemaElement SpecifySettlementObservation(
-		ULearningAgentsObservationSchema* InObservationSchema);
-	static FLearningAgentsObservationSchemaElement SpecifyStateObservation(
-		ULearningAgentsObservationSchema* InObservationSchema);
+
+	UPROPERTY(EditDefaultsOnly)
+	float IncomeScaling = 40.0f;
+	UPROPERTY(EditDefaultsOnly)
+	float ResourceStorageScaling = 1000000.0f;
+	UPROPERTY(EditDefaultsOnly)
+	float BuildingCountScaling = 400.0f;
+	UPROPERTY(EditDefaultsOnly)
+	float PopulationSizeScaling = 2000.0f;
+	
 
 public:
 	virtual void SpecifyAgentObservation_Implementation(
@@ -34,15 +46,18 @@ public:
 
 	// ----------------------- Make Observations -----------------------
 private:
-	static FLearningAgentsObservationObjectElement MakeResourceObservation(
+	FLearningAgentsObservationObjectElement MakeResourceObservation(
 		ULearningAgentsObservationObject* InObservationObject,
-		FConstructionResources Resources);
-	static FLearningAgentsObservationObjectElement MakeSettlementObservation(
+		FConstructionResources Resources, FString Name, int32 AgentId);
+	FLearningAgentsObservationObjectElement MakeBuildingsObservation(
 		ULearningAgentsObservationObject* InObservationObject,
-		const ASettlement* Settlement);
-	static FLearningAgentsObservationObjectElement MakeStateObservation(
+		const ASettlement* Settlement, FString Name, int32 AgentId);
+	FLearningAgentsObservationObjectElement MakeSettlementObservation(
 		ULearningAgentsObservationObject* InObservationObject,
-		IRL_BuildingSelectorAgent* Agent);
+		const ASettlement* Settlement, FString Name, int32 AgentId);
+	FLearningAgentsObservationObjectElement MakeStateObservation(
+		ULearningAgentsObservationObject* InObservationObject,
+		IRL_BuildingSelectorAgent* Agent, int32 AgentId);
 
 public:
 	virtual void GatherAgentObservation_Implementation(

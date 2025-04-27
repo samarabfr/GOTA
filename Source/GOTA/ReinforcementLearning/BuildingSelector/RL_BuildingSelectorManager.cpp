@@ -34,14 +34,6 @@ void ARL_BuildingSelectorManager::HandleGameEnding(const EGameEnding Ending, con
 	Pause();
 }
 
-void ARL_BuildingSelectorManager::Tick(float DeltaSeconds)
-{
-	Super::Tick(DeltaSeconds);
-	if (IsPaused())
-		return;
-	SelectBuildingAction();
-}
-
 void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encoder,
                                          ULearningAgentsNeuralNetwork* NN_Policy,
                                          ULearningAgentsNeuralNetwork* NN_Decoder,
@@ -60,7 +52,6 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	Interactor = ULearningAgentsInteractor::MakeInteractor(
 		ManagerComponent, URL_BuildingSelectorInteractor::StaticClass(), FName("BuildingSelectorInteractor"));
 	// Policy
-	FLearningAgentsPolicySettings PolicySettings = FLearningAgentsPolicySettings();
 	PolicySeed = 1234;
 	Policy = ULearningAgentsPolicy::MakePolicy(ManagerComponent, Interactor,
 	                                           ULearningAgentsPolicy::StaticClass(),
@@ -74,7 +65,6 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 	                                           PolicySettings,
 	                                           PolicySeed);
 	// Critic
-	FLearningAgentsCriticSettings CriticSettings = FLearningAgentsCriticSettings();
 	CriticSeed = 1234;
 	Critic = ULearningAgentsCritic::MakeCritic(ManagerComponent, Interactor, Policy,
 	                                           ULearningAgentsCritic::StaticClass(),
@@ -90,33 +80,22 @@ void ARL_BuildingSelectorManager::S_Init(ULearningAgentsNeuralNetwork* NN_Encode
 		FName("BuildingSelectorTrainingEnvironment"));
 	if (URL_BuildingSelectorTrainingEnv* BSTrainingEnv = Cast<URL_BuildingSelectorTrainingEnv>(TrainingEnvironment))
 	{
-		BSTrainingEnv->Init(GameState, VictoryReward, LooseReward, IncomeRewardMilestones, ResourcesRewardMilestones);
+		BSTrainingEnv->Init(GameState);
 	}
 	// Shared Memory
-	FLearningAgentsTrainerProcessSettings TrainerProcessSettings = FLearningAgentsTrainerProcessSettings();
-	TrainerProcessSettings.NonEditorEngineRelativePath = NonEditorEngineRelativePath;
-	TrainerProcessSettings.NonEditorIntermediateRelativePath = NonEditorIntermediateRelativePath;
-	FLearningAgentsSharedMemoryCommunicatorSettings SharedMemorySettings =
-		FLearningAgentsSharedMemoryCommunicatorSettings();
 	TrainerProcess = ULearningAgentsCommunicatorLibrary::SpawnSharedMemoryTrainingProcess(
 		TrainerProcessSettings, SharedMemorySettings);
 	Communicator = ULearningAgentsCommunicatorLibrary::MakeSharedMemoryCommunicator(
 		TrainerProcess, SharedMemorySettings);
 	// PPO Trainer
-	TrainerSettings = FLearningAgentsPPOTrainerSettings();
-	TrainerSettings.MaxEpisodeStepNum = MaxEpisodeStepNum;
 	PPOTrainer = ULearningAgentsPPOTrainer::MakePPOTrainer(
 		ManagerComponent, Interactor, TrainingEnvironment, Policy, Critic, Communicator,
 		ULearningAgentsPPOTrainer::StaticClass(), FName("PPOTrainer"), TrainerSettings);
-	TrainingSettings = FLearningAgentsPPOTrainingSettings();
-	TrainingSettings.bUseTensorboard = bUseTensorboard;
-	TrainingGameSettings = FLearningAgentsTrainingGameSettings();
 	// even though fixed time step is managed in the selfPlay GameMode,
 	// we have to set the fixed time step here because it always overwrites
 	TrainingGameSettings.bUseFixedTimeStep = true;
 	const float FixedDeltaTime = FApp::GetFixedDeltaTime();
 	TrainingGameSettings.FixedTimeStepFrequency = 1.0f / FixedDeltaTime;
-	SetActorTickEnabled(true);
 }
 
 bool ARL_BuildingSelectorManager::IsPaused() const
@@ -148,6 +127,8 @@ bool ARL_BuildingSelectorManager::IsRegistered(UObject* Agent) const
 
 void ARL_BuildingSelectorManager::SelectBuildingAction()
 {
+	if (IsPaused())
+		return;
 	if (!Policy || !PPOTrainer)
 		return;
 	if (!bRunTraining)
@@ -158,8 +139,8 @@ void ARL_BuildingSelectorManager::SelectBuildingAction()
 	{
 		if (bIsFirstStepAfterReset)
 		{
-			Policy->RunInference(0.0f);
 			bIsFirstStepAfterReset = false;
+			Policy->RunInference(0.0f);
 		}
 		else
 		{

@@ -63,14 +63,10 @@ void AColonyAI_T1::FigureOutBuilding()
 
 bool AColonyAI_T1::ShouldBuild() const
 {
-	if (!GetPossessedSettlement())
+	if (!GetPossessedSettlement()) // valid check because the settlement might be pending kill
 		return false;
-	for (const ATile* Tile : GetPossessedSettlement()->ClaimedTiles)
-	{
-		if (Tile && Tile->GetBuilding()->GetIsUnderConstruction())
-			return false;
-	}
-	return true;
+	return GetPossessedSettlement()->GetCountOfConstructionSites() == 0 &&
+		GetPossessedSettlement()->CanAddConstructionSite();
 }
 
 ATile* AColonyAI_T1::FindBuildableTile() const

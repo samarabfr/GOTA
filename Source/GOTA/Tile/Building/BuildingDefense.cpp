@@ -58,6 +58,8 @@ void UBuildingDefense::S_Tick(float DeltaSeconds)
 {
 	Super::S_Tick(DeltaSeconds);
 	C_Tick(DeltaSeconds);
+	if (GetIsUnderConstruction())
+		return;
 	if (!bIsAttacking && HasEnemyOnNeighboringTile())
 	{
 		bIsAttacking = true;
@@ -79,6 +81,8 @@ void UBuildingDefense::S_Tick(float DeltaSeconds)
 void UBuildingDefense::C_Tick(const float DeltaSeconds)
 {
 	Super::C_Tick(DeltaSeconds);
+	if (GetIsUnderConstruction())
+		return;
 	if (bIsAttacking)
 	{
 		AttackProgress += CombatValues->GetAttackSpeed() * DeltaSeconds;

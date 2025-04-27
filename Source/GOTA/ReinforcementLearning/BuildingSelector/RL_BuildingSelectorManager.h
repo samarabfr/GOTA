@@ -2,6 +2,8 @@
 
 #pragma once
 #include "LearningAgentsCommunicator.h"
+#include "LearningAgentsCritic.h"
+#include "LearningAgentsPolicy.h"
 #include "LearningAgentsPPOTrainer.h"
 
 #include "RL_BuildingSelectorManager.generated.h"
@@ -30,16 +32,9 @@ protected:
 
 	UFUNCTION()
 	void HandleGameEnding(const EGameEnding Ending, const FString& EndMessage);
-	virtual void Tick(float DeltaSeconds) override;
 
 	// ----------------------- Learning Agents plugin -----------------------
 private:
-	UPROPERTY(EditDefaultsOnly)
-	bool bUseTensorboard = false;
-	UPROPERTY(EditDefaultsOnly)
-	FString NonEditorEngineRelativePath = "../../../../Program Files/Epic Games/UE_5.5/Engine";
-	UPROPERTY(EditDefaultsOnly)
-	FString NonEditorIntermediateRelativePath = "../../../GOTAFunzt/Intermediate";
 	UPROPERTY(EditDefaultsOnly)
 	ULearningAgentsManager* ManagerComponent;
 
@@ -53,32 +48,33 @@ private:
 	ULearningAgentsPolicy* Policy;
 	UPROPERTY(EditDefaultsOnly)
 	int32 PolicySeed = 1234;
+	UPROPERTY(EditDefaultsOnly)
+	FLearningAgentsPolicySettings PolicySettings;
 
 	UPROPERTY()
 	ULearningAgentsCritic* Critic;
 	UPROPERTY(EditDefaultsOnly)
 	int32 CriticSeed = 1234;
+	UPROPERTY(EditDefaultsOnly)
+	FLearningAgentsCriticSettings CriticSettings;
 
 	UPROPERTY()
 	ULearningAgentsTrainingEnvironment* TrainingEnvironment;
-	UPROPERTY(EditDefaultsOnly)
-	float VictoryReward = 1000;
-	UPROPERTY(EditDefaultsOnly)
-	float LooseReward = -1000;
-	UPROPERTY(EditDefaultsOnly)
-	TArray<FMilestone> IncomeRewardMilestones;
-	UPROPERTY(EditDefaultsOnly)
-	TArray<FMilestone> ResourcesRewardMilestones;
 
 	FLearningAgentsCommunicator Communicator;
 	FLearningAgentsTrainerProcess TrainerProcess;
-
 	UPROPERTY(EditDefaultsOnly)
-	float MaxEpisodeStepNum = 10000;
+	FLearningAgentsTrainerProcessSettings TrainerProcessSettings;
+	UPROPERTY(EditDefaultsOnly)
+	FLearningAgentsSharedMemoryCommunicatorSettings SharedMemorySettings;
+	
 	UPROPERTY()
 	ULearningAgentsPPOTrainer* PPOTrainer;
+	UPROPERTY(EditDefaultsOnly)
 	FLearningAgentsPPOTrainerSettings TrainerSettings;
+	UPROPERTY(EditDefaultsOnly)
 	FLearningAgentsPPOTrainingSettings TrainingSettings;
+	UPROPERTY(EditDefaultsOnly)
 	FLearningAgentsTrainingGameSettings TrainingGameSettings;
 
 	bool bPaused = false;

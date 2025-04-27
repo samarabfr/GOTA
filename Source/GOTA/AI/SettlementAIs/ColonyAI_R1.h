@@ -36,6 +36,8 @@ private:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UBuildingSettings*> PossibleBuildings;
 
+	bool ShouldBuild() const;
+
 	// ----------------------- Reinforcement Learning -----------------------
 private:
 	UPROPERTY(EditDefaultsOnly, Category="Snapshot")
@@ -61,6 +63,7 @@ private:
 	UPROPERTY()
 	ARL_BuildingSelectorManager* BuildingSelector;
 	double RealTimeLastSnapshotSave = 0.0f;
+	FString TimeBeginningOfTraining = "-";
 	
 	TArray<ATile*> FindTilesWithMostNeighborPop() const;
 	void RandomlyPlaceBuilding(UBuildingSettings* Building);
@@ -68,6 +71,7 @@ private:
 
 public:
 	virtual ASettlement* GetSettlement() override;
+	virtual ASettlement* GetEnemySettlement() override;
 	virtual TArray<UBuildingSettings*> GetAvailableBuildings() override;
 	virtual void HandleBuildingActionSelected(UBuildingSettings* Building) override;
 	virtual EAffiliation GetAffiliation() override;
@@ -76,7 +80,6 @@ public:
 	virtual void SaveModel(const FString& ModelName) override;
 	virtual void LoadModel(const FString& ModelName) override;
 	virtual FString GetAgentName() override;
-	virtual bool CanBuild() override;
 
 	// -------------------- Logging ----------------------
 private:

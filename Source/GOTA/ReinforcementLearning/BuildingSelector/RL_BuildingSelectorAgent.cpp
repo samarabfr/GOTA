@@ -10,6 +10,11 @@ ASettlement* IRL_BuildingSelectorAgent::GetSettlement()
 	return nullptr;
 }
 
+ASettlement* IRL_BuildingSelectorAgent::GetEnemySettlement()
+{
+	return nullptr;
+}
+
 TArray<UBuildingSettings*> IRL_BuildingSelectorAgent::GetAvailableBuildings()
 {
 	return TArray<UBuildingSettings*>();
@@ -31,9 +36,4 @@ TArray<int32> IRL_BuildingSelectorAgent::GetMilestonesReached()
 
 void IRL_BuildingSelectorAgent::IncrementMilestone(int32 MilestoneIndex)
 {
-}
-
-bool IRL_BuildingSelectorAgent::CanBuild()
-{
-	return false;
 }

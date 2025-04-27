@@ -17,6 +17,10 @@ void AColonyAI_R1::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 	if (!GetPossessedSettlement())
 		return;
+	if (ShouldBuild())
+	{
+		BuildingSelector->SelectBuildingAction();
+	}
 	if (bRunTraining && bSaveSnapshotsAtIntervals && BuildingSelector && !BuildingSelector->IsPaused())
 	{
 		const double CurrentTime = FPlatformTime::Seconds();
@@ -41,11 +45,15 @@ void AColonyAI_R1::S_Init(bool RunTraining)
 	if (!BuildingSelector)
 	{
 		BuildingSelector = GetWorld()->SpawnActor<ARL_BuildingSelectorManager>(ManagerClass,
-			FVector::Zero(),
-			FRotator::ZeroRotator);
+		                                                                       FVector::Zero(),
+		                                                                       FRotator::ZeroRotator);
 		BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic, bRunTraining);
 		AddTickPrerequisiteActor(BuildingSelector); // make the manager tick before this
 		GameState->S_AddManager(ManagerClass, BuildingSelector);
+		if (bRunTraining && bSaveSnapshotsAtIntervals)
+		{
+			TimeBeginningOfTraining = FDateTime::Now().ToString();
+		}
 	}
 	if (!BuildingSelector->IsRegistered(this))
 	{
@@ -71,6 +79,14 @@ void AColonyAI_R1::Possess(ASettlement* Settlement)
 			BuildingsCounter.Add(Building->Name, 0);
 		}
 	}
+}
+
+bool AColonyAI_R1::ShouldBuild() const
+{
+	if (!GetPossessedSettlement()) // valid check because the settlement might be pending kill
+		return false;
+	return GetPossessedSettlement()->GetCountOfConstructionSites() == 0 &&
+		GetPossessedSettlement()->CanAddConstructionSite();
 }
 
 TArray<ATile*> AColonyAI_R1::FindTilesWithMostNeighborPop() const
@@ -129,6 +145,11 @@ ASettlement* AColonyAI_R1::GetSettlement()
 	return GetPossessedSettlement();
 }
 
+ASettlement* AColonyAI_R1::GetEnemySettlement()
+{
+	return GameState->GetTribe();
+}
+
 TArray<UBuildingSettings*> AColonyAI_R1::GetAvailableBuildings()
 {
 	return PossibleBuildings;
@@ -158,7 +179,8 @@ void AColonyAI_R1::IncrementMilestone(int32 MilestoneIndex)
 void AColonyAI_R1::SaveModel(const FString& ModelName)
 {
 	FFilePath ModelPath;
-	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / ModelName;
+	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / TimeBeginningOfTraining /
+		ModelName;
 	FFilePath FullSnapshotPath;
 	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Critic";
 	NN_Critic->SaveNetworkToSnapshot(FullSnapshotPath);
@@ -190,13 +212,6 @@ void AColonyAI_R1::LoadModel(const FString& ModelName)
 FString AColonyAI_R1::GetAgentName()
 {
 	return SnapshotAgentName;
-}
-
-bool AColonyAI_R1::CanBuild()
-{
-	if (!GetPossessedSettlement())
-		return false;
-	return GetPossessedSettlement()->CanAddConstructionSite();
 }
 
 TSharedPtr<FJsonObject> AColonyAI_R1::Log()

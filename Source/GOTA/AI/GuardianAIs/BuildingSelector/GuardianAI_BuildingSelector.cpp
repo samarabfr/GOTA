@@ -18,6 +18,10 @@ void AGuardianAI_BuildingSelector::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 	if (!Settlement) return;
+	if (ShouldBuild())
+	{
+		BuildingSelector->SelectBuildingAction();
+	}
 	if (bRunTraining && bSaveSnapshotsAtIntervals && BuildingSelector && !BuildingSelector->IsPaused())
 	{
 		const double CurrentTime = FPlatformTime::Seconds();
@@ -48,6 +52,10 @@ void AGuardianAI_BuildingSelector::S_Init(bool RunTraining)
 		BuildingSelector->S_Init(NN_Encoder, NN_Policy, NN_Decoder, NN_Critic, bRunTraining);
 		AddTickPrerequisiteActor(BuildingSelector); // make the manager tick before this
 		GameState->S_AddManager(ManagerClass, BuildingSelector);
+		if (bRunTraining && bSaveSnapshotsAtIntervals)
+		{
+			TimeBeginningOfTraining = FDateTime::Now().ToString();
+		}
 	}
 	if (!BuildingSelector->IsRegistered(this))
 	{
@@ -77,6 +85,13 @@ void AGuardianAI_BuildingSelector::OnPossess(APawn* InPawn)
 			}
 		}
 	}
+}
+
+bool AGuardianAI_BuildingSelector::ShouldBuild() const
+{
+	if (!IsValid(Settlement)) // valid check because the settlement might be pending kill
+		return false;
+	return Settlement->GetCountOfConstructionSites() == 0 && Settlement->CanAddConstructionSite();
 }
 
 void AGuardianAI_BuildingSelector::RandomlyPlaceBuilding(UBuildingSettings* Building)
@@ -134,6 +149,11 @@ ASettlement* AGuardianAI_BuildingSelector::GetSettlement()
 	return Settlement;
 }
 
+ASettlement* AGuardianAI_BuildingSelector::GetEnemySettlement()
+{
+	return GameState->GetColony();
+}
+
 TArray<UBuildingSettings*> AGuardianAI_BuildingSelector::GetAvailableBuildings()
 {
 	if (!PossessedGuardian) return TArray<UBuildingSettings*>();
@@ -164,7 +184,7 @@ void AGuardianAI_BuildingSelector::IncrementMilestone(int32 MilestoneIndex)
 void AGuardianAI_BuildingSelector::SaveModel(const FString& ModelName)
 {
 	FFilePath ModelPath;
-	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / ModelName;
+	ModelPath.FilePath = FPaths::ProjectContentDir() / SnapshotsFolderFilePath.FilePath / TimeBeginningOfTraining / ModelName;
 	FFilePath FullSnapshotPath;
 	FullSnapshotPath.FilePath = ModelPath.FilePath + ".Critic";
 	NN_Critic->SaveNetworkToSnapshot(FullSnapshotPath);
@@ -196,13 +216,6 @@ void AGuardianAI_BuildingSelector::LoadModel(const FString& ModelName)
 FString AGuardianAI_BuildingSelector::GetAgentName()
 {
 	return SnapshotAgentName;
-}
-
-bool AGuardianAI_BuildingSelector::CanBuild()
-{
-	if (!Settlement)
-		return false;
-	return Settlement->CanAddConstructionSite();
 }
 
 TSharedPtr<FJsonObject> AGuardianAI_BuildingSelector::Log()

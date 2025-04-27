@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "GOTA/AI/GuardianAIs/GuardianAIController.h"
+#include "GOTA/Settlement/ConstructionResources.h"
 #include "GuardianAI_RandomNoSoftLock.generated.h"
 
 class ATile;
@@ -43,7 +44,13 @@ private:
 	// ----------------------- Building Selection -----------------------
 private:
 	UPROPERTY(EditDefaultsOnly)
-	float FoodThreshold = 300.0f;
+	float FoodBuildingFoodIncomeThreshold = 2.0f;
+
+	UPROPERTY(EditDefaultsOnly)
+	FConstructionResources BarracksIncomeThreshold = FConstructionResources(3, 2, 0.5);
+
+	UPROPERTY(EditDefaultsOnly)
+	int32 BarracksUnprotectedBuildingsThreshold = 5;
 	
 	void FigureOutBuilding();
 	bool ShouldBuild() const;

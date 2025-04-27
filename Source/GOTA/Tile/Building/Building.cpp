@@ -227,7 +227,8 @@ void UBuilding::S_CheckForProtection()
 		});
 	for (auto DefenseTile : DefenseTilesWithDistances)
 	{
-		if (DefenseTile.Key->GetClaimant() &&
+		if (DefenseTile.Key->GetBuilding() &&
+			!DefenseTile.Key->GetBuilding()->GetIsUnderConstruction() &&
 			DefenseTile.Key->GetBuilding()->Settings->RavageProtectionRange >= DefenseTile.Value &&
 			DefenseTile.Key->GetClaimant()->GetAffiliation() == Tile->GetClaimant()->GetAffiliation())
 		{

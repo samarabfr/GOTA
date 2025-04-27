@@ -79,7 +79,7 @@ private:
 	float GrowthPerNeighborPop = 0.0f;
 
 public:
-	USettlementPopulation* GetPopulation() { return Population; }
+	USettlementPopulation* GetPopulation() const { return Population; }
 
 	FOnPopEatingPerSecondChangedSig OnPopEatingPerSecondChanged;
 	float GetPopEatingPerSecond() const { return PopEatingPerSecond; }
@@ -95,7 +95,7 @@ public:
 	// --------------------------- Building ---------------------------
 protected:
 	void S_RefreshBorderingUnclaimedTiles();
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	TArray<UBuildingSettings*> StartingBuildings;
 
@@ -117,13 +117,17 @@ public:
 	int32 GetCountOfUnprotectedBuildings() const;
 	TArray<UBuilding*> GetAllBuildings() const;
 	bool CanAddConstructionSite() const;
+	int32 GetCountOfBuildings() const;
+	int32 GetCountOfCivilianBuildings() const;
+	int32 GetCountOfArmyBuildings() const;
+	int32 GetCountOfDefenseBuildings() const;
 	TArray<ATile*> FindTilesWithMostNeighborBuildings() const;
 
 	// --------------------------- Resources ---------------------------
 private:
 	UPROPERTY(EditDefaultsOnly)
 	FConstructionResources StartingResources;
-	
+
 	UPROPERTY(EditDefaultsOnly)
 	int32 ExtraAllowedConstructionSites = 2;
 
@@ -174,7 +178,7 @@ public:
 	// --------------------------- Armies ---------------------------
 public:
 	TArray<AArmy*> GetAllArmies() const;
-	
+
 	// ----------------------- Logging -----------------------
 public:
 	virtual TSharedPtr<FJsonObject> Log() const;

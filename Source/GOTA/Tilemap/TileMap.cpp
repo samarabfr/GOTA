@@ -305,7 +305,7 @@ TArray<ATile*> ATileMap::FindTilesInRange(const TArray<ATile*>& Origin, TArray<i
 	int8 Distance = 2;
 	// Find all frontier neighboring tiles
 	// Frontier.IsEmpty() = flood fill finished
-	// FoundTargets.IsEmpty() = terminate early as soon as targets have been found, because we only want the nearest
+	// (optional) FoundTargets.IsEmpty() = terminate early as soon as targets have been found, because we only want the nearest
 	// (optional) Distance - 1 <= Range => is in range
 	while (!Frontier.IsEmpty() &&
 		(!bTerminateEarly || FoundTargets.IsEmpty()) &&
@@ -314,23 +314,27 @@ TArray<ATile*> ATileMap::FindTilesInRange(const TArray<ATile*>& Origin, TArray<i
 		TArray<ATile*> NewFrontier;
 		for (ATile* Current : Frontier)
 		{
+			if (!Current)
+				continue;
 			// search for the next tiles
 			for (ATile* Neighbor : Current->Neighbors)
 			{
 				// Neighbor => is ocean
-				// (optional) Neighbor->AcceptsEntity(EntityType) => valid path for the entity type
+				if (!Neighbor)
+					continue;
+				const int32 Index = Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R;
 				// DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] == 0 => has not been explored already
-				if (Neighbor &&
-					DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] == 0 &&
-					(EntityType == EEntityType::None || Neighbor->AcceptsEntity(EntityType)))
+				if (!DistanceMap.IsValidIndex(Index) || DistanceMap[Index] != 0)
+					continue;
+				// (optional) Neighbor->AcceptsEntity(EntityType) => valid path for the entity type
+				if (EntityType != EEntityType::None && !Neighbor->AcceptsEntity(EntityType))
+					continue;
+				NewFrontier.Add(Neighbor);
+				DistanceMap[Index] = Distance;
+				// check if tile meets the conditions
+				if (Condition(Neighbor))
 				{
-					NewFrontier.Add(Neighbor);
-					DistanceMap[Neighbor->HexCoords.Q * Size.R + Neighbor->HexCoords.R] = Distance;
-					// check if tile meets the conditions
-					if (Condition(Neighbor))
-					{
-						FoundTargets.Add(Neighbor);
-					}
+					FoundTargets.Add(Neighbor);
 				}
 			}
 		}
