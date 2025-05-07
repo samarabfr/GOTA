@@ -131,6 +131,7 @@ UBuildingSettings* AGuardianAI_RandomNoSoftLock::SelectNewBuilding() const
 	for (int i = ViableBuildings.Num() - 1; i >= 0; --i)
 	{
 		const FConstructionResources Income = Settlement->GetEffectiveProduction();
+		const FConstructionResources MaxIncome = Settlement->GetMaximumEffectiveProduction();
 		if (!ViableBuildings[i])
 		{
 			ViableBuildings.RemoveAt(i);
@@ -146,20 +147,20 @@ UBuildingSettings* AGuardianAI_RandomNoSoftLock::SelectNewBuilding() const
 		}
 		if (ViableBuildings[i]->Cost.Stone > 0 &&
 			ViableBuildings[i]->Cost.Stone > Settlement->GetResources().Stone &&
-			Income.Stone <= 0)
+			MaxIncome.Stone <= 0)
 		{
 			ViableBuildings.RemoveAt(i);
 			continue;
 		}
 		if (ViableBuildings[i]->Cost.Wood > 0 &&
 			ViableBuildings[i]->Cost.Wood > Settlement->GetResources().Wood &&
-			Income.Wood <= 0)
+			MaxIncome.Wood <= 0)
 		{
 			ViableBuildings.RemoveAt(i);
 			continue;
 		}
 		// if food income is too low build food buildings
-		if (Income.Food < FoodBuildingFoodIncomeThreshold &&
+		if ((Income.Food <= 0 || MaxIncome.Food < FoodBuildingFoodIncomeThreshold) &&
 			ViableBuildings[i]->ProductionType != EProductionType::Food)
 		{
 			ViableBuildings.RemoveAt(i);
@@ -168,7 +169,8 @@ UBuildingSettings* AGuardianAI_RandomNoSoftLock::SelectNewBuilding() const
 		// dont build army buildings, if income is not high enough or there are too many unprotected buildings
 		const int32 CountUnprotectedBuildings = Settlement->GetCountOfUnprotectedBuildings();
 		if (ViableBuildings[i]->bArmyEnabled &&
-			(!(Income > BarracksIncomeThreshold) || CountUnprotectedBuildings >= BarracksUnprotectedBuildingsThreshold))
+			(!(MaxIncome > BarracksIncomeThreshold) ||
+				CountUnprotectedBuildings >= BarracksUnprotectedBuildingsThreshold))
 		{
 			ViableBuildings.RemoveAt(i);
 			continue;
